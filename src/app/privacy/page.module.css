@@ -1,0 +1,33 @@
+.main {
+  min-height: 100vh;
+  padding: var(--space-6);
+  display: flex;
+  justify-content: center;
+}
+
+.article {
+  width: min(48rem, 100%);
+  background: var(--color-surface-raised);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-soft);
+  padding: var(--space-8);
+}
+
+.notice {
+  background: var(--color-accent-soft);
+  color: var(--color-text);
+  padding: var(--space-3);
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+}
+
+.body {
+  white-space: pre-wrap;
+  font-family: var(--font-sans);
+  line-height: 1.55;
+}
+
+.article a {
+  color: var(--color-primary);
+  font-weight: 600;
+}

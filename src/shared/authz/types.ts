@@ -1,0 +1,45 @@
+export const ROLES = [
+  "PLAYER",
+  "TEAM_REPRESENTATIVE",
+  "ORGANIZATION_ADMIN",
+  "SUPER_ADMIN",
+  "COMPETITION_ORGANIZER",
+] as const;
+
+export type Role = (typeof ROLES)[number];
+
+export const ACTIONS = [
+  "registration:read",
+  "registration:write",
+  "document:read_status",
+  "document:read_file",
+  "document:review",
+  "team:invite",
+  "team:read",
+  "payment:create_player",
+  "payment:create_team",
+  "admin:manage",
+  "platform:admin",
+] as const;
+
+export type Action = (typeof ACTIONS)[number];
+
+export type ActorRole = {
+  role: Role;
+  teamId?: string | null;
+  competitionId?: string | null;
+};
+
+export type Actor = {
+  userId: string;
+  roles: ActorRole[];
+  membershipTeamIds: string[];
+};
+
+export type Resource = {
+  ownerUserId?: string;
+  teamId?: string;
+  competitionId?: string;
+};
+
+export type Decision = { allow: true } | { allow: false; reason: string };

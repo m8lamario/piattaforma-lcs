@@ -1,0 +1,23 @@
+.main {
+  width: min(44rem, 100%);
+  display: grid;
+  gap: var(--space-4);
+}
+
+.card {
+  background: var(--color-surface-raised);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-soft);
+  padding: var(--space-6);
+  display: grid;
+  gap: var(--space-3);
+}
+
+.card h1 {
+  margin: 0;
+}
+
+.main a {
+  color: var(--color-primary);
+  font-weight: 600;
+}

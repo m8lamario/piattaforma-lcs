@@ -1,0 +1,41 @@
+.main {
+  width: min(44rem, 100%);
+  display: grid;
+  gap: var(--space-6);
+}
+
+.hero {
+  background: var(--color-surface-raised);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-soft);
+  padding: var(--space-6);
+}
+
+.hero h1 {
+  margin: 0 0 var(--space-3);
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-3);
+}
+
+.item {
+  display: grid;
+  gap: var(--space-1);
+  min-height: 44px;
+  padding: var(--space-4);
+  background: var(--color-surface-raised);
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  color: inherit;
+  box-shadow: var(--shadow-soft);
+}
+
+.item span {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}

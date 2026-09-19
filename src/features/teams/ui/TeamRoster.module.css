@@ -1,0 +1,31 @@
+.wrap {
+  background: var(--color-surface-raised);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-soft);
+  padding: var(--space-6);
+  display: grid;
+  gap: var(--space-3);
+}
+
+.wrap h2 {
+  margin: 0;
+}
+
+.help,
+.item span {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-3);
+}
+
+.item {
+  display: grid;
+  gap: var(--space-1);
+}

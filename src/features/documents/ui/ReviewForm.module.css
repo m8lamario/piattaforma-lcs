@@ -1,0 +1,40 @@
+.stack {
+  display: grid;
+  gap: var(--space-5);
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.reject {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.label {
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.textarea {
+  min-height: 6rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-3);
+  font: inherit;
+  background: var(--color-surface-raised);
+  color: var(--color-text);
+}
+
+.textarea:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 1px;
+}
+
+.error {
+  color: var(--color-danger);
+  margin: 0;
+}

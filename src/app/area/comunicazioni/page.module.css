@@ -1,0 +1,25 @@
+.main {
+  width: min(44rem, 100%);
+  display: grid;
+  gap: var(--space-4);
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-4);
+}
+
+.list li {
+  background: var(--color-surface-raised);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-soft);
+  padding: var(--space-4);
+}
+
+.list p {
+  margin: var(--space-2) 0 0;
+  color: var(--color-text-muted);
+}

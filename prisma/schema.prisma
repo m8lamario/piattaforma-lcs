@@ -1,0 +1,560 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  PLAYER
+  TEAM_REPRESENTATIVE
+  ORGANIZATION_ADMIN
+  SUPER_ADMIN
+  COMPETITION_ORGANIZER
+}
+
+enum MembershipRole {
+  PLAYER
+  REPRESENTATIVE
+}
+
+enum RegistrationStatus {
+  INVITED
+  ACCOUNT_CREATED
+  IN_PROGRESS
+  PENDING_REVIEW
+  CHANGES_REQUESTED
+  PAYMENT_PENDING
+  APPROVED
+  WITHDRAWN
+}
+
+enum PaymentMode {
+  PLAYER
+  TEAM
+  BOTH
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCEEDED
+  FAILED
+  REFUNDED
+}
+
+enum DocumentStatus {
+  UPLOADED
+  PENDING_REVIEW
+  APPROVED
+  REJECTED
+  EXPIRED
+  REPLACED
+}
+
+enum ReviewDecision {
+  APPROVED
+  REJECTED
+}
+
+enum RequirementCode {
+  PERSONAL_DATA
+  GUARDIAN_IF_MINOR
+  MEDICAL_CERT
+  PRIVACY
+  MEDIA_RELEASE
+  PAYMENT
+}
+
+enum RequirementAudience {
+  ALL
+  MINOR
+  ADULT
+}
+
+enum LegalAudience {
+  ALL
+  MINOR
+  ADULT
+  GUARDIAN
+}
+
+enum ConsentType {
+  REQUIRED
+  OPTIONAL
+}
+
+enum InviteStatus {
+  PENDING
+  ACCEPTED
+  EXPIRED
+  REVOKED
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  emailVerified DateTime?
+  passwordHash  String?
+  name          String?
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts               Account[]
+  sessions               Session[]
+  roles                  UserRole[]
+  playerProfile          PlayerProfile?
+  teamMemberships        TeamMembership[]
+  invitedPlayers         PlayerInvite[]      @relation("InviteAuthor")
+  acceptedInvites        PlayerInvite[]      @relation("InviteAcceptedBy")
+  documentReviews        DocumentReview[]
+  notifications          Notification[]
+  consentRecords         ConsentRecord[]
+  auditLogs              AuditLog[]
+  payments               Payment[]           @relation("PaymentPayer")
+  representativeTeams    Team[]              @relation("TeamRepresentativeUser")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([identifier, token])
+}
+
+model UserRole {
+  id            String   @id @default(cuid())
+  userId        String
+  role          Role
+  teamId        String?
+  competitionId String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  team        Team?        @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  competition Competition? @relation(fields: [competitionId], references: [id], onDelete: Cascade)
+
+  @@index([userId, role])
+  @@index([teamId])
+  @@index([competitionId])
+}
+
+model PlayerProfile {
+  id          String    @id @default(cuid())
+  userId      String    @unique
+  firstName   String
+  lastName    String
+  birthDate   DateTime? @db.Date
+  fiscalCode  String?   @unique
+  phone       String?
+  metadata    Json?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  guardians     Guardian[]
+  registrations Registration[]
+  documents     Document[]
+
+  @@index([lastName, firstName])
+}
+
+model Guardian {
+  id              String   @id @default(cuid())
+  playerProfileId String
+  firstName       String
+  lastName        String
+  relationship    String
+  email           String
+  phone           String?
+  metadata        Json?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  playerProfile  PlayerProfile   @relation(fields: [playerProfileId], references: [id], onDelete: Cascade)
+  consentRecords ConsentRecord[]
+
+  @@unique([playerProfileId, email])
+  @@index([playerProfileId])
+}
+
+model Competition {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String?
+  parentId    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  parent              Competition? @relation("CompetitionTree", fields: [parentId], references: [id])
+  children            Competition[] @relation("CompetitionTree")
+  editions  Edition[]
+  userRoles UserRole[]
+
+  @@index([parentId])
+}
+
+model Edition {
+  id              String      @id @default(cuid())
+  competitionId   String
+  name            String
+  year            Int
+  registrationOpensAt DateTime?
+  registrationClosesAt DateTime?
+  startsAt        DateTime?
+  endsAt          DateTime?
+  playerFeeAmount Decimal?    @db.Decimal(10, 2)
+  teamFeeAmount   Decimal?    @db.Decimal(10, 2)
+  currency        String      @default("EUR")
+  paymentMode     PaymentMode @default(PLAYER)
+  isActive        Boolean     @default(true)
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  competition  Competition           @relation(fields: [competitionId], references: [id], onDelete: Restrict)
+  teams        Team[]
+  registrations Registration[]
+  requirements EditionRequirement[]
+  payments     Payment[]
+
+  @@unique([competitionId, year, name])
+  @@index([competitionId])
+  @@index([isActive])
+}
+
+model EditionRequirement {
+  id        String               @id @default(cuid())
+  editionId String
+  code      RequirementCode
+  required  Boolean              @default(true)
+  appliesTo RequirementAudience  @default(ALL)
+  createdAt DateTime             @default(now())
+  updatedAt DateTime             @updatedAt
+
+  edition Edition @relation(fields: [editionId], references: [id], onDelete: Cascade)
+
+  @@unique([editionId, code, appliesTo])
+  @@index([editionId])
+}
+
+model School {
+  id        String   @id @default(cuid())
+  name      String
+  city      String?
+  metadata  Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  teams Team[]
+
+  @@index([name])
+}
+
+model Team {
+  id                   String   @id @default(cuid())
+  editionId            String
+  schoolId             String
+  name                 String
+  logoStorageKey       String?
+  inviteCode           String   @unique
+  contactName          String?
+  contactEmail         String?
+  representativeUserId String?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  edition        Edition          @relation(fields: [editionId], references: [id], onDelete: Restrict)
+  school         School           @relation(fields: [schoolId], references: [id], onDelete: Restrict)
+  representative User?            @relation("TeamRepresentativeUser", fields: [representativeUserId], references: [id])
+  memberships    TeamMembership[]
+  invites        PlayerInvite[]
+  registrations  Registration[]
+  payments       Payment[]
+  userRoles      UserRole[]
+
+  @@index([editionId])
+  @@index([schoolId])
+  @@index([representativeUserId])
+}
+
+model TeamMembership {
+  id           String         @id @default(cuid())
+  teamId       String
+  userId       String
+  role         MembershipRole @default(PLAYER)
+  jerseyNumber String?
+  rosterRole   String?
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  team Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([teamId, userId])
+  @@index([userId])
+}
+
+model PlayerInvite {
+  id              String       @id @default(cuid())
+  teamId          String
+  email           String
+  tokenHash       String       @unique
+  status          InviteStatus @default(PENDING)
+  firstName       String?
+  lastName        String?
+  expiresAt       DateTime
+  invitedByUserId  String
+  acceptedByUserId String?
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  team       Team  @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  invitedBy  User  @relation("InviteAuthor", fields: [invitedByUserId], references: [id], onDelete: Restrict)
+  acceptedBy User? @relation("InviteAcceptedBy", fields: [acceptedByUserId], references: [id], onDelete: SetNull)
+
+  @@index([teamId, email])
+  @@index([status])
+  @@index([invitedByUserId])
+  @@index([acceptedByUserId])
+}
+
+model Registration {
+  id              String              @id @default(cuid())
+  playerProfileId String
+  teamId          String
+  editionId       String
+  status          RegistrationStatus  @default(INVITED)
+  submittedAt     DateTime?
+  reviewedAt      DateTime?
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  playerProfile  PlayerProfile   @relation(fields: [playerProfileId], references: [id], onDelete: Cascade)
+  team           Team            @relation(fields: [teamId], references: [id], onDelete: Restrict)
+  edition        Edition         @relation(fields: [editionId], references: [id], onDelete: Restrict)
+  documents      Document[]
+  consentRecords ConsentRecord[]
+  payments       Payment[]
+
+  @@unique([playerProfileId, editionId])
+  @@index([teamId])
+  @@index([editionId, status])
+}
+
+model DocumentType {
+  id             String   @id @default(cuid())
+  code           String   @unique
+  name           String
+  allowedMime    String[]
+  maxSizeBytes   Int
+  requiresExpiry Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  documents Document[]
+}
+
+model Document {
+  id               String         @id @default(cuid())
+  registrationId   String
+  playerProfileId  String
+  typeId           String
+  storageKey       String
+  mimeType         String
+  sizeBytes        Int
+  checksumSha256   String
+  originalFilename String
+  status           DocumentStatus @default(UPLOADED)
+  uploadedAt       DateTime       @default(now())
+  expiresAt        DateTime?
+  replacedById     String?        @unique
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  registration  Registration     @relation(fields: [registrationId], references: [id], onDelete: Cascade)
+  playerProfile PlayerProfile    @relation(fields: [playerProfileId], references: [id], onDelete: Cascade)
+  type          DocumentType     @relation(fields: [typeId], references: [id], onDelete: Restrict)
+  replacedBy    Document?        @relation("DocumentReplacement", fields: [replacedById], references: [id])
+  replaces      Document?        @relation("DocumentReplacement")
+  reviews       DocumentReview[]
+
+  @@index([registrationId, status])
+  @@index([playerProfileId])
+  @@index([typeId])
+}
+
+model DocumentReview {
+  id           String         @id @default(cuid())
+  documentId   String
+  reviewerId   String
+  decision     ReviewDecision
+  reason       String?
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  document Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  reviewer User     @relation(fields: [reviewerId], references: [id], onDelete: Restrict)
+
+  @@index([documentId])
+  @@index([reviewerId])
+}
+
+model LegalDocument {
+  id                String        @id @default(cuid())
+  slug              String        @unique
+  title             String
+  audience          LegalAudience @default(ALL)
+  requiredByDefault Boolean       @default(true)
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  versions LegalDocumentVersion[]
+}
+
+model LegalDocumentVersion {
+  id              String   @id @default(cuid())
+  legalDocumentId String
+  version         String
+  body            String
+  effectiveAt     DateTime
+  isCurrent       Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  legalDocument LegalDocument   @relation(fields: [legalDocumentId], references: [id], onDelete: Cascade)
+  consents      ConsentRecord[]
+
+  @@unique([legalDocumentId, version])
+  @@index([legalDocumentId, isCurrent])
+}
+
+model ConsentRecord {
+  id                      String      @id @default(cuid())
+  userId                  String
+  legalDocumentVersionId  String
+  registrationId          String?
+  guardianId              String?
+  consentType             ConsentType
+  accepted                Boolean
+  acceptedAt              DateTime    @default(now())
+  ipAddress               String?
+  userAgent               String?
+  createdAt               DateTime    @default(now())
+  updatedAt               DateTime    @updatedAt
+
+  user                 User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  legalDocumentVersion LegalDocumentVersion @relation(fields: [legalDocumentVersionId], references: [id], onDelete: Restrict)
+  registration         Registration?        @relation(fields: [registrationId], references: [id], onDelete: SetNull)
+  guardian             Guardian?            @relation(fields: [guardianId], references: [id], onDelete: SetNull)
+
+  @@index([userId, legalDocumentVersionId])
+  @@index([registrationId])
+}
+
+model Payment {
+  id                String        @id @default(cuid())
+  registrationId    String?
+  teamId            String?
+  editionId         String
+  payerUserId       String?
+  amount            Decimal       @db.Decimal(10, 2)
+  currency          String        @default("EUR")
+  status            PaymentStatus @default(PENDING)
+  provider          String
+  providerPaymentId String?
+  providerSessionId String?
+  paidAt            DateTime?
+  failureCode       String?
+  receiptUrl        String?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  registration Registration? @relation(fields: [registrationId], references: [id], onDelete: SetNull)
+  team         Team?         @relation(fields: [teamId], references: [id], onDelete: SetNull)
+  edition      Edition       @relation(fields: [editionId], references: [id], onDelete: Restrict)
+  payer        User?         @relation("PaymentPayer", fields: [payerUserId], references: [id], onDelete: SetNull)
+
+  @@index([editionId, status])
+  @@index([registrationId])
+  @@index([teamId])
+  @@index([provider, providerPaymentId])
+}
+
+model Notification {
+  id        String    @id @default(cuid())
+  userId    String
+  type      String
+  title     String
+  body      String
+  readAt    DateTime?
+  metadata  Json?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, readAt])
+  @@index([createdAt])
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorUserId String?
+  action     String
+  entityType String
+  entityId   String
+  metadata   Json?
+  ipAddress  String?
+  userAgent  String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  actor User? @relation(fields: [actorUserId], references: [id], onDelete: SetNull)
+
+  @@index([actorUserId])
+  @@index([entityType, entityId])
+  @@index([createdAt])
+  @@index([action])
+}
