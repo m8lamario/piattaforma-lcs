@@ -4,19 +4,39 @@
 }
 
 .form input {
-  min-height: 44px;
+  min-height: var(--control-height);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
   padding: 0 var(--space-3);
   font: inherit;
+  background: var(--color-input);
+  color: var(--color-text);
+}
+
+.form input:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 1px;
+}
+
+.form label {
+  font-size: var(--text-sm);
+  font-weight: 650;
 }
 
 .lead {
   color: var(--color-text-muted);
   line-height: 1.5;
+  margin: 0;
+}
+
+.lead strong {
+  color: var(--color-text);
 }
 
 .error {
   color: var(--color-danger);
   font-size: var(--text-sm);
+  margin: 0;
+  padding: var(--space-3);
+  background: var(--color-danger-soft);
 }

@@ -1,18 +1,37 @@
 import type { ButtonHTMLAttributes, ReactNode } from "react";
+import Link from "next/link";
 import styles from "./Button.module.css";
 
-type Variant = "primary" | "accent" | "ghost";
+export type ButtonVariant = "primary" | "accent" | "ghost" | "danger";
 
-type Props = ButtonHTMLAttributes<HTMLButtonElement> & {
-  variant?: Variant;
+type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
+  variant?: ButtonVariant;
   children: ReactNode;
 };
 
-export function Button({ variant = "primary", className, children, ...props }: Props) {
-  const classes = [styles.button, styles[variant], className].filter(Boolean).join(" ");
+function classes(variant: ButtonVariant, className?: string) {
+  return [styles.button, styles[variant], className].filter(Boolean).join(" ");
+}
+
+export function Button({ variant = "primary", className, children, ...props }: ButtonProps) {
   return (
-    <button className={classes} {...props}>
+    <button className={classes(variant, className)} {...props}>
       {children}
     </button>
+  );
+}
+
+type ButtonLinkProps = {
+  href: string;
+  variant?: ButtonVariant;
+  className?: string;
+  children: ReactNode;
+};
+
+export function ButtonLink({ href, variant = "primary", className, children }: ButtonLinkProps) {
+  return (
+    <Link href={href} className={classes(variant, className)}>
+      {children}
+    </Link>
   );
 }

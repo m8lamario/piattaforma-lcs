@@ -1,0 +1,368 @@
+.visuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.region {
+  width: 100%;
+}
+
+.bone {
+  display: block;
+  background-color: var(--color-skeleton);
+  position: relative;
+  overflow: hidden;
+}
+
+.bone::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--color-skeleton-shine) 45%,
+    transparent 100%
+  );
+  transform: translateX(-100%);
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+
+.text {
+  height: var(--text-sm);
+  border-radius: var(--radius-sm);
+}
+
+.title {
+  height: var(--text-xl);
+  border-radius: var(--radius-sm);
+}
+
+.block {
+  border-radius: var(--radius-md);
+}
+
+.circle {
+  width: 1.7rem;
+  height: 1.7rem;
+  border-radius: var(--radius-pill);
+  flex-shrink: 0;
+}
+
+.chip {
+  width: 6.5rem;
+  height: 1.5rem;
+  border-radius: var(--radius-pill);
+}
+
+.button {
+  width: 9.5rem;
+  min-height: var(--control-min);
+  height: var(--control-min);
+  border-radius: var(--radius-sm);
+}
+
+.input {
+  width: 100%;
+  min-height: var(--control-min);
+  height: var(--control-min);
+  border-radius: var(--radius-sm);
+}
+
+.stack {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.dashboard {
+  width: min(40rem, 100%);
+  align-self: flex-start;
+}
+
+.dashboardHead {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-3);
+}
+
+.dashboardHero {
+  display: grid;
+  gap: var(--space-4);
+  margin: var(--space-5) 0 0;
+  padding: var(--space-5) 0 var(--space-5) var(--space-5);
+  background: color-mix(in srgb, var(--color-primary-soft) 70%, transparent);
+  box-shadow: inset var(--rail-width) 0 0 var(--color-primary);
+}
+
+.progressBlock {
+  margin: var(--space-6) 0 0;
+}
+
+.segments {
+  display: flex;
+  gap: var(--space-1);
+  margin-top: var(--space-2);
+}
+
+.segment {
+  flex: 1;
+  height: 0.28rem;
+}
+
+.checklist {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.checklistItem {
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+  justify-content: space-between;
+  min-height: var(--control-height);
+  padding: var(--space-4) 0;
+  border-bottom: 1px solid var(--color-hairline);
+}
+
+.wizard {
+  width: min(40rem, 100%);
+  align-self: flex-start;
+  padding-bottom: var(--space-8);
+}
+
+.steps {
+  --step-count: 7;
+  display: grid;
+  grid-template-columns: repeat(var(--step-count), minmax(0, 1fr));
+  list-style: none;
+  padding: var(--space-4) 0 0;
+  margin: var(--space-2) 0 var(--space-5);
+}
+
+.step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--control-height);
+  min-width: 0;
+}
+
+.heading {
+  margin: var(--space-4) 0 var(--space-6);
+  padding-bottom: var(--space-5);
+  border-bottom: 1px solid var(--color-hairline);
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-4);
+}
+
+.group {
+  display: grid;
+  gap: var(--space-3);
+  padding: 0 0 var(--space-6);
+  border-bottom: 1px solid var(--color-hairline);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  padding: var(--space-4) 0 var(--space-2);
+  margin-top: var(--space-4);
+  border-top: 1px solid var(--color-hairline);
+}
+
+.team {
+  width: min(42rem, 100%);
+  display: grid;
+  gap: var(--space-10);
+  align-self: flex-start;
+}
+
+.hero {
+  padding-bottom: var(--space-5);
+  border-bottom: 1px solid var(--color-hairline);
+  display: grid;
+  gap: var(--space-2);
+}
+
+.teamRows {
+  display: grid;
+}
+
+.teamRow {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-4) 0;
+  border-bottom: 1px solid var(--color-hairline);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.communications {
+  width: min(40rem, 100%);
+  display: grid;
+  gap: var(--space-4);
+  align-self: flex-start;
+}
+
+.messageList {
+  display: grid;
+}
+
+.messageItem {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-4) 0;
+  border-bottom: 1px solid var(--color-hairline);
+}
+
+.admin {
+  width: min(44rem, 100%);
+  display: grid;
+  gap: var(--space-6);
+  align-self: flex-start;
+}
+
+.adminHero {
+  padding-bottom: var(--space-5);
+  border-bottom: 1px solid var(--color-hairline);
+  display: grid;
+  gap: var(--space-3);
+}
+
+.adminList {
+  display: grid;
+}
+
+.adminItem {
+  display: grid;
+  gap: var(--space-2);
+  min-height: var(--control-height);
+  padding: var(--space-4) 0;
+  border-bottom: 1px solid var(--color-hairline);
+}
+
+.adminDetail {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.auth {
+  flex: 1;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  padding: var(--space-10) var(--space-6);
+}
+
+.authSheet {
+  width: min(26rem, 100%);
+  display: grid;
+  gap: var(--space-4);
+  padding-left: var(--space-5);
+  box-shadow: inset var(--rail-width) 0 0 var(--color-primary);
+}
+
+.legal {
+  flex: 1;
+  padding: var(--space-8) var(--space-6);
+  display: flex;
+  justify-content: flex-start;
+}
+
+.legalCard {
+  width: min(42rem, 100%);
+  display: grid;
+  gap: var(--space-5);
+  padding-left: var(--space-5);
+  box-shadow: inset var(--rail-width) 0 0 var(--color-accent);
+}
+
+.notice {
+  height: 3rem;
+  border-radius: var(--radius-sm);
+}
+
+.payment {
+  width: min(40rem, 100%);
+  align-self: flex-start;
+  display: grid;
+  gap: var(--space-3);
+  padding-left: var(--space-5);
+  box-shadow: inset var(--rail-width) 0 0 var(--color-accent);
+}
+
+.progress {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.progressTrack {
+  width: 100%;
+  height: 0.45rem;
+  border-radius: var(--radius-pill);
+}
+
+.progressLabel {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  font-weight: 650;
+}
+
+@keyframes shimmer {
+  to {
+    transform: translateX(100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bone::after {
+    animation: none;
+    display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .auth {
+    padding: var(--space-8) var(--space-4);
+  }
+
+  .legal {
+    padding: var(--space-6) var(--space-4);
+  }
+
+  .checklistItem {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .stepLabel {
+    display: none;
+  }
+}

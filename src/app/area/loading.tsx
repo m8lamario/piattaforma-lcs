@@ -1,5 +1,10 @@
-import styles from "./page.module.css";
+import { AppShell } from "@/shared/ui/AppShell";
+import { DashboardSkeleton } from "@/shared/ui/Skeleton";
 
 export default function AreaLoading() {
-  return <div className={styles.skeleton} aria-hidden="true" />;
+  return (
+    <AppShell>
+      <DashboardSkeleton />
+    </AppShell>
+  );
 }

@@ -4,6 +4,7 @@ import { useActionState, useState } from "react";
 import { createInviteAction } from "@/features/teams/actions";
 import { Button } from "@/shared/ui/Button";
 import { it } from "@/shared/i18n/it";
+import fields from "@/shared/ui/form.module.css";
 import styles from "./InviteForm.module.css";
 
 export function InviteForm({ teamId }: { teamId: string }) {
@@ -30,29 +31,52 @@ export function InviteForm({ teamId }: { teamId: string }) {
     <section className={styles.card}>
       <h2>{it.teamInviteTitle}</h2>
       <p>{it.teamInviteHelp}</p>
-      <form action={action} className={styles.form} noValidate>
+      <form action={action} className={fields.form} noValidate aria-busy={pending}>
         <input type="hidden" name="teamId" value={teamId} />
-        <label htmlFor="invite-email">{it.email}</label>
-        <input id="invite-email" name="email" type="email" required autoComplete="email" />
-        <label htmlFor="invite-first">{it.firstName}</label>
-        <input id="invite-first" name="firstName" autoComplete="given-name" />
-        <label htmlFor="invite-last">{it.lastName}</label>
-        <input id="invite-last" name="lastName" autoComplete="family-name" />
+        <div className={fields.field}>
+          <label className={fields.label} htmlFor="invite-email">
+            {it.email}
+          </label>
+          <input
+            id="invite-email"
+            name="email"
+            className={fields.input}
+            type="email"
+            required
+            autoComplete="email"
+          />
+        </div>
+        <div className={fields.pair}>
+          <div className={fields.field}>
+            <label className={fields.label} htmlFor="invite-first">
+              {it.firstName}
+            </label>
+            <input id="invite-first" name="firstName" className={fields.input} autoComplete="given-name" />
+          </div>
+          <div className={fields.field}>
+            <label className={fields.label} htmlFor="invite-last">
+              {it.lastName}
+            </label>
+            <input id="invite-last" name="lastName" className={fields.input} autoComplete="family-name" />
+          </div>
+        </div>
         {state?.error ? (
-          <p className={styles.error} role="alert">
+          <p className={fields.summary} role="alert">
             {state.error}
           </p>
         ) : null}
-        <Button type="submit" disabled={pending}>
-          {pending ? "Invio in corso…" : it.sendInvite}
-        </Button>
+        <div className={fields.actions}>
+          <Button type="submit" disabled={pending} aria-busy={pending}>
+            {pending ? it.sendingInvite : it.sendInvite}
+          </Button>
+        </div>
       </form>
       {redeemUrl ? (
         <div className={styles.success} role="status">
           <p>{copied ? it.copied : it.inviteCreated}</p>
           <code className={styles.url}>{redeemUrl}</code>
           <Button type="button" variant="accent" onClick={copyLink}>
-            {copied ? "Copiato" : it.copyLink}
+            {copied ? it.copiedShort : it.copyLink}
           </Button>
         </div>
       ) : null}

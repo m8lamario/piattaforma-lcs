@@ -37,3 +37,7 @@ Il backlog indica i test per task. Se un task tocca authz o documenti, include a
 Su pull request / push: `npm ci`, `lint`, `typecheck`, `test`, `build`.
 
 `DATABASE_URL` in CI può essere dummy per generate/build se il client è generato; la build Next non deve fallire senza Postgres in M0 (le pagine non interrogono il DB al build time, oppure usano skip). Prisma generate non richiede DB.
+
+## 6. Loading UX
+
+Ogni schermata dati ha un `loading.tsx` il cui skeleton specchia la struttura reale (non il testo “Loading…”). Le mutazioni disabilitano il submit, usano copy italiano esplicito e `aria-busy`. L’upload medico mostra un progresso indeterminato accessibile, senza percentuale finta. `prefers-reduced-motion` spegne lo shimmer.

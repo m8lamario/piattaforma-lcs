@@ -11,6 +11,9 @@ import {
   type WizardStepId,
 } from "@/features/registrations/domain/wizard";
 import { it } from "@/shared/i18n/it";
+import { ButtonLink } from "@/shared/ui/Button";
+import { StatusChip, type StatusTone } from "@/shared/ui/StatusChip";
+import { PageHeader } from "@/shared/ui/PageHeader";
 import styles from "./Dashboard.module.css";
 
 const STATUS_COPY: Record<RegistrationStatus, string> = {
@@ -22,6 +25,17 @@ const STATUS_COPY: Record<RegistrationStatus, string> = {
   PAYMENT_PENDING: it.statusPAYMENT_PENDING,
   APPROVED: it.statusAPPROVED,
   WITHDRAWN: it.statusWITHDRAWN,
+};
+
+const STATUS_TONE: Record<RegistrationStatus, StatusTone> = {
+  INVITED: "todo",
+  ACCOUNT_CREATED: "todo",
+  IN_PROGRESS: "attention",
+  PENDING_REVIEW: "attention",
+  CHANGES_REQUESTED: "attention",
+  PAYMENT_PENDING: "attention",
+  APPROVED: "complete",
+  WITHDRAWN: "neutral",
 };
 
 const ITEM_LABEL: Record<ChecklistItem["code"], string> = {
@@ -42,11 +56,11 @@ const ITEM_HREF: Record<ChecklistItem["code"], WizardStepId> = {
   PAYMENT: "pagamento",
 };
 
-const STATUS_ICON: Record<ChecklistItem["status"], string> = {
-  complete: "●",
-  todo: "○",
-  attention: "!",
-  not_applicable: "–",
+const ITEM_TONE: Record<ChecklistItem["status"], StatusTone> = {
+  complete: "complete",
+  todo: "todo",
+  attention: "attention",
+  not_applicable: "neutral",
 };
 
 const SEG_CLASS: Record<ChecklistItem["status"], string | undefined> = {
@@ -92,61 +106,63 @@ export function RegistrationDashboard({
   medicalStatus,
 }: Props) {
   const hero = nextHero(checklist);
-  const hrefStep =
-    hero.code === "DONE" ? "riepilogo" : (ITEM_HREF[hero.code] ?? "dati");
+  const hrefStep = hero.code === "DONE" ? "riepilogo" : (ITEM_HREF[hero.code] ?? "dati");
   const visible = checklist.filter((item) => item.status !== "not_applicable");
+  const doneCount = visible.filter((item) => item.status === "complete").length;
 
   return (
     <section className={styles.wrap}>
-      <p className={styles.kicker}>
-        {competitionName} · {editionName}
-      </p>
-      <h1>{it.areaTitle}</h1>
-      <p>
-        Squadra: <strong>{teamName}</strong>
-      </p>
-      <p className={styles.status} role="status">
-        {STATUS_COPY[status]}
-      </p>
-      <p className={styles.hero}>{heroText(hero, medicalStatus)}</p>
-      <p>
-        <Link className={styles.cta} href={`/area/registrazione/${hrefStep}`}>
-          {it.ctaContinue}
-        </Link>
-      </p>
+      <PageHeader
+        kicker={`${competitionName} · ${editionName}`}
+        title={it.areaTitle}
+        description={`${it.teamTitle}: ${teamName}`}
+        aside={<StatusChip tone={STATUS_TONE[status]}>{STATUS_COPY[status]}</StatusChip>}
+      />
 
-      <div className={styles.segments} aria-hidden="true">
-        {visible.map((item) => (
-          <span key={item.code} className={`${styles.segment} ${SEG_CLASS[item.status] ?? ""}`} />
-        ))}
+      <div className={styles.hero}>
+        <p className={styles.heroCopy}>{heroText(hero, medicalStatus)}</p>
+        <ButtonLink href={`/area/registrazione/${hrefStep}`}>{it.ctaContinue}</ButtonLink>
       </div>
 
-      <h2>{it.checklistTitle}</h2>
-      <ul className={styles.list}>
-        {visible.map((item) => {
+      <div className={styles.progressBlock}>
+        <p className={styles.progressLabel}>
+          {it.checklistProgress.replace("{done}", String(doneCount)).replace("{total}", String(visible.length))}
+        </p>
+        <div className={styles.segments} aria-hidden="true">
+          {visible.map((item) => (
+            <span key={item.code} className={`${styles.segment} ${SEG_CLASS[item.status] ?? ""}`} />
+          ))}
+        </div>
+      </div>
+
+      <h2 className={styles.listTitle}>{it.checklistTitle}</h2>
+      <ol className={styles.list}>
+        {visible.map((item, index) => {
           const implemented = WIZARD_STEPS.find((step) => step.code === item.code)?.implemented ?? true;
           return (
             <li key={item.code}>
               <Link href={`/area/registrazione/${ITEM_HREF[item.code]}`} className={styles.item}>
-                <span className={styles.icon} aria-hidden="true">
-                  {STATUS_ICON[item.status]}
+                <span className={styles.index} aria-hidden="true">
+                  {index + 1}
                 </span>
                 <span>
                   <strong>{ITEM_LABEL[item.code]}</strong>
                   <span className={styles.meta}>
-                    {item.status === "complete"
-                      ? it.checklistComplete
-                      : item.status === "attention"
-                        ? it.checklistAttention
-                        : it.checklistTodo}
-                    {!implemented ? " · prossima fase" : ""}
+                    {!implemented ? it.checklistUpcoming : it.checklistOpenStep}
                   </span>
                 </span>
+                <StatusChip tone={ITEM_TONE[item.status]}>
+                  {item.status === "complete"
+                    ? it.checklistComplete
+                    : item.status === "attention"
+                      ? it.checklistAttention
+                      : it.checklistTodo}
+                </StatusChip>
               </Link>
             </li>
           );
         })}
-      </ul>
+      </ol>
     </section>
   );
 }

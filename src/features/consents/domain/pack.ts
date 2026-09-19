@@ -1,15 +1,18 @@
-export const PRIVACY_PACK_SLUGS = [
-  "privacy-policy",
-  "document-processing",
-] as const;
+import {
+  LEGAL_CATALOG,
+  mediaCatalogSlug,
+  privacyCatalogSlugs,
+  type WizardLegalSlug,
+} from "./catalog";
 
-export const MINOR_PRIVACY_SLUG = "minor-privacy";
-export const MEDIA_RELEASE_SLUG = "media-release";
+export const PRIVACY_PACK_SLUGS = LEGAL_CATALOG.filter(
+  (item) => item.wizardStep === "privacy" && item.audience !== "MINOR",
+).map((item) => item.slug);
 
-export type ConsentSlug =
-  | (typeof PRIVACY_PACK_SLUGS)[number]
-  | typeof MINOR_PRIVACY_SLUG
-  | typeof MEDIA_RELEASE_SLUG;
+export const MINOR_PRIVACY_SLUG = LEGAL_CATALOG.find((item) => item.slug === "minor-privacy")!.slug;
+export const MEDIA_RELEASE_SLUG = mediaCatalogSlug();
+
+export type ConsentSlug = WizardLegalSlug;
 
 export type CurrentConsent = {
   slug: string;
@@ -19,10 +22,7 @@ export type CurrentConsent = {
 };
 
 export function privacySlugsFor(isMinorPlayer: boolean): ConsentSlug[] {
-  if (isMinorPlayer) {
-    return [...PRIVACY_PACK_SLUGS, MINOR_PRIVACY_SLUG];
-  }
-  return [...PRIVACY_PACK_SLUGS];
+  return privacyCatalogSlugs(isMinorPlayer);
 }
 
 export function isPrivacyPackComplete(

@@ -8,7 +8,7 @@ import { GUARDIAN_RELATIONSHIPS, type GuardianRelationship } from "@/features/pl
 import { guardianSchema } from "@/features/players/schemas/guardian";
 import { Button } from "@/shared/ui/Button";
 import { it } from "@/shared/i18n/it";
-import styles from "@/features/registrations/ui/WizardForm.module.css";
+import fields from "@/shared/ui/form.module.css";
 
 type Values = {
   firstName: string;
@@ -70,48 +70,86 @@ export function GuardianForm({ defaults }: Props) {
   const clientError = Object.values(form.formState.errors).find((error) => error?.message)?.message;
 
   return (
-    <form className={styles.form} noValidate onSubmit={(event) => event.preventDefault()}>
-      <p className={styles.help}>{it.guardianHelp}</p>
+    <form className={fields.form} noValidate aria-busy={pending} onSubmit={(event) => event.preventDefault()}>
       {clientError || state?.error ? (
-        <p className={styles.summary} role="alert">
+        <p className={fields.summary} role="alert">
           {state?.error ?? clientError ?? it.formErrorSummary}
         </p>
       ) : null}
 
-      <label className={styles.label} htmlFor="guardian-first">
-        {it.firstName}
-      </label>
-      <input id="guardian-first" className={styles.input} autoComplete="given-name" {...form.register("firstName")} />
+      <fieldset className={fields.group}>
+        <legend className={fields.legend}>{it.fieldGroupGuardianPerson}</legend>
+        <div className={fields.pair}>
+          <div className={fields.field}>
+            <label className={fields.label} htmlFor="guardian-first">
+              {it.firstName}
+            </label>
+            <input
+              id="guardian-first"
+              className={fields.input}
+              autoComplete="given-name"
+              {...form.register("firstName")}
+            />
+          </div>
+          <div className={fields.field}>
+            <label className={fields.label} htmlFor="guardian-last">
+              {it.lastName}
+            </label>
+            <input
+              id="guardian-last"
+              className={fields.input}
+              autoComplete="family-name"
+              {...form.register("lastName")}
+            />
+          </div>
+        </div>
+        <div className={fields.field}>
+          <label className={fields.label} htmlFor="relationship">
+            {it.relationship}
+          </label>
+          <select id="relationship" className={fields.select} {...form.register("relationship")}>
+            {GUARDIAN_RELATIONSHIPS.map((value) => (
+              <option key={value} value={value}>
+                {RELATION_LABEL[value]}
+              </option>
+            ))}
+          </select>
+        </div>
+      </fieldset>
 
-      <label className={styles.label} htmlFor="guardian-last">
-        {it.lastName}
-      </label>
-      <input id="guardian-last" className={styles.input} autoComplete="family-name" {...form.register("lastName")} />
+      <fieldset className={fields.group}>
+        <legend className={fields.legend}>{it.fieldGroupGuardianContact}</legend>
+        <div className={fields.pair}>
+          <div className={fields.field}>
+            <label className={fields.label} htmlFor="guardian-email">
+              {it.email}
+            </label>
+            <input
+              id="guardian-email"
+              className={fields.input}
+              type="email"
+              autoComplete="email"
+              {...form.register("email")}
+            />
+          </div>
+          <div className={fields.field}>
+            <label className={fields.label} htmlFor="guardian-phone">
+              {it.phone}
+            </label>
+            <input
+              id="guardian-phone"
+              className={fields.input}
+              type="tel"
+              autoComplete="tel"
+              {...form.register("phone")}
+            />
+          </div>
+        </div>
+      </fieldset>
 
-      <label className={styles.label} htmlFor="relationship">
-        {it.relationship}
-      </label>
-      <select id="relationship" className={styles.select} {...form.register("relationship")}>
-        {GUARDIAN_RELATIONSHIPS.map((value) => (
-          <option key={value} value={value}>
-            {RELATION_LABEL[value]}
-          </option>
-        ))}
-      </select>
-
-      <label className={styles.label} htmlFor="guardian-email">
-        {it.email}
-      </label>
-      <input id="guardian-email" className={styles.input} type="email" autoComplete="email" {...form.register("email")} />
-
-      <label className={styles.label} htmlFor="guardian-phone">
-        {it.phone}
-      </label>
-      <input id="guardian-phone" className={styles.input} type="tel" autoComplete="tel" {...form.register("phone")} />
-
-      <div className={styles.actions}>
-        <Button type="button" disabled={pending} onClick={() => submit("continue")}>
-          {pending ? "Salvataggio…" : it.saveContinue}
+      <div className={`${fields.actions} ${fields.sticky}`}>
+        <Button type="button" disabled={pending} aria-busy={pending} onClick={() => submit("continue")}>
+          {pending ? it.saving : it.saveContinue}
         </Button>
         <Button type="button" variant="ghost" disabled={pending} onClick={() => submit("exit")}>
           {it.saveExit}

@@ -6,6 +6,9 @@ import { ReviewForm } from "@/features/documents/ui/ReviewForm";
 import { isStaff, representativeTeamIds } from "@/shared/authz/getActor";
 import { requireStaff } from "@/shared/authz/requireStaff";
 import { AppShell } from "@/shared/ui/AppShell";
+import { Icon } from "@/shared/ui/Icon";
+import { PageHeader } from "@/shared/ui/PageHeader";
+import { StatusChip, type StatusTone } from "@/shared/ui/StatusChip";
 import { it } from "@/shared/i18n/it";
 import styles from "./page.module.css";
 
@@ -18,6 +21,12 @@ function statusLabel(status: string) {
   if (status === "APPROVED") return it.statusDocumentAPPROVED;
   if (status === "REJECTED") return it.statusDocumentREJECTED;
   return it.statusDocumentPENDING_REVIEW;
+}
+
+function statusTone(status: string): StatusTone {
+  if (status === "APPROVED") return "complete";
+  if (status === "REJECTED") return "danger";
+  return "attention";
 }
 
 export default async function AdminDocumentDetailPage({ params, searchParams }: Props) {
@@ -39,24 +48,30 @@ export default async function AdminDocumentDetailPage({ params, searchParams }: 
     >
       <main className={styles.main}>
         <p>
-          <Link href="/admin/documenti">{it.adminBackToDocuments}</Link>
+          <Link href="/admin/documenti" className={styles.back}>
+            <Icon name="back" size={16} />
+            {it.adminBackToDocuments}
+          </Link>
         </p>
         <section className={styles.card}>
-          <h1>{it.adminDocumentTitle}</h1>
-          <p>
+          <PageHeader
+            title={it.adminDocumentTitle}
+            aside={<StatusChip tone={statusTone(document.status)}>{statusLabel(document.status)}</StatusChip>}
+          />
+          <p className={styles.meta}>
             {it.adminPlayer}:{" "}
             <strong>
               {document.playerProfile.firstName} {document.playerProfile.lastName}
             </strong>
           </p>
-          <p>
+          <p className={styles.meta}>
             {it.adminTeam}: <strong>{document.registration.team.name}</strong>
           </p>
-          <p role="status">
-            {statusLabel(document.status)} · {document.originalFilename}
+          <p className={styles.meta} role="status">
+            {document.originalFilename}
           </p>
           {rejectReason ? (
-            <p>
+            <p className={styles.meta}>
               {it.medicalRejectReason}: {rejectReason}
             </p>
           ) : null}

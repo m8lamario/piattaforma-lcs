@@ -6,6 +6,8 @@ import {
 import { isStaff, representativeTeamIds } from "@/shared/authz/getActor";
 import { requireStaff } from "@/shared/authz/requireStaff";
 import { AppShell } from "@/shared/ui/AppShell";
+import { PageHeader } from "@/shared/ui/PageHeader";
+import { StatusChip, type StatusTone } from "@/shared/ui/StatusChip";
 import { it } from "@/shared/i18n/it";
 import styles from "./page.module.css";
 
@@ -19,6 +21,12 @@ function statusLabel(status: string) {
   if (status === "APPROVED") return it.statusDocumentAPPROVED;
   if (status === "REJECTED") return it.statusDocumentREJECTED;
   return it.statusDocumentPENDING_REVIEW;
+}
+
+function statusTone(status: string): StatusTone {
+  if (status === "APPROVED") return "complete";
+  if (status === "REJECTED") return "danger";
+  return "attention";
 }
 
 export default async function AdminDocumentsPage() {
@@ -35,22 +43,22 @@ export default async function AdminDocumentsPage() {
       showAdmin={isStaff(actor)}
     >
       <main className={styles.main}>
-        <section className={styles.hero}>
-          <h1>{it.adminDocumentsTitle}</h1>
-          <p>{it.adminDocumentsHelp}</p>
-        </section>
+        <PageHeader title={it.adminDocumentsTitle} description={it.adminDocumentsHelp} />
 
         {pending.length === 0 ? (
-          <p role="status">{it.adminDocumentsEmpty}</p>
+          <p className={styles.empty} role="status">
+            {it.adminDocumentsEmpty}
+          </p>
         ) : (
           <ul className={styles.list}>
             {pending.map((document) => (
               <li key={document.id}>
                 <Link href={`/admin/documenti/${document.id}`} className={styles.item}>
-                  <strong>{playerName(document)}</strong>
                   <span>
-                    {document.registration.team.name} · {statusLabel(document.status)}
+                    <strong>{playerName(document)}</strong>
+                    <span className={styles.meta}>{document.registration.team.name}</span>
                   </span>
+                  <StatusChip tone={statusTone(document.status)}>{statusLabel(document.status)}</StatusChip>
                 </Link>
               </li>
             ))}
@@ -64,10 +72,11 @@ export default async function AdminDocumentsPage() {
               {recent.map((document) => (
                 <li key={document.id}>
                   <Link href={`/admin/documenti/${document.id}`} className={styles.item}>
-                    <strong>{playerName(document)}</strong>
                     <span>
-                      {document.registration.team.name} · {statusLabel(document.status)}
+                      <strong>{playerName(document)}</strong>
+                      <span className={styles.meta}>{document.registration.team.name}</span>
                     </span>
+                    <StatusChip tone={statusTone(document.status)}>{statusLabel(document.status)}</StatusChip>
                   </Link>
                 </li>
               ))}

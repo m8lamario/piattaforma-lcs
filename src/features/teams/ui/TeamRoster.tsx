@@ -1,5 +1,6 @@
 import { it } from "@/shared/i18n/it";
 import type { RosterRow } from "@/features/teams/domain/roster";
+import { StatusChip, type StatusTone } from "@/shared/ui/StatusChip";
 import styles from "./TeamRoster.module.css";
 
 const MEDICAL: Record<RosterRow["medicalStatus"], string> = {
@@ -8,6 +9,25 @@ const MEDICAL: Record<RosterRow["medicalStatus"], string> = {
   approved: it.rosterMedicalApproved,
   rejected: it.rosterMedicalRejected,
   expired: it.rosterMedicalExpired,
+};
+
+const MEDICAL_TONE: Record<RosterRow["medicalStatus"], StatusTone> = {
+  none: "todo",
+  pending: "attention",
+  approved: "complete",
+  rejected: "danger",
+  expired: "danger",
+};
+
+const REG_COPY: Record<string, string> = {
+  INVITED: it.statusINVITED,
+  ACCOUNT_CREATED: it.statusACCOUNT_CREATED,
+  IN_PROGRESS: it.statusIN_PROGRESS,
+  PENDING_REVIEW: it.statusPENDING_REVIEW,
+  CHANGES_REQUESTED: it.statusCHANGES_REQUESTED,
+  PAYMENT_PENDING: it.statusPAYMENT_PENDING,
+  APPROVED: it.statusAPPROVED,
+  WITHDRAWN: it.statusWITHDRAWN,
 };
 
 type Props = {
@@ -20,7 +40,7 @@ export function TeamRoster({ rows }: Props) {
       <h2>{it.rosterTitle}</h2>
       <p className={styles.help}>{it.rosterHelp}</p>
       {rows.length === 0 ? (
-        <p>{it.rosterEmpty}</p>
+        <p className={styles.empty}>{it.rosterEmpty}</p>
       ) : (
         <ul className={styles.list}>
           {rows.map((row) => (
@@ -28,8 +48,9 @@ export function TeamRoster({ rows }: Props) {
               <strong>
                 {row.firstName} {row.lastName}
               </strong>
-              <span>
-                {row.registrationStatus} · {MEDICAL[row.medicalStatus]}
+              <span className={styles.chips}>
+                <StatusChip tone="neutral">{REG_COPY[row.registrationStatus] ?? row.registrationStatus}</StatusChip>
+                <StatusChip tone={MEDICAL_TONE[row.medicalStatus]}>{MEDICAL[row.medicalStatus]}</StatusChip>
               </span>
             </li>
           ))}

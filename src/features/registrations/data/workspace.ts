@@ -42,7 +42,12 @@ export async function loadPlayerWorkspace(userId: string) {
           guardians: { orderBy: { createdAt: "asc" }, take: 1 },
           registrations: {
             include: {
-              team: { include: { edition: { include: { competition: true, requirements: true } } } },
+              team: {
+                include: {
+                  edition: { include: { competition: true, requirements: true } },
+                  payments: { where: { status: "SUCCEEDED" }, select: { id: true } },
+                },
+              },
               documents: {
                 where: { status: { not: "REPLACED" } },
                 include: {
@@ -102,15 +107,9 @@ export async function loadPlayerWorkspace(userId: string) {
     payment: {
       mode: registration.team.edition.paymentMode,
       playerSucceeded: registration.payments.some((payment) => payment.status === "SUCCEEDED"),
-      teamSucceeded: false,
+      teamSucceeded: registration.team.payments.length > 0,
     },
   };
-
-  const teamPayments = await prisma.payment.findMany({
-    where: { teamId: registration.teamId, status: "SUCCEEDED" },
-    select: { id: true },
-  });
-  evidence.payment.teamSucceeded = teamPayments.length > 0;
 
   const checklist = projectChecklist(requirements, evidence);
   const status = projectRegistrationStatus(evidence, checklist);

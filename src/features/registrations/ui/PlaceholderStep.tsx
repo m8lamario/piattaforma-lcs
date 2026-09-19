@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { ButtonLink } from "@/shared/ui/Button";
 import { it } from "@/shared/i18n/it";
 import styles from "./WizardForm.module.css";
 
@@ -15,7 +15,9 @@ export function PlaceholderStep({ title, body }: Props) {
       </p>
       <p>{body}</p>
       <p>
-        <Link href="/area">{it.backToArea}</Link>
+        <ButtonLink href="/area" variant="ghost">
+          {it.backToArea}
+        </ButtonLink>
       </p>
     </div>
   );

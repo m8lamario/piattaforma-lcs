@@ -8,7 +8,7 @@ import { formatDateOnly } from "@/features/players/domain/dates";
 import { personalDataSchema } from "@/features/players/schemas/personal";
 import { Button } from "@/shared/ui/Button";
 import { it } from "@/shared/i18n/it";
-import styles from "@/features/registrations/ui/WizardForm.module.css";
+import fields from "@/shared/ui/form.module.css";
 
 type Values = {
   firstName: string;
@@ -61,51 +61,67 @@ export function PersonalDataForm({ email, defaults }: Props) {
   const clientError = Object.values(form.formState.errors).find((error) => error?.message)?.message;
 
   return (
-    <form className={styles.form} noValidate onSubmit={(event) => event.preventDefault()}>
+    <form className={fields.form} noValidate aria-busy={pending} onSubmit={(event) => event.preventDefault()}>
       {clientError || state?.error ? (
-        <p className={styles.summary} role="alert">
+        <p className={fields.summary} role="alert">
           {state?.error ?? clientError ?? it.formErrorSummary}
         </p>
       ) : null}
 
-      <label className={styles.label} htmlFor="firstName">
-        {it.firstName}
-      </label>
-      <input id="firstName" className={styles.input} autoComplete="given-name" {...form.register("firstName")} />
+      <fieldset className={fields.group}>
+        <legend className={fields.legend}>{it.fieldGroupIdentity}</legend>
+        <div className={fields.pair}>
+          <div className={fields.field}>
+            <label className={fields.label} htmlFor="firstName">
+              {it.firstName}
+            </label>
+            <input id="firstName" className={fields.input} autoComplete="given-name" {...form.register("firstName")} />
+          </div>
+          <div className={fields.field}>
+            <label className={fields.label} htmlFor="lastName">
+              {it.lastName}
+            </label>
+            <input id="lastName" className={fields.input} autoComplete="family-name" {...form.register("lastName")} />
+          </div>
+        </div>
+        <div className={fields.pair}>
+          <div className={fields.field}>
+            <label className={fields.label} htmlFor="birthDate">
+              {it.birthDate}
+            </label>
+            <input id="birthDate" className={fields.input} type="date" {...form.register("birthDate")} />
+          </div>
+          <div className={fields.field}>
+            <label className={fields.label} htmlFor="fiscalCode">
+              {it.fiscalCode}
+            </label>
+            <input
+              id="fiscalCode"
+              className={fields.input}
+              autoComplete="off"
+              spellCheck={false}
+              {...form.register("fiscalCode")}
+            />
+          </div>
+        </div>
+      </fieldset>
 
-      <label className={styles.label} htmlFor="lastName">
-        {it.lastName}
-      </label>
-      <input id="lastName" className={styles.input} autoComplete="family-name" {...form.register("lastName")} />
+      <fieldset className={fields.group}>
+        <legend className={fields.legend}>{it.fieldGroupContact}</legend>
+        <p className={fields.readonly}>
+          {it.emailReadOnly}: <strong>{email}</strong>
+        </p>
+        <div className={fields.field}>
+          <label className={fields.label} htmlFor="phone">
+            {it.phone}
+          </label>
+          <input id="phone" className={fields.input} type="tel" autoComplete="tel" {...form.register("phone")} />
+        </div>
+      </fieldset>
 
-      <label className={styles.label} htmlFor="birthDate">
-        {it.birthDate}
-      </label>
-      <input id="birthDate" className={styles.input} type="date" {...form.register("birthDate")} />
-
-      <label className={styles.label} htmlFor="fiscalCode">
-        {it.fiscalCode}
-      </label>
-      <input
-        id="fiscalCode"
-        className={styles.input}
-        autoComplete="off"
-        spellCheck={false}
-        {...form.register("fiscalCode")}
-      />
-
-      <p className={styles.readonly}>
-        {it.emailReadOnly}: <strong>{email}</strong>
-      </p>
-
-      <label className={styles.label} htmlFor="phone">
-        {it.phone}
-      </label>
-      <input id="phone" className={styles.input} type="tel" autoComplete="tel" {...form.register("phone")} />
-
-      <div className={styles.actions}>
-        <Button type="button" disabled={pending} onClick={() => submit("continue")}>
-          {pending ? "Salvataggio…" : it.saveContinue}
+      <div className={`${fields.actions} ${fields.sticky}`}>
+        <Button type="button" disabled={pending} aria-busy={pending} onClick={() => submit("continue")}>
+          {pending ? it.saving : it.saveContinue}
         </Button>
         <Button type="button" variant="ghost" disabled={pending} onClick={() => submit("exit")}>
           {it.saveExit}

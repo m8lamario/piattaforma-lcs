@@ -4,6 +4,7 @@ import { useState } from "react";
 import { createSignedDocumentUrlAction } from "@/features/documents/actions";
 import { Button } from "@/shared/ui/Button";
 import { it } from "@/shared/i18n/it";
+import styles from "./OpenDocumentButton.module.css";
 
 type Props = {
   documentId: string;
@@ -28,11 +29,15 @@ export function OpenDocumentButton({ documentId }: Props) {
   }
 
   return (
-    <div>
-      <Button type="button" variant="ghost" disabled={pending} onClick={() => void openFile()}>
-        {pending ? "Apertura…" : it.openDocument}
+    <div className={styles.wrap}>
+      <Button type="button" variant="ghost" disabled={pending} aria-busy={pending} onClick={() => void openFile()}>
+        {pending ? it.openingFile : it.openDocument}
       </Button>
-      {error ? <p role="alert">{error}</p> : null}
+      {error ? (
+        <p className={styles.error} role="alert">
+          {error}
+        </p>
+      ) : null}
     </div>
   );
 }

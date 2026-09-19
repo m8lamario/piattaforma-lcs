@@ -4,48 +4,47 @@ import { useActionState } from "react";
 import { loginAction } from "@/features/auth/actions";
 import { Button } from "@/shared/ui/Button";
 import { it } from "@/shared/i18n/it";
-import styles from "./LoginForm.module.css";
+import fields from "@/shared/ui/form.module.css";
 
 export function LoginForm({ nextPath = "/area" }: { nextPath?: string }) {
   const [state, action, pending] = useActionState(loginAction, undefined);
 
   return (
-    <form action={action} className={styles.form} noValidate>
+    <form action={action} className={fields.form} noValidate aria-busy={pending}>
       <input type="hidden" name="next" value={nextPath} />
-      <label className={styles.label} htmlFor="email">
-        {it.email}
-      </label>
-      <input
-        id="email"
-        name="email"
-        type="email"
-        autoComplete="email"
-        required
-        className={styles.input}
-      />
+      <div className={fields.field}>
+        <label className={fields.label} htmlFor="email">
+          {it.email}
+        </label>
+        <input id="email" name="email" type="email" autoComplete="email" required className={fields.input} />
+      </div>
 
-      <label className={styles.label} htmlFor="password">
-        {it.password}
-      </label>
-      <input
-        id="password"
-        name="password"
-        type="password"
-        autoComplete="current-password"
-        required
-        minLength={8}
-        className={styles.input}
-      />
+      <div className={fields.field}>
+        <label className={fields.label} htmlFor="password">
+          {it.password}
+        </label>
+        <input
+          id="password"
+          name="password"
+          type="password"
+          autoComplete="current-password"
+          required
+          minLength={8}
+          className={fields.input}
+        />
+      </div>
 
       {state?.error ? (
-        <p className={styles.error} role="alert">
+        <p className={fields.summary} role="alert">
           {state.error}
         </p>
       ) : null}
 
-      <Button type="submit" disabled={pending}>
-        {pending ? "Accesso in corso…" : it.submitLogin}
-      </Button>
+      <div className={fields.actions}>
+        <Button type="submit" disabled={pending} aria-busy={pending}>
+          {pending ? it.signingIn : it.submitLogin}
+        </Button>
+      </div>
     </form>
   );
 }

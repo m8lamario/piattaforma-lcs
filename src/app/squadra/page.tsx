@@ -11,6 +11,7 @@ import { TeamPaymentForm } from "@/features/payments/ui/TeamPaymentForm";
 import { listTeamRoster } from "@/features/teams/data/roster";
 import { TeamRoster } from "@/features/teams/ui/TeamRoster";
 import { AppShell } from "@/shared/ui/AppShell";
+import { PageHeader } from "@/shared/ui/PageHeader";
 import styles from "./page.module.css";
 
 export default async function TeamPage() {
@@ -41,25 +42,22 @@ export default async function TeamPage() {
   return (
     <AppShell email={session.user?.email} showTeam showAdmin={isStaff(actor)}>
       <main className={styles.main}>
-        <section className={styles.hero}>
-          <p className={styles.kicker}>
-            {team.edition.competition.name} · {team.edition.name}
-          </p>
-          <h1>{team.name}</h1>
-          <p>
-            {team.school.name}
-            {team.school.city ? ` · ${team.school.city}` : ""}
-          </p>
-        </section>
+        <PageHeader
+          kicker={`${team.edition.competition.name} · ${team.edition.name}`}
+          title={team.name}
+          description={`${team.school.name}${team.school.city ? ` · ${team.school.city}` : ""}`}
+        />
         <TeamRoster rows={roster} />
         <InviteForm teamId={teamId} />
         {teamAmount !== null ? (
-          <TeamPaymentForm
-            teamId={teamId}
-            covered={Boolean(teamPayment)}
-            amount={teamAmount}
-            currency={team.edition.currency}
-          />
+          <section className={styles.panel}>
+            <TeamPaymentForm
+              teamId={teamId}
+              covered={Boolean(teamPayment)}
+              amount={teamAmount}
+              currency={team.edition.currency}
+            />
+          </section>
         ) : null}
         <InviteList teamId={teamId} invites={invites} />
       </main>

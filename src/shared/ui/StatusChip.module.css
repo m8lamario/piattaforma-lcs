@@ -1,0 +1,61 @@
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 1.75rem;
+  padding: 0 var(--space-2) 0 var(--space-2);
+  border-radius: var(--radius-xs);
+  font-size: var(--text-xs);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.mark {
+  width: 0.45rem;
+  height: 0.45rem;
+  flex-shrink: 0;
+  background: currentColor;
+}
+
+.complete .mark,
+.success .mark {
+  border-radius: var(--radius-pill);
+}
+
+.todo .mark,
+.neutral .mark {
+  border-radius: var(--radius-xs);
+}
+
+.attention .mark {
+  transform: rotate(45deg);
+}
+
+.danger .mark {
+  width: 0.55rem;
+  height: 0.18rem;
+}
+
+.complete,
+.success {
+  background: var(--color-success-soft);
+  color: var(--color-success);
+}
+
+.todo,
+.neutral {
+  background: var(--color-surface-inset);
+  color: var(--color-text-muted);
+}
+
+.attention {
+  background: var(--color-warning-soft);
+  color: var(--color-warning);
+}
+
+.danger {
+  background: var(--color-danger-soft);
+  color: var(--color-danger);
+}

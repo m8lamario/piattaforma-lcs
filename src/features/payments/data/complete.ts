@@ -70,22 +70,23 @@ export async function completeStubPayment(paymentId: string) {
       select: { userId: true },
     });
     if (profile) {
-      await persistByUser(profile.userId);
-      await createNotification({ userId: profile.userId, ...paymentNotice });
+      await Promise.all([
+        persistByUser(profile.userId),
+        createNotification({ userId: profile.userId, ...paymentNotice }),
+      ]);
     }
   } else if (payment.teamId) {
     const members = await prisma.registration.findMany({
       where: { teamId: payment.teamId },
       select: { playerProfile: { select: { userId: true } } },
     });
-    const notified = new Set<string>();
-    for (const row of members) {
-      const userId = row.playerProfile.userId;
-      await persistByUser(userId);
-      if (notified.has(userId)) continue;
-      notified.add(userId);
-      await createNotification({ userId, ...paymentNotice });
-    }
+    const userIds = [...new Set(members.map((row) => row.playerProfile.userId))];
+    await Promise.all(
+      userIds.map(async (userId) => {
+        await persistByUser(userId);
+        await createNotification({ userId, ...paymentNotice });
+      }),
+    );
   }
   const trace = await userAgentAndIp();
   await writeAuditLog({

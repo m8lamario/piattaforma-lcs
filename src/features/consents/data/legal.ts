@@ -1,81 +1,57 @@
+import { cache } from "react";
 import { prisma } from "@/shared/lib/prisma";
 import { readLegalDocument } from "@/shared/lib/legal";
-import type { ConsentSlug } from "@/features/consents/domain/pack";
+import { LEGAL_CATALOG } from "@/features/consents/domain/catalog";
 
-const LEGAL_SEED: Array<{
-  slug: ConsentSlug;
-  title: string;
-  audience: "ALL" | "MINOR";
-  requiredByDefault: boolean;
-}> = [
-  { slug: "privacy-policy", title: "Informativa privacy", audience: "ALL", requiredByDefault: true },
-  {
-    slug: "document-processing",
-    title: "Informativa documenti caricati",
-    audience: "ALL",
-    requiredByDefault: true,
-  },
-  {
-    slug: "minor-privacy",
-    title: "Informativa per minori",
-    audience: "MINOR",
-    requiredByDefault: true,
-  },
-  {
-    slug: "media-release",
-    title: "Liberatoria foto, video e social",
-    audience: "ALL",
-    requiredByDefault: false,
-  },
-];
+export const ensureLegalDocuments = cache(async () => {
+  await Promise.all(
+    LEGAL_CATALOG.map(async (item) => {
+      const body = await readLegalDocument(item.slug);
+      const document = await prisma.legalDocument.upsert({
+        where: { slug: item.slug },
+        update: { title: item.title, audience: item.audience, requiredByDefault: item.requiredByDefault },
+        create: {
+          slug: item.slug,
+          title: item.title,
+          audience: item.audience,
+          requiredByDefault: item.requiredByDefault,
+        },
+      });
 
-export async function ensureLegalDocuments() {
-  for (const item of LEGAL_SEED) {
-    const body = await readLegalDocument(item.slug);
-    const document = await prisma.legalDocument.upsert({
-      where: { slug: item.slug },
-      update: { title: item.title, audience: item.audience, requiredByDefault: item.requiredByDefault },
-      create: {
-        slug: item.slug,
-        title: item.title,
-        audience: item.audience,
-        requiredByDefault: item.requiredByDefault,
-      },
-    });
-
-    const current = await prisma.legalDocumentVersion.findFirst({
-      where: { legalDocumentId: document.id, isCurrent: true },
-    });
-    if (current) {
-      if (current.body !== body) {
-        await prisma.legalDocumentVersion.updateMany({
-          where: { legalDocumentId: document.id },
-          data: { isCurrent: false },
-        });
-        await prisma.legalDocumentVersion.create({
-          data: {
-            legalDocumentId: document.id,
-            version: `placeholder-${Date.now()}`,
-            body,
-            effectiveAt: new Date(),
-            isCurrent: true,
-          },
-        });
+      const current = await prisma.legalDocumentVersion.findFirst({
+        where: { legalDocumentId: document.id, isCurrent: true },
+      });
+      if (current) {
+        if (current.body !== body) {
+          await prisma.legalDocumentVersion.updateMany({
+            where: { legalDocumentId: document.id },
+            data: { isCurrent: false },
+          });
+          await prisma.legalDocumentVersion.create({
+            data: {
+              legalDocumentId: document.id,
+              version: `placeholder-${Date.now()}`,
+              body,
+              effectiveAt: new Date(),
+              isCurrent: true,
+            },
+          });
+        }
+        return;
       }
-      continue;
-    }
 
-    await prisma.legalDocumentVersion.create({
-      data: {
-        legalDocumentId: document.id,
-        version: "placeholder-1",
-        body,
-        effectiveAt: new Date(),
-        isCurrent: true,
-      },
-    });
-  }
-}
+      await prisma.legalDocumentVersion.create({
+        data: {
+          legalDocumentId: document.id,
+          version: "placeholder-1",
+          body,
+          effectiveAt: new Date(),
+          isCurrent: true,
+        },
+      });
+    }),
+  );
+});
 
 export async function getCurrentLegalVersions(slugs: string[]) {
   await ensureLegalDocuments();

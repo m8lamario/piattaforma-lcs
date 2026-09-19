@@ -1,4 +1,4 @@
-import Link from "next/link";
+import type { ReactNode } from "react";
 import { auth } from "@/auth";
 import { logoutAction } from "@/features/auth/actions";
 import { findInviteByPlainToken, loadRedeemContext } from "@/features/teams/data/invites";
@@ -8,19 +8,30 @@ import { RedeemForm } from "@/features/teams/ui/RedeemForm";
 import { AttachInviteForm } from "@/features/teams/ui/AttachInviteForm";
 import { it } from "@/shared/i18n/it";
 import { LoginForm } from "@/features/auth/ui/LoginForm";
-import { Button } from "@/shared/ui/Button";
+import { Button, ButtonLink } from "@/shared/ui/Button";
+import { PublicShell } from "@/shared/ui/PublicShell";
 import styles from "./page.module.css";
 
 type Props = {
   params: Promise<{ token: string }>;
 };
 
+function Frame({ children }: { children: ReactNode }) {
+  return (
+    <PublicShell>
+      <main className={styles.main}>{children}</main>
+    </PublicShell>
+  );
+}
+
 function InviteMessage({ title, body }: { title: string; body: string }) {
   return (
-    <section className={styles.card}>
+    <section className={styles.sheet}>
       <h1>{title}</h1>
       <p>{body}</p>
-      <Link href="/accedi">{it.ctaLogin}</Link>
+      <ButtonLink href="/accedi" variant="ghost">
+        {it.ctaLogin}
+      </ButtonLink>
     </section>
   );
 }
@@ -31,9 +42,9 @@ export default async function InviteRedeemPage({ params }: Props) {
 
   if (!isWellFormedInviteToken(token)) {
     return (
-      <main className={styles.main}>
+      <Frame>
         <InviteMessage title={it.inviteTitle} body={it.inviteInvalid} />
-      </main>
+      </Frame>
     );
   }
 
@@ -42,31 +53,31 @@ export default async function InviteRedeemPage({ params }: Props) {
 
   if (outcome === "expired") {
     return (
-      <main className={styles.main}>
+      <Frame>
         <InviteMessage title={it.inviteTitle} body={it.inviteExpired} />
-      </main>
+      </Frame>
     );
   }
   if (outcome === "already_used") {
     return (
-      <main className={styles.main}>
+      <Frame>
         <InviteMessage title={it.inviteTitle} body={it.inviteUsed} />
-      </main>
+      </Frame>
     );
   }
   if (outcome === "revoked") {
     return (
-      <main className={styles.main}>
+      <Frame>
         <InviteMessage title={it.inviteTitle} body={it.inviteRevoked} />
-      </main>
+      </Frame>
     );
   }
   const inspection = found?.inspection;
   if (!found || !inspection || inspection.outcome !== "redeemable") {
     return (
-      <main className={styles.main}>
+      <Frame>
         <InviteMessage title={it.inviteTitle} body={it.inviteInvalid} />
-      </main>
+      </Frame>
     );
   }
 
@@ -82,8 +93,8 @@ export default async function InviteRedeemPage({ params }: Props) {
 
   if (path.path === "create_account") {
     return (
-      <main className={styles.main}>
-        <section className={styles.card}>
+      <Frame>
+        <section className={styles.sheet}>
           <h1>{it.inviteCreateAccount}</h1>
           <RedeemForm
             token={token}
@@ -93,65 +104,66 @@ export default async function InviteRedeemPage({ params }: Props) {
             lastName={inspection.lastName}
           />
         </section>
-      </main>
+      </Frame>
     );
   }
 
   if (path.path === "login_required") {
     return (
-      <main className={styles.main}>
-        <section className={styles.card}>
+      <Frame>
+        <section className={styles.sheet}>
           <h1>{it.inviteTitle}</h1>
           <p>
-            Esiste già un account per {inspection.email}. Accedi per unirti a{" "}
-            {inspection.teamName}.
+            {it.inviteLoginExisting
+              .replace("{email}", inspection.email)
+              .replace("{team}", inspection.teamName)}
           </p>
           <LoginForm nextPath={`/invito/${token}`} />
         </section>
-      </main>
+      </Frame>
     );
   }
 
   if (path.path === "attach_existing") {
     return (
-      <main className={styles.main}>
-        <section className={styles.card}>
+      <Frame>
+        <section className={styles.sheet}>
           <h1>{it.inviteTitle}</h1>
           <AttachInviteForm token={token} teamName={inspection.teamName} />
         </section>
-      </main>
+      </Frame>
     );
   }
 
   if (path.path === "already_on_team") {
     return (
-      <main className={styles.main}>
-        <InviteMessage title={it.inviteTitle} body="Sei già in questa squadra." />
-      </main>
+      <Frame>
+        <InviteMessage title={it.inviteTitle} body={it.inviteAlreadyOnTeam} />
+      </Frame>
     );
   }
 
   if (path.path === "wrong_session_email") {
     return (
-      <main className={styles.main}>
-        <section className={styles.card}>
+      <Frame>
+        <section className={styles.sheet}>
           <h1>{it.inviteTitle}</h1>
-          <p>Sei connesso con un account diverso da quello dell’invito. Esci e riprova con l’email dell’invito.</p>
+          <p>{it.inviteWrongSession}</p>
           <form action={logoutAction}>
             <input type="hidden" name="next" value={`/invito/${token}`} />
             <Button type="submit">{it.logoutRetryInvite}</Button>
           </form>
         </section>
-      </main>
+      </Frame>
     );
   }
 
   return (
-    <main className={styles.main}>
+    <Frame>
       <InviteMessage
         title={it.inviteTitle}
-        body="Sei già iscritto a un’altra competizione. Contatta l’organizzazione."
+        body={it.inviteOtherCompetition}
       />
-    </main>
+    </Frame>
   );
 }

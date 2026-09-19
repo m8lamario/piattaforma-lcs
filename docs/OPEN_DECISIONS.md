@@ -8,7 +8,7 @@ Ogni voce: problema, opzioni, decisione necessaria, conseguenze, impatto sullo s
 
 - **Problema:** Mancano privacy policy, informative documenti, informative minori, liberatorie, termini.
 - **Opzioni:** (a) placeholder versionati in `content/legal`; (b) attendere i testi prima di ogni UI.
-- **Decisione necessaria:** testi firmati da organizzazione/legale, titolare, DPO, finalità, retention, basi giuridiche.
+- **Decisione necessaria:** testi firmati da organizzazione/legale, titolare, DPO, finalità, retention, basi giuridiche. La struttura da compilare è in `content/legal/` (mappa in `docs/08-privacy-and-consent.md`).
 - **Conseguenze:** senza testi il prodotto non è pubblicabile verso utenti reali.
 - **Impatto:** nessuno su schema/UI structure. Workaround: placeholder `[INSERIRE …]`.
 
@@ -156,6 +156,154 @@ Ogni voce: problema, opzioni, decisione necessaria, conseguenze, impatto sullo s
 ## OD-025 Scan virus e PWA
 
 Già coperti: no PWA in M0; scan OD-021.
+
+## OD-026 Titolare, DPO, contatti e registro
+
+- **Problema:** Mancano denominazione del titolare, sede, PEC, email privacy, eventuale DPO, e se esiste un registro dei trattamenti.
+- **Opzioni:** titolare unico ESL/LCS; contitolarità con coppe locali; DPO interno / esterno / non nominato.
+- **Decisione necessaria:** organizzazione + legale. Compilare i placeholder in `privacy-policy` sezioni 2–3.
+- **Conseguenze:** senza questi dati nessuna informativa è pubblicabile.
+- **Impatto:** solo testi e footer/contatti. Workaround: `[INSERIRE NOME TITOLARE DEL TRATTAMENTO]`, `[INSERIRE EMAIL PRIVACY]`.
+
+## OD-027 Cookie banner, analytics e tracciamenti
+
+- **Problema:** Oggi esistono cookie di sessione Auth.js e preferenza tema (`eph-theme`). Non c’è banner né analytics.
+- **Opzioni:** solo cookie tecnici senza banner; banner se si aggiungono analitici; niente terze parti.
+- **Decisione necessaria:** legale + prodotto, prima di introdurre analytics/pixel.
+- **Conseguenze:** un banner è lavoro UI; un nuovo consenso va come `LegalDocument` distinto, non come checkbox nascosta.
+- **Impatto:** nessuno finché non si aggiungono tracker. Workaround: pagina `/cookie` placeholder (`cookie-policy`).
+
+## OD-028 Condizioni di iscrizione (`terms`) nel wizard
+
+- **Problema:** Esiste la struttura `terms` e la pagina `/termini`, ma lo step privacy non la presenta.
+- **Opzioni:** (a) solo pagina pubblica; (b) aggiungerla al pacchetto privacy required; (c) step proprio.
+- **Decisione necessaria:** organizzazione + legale, dopo il testo ufficiale.
+- **Conseguenze:** se required, si aggiunge lo slug al catalogo `wizardStep: "privacy"` (o un nuovo step). Vietato un booleano `termsAccepted`.
+- **Impatto:** nullo finché resta fuori dal wizard. Workaround: documento versionato, nessuna acceptance finta.
+
+## OD-029 Processo esercizio diritti
+
+- **Problema:** Non c’è un flusso self-service di accesso/export/cancellazione. L’audit non si cancella dalla UI.
+- **Opzioni:** solo processo email/PEC; tool admin; portabilità automatica.
+- **Decisione necessaria:** legale + organizzazione (tempi, verifica identità, limiti su certificati e log).
+- **Conseguenze:** può richiedere UI admin e policy di redazione.
+- **Impatto:** non blocca lo sviluppo del wizard. Workaround: canale `[INSERIRE EMAIL PRIVACY]`, niente delete-all in prodotto.
+
+## OD-030 Retention certificati e file sostituiti
+
+- **Problema:** In v1 il replace non cancella il blob precedente. Mancano periodi per file approvati, rifiutati, sostituiti, hash, motivi di rifiuto.
+- **Opzioni:** purge a fine edizione; N anni; obbligo sportivo più lungo; cancellazione su richiesta con eccezioni.
+- **Decisione necessaria:** legale + organizzazione sanitaria/regolamenti (lega OD-005).
+- **Conseguenze:** job di purge e regole storage.
+- **Impatto:** nessuno strutturale ora. Workaround: storia completa, nessuna cancellazione automatica.
+
+## OD-031 Ritiro liberatoria media e materiale già pubblicato
+
+- **Problema:** Il hub registra accept/refuse in append, ma non rimuove contenuti da social, siti locali o stampa.
+- **Opzioni:** revoca = stop alle nuove uscite; tentativo di rimozione sui canali propri; nessuna rimozione dell’archivio.
+- **Decisione necessaria:** legale + comunicazione. Chi può revocare per un minore (OD-040).
+- **Conseguenze:** processo operativo (chi toglie cosa, in quanto tempo) più eventuale stato visibile al rep.
+- **Impatto:** il wizard già consente il rifiuto se `required=false`. Workaround: testo placeholder in `media-release` § 13.
+
+## OD-032 Comunicazioni al genitore/tutore
+
+- **Problema:** Si raccoglie email/telefono del contatto, ma v1 non ha un login genitore e l’email è stub.
+- **Opzioni:** nessuna email al genitore; elenco eventi obbligatori (invito, rifiuto certificato, approvazione); copia di tutte le comunicazioni.
+- **Decisione necessaria:** organizzazione + legale (informativa al genitore come interessato).
+- **Conseguenze:** template e adapter email; mai dettaglio sanitario nel canale.
+- **Impatto:** M1/M6 comunicazioni. Workaround: dati tutore persistiti; dispatch non implementato.
+
+## OD-033 Titolarità hub nazionale vs coppe locali
+
+- **Problema:** ESL/LCS è nazionale; le coppe locali hanno siti distinti non gestiti da questo repo. Chi è titolare di anagrafica, certificati, foto?
+- **Opzioni:** titolare unico; contitolarità; titolari distinti per finalità (iscrizione vs vetrina).
+- **Decisione necessaria:** legale + organizzazione (lega OD-019).
+- **Conseguenze:** testi, DPA, e se i siti locali possono riprendere foto dal hub.
+- **Impatto:** nessuno sullo schema. Workaround: placeholder in `privacy-policy` § 2 e `media-release` § 5 e § 7.
+
+## OD-034 Elenco responsabili, DPA e trasferimenti extra-SEE
+
+- **Problema:** Hosting, DB, storage, email, pagamenti, monitoring, antivirus non sono scelti (OD-006/010/011/012/013/021). Senza fornitori non si chiude la sezione trasferimenti.
+- **Opzioni:** stack tutto SEE; fornitori extra-SEE con SCC/adeguatezza; elenco pubblico aggiornato a ogni cambio.
+- **Decisione necessaria:** ops + legale, prima del lancio con dati reali.
+- **Conseguenze:** DPA firmati; aggiornamento `privacy-policy` § 11–12 e `cookie-policy` § 6.
+- **Impatto:** adapter già previsti. Workaround: tabelle placeholder, nessuno claim di conformità.
+
+## OD-035 Base giuridica del certificato medico
+
+- **Problema:** Il certificato è (o può essere) dato sanitario. Non è deciso se la base è obbligo di legge sportivo, contratto, consenso, o altro, né se lo *stato* in rosa è dato sanitario.
+- **Opzioni:** da far scrivere al legale; non copiare formule da altri siti.
+- **Decisione necessaria:** legale, con OD-005 e OD-030.
+- **Conseguenze:** testo in `document-processing` e visibilità stato al rappresentante.
+- **Impatto:** il prodotto già nasconde il file al rep. Workaround: `[INSERIRE BASE GIURIDICA PER DATI SANITARI / CERTIFICATO]`.
+
+## OD-036 Marketing e comunicazioni non di servizio
+
+- **Problema:** Oggi esistono solo comunicazioni di servizio (in-app; email stub). Non c’è newsletter né consenso marketing.
+- **Opzioni:** non introdurre marketing in v1; se si introduce, documento e consenso **separati**, mai obbligatori per l’iscrizione.
+- **Decisione necessaria:** organizzazione.
+- **Conseguenze:** nuovo slug `LegalDocument` + step o checkbox non pre-spuntata.
+- **Impatto:** nessuno ora. Workaround: finalità F8 in `privacy-policy` § 7, richiamo che in v1 non c’è consenso marketing.
+
+## OD-037 Liberatoria obbligatoria per edizione
+
+- **Problema:** `MEDIA_RELEASE` è `required=false` nel seed demo. Un’edizione reale potrebbe obbligarla.
+- **Opzioni:** sempre facoltativa; obbligatoria per tutte le edizioni; per-edizione (già previsto da `EditionRequirement`).
+- **Decisione necessaria:** organizzazione + legale, soprattutto per i minori.
+- **Conseguenze:** se required, il rifiuto blocca il checklist (già implementato). Serve copy ufficiale e processo in campo per chi rifiuta se invece è facoltativa (OD-031).
+- **Impatto:** configurazione edizione, non schema. Workaround: demo non obbliga.
+
+## OD-038 Pubblicazione nuove versioni informative
+
+- **Problema:** Chi firma il testo, chi marca `isCurrent`, come si avvisano gli iscritti.
+- **Opzioni:** solo Super Admin; Org Admin; processo legale esterno + upload file in `content/legal/`.
+- **Decisione necessaria:** organizzazione. `/admin/informative` è in IA, non è il flusso ufficiale finché non esiste.
+- **Conseguenze:** allinea OD-024 (re-consent).
+- **Impatto:** oggi `ensureLegalDocuments` crea una nuova versione se il file markdown cambia. Workaround: file + seed/sync, niente CMS.
+
+## OD-039 Durata e canali media (nazionale vs edizione)
+
+- **Problema:** Una liberatoria unica vs testi/canali diversi per coppa o anno.
+- **Opzioni:** un `media-release` nazionale; versioni per edizione; documenti distinti (foto vs social) come previsto da docs/08.
+- **Decisione necessaria:** organizzazione + legale.
+- **Conseguenze:** se servono più documenti, nuovi slug nel catalogo, stesso pattern versionato. Non si affastellano checkbox nascoste.
+- **Impatto:** nessuno ora (un solo slug). Workaround: un testo placeholder con sezioni canale da compilare.
+
+## OD-040 Chi esercita i diritti del minore
+
+- **Problema:** Account del minore; genitore senza login. Chi chiede accesso, rettifica, cancellazione, revoca media.
+- **Opzioni:** solo genitore; minore e genitore; minore da una certa età.
+- **Decisione necessaria:** legale (lega OD-002, OD-029, OD-031).
+- **Conseguenze:** processo di verifica della legittimazione, non necessariamente un secondo account.
+- **Impatto:** nessuno sul wizard. Workaround: `[INSERIRE SE GENITORE, MINORE, ENTRAMBI]` in `minor-privacy`.
+
+## OD-041 Informativa per rappresentanti e amministratori
+
+- **Problema:** Rep e admin hanno account (email, ruoli, pagamenti di squadra). I testi visibili in wizard sono calibrati sul giocatore.
+- **Opzioni:** stessa informativa `ALL`; addendum; slug dedicato con audience diversa.
+- **Decisione necessaria:** legale + organizzazione.
+- **Workaround:** `privacy-policy` § 4 elenca già rep/admin tra gli interessati; nessun secondo checkbox finto.
+
+## OD-042 Foto profilo, logo squadra, streaming in piattaforma
+
+- **Problema:** Schema con `User.image` e `Team.logoStorageKey`; niente gallery né live in v1.
+- **Opzioni:** non usarli; se si attivano upload volto/logo o embed, aggiornare `media-release` e `cookie-policy` **prima**.
+- **Decisione necessaria:** prodotto + legale.
+- **Workaround:** placeholder in `media-release` § 2 e § 5.
+
+## OD-043 Checklist go-live legale (non esaustiva)
+
+- **Problema:** I placeholder visibili e i provider stub impediscono un lancio verso interessati reali anche se il software funziona.
+- **Da chiudere almeno:** OD-001 testi firmati; OD-026 titolare/DPO; OD-002/040 minori; OD-029 diritti; OD-030/031 retention e revoca media; OD-034/010/006 fornitori live e DPA; OD-035 base sanitaria; OD-037 obbligatorietà liberatoria.
+- **Workaround:** ambiente di sviluppo con avviso placeholder in UI. Non rimuovere `[INSERIRE …]` finché i testi non sono ufficiali.
+
+## OD-044 Face display temporaneo (Barlow Condensed)
+
+- **Problema:** Il lockup ESL e i numeri di passo usano Barlow Condensed (`--font-brand`) come face sportivo-istituzionale. I HEX e il wordmark ufficiali non sono ancora disponibili.
+- **Opzioni:** tenere Barlow fino al brand kit; sostituire con la face ufficiale; usare solo Geist.
+- **Decisione necessaria:** organizzazione / identità visiva.
+- **Conseguenze:** si cambia `layout.tsx` e `--font-brand` in `tokens.css`, non i componenti.
+- **Impatto:** nessuno strutturale. Workaround: Barlow Condensed + Geist, placeholder cromatici in `tokens.css`.
 
 ---
 

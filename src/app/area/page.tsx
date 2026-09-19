@@ -1,5 +1,4 @@
 import { redirect } from "next/navigation";
-import Link from "next/link";
 import { auth } from "@/auth";
 import { getActorByUserId, isStaff, representativeTeamIds } from "@/shared/authz/getActor";
 import {
@@ -7,9 +6,10 @@ import {
   persistRegistrationStatus,
 } from "@/features/registrations/data/workspace";
 import { RegistrationDashboard } from "@/features/registrations/ui/Dashboard";
+import { ButtonLink } from "@/shared/ui/Button";
 import { AppShell } from "@/shared/ui/AppShell";
+import { EmptyState } from "@/shared/ui/EmptyState";
 import { it } from "@/shared/i18n/it";
-import styles from "./page.module.css";
 
 export default async function AreaPage() {
   const session = await auth();
@@ -40,19 +40,19 @@ export default async function AreaPage() {
           medicalStatus={workspace.evidence.medicalStatus}
         />
       ) : (
-        <main className={styles.card}>
-          <h1>{it.areaTitle}</h1>
-          {showTeam ? (
-            <>
-              <p>{it.areaRepEmpty}</p>
-              <p>
-                <Link href="/squadra">{it.navTeam}</Link>
-              </p>
-            </>
-          ) : (
-            <p>{it.areaEmptyRegistration}</p>
-          )}
-        </main>
+        <EmptyState
+          icon={showTeam ? "team" : "area"}
+          title={it.areaTitle}
+          action={
+            showTeam ? (
+              <ButtonLink href="/squadra">{it.navTeam}</ButtonLink>
+            ) : showAdmin ? (
+              <ButtonLink href="/admin/documenti">{it.navAdminDocuments}</ButtonLink>
+            ) : undefined
+          }
+        >
+          <p>{showTeam ? it.areaRepEmpty : showAdmin ? it.areaAdminEmpty : it.areaEmptyRegistration}</p>
+        </EmptyState>
       )}
     </AppShell>
   );

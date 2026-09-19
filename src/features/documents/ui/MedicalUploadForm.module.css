@@ -1,5 +1,13 @@
-.fileMeta {
-  display: grid;
+.fileRow {
+  display: flex;
+  flex-wrap: wrap;
   gap: var(--space-3);
+  align-items: center;
+  justify-content: space-between;
+}
+
+.fileMeta {
   margin: 0;
+  font-weight: 650;
+  overflow-wrap: anywhere;
 }

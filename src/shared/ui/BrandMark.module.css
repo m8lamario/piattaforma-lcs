@@ -1,0 +1,43 @@
+.brand {
+  display: inline-flex;
+  align-items: stretch;
+  gap: var(--space-3);
+  min-height: var(--control-min);
+  text-decoration: none;
+  color: var(--color-text);
+}
+
+.rail {
+  width: var(--line-width);
+  background: var(--color-line);
+  flex-shrink: 0;
+}
+
+.lockup {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.05rem;
+}
+
+.esl {
+  font-family: var(--font-brand);
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  line-height: 1;
+}
+
+.product,
+.productCompact {
+  font-size: 0.6875rem;
+  font-weight: 650;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  line-height: 1.2;
+}
+
+.productCompact {
+  max-width: 9.5rem;
+}

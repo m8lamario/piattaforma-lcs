@@ -3,7 +3,8 @@
 import { useActionState } from "react";
 import { attachInviteAction } from "@/features/teams/actions";
 import { Button } from "@/shared/ui/Button";
-import styles from "./RedeemForm.module.css";
+import { it } from "@/shared/i18n/it";
+import fields from "@/shared/ui/form.module.css";
 
 export function AttachInviteForm({ token, teamName }: { token: string; teamName: string }) {
   const [state, action, pending] = useActionState(
@@ -14,19 +15,19 @@ export function AttachInviteForm({ token, teamName }: { token: string; teamName:
   );
 
   return (
-    <form action={action} className={styles.form}>
+    <form action={action} className={fields.form} aria-busy={pending}>
       <input type="hidden" name="token" value={token} />
-      <p className={styles.lead}>
-        Conferma per unirti a <strong>{teamName}</strong>.
-      </p>
+      <p className={fields.help}>{it.attachInviteLead.replace("{team}", teamName)}</p>
       {state?.error ? (
-        <p className={styles.error} role="alert">
+        <p className={fields.summary} role="alert">
           {state.error}
         </p>
       ) : null}
-      <Button type="submit" disabled={pending}>
-        {pending ? "Collegamento…" : "Unisciti alla squadra"}
-      </Button>
+      <div className={fields.actions}>
+        <Button type="submit" disabled={pending} aria-busy={pending}>
+          {pending ? it.attachingInvite : it.joinTeam}
+        </Button>
+      </div>
     </form>
   );
 }

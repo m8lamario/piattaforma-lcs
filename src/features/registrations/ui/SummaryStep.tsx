@@ -1,7 +1,8 @@
-import Link from "next/link";
 import type { ChecklistItem } from "@/features/registrations/domain/requirements";
 import { WIZARD_STEPS } from "@/features/registrations/domain/wizard";
 import { it } from "@/shared/i18n/it";
+import { StatusChip, type StatusTone } from "@/shared/ui/StatusChip";
+import { ButtonLink } from "@/shared/ui/Button";
 import styles from "./WizardForm.module.css";
 
 const ITEM_LABEL: Record<ChecklistItem["code"], string> = {
@@ -20,6 +21,13 @@ const STATUS_LABEL: Record<ChecklistItem["status"], string> = {
   not_applicable: it.checklistNA,
 };
 
+const STATUS_TONE: Record<ChecklistItem["status"], StatusTone> = {
+  complete: "complete",
+  todo: "todo",
+  attention: "attention",
+  not_applicable: "neutral",
+};
+
 type Props = {
   checklist: ChecklistItem[];
 };
@@ -28,21 +36,26 @@ export function SummaryStep({ checklist }: Props) {
   return (
     <div className={styles.placeholder}>
       <p>{it.summaryIntro}</p>
-      <ul>
+      <ul className={styles.summaryList}>
         {checklist
           .filter((item) => item.status !== "not_applicable")
           .map((item) => {
             const step = WIZARD_STEPS.find((entry) => entry.code === item.code);
             return (
-              <li key={item.code}>
-                {ITEM_LABEL[item.code]}: {STATUS_LABEL[item.status]}
-                {step && !step.implemented ? " (prossima fase)" : ""}
+              <li key={item.code} className={styles.summaryItem}>
+                <span>
+                  {ITEM_LABEL[item.code]}
+                  {step && !step.implemented ? ` · ${it.nextPhase}` : ""}
+                </span>
+                <StatusChip tone={STATUS_TONE[item.status]}>{STATUS_LABEL[item.status]}</StatusChip>
               </li>
             );
           })}
       </ul>
       <p>
-        <Link href="/area">{it.backToArea}</Link>
+        <ButtonLink href="/area" variant="ghost">
+          {it.backToArea}
+        </ButtonLink>
       </p>
     </div>
   );

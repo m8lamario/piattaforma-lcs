@@ -1,8 +1,9 @@
+import { cache } from "react";
 import { prisma } from "@/shared/lib/prisma";
 import type { Actor, ActorRole } from "./types";
 import type { Role } from "./types";
 
-export async function getActorByUserId(userId: string): Promise<Actor | null> {
+export const getActorByUserId = cache(async (userId: string): Promise<Actor | null> => {
   const user = await prisma.user.findUnique({
     where: { id: userId },
     include: {
@@ -23,7 +24,7 @@ export async function getActorByUserId(userId: string): Promise<Actor | null> {
     roles,
     membershipTeamIds: user.teamMemberships.map((membership) => membership.teamId),
   };
-}
+});
 
 export function representativeTeamIds(actor: Actor) {
   return actor.roles

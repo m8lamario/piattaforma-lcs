@@ -4,6 +4,7 @@ import path from "node:path";
 import { PrismaClient } from "../generated/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { hashPassword } from "../src/features/auth/domain/password";
+import { LEGAL_CATALOG } from "../src/features/consents/domain/catalog";
 
 const connectionString = process.env.DATABASE_URL;
 if (!connectionString) {
@@ -146,32 +147,16 @@ async function main() {
     create: { teamId: team.id, userId: rep.id, role: "REPRESENTATIVE" },
   });
 
-  const legalSeed = [
-    { slug: "privacy-policy", title: "Informativa privacy", audience: "ALL" as const, required: true },
-    {
-      slug: "document-processing",
-      title: "Informativa documenti caricati",
-      audience: "ALL" as const,
-      required: true,
-    },
-    { slug: "minor-privacy", title: "Informativa per minori", audience: "MINOR" as const, required: true },
-    {
-      slug: "media-release",
-      title: "Liberatoria foto, video e social",
-      audience: "ALL" as const,
-      required: false,
-    },
-  ];
-  for (const item of legalSeed) {
+  for (const item of LEGAL_CATALOG) {
     const body = await readFile(path.join(process.cwd(), "content/legal", `${item.slug}.md`), "utf8");
     const document = await prisma.legalDocument.upsert({
       where: { slug: item.slug },
-      update: { title: item.title, audience: item.audience, requiredByDefault: item.required },
+      update: { title: item.title, audience: item.audience, requiredByDefault: item.requiredByDefault },
       create: {
         slug: item.slug,
         title: item.title,
         audience: item.audience,
-        requiredByDefault: item.required,
+        requiredByDefault: item.requiredByDefault,
       },
     });
     const current = await prisma.legalDocumentVersion.findFirst({

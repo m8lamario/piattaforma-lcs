@@ -1,30 +1,56 @@
 "use client";
 
-import Link from "next/link";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import { it } from "@/shared/i18n/it";
+import { ButtonLink } from "@/shared/ui/Button";
 import styles from "./LandingHero.module.css";
 
+const STEPS = [
+  { n: "01", title: it.landingHowInvite, copy: it.landingHowInviteCopy },
+  { n: "02", title: it.landingHowAccount, copy: it.landingHowAccountCopy },
+  { n: "03", title: it.landingHowPath, copy: it.landingHowPathCopy },
+] as const;
+
 export function LandingHero() {
+  const reduceMotion = useReducedMotion();
+
   return (
-    <motion.section
-      className={styles.hero}
-      initial={{ opacity: 0, y: 12 }}
+    <motion.div
+      className={styles.stack}
+      initial={reduceMotion ? false : { opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.28 }}
+      transition={{ duration: reduceMotion ? 0 : 0.28 }}
     >
-      <p className={styles.badge}>Solo su invito</p>
-      <h1>{it.appName}</h1>
-      <p className={styles.lead}>{it.tagline}</p>
-      <p className={styles.copy}>{it.landingLead}</p>
-      <div className={styles.actions}>
-        <Link className={styles.primary} href="/accedi">
-          {it.ctaLogin}
-        </Link>
-        <Link className={styles.ghost} href="/invito">
-          {it.ctaInvite}
-        </Link>
-      </div>
-    </motion.section>
+      <section className={styles.hero}>
+        <p className={styles.badge}>{it.landingBadge}</p>
+        <p className={styles.org}>{it.orgLine}</p>
+        <h1>{it.appName}</h1>
+        <p className={styles.lead}>{it.tagline}</p>
+        <p className={styles.copy}>{it.landingLead}</p>
+        <div className={styles.actions}>
+          <ButtonLink href="/accedi">{it.ctaLogin}</ButtonLink>
+          <ButtonLink href="/invito" variant="ghost">
+            {it.ctaInvite}
+          </ButtonLink>
+        </div>
+      </section>
+
+      <section className={styles.how} aria-labelledby="come-funziona">
+        <h2 id="come-funziona">{it.landingHowTitle}</h2>
+        <ol className={styles.steps}>
+          {STEPS.map((step) => (
+            <li key={step.title} className={styles.step}>
+              <span className={styles.num} aria-hidden="true">
+                {step.n}
+              </span>
+              <div>
+                <strong>{step.title}</strong>
+                <p>{step.copy}</p>
+              </div>
+            </li>
+          ))}
+        </ol>
+      </section>
+    </motion.div>
   );
 }

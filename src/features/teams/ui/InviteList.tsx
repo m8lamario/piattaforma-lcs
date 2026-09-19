@@ -1,5 +1,6 @@
 import { revokeInviteAction } from "@/features/teams/actions";
-import { Button } from "@/shared/ui/Button";
+import { PendingSubmitButton } from "@/shared/ui/PendingSubmitButton";
+import { StatusChip, type StatusTone } from "@/shared/ui/StatusChip";
 import { it } from "@/shared/i18n/it";
 import styles from "./InviteForm.module.css";
 
@@ -13,10 +14,17 @@ type Invite = {
 };
 
 const STATUS_LABEL: Record<string, string> = {
-  PENDING: "In attesa",
-  ACCEPTED: "Accettato",
-  EXPIRED: "Scaduto",
-  REVOKED: "Annullato",
+  PENDING: it.inviteStatusPending,
+  ACCEPTED: it.inviteStatusAccepted,
+  EXPIRED: it.inviteStatusExpired,
+  REVOKED: it.inviteStatusRevoked,
+};
+
+const STATUS_TONE: Record<string, StatusTone> = {
+  PENDING: "attention",
+  ACCEPTED: "complete",
+  EXPIRED: "neutral",
+  REVOKED: "danger",
 };
 
 export function InviteList({ teamId, invites }: { teamId: string; invites: Invite[] }) {
@@ -33,15 +41,17 @@ export function InviteList({ teamId, invites }: { teamId: string; invites: Invit
                 : invite.email}
             </strong>
             <p className={styles.meta}>{invite.email}</p>
-            <p className={styles.status}>{STATUS_LABEL[invite.status] ?? invite.status}</p>
+            <p className={styles.status}>
+              <StatusChip tone={STATUS_TONE[invite.status] ?? "neutral"}>
+                {STATUS_LABEL[invite.status] ?? invite.status}
+              </StatusChip>
+            </p>
           </div>
           {invite.status === "PENDING" ? (
             <form action={revokeInviteAction}>
               <input type="hidden" name="teamId" value={teamId} />
               <input type="hidden" name="inviteId" value={invite.id} />
-              <Button type="submit" variant="ghost">
-                {it.revoke}
-              </Button>
+              <PendingSubmitButton idle={it.revoke} pendingLabel={it.loadingRevoke} variant="ghost" />
             </form>
           ) : null}
         </div>
