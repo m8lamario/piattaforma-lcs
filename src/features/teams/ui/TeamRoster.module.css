@@ -29,9 +29,21 @@
 
 .item {
   display: grid;
-  gap: var(--space-2);
+  gap: var(--space-3);
   padding: var(--space-4) 0;
   border-bottom: 1px solid var(--color-hairline);
+}
+
+.itemLeft {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.itemRight {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
 }
 
 .chips {
@@ -126,6 +138,18 @@
   .rosterForm button {
     grid-column: 1 / -1;
     width: 100%;
+  }
+}
+
+@media (min-width: 840px) {
+  .item {
+    grid-template-columns: minmax(14rem, 1fr) auto;
+    align-items: center;
+    gap: var(--space-4);
+  }
+
+  .itemRight {
+    justify-content: flex-end;
   }
 }
 

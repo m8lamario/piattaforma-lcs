@@ -1,0 +1,64 @@
+.main {
+  width: 100%;
+  max-width: var(--content-max-canvas);
+  display: grid;
+  gap: var(--space-6);
+  align-self: start;
+}
+
+.teamGrid {
+  display: grid;
+  gap: var(--gap-canvas);
+  align-items: start;
+}
+
+.rosterSection {
+  width: 100%;
+}
+
+.sideRail {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.sideCard {
+  background: var(--color-surface-raised);
+  border: 1px solid var(--color-hairline);
+  padding: var(--space-5);
+  display: grid;
+  gap: var(--space-4);
+  position: sticky;
+  top: calc(var(--space-4) + 1px);
+}
+
+.invitesGrid {
+  display: grid;
+  gap: var(--gap-canvas);
+  align-items: start;
+}
+
+.formsCol {
+  display: grid;
+  gap: var(--space-6);
+  width: 100%;
+}
+
+.listCol {
+  width: 100%;
+}
+
+@media (min-width: 1024px) {
+  .teamGrid {
+    grid-template-columns: minmax(0, 1fr) minmax(19rem, 23rem);
+  }
+
+  .invitesGrid {
+    grid-template-columns: minmax(20rem, 25rem) minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 1023px) {
+  .sideCard {
+    position: static;
+  }
+}

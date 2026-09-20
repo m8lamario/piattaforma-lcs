@@ -1,5 +1,6 @@
 .main {
-  width: min(var(--content-max-wide), 100%);
+  width: 100%;
+  max-width: var(--content-max-canvas);
   display: grid;
   gap: var(--space-6);
   align-self: flex-start;
@@ -31,6 +32,35 @@
   border-bottom-color: var(--color-line);
 }
 
+.twoColGrid {
+  display: grid;
+  gap: var(--gap-canvas);
+  align-items: start;
+  width: 100%;
+}
+
+.colMain {
+  display: grid;
+  gap: var(--space-5);
+  width: 100%;
+}
+
+.colSide {
+  display: grid;
+  gap: var(--space-4);
+  width: 100%;
+}
+
+.sideCard {
+  background: var(--color-surface-raised);
+  border: 1px solid var(--color-hairline);
+  padding: var(--space-5);
+  display: grid;
+  gap: var(--space-4);
+  position: sticky;
+  top: calc(var(--space-4) + 1px);
+}
+
 .list {
   list-style: none;
   margin: 0;
@@ -45,10 +75,15 @@
   align-items: center;
   justify-content: space-between;
   min-height: var(--control-min);
-  padding: var(--space-4) 0;
+  padding: var(--space-4) var(--space-2);
   border-bottom: 1px solid var(--color-hairline);
   text-decoration: none;
   color: inherit;
+  transition: background var(--duration-fast) var(--ease-out);
+}
+
+.item:hover {
+  background: var(--color-surface-raised);
 }
 
 .item:hover strong {
@@ -64,7 +99,7 @@
 
 .stats {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
   gap: var(--space-4);
   padding: var(--space-4) 0;
   border-bottom: 1px solid var(--color-hairline);
@@ -73,12 +108,16 @@
 .stat {
   display: grid;
   gap: var(--space-1);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-surface-raised);
+  border-left: var(--line-width) solid var(--color-border);
 }
 
 .stat strong {
   font-family: var(--font-brand);
-  font-size: var(--text-xl);
+  font-size: var(--text-2xl);
   letter-spacing: 0.04em;
+  line-height: 1;
 }
 
 .stat span {
@@ -89,14 +128,52 @@
   font-weight: 700;
 }
 
+.hubNavGrid {
+  display: grid;
+  gap: var(--space-3);
+  width: 100%;
+}
+
+.hubTile {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-4) var(--space-5);
+  background: var(--color-surface-raised);
+  border: 1px solid var(--color-hairline);
+  border-left: var(--line-width) solid var(--color-line);
+  text-decoration: none;
+  color: inherit;
+  transition: border-color var(--duration-fast) var(--ease-out), background var(--duration-fast) var(--ease-out);
+}
+
+.hubTile:hover {
+  background: color-mix(in srgb, var(--color-primary-soft) 25%, var(--color-surface-raised));
+  border-left-color: var(--color-primary);
+}
+
+.hubTile strong {
+  font-size: var(--text-md);
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.hubTile span {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  line-height: 1.4;
+}
+
 .filters {
   display: grid;
   gap: var(--space-3);
+  padding: var(--space-4);
+  background: var(--color-surface-raised);
+  border: 1px solid var(--color-hairline);
 }
 
 .filtersRow {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
   gap: var(--space-3);
   align-items: end;
 }
@@ -112,10 +189,11 @@
 .empty {
   margin: 0;
   color: var(--color-text-muted);
+  padding: var(--space-4) 0;
 }
 
 .sectionTitle {
-  margin: 0;
+  margin: var(--space-4) 0 var(--space-2);
   font-size: var(--text-kicker);
   font-weight: 700;
   letter-spacing: 0.1em;
@@ -135,6 +213,46 @@
   min-height: var(--control-min);
 }
 
+.dangerZone {
+  display: grid;
+  gap: var(--space-5);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-hairline);
+}
+
+.dangerCard {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border: 1px solid var(--color-danger);
+  border-radius: var(--radius-sm);
+  background: var(--color-danger-soft);
+}
+
+@media (min-width: 1024px) {
+  .twoColGrid {
+    grid-template-columns: minmax(0, 1.3fr) minmax(20rem, 24rem);
+  }
+}
+
+@media (min-width: 640px) {
+  .hubNavGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1100px) {
+  .hubNavGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 1023px) {
+  .sideCard {
+    position: static;
+  }
+}
+
 @media (max-width: 959px) {
   .subnav {
     flex-wrap: nowrap;
@@ -150,19 +268,4 @@
   .filtersRow {
     grid-template-columns: 1fr;
   }
-}
-
-.dangerZone {
-  display: grid;
-  gap: var(--space-5);
-  padding-top: var(--space-4);
-  border-top: 1px solid var(--color-hairline);
-}
-
-.dangerCard {
-  display: grid;
-  gap: var(--space-3);
-  padding: var(--space-4);
-  border: 1px solid var(--color-danger);
-  border-radius: var(--radius-sm);
 }

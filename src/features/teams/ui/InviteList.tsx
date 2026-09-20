@@ -66,7 +66,7 @@ export function InviteList({ teamId, invites }: { teamId: string; invites: Invit
               <form action={action}>
                 <input type="hidden" name="teamId" value={teamId} />
                 <input type="hidden" name="inviteId" value={invite.id} />
-                <Button type="submit" variant="ghost" disabled={pending} aria-busy={pending}>
+                <Button type="submit" variant="ghost" icon="send" disabled={pending} aria-busy={pending}>
                   {pending ? it.resendingInvite : it.resendInvite}
                 </Button>
               </form>
@@ -74,7 +74,12 @@ export function InviteList({ teamId, invites }: { teamId: string; invites: Invit
                 <form action={revokeInviteAction}>
                   <input type="hidden" name="teamId" value={teamId} />
                   <input type="hidden" name="inviteId" value={invite.id} />
-                  <PendingSubmitButton idle={it.revoke} pendingLabel={it.loadingRevoke} variant="ghost" />
+                  <PendingSubmitButton
+                    idle={it.revoke}
+                    pendingLabel={it.loadingRevoke}
+                    variant="danger"
+                    icon="close"
+                  />
                 </form>
               ) : null}
             </div>

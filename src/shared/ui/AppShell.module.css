@@ -154,7 +154,8 @@
 }
 
 .content > * {
-  max-width: 100%;
+  width: 100%;
+  max-width: var(--content-max-canvas);
 }
 
 @media (max-width: 959px) {

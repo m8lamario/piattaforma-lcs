@@ -1,8 +1,4 @@
 .icon {
   display: block;
   flex-shrink: 0;
-  stroke: currentColor;
-  stroke-width: 1.75;
-  stroke-linecap: square;
-  stroke-linejoin: miter;
 }

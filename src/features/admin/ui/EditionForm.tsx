@@ -157,7 +157,7 @@ export function EditionDeleteForm({
   return (
     <form action={deleteEditionAction}>
       <input type="hidden" name="id" value={editionId} />
-      <PendingSubmitButton idle={it.adminDeleteEdition} pendingLabel={it.deleting} variant="danger" />
+      <PendingSubmitButton idle={it.adminDeleteEdition} pendingLabel={it.deleting} variant="danger" icon="trash" />
     </form>
   );
 }

@@ -52,46 +52,50 @@ export function TeamRoster({ teamId, rows, canEditRoster = true }: Props) {
         <ul className={styles.list}>
           {rows.map((row) => (
             <li key={row.registrationId} className={styles.item}>
-              <strong>
-                {row.firstName} {row.lastName}
-                {row.jerseyNumber ? ` · ${row.jerseyNumber}` : ""}
-                {row.rosterRole ? ` · ${row.rosterRole}` : ""}
-              </strong>
-              <span className={styles.chips}>
-                <StatusChip tone="neutral">{REG_COPY[row.registrationStatus] ?? row.registrationStatus}</StatusChip>
-                <StatusChip tone={MEDICAL_TONE[row.medicalStatus]}>{MEDICAL[row.medicalStatus]}</StatusChip>
-              </span>
-              {canEditRoster && row.membershipId ? (
-                <form action={updateRosterRowAction} className={styles.rosterForm}>
-                  <input type="hidden" name="teamId" value={teamId} />
-                  <input type="hidden" name="membershipId" value={row.membershipId} />
-                  <input
-                    name="jerseyNumber"
-                    className={fields.input}
-                    defaultValue={row.jerseyNumber ?? ""}
-                    aria-label={it.jerseyNumber}
-                    placeholder={it.jerseyNumber}
-                  />
-                  <input
-                    name="rosterRole"
-                    className={fields.input}
-                    defaultValue={row.rosterRole ?? ""}
-                    aria-label={it.rosterRole}
-                    placeholder={it.rosterRole}
-                  />
-                  <PendingSubmitButton idle={it.rosterSave} pendingLabel={it.saving} variant="ghost" />
-                </form>
-              ) : null}
-              {canEditRoster && row.membershipId && row.membershipRole !== "REPRESENTATIVE" ? (
-                <RemovePlayerForm teamId={teamId} membershipId={row.membershipId} lastName={row.lastName} />
-              ) : null}
-              {row.userId && row.registrationStatus !== "APPROVED" && row.registrationStatus !== "WITHDRAWN" ? (
-                <form action={nudgeRegistrationAction}>
-                  <input type="hidden" name="teamId" value={teamId} />
-                  <input type="hidden" name="userId" value={row.userId} />
-                  <PendingSubmitButton idle={it.nudge} pendingLabel={it.nudging} variant="ghost" />
-                </form>
-              ) : null}
+              <div className={styles.itemLeft}>
+                <strong>
+                  {row.firstName} {row.lastName}
+                  {row.jerseyNumber ? ` · ${row.jerseyNumber}` : ""}
+                  {row.rosterRole ? ` · ${row.rosterRole}` : ""}
+                </strong>
+                <span className={styles.chips}>
+                  <StatusChip tone="neutral">{REG_COPY[row.registrationStatus] ?? row.registrationStatus}</StatusChip>
+                  <StatusChip tone={MEDICAL_TONE[row.medicalStatus]}>{MEDICAL[row.medicalStatus]}</StatusChip>
+                </span>
+              </div>
+              <div className={styles.itemRight}>
+                {canEditRoster && row.membershipId ? (
+                  <form action={updateRosterRowAction} className={styles.rosterForm}>
+                    <input type="hidden" name="teamId" value={teamId} />
+                    <input type="hidden" name="membershipId" value={row.membershipId} />
+                    <input
+                      name="jerseyNumber"
+                      className={fields.input}
+                      defaultValue={row.jerseyNumber ?? ""}
+                      aria-label={it.jerseyNumber}
+                      placeholder={it.jerseyNumber}
+                    />
+                    <input
+                      name="rosterRole"
+                      className={fields.input}
+                      defaultValue={row.rosterRole ?? ""}
+                      aria-label={it.rosterRole}
+                      placeholder={it.rosterRole}
+                    />
+                    <PendingSubmitButton idle={it.rosterSave} pendingLabel={it.saving} variant="primary" icon="save" />
+                  </form>
+                ) : null}
+                {row.userId && row.registrationStatus !== "APPROVED" && row.registrationStatus !== "WITHDRAWN" ? (
+                  <form action={nudgeRegistrationAction} className={styles.nudgeForm}>
+                    <input type="hidden" name="teamId" value={teamId} />
+                    <input type="hidden" name="userId" value={row.userId} />
+                    <PendingSubmitButton idle={it.nudge} pendingLabel={it.nudging} variant="ghost" icon="bell" />
+                  </form>
+                ) : null}
+                {canEditRoster && row.membershipId && row.membershipRole !== "REPRESENTATIVE" ? (
+                  <RemovePlayerForm teamId={teamId} membershipId={row.membershipId} lastName={row.lastName} />
+                ) : null}
+              </div>
             </li>
           ))}
         </ul>

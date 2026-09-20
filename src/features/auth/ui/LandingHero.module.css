@@ -1,7 +1,8 @@
 .stack {
-  width: min(var(--content-max), 100%);
+  width: 100%;
+  max-width: var(--content-max-canvas);
   display: grid;
-  gap: var(--space-12);
+  gap: var(--space-10);
 }
 
 .hero {
@@ -30,10 +31,10 @@
 .hero h1 {
   margin: 0;
   font-family: var(--font-brand);
-  font-size: clamp(2rem, 7vw, 3rem);
+  font-size: clamp(2rem, 5vw, 3.25rem);
   font-weight: 700;
   letter-spacing: 0.05em;
-  line-height: 0.92;
+  line-height: 0.95;
 }
 
 .lead,
@@ -41,11 +42,11 @@
   margin: 0;
   color: var(--color-text-muted);
   line-height: var(--leading-body);
-  max-width: 34rem;
+  max-width: 36rem;
 }
 
 .lead {
-  font-size: var(--text-lg);
+  font-size: clamp(1rem, 2vw, var(--text-lg));
   color: var(--color-text);
 }
 
@@ -100,6 +101,7 @@
 .step p {
   margin: var(--space-1) 0 0;
   color: var(--color-text-muted);
+  line-height: var(--leading-body);
 }
 
 .num {
@@ -109,6 +111,20 @@
   letter-spacing: 0.06em;
   color: var(--color-accent);
   line-height: 1.2;
+}
+
+@media (min-width: 960px) {
+  .stack {
+    grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+    gap: var(--gap-canvas);
+    align-items: start;
+    padding-top: var(--space-4);
+  }
+
+  .how {
+    padding-left: var(--space-8);
+    border-left: 1px solid var(--color-hairline);
+  }
 }
 
 @media (max-width: 640px) {

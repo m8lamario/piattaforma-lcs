@@ -12,7 +12,7 @@ export function WithdrawForm({ registrationId }: { registrationId: string }) {
     <form action={action}>
       <input type="hidden" name="registrationId" value={registrationId} />
       {state?.error ? <ActionError error={state.error} code={state.code} /> : null}
-      <PendingSubmitButton idle={it.withdraw} pendingLabel={it.withdrawing} variant="danger" />
+      <PendingSubmitButton idle={it.withdraw} pendingLabel={it.withdrawing} variant="danger" icon="alert" />
     </form>
   );
 }

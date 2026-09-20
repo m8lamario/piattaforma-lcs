@@ -63,7 +63,7 @@ export function InviteForm({ teamId }: { teamId: string }) {
         </div>
         {state?.error ? <ActionError error={state.error} code={state.code} /> : null}
         <div className={fields.actions}>
-          <Button type="submit" disabled={pending} aria-busy={pending}>
+          <Button type="submit" icon="send" disabled={pending} aria-busy={pending}>
             {pending ? it.sendingInvite : it.sendInvite}
           </Button>
         </div>
@@ -72,7 +72,7 @@ export function InviteForm({ teamId }: { teamId: string }) {
         <div className={styles.success} role="status">
           <p>{copied ? it.copied : it.inviteCreated}</p>
           <code className={styles.url}>{redeemUrl}</code>
-          <Button type="button" variant="accent" onClick={copyLink}>
+          <Button type="button" variant="accent" icon="plus" onClick={copyLink}>
             {copied ? it.copiedShort : it.copyLink}
           </Button>
         </div>

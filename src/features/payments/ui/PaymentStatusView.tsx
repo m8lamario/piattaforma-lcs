@@ -21,7 +21,9 @@ export function PaymentStatusView({ status, teamPayment }: Props) {
         <p className={`${fields.banner} ${fields.bannerDanger}`} role="status">
           {it.paymentFailed}
         </p>
-        <ButtonLink href={teamPayment ? "/squadra" : "/area/registrazione/pagamento"}>{it.paymentPay}</ButtonLink>
+        <ButtonLink href={teamPayment ? "/squadra" : "/area/registrazione/pagamento"} variant="success" icon="payment">
+          {it.paymentPay}
+        </ButtonLink>
       </div>
     );
   }

@@ -54,7 +54,7 @@ export function SummaryStep({ checklist }: Props) {
           })}
       </ul>
       <p>
-        <ButtonLink href="/area" variant="ghost">
+        <ButtonLink href="/area" variant="ghost" icon="back">
           {it.backToArea}
         </ButtonLink>
       </p>

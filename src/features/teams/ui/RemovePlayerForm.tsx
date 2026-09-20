@@ -29,7 +29,7 @@ export function RemovePlayerForm({ teamId, membershipId, lastName }: Props) {
 
   if (!open) {
     return (
-      <Button type="button" variant="ghost" onClick={() => setOpen(true)}>
+      <Button type="button" variant="danger" icon="trash" onClick={() => setOpen(true)}>
         {it.lifecycleRemoveOpen}
       </Button>
     );
@@ -58,10 +58,10 @@ export function RemovePlayerForm({ teamId, membershipId, lastName }: Props) {
         <ActionError error={state.error} code={"code" in state ? state.code : undefined} />
       ) : null}
       <div className={fields.actions}>
-        <Button type="submit" variant="danger" disabled={pending} aria-busy={pending}>
+        <Button type="submit" variant="danger" icon="trash" disabled={pending} aria-busy={pending}>
           {pending ? it.lifecycleRemoving : it.lifecycleRemoveSubmit}
         </Button>
-        <Button type="button" variant="ghost" disabled={pending} onClick={() => setOpen(false)}>
+        <Button type="button" variant="ghost" icon="close" disabled={pending} onClick={() => setOpen(false)}>
           {it.lifecycleCancel}
         </Button>
       </div>

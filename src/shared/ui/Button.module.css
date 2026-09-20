@@ -21,6 +21,10 @@
     box-shadow var(--duration-fast) var(--ease-out);
 }
 
+.icon {
+  opacity: 0.95;
+}
+
 .button:focus-visible {
   outline: 3px solid var(--color-focus);
   outline-offset: 2px;
@@ -49,23 +53,46 @@
   color: var(--color-on-accent);
 }
 
-.ghost {
+.accent:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--color-accent) 88%, var(--color-text));
+}
+
+.ghost,
+.secondary {
   background: var(--color-surface-raised);
   color: var(--color-text);
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-text) 22%, var(--color-border));
   font-weight: 650;
 }
 
-.ghost:hover:not(:disabled) {
+.ghost:hover:not(:disabled),
+.secondary:hover:not(:disabled) {
   background: var(--color-primary-soft);
 }
 
 .danger {
-  background: var(--color-danger-soft);
-  color: var(--color-danger);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-danger) 45%, var(--color-border));
+  background: var(--color-danger);
+  color: var(--color-on-danger);
 }
 
 .danger:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--color-danger) 18%, var(--color-danger-soft));
+  background: color-mix(in srgb, var(--color-danger) 88%, var(--color-text));
+}
+
+.success {
+  background: var(--color-success);
+  color: var(--color-on-success);
+}
+
+.success:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--color-success) 88%, var(--color-text));
+}
+
+.warning {
+  background: var(--color-warning);
+  color: var(--color-on-warning);
+}
+
+.warning:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--color-warning) 88%, var(--color-text));
 }

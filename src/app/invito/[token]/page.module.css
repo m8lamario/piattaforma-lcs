@@ -3,15 +3,18 @@
   display: flex;
   align-items: flex-start;
   justify-content: center;
-  padding: var(--space-page-y) var(--space-6);
+  padding: var(--space-page-y) var(--space-page-x);
+  width: 100%;
 }
 
 .auth,
 .sheet {
-  width: min(26rem, 100%);
+  width: min(29rem, 100%);
   display: grid;
   gap: var(--space-4);
-  padding-left: var(--space-5);
+  padding: var(--space-6) var(--space-6) var(--space-6) var(--space-5);
+  background: var(--color-surface-raised);
+  border: 1px solid var(--color-hairline);
   border-left: var(--line-width) solid var(--color-line);
 }
 
@@ -34,6 +37,7 @@
 .sheet p {
   margin: 0;
   color: var(--color-text-muted);
+  line-height: var(--leading-body);
 }
 
 .back {
@@ -51,12 +55,12 @@
 
 @media (max-width: 640px) {
   .main {
-    padding: var(--space-8) var(--space-4);
+    padding: var(--space-6) var(--space-4);
   }
 
   .auth,
   .sheet {
-    padding-left: var(--space-4);
+    padding: var(--space-4);
     width: 100%;
   }
 }

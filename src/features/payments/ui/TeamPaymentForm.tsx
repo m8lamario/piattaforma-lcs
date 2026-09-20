@@ -40,7 +40,7 @@ export function TeamPaymentForm({ teamId, covered, amount, currency }: Props) {
       </p>
       <p className={fields.help}>{it.paymentPlaceholderFee}</p>
       {state?.error ? <ActionError error={state.error} code={state.code} /> : null}
-      <Button type="submit" disabled={pending} aria-busy={pending}>
+      <Button type="submit" variant="success" icon="payment" disabled={pending} aria-busy={pending}>
         {pending ? it.redirecting : it.paymentPay}
       </Button>
     </form>

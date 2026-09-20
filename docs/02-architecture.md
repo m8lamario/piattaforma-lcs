@@ -159,7 +159,12 @@ Non si introduce un EAV `PlayerProfileField` in M0: troppa complessità per camp
 - Monitoring adapter stub (console in dev).
 - Errori utente: messaggi in italiano, senza stack in UI.
 
-## 11. Decisioni architetturali registrate
+## 12. Regole Responsive e Layout Space Management (2026-09-20)
+
+Principio cardine:
+- **Desktop (>= 1024px):** Sfruttamento estensivo dello spazio orizzontale. Canvas largo (`--content-max-canvas: 80rem`), affiancamento a due colonne per sezioni operative (stage principale + rail contestuale per progress, riassunti, window e azioni secondarie), riduzione drastica dello scrolling verticale immotivato.
+- **Mobile (< 768px):** Priorità alla progressione verticale pulita a colonna singola (`100%` width), touch targets generosi (`--control-min: 2.75rem`), visual hierarchy lineare, nessun clipping orizzontale.
+- **Transizioni fluide:** Utilizzo sistematico di `clamp()` per font sizes e paddings di pagina, evitando layout a colonna stretta centrata a desktop.
 
 | ID | Decisione |
 |---|---|

@@ -89,8 +89,68 @@
 }
 
 .dashboard {
-  width: min(40rem, 100%);
+  width: min(var(--content-max-canvas), 100%);
   align-self: flex-start;
+  display: grid;
+  gap: var(--space-6);
+}
+
+.dashboardLayout {
+  display: grid;
+  gap: var(--gap-canvas);
+  align-items: start;
+}
+
+.dashboardMain {
+  display: grid;
+  gap: var(--space-6);
+}
+
+.dashboardSide {
+  display: grid;
+  gap: var(--space-4);
+  background: var(--color-surface-raised);
+  border: 1px solid var(--color-hairline);
+  padding: var(--space-5);
+}
+
+.wizardLayout {
+  display: grid;
+  gap: var(--gap-canvas);
+  align-items: start;
+}
+
+.teamLayout {
+  display: grid;
+  gap: var(--gap-canvas);
+  align-items: start;
+}
+
+.teamMain {
+  display: grid;
+  gap: var(--space-6);
+}
+
+.teamSide {
+  display: grid;
+  gap: var(--space-4);
+  background: var(--color-surface-raised);
+  border: 1px solid var(--color-hairline);
+  padding: var(--space-5);
+}
+
+@media (min-width: 1024px) {
+  .dashboardLayout {
+    grid-template-columns: minmax(0, 1fr) minmax(19rem, 22rem);
+  }
+
+  .wizardLayout {
+    grid-template-columns: minmax(0, 1fr) minmax(19rem, 22rem);
+  }
+
+  .teamLayout {
+    grid-template-columns: minmax(0, 1fr) minmax(19rem, 23rem);
+  }
 }
 
 .dashboardHead {
@@ -144,7 +204,7 @@
 }
 
 .wizard {
-  width: min(40rem, 100%);
+  width: min(var(--content-max-canvas), 100%);
   align-self: flex-start;
   padding-bottom: var(--space-8);
 }
@@ -193,9 +253,9 @@
 }
 
 .team {
-  width: min(42rem, 100%);
+  width: min(var(--content-max-canvas), 100%);
   display: grid;
-  gap: var(--space-10);
+  gap: var(--space-8);
   align-self: flex-start;
 }
 
@@ -242,7 +302,7 @@
 }
 
 .admin {
-  width: min(44rem, 100%);
+  width: min(var(--content-max-canvas), 100%);
   display: grid;
   gap: var(--space-6);
   align-self: flex-start;

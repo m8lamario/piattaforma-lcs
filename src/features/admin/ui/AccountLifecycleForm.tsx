@@ -40,6 +40,8 @@ export function AccountLifecycleForm({ userId, email, lifecycleStatus, canDelete
           submit={it.lifecycleDeleteSubmit}
           pendingLabel={it.lifecycleDeleting}
           blocked={false}
+          variant="danger"
+          icon="trash"
         />
       ) : null}
       {canAnonymize && !blocked ? (
@@ -55,6 +57,8 @@ export function AccountLifecycleForm({ userId, email, lifecycleStatus, canDelete
           submit={it.lifecycleAnonymizeSubmit}
           pendingLabel={it.lifecycleAnonymizing}
           blocked={false}
+          variant="warning"
+          icon="alert"
         />
       ) : null}
       {blocked ? <p className={fields.bannerWarn}>{it.lifecycleAlreadyAnonymized}</p> : null}
@@ -76,6 +80,8 @@ type FormProps = {
   submit: string;
   pendingLabel: string;
   blocked: boolean;
+  variant: "danger" | "warning";
+  icon: "trash" | "alert";
 };
 
 function DestructiveForm({
@@ -89,6 +95,8 @@ function DestructiveForm({
   label,
   submit,
   pendingLabel,
+  variant,
+  icon,
 }: FormProps) {
   const [armed, setArmed] = useState(false);
   const [typed, setTyped] = useState("");
@@ -105,7 +113,7 @@ function DestructiveForm({
         {it.lifecycleTargetAccount}: {email}
       </p>
       {!armed ? (
-        <Button type="button" variant="danger" onClick={() => setArmed(true)}>
+        <Button type="button" variant={variant} icon={icon} onClick={() => setArmed(true)}>
           {it.lifecycleArm}
         </Button>
       ) : (
@@ -129,10 +137,16 @@ function DestructiveForm({
             <ActionError error={state.error} code={"code" in state ? state.code : undefined} />
           ) : null}
           <div className={fields.actions}>
-            <Button type="submit" variant="danger" disabled={pending || !matches} aria-busy={pending}>
+            <Button
+              type="submit"
+              variant={variant}
+              icon={icon}
+              disabled={pending || !matches}
+              aria-busy={pending}
+            >
               {pending ? pendingLabel : submit}
             </Button>
-            <Button type="button" variant="ghost" disabled={pending} onClick={() => setArmed(false)}>
+            <Button type="button" variant="ghost" icon="close" disabled={pending} onClick={() => setArmed(false)}>
               {it.lifecycleCancel}
             </Button>
           </div>
