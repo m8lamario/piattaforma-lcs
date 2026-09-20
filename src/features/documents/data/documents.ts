@@ -2,6 +2,7 @@ import { createHash, randomBytes } from "node:crypto";
 import { MAX_UPLOAD_BYTES } from "@/shared/config/app";
 import { prisma } from "@/shared/lib/prisma";
 import { storageAdapter } from "@/shared/adapters";
+import { adminDocumentSelect } from "@/features/documents/domain/adminView";
 import { sanitizeFilename, stubScan } from "@/features/documents/domain/filename";
 import { declaredMimeMatches, detectAllowedMime } from "@/features/documents/domain/magic";
 
@@ -46,25 +47,21 @@ export async function getDocumentById(documentId: string) {
   });
 }
 
-const adminDocumentSelect = {
-  id: true,
-  status: true,
-  originalFilename: true,
-  mimeType: true,
-  sizeBytes: true,
-  uploadedAt: true,
-  playerProfile: { select: { firstName: true, lastName: true, userId: true } },
-  registration: { select: { teamId: true, team: { select: { id: true, name: true } } } },
-  reviews: {
-    orderBy: { createdAt: "desc" as const },
-    take: 1,
-    select: { decision: true, reason: true, createdAt: true },
-  },
-};
-
-export async function listPendingMedicalDocuments() {
+export async function listPendingMedicalDocuments(filters: { teamId?: string; q?: string } = {}) {
   return prisma.document.findMany({
-    where: { status: "PENDING_REVIEW", type: { code: "MEDICAL_CERTIFICATE" } },
+    where: {
+      status: "PENDING_REVIEW",
+      type: { code: "MEDICAL_CERTIFICATE" },
+      registration: filters.teamId ? { teamId: filters.teamId } : undefined,
+      playerProfile: filters.q
+        ? {
+            OR: [
+              { firstName: { contains: filters.q, mode: "insensitive" } },
+              { lastName: { contains: filters.q, mode: "insensitive" } },
+            ],
+          }
+        : undefined,
+    },
     orderBy: { uploadedAt: "asc" },
     select: adminDocumentSelect,
   });

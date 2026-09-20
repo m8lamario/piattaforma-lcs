@@ -47,8 +47,10 @@ export function authorize(
     case "platform:admin":
     case "admin:manage":
     case "document:review":
+    case "staff:invite":
       return deny("Permesso negato.");
     case "team:invite":
+    case "team:update_roster":
     case "payment:create_team":
       return isTeamRepFor(actor, resource.teamId)
         ? { allow: true }
@@ -67,6 +69,10 @@ export function authorize(
       return isPlayerOwner(actor, resource.ownerUserId)
         ? { allow: true }
         : deny("Puoi modificare solo la tua registrazione.");
+    case "registration:withdraw":
+      return isPlayerOwner(actor, resource.ownerUserId)
+        ? { allow: true }
+        : deny("Puoi ritirare solo la tua iscrizione.");
     case "document:read_status":
       if (isPlayerOwner(actor, resource.ownerUserId)) return { allow: true };
       if (isTeamRepFor(actor, resource.teamId)) return { allow: true };

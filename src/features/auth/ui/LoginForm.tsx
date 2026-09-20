@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { loginAction } from "@/features/auth/actions";
+import Link from "next/link";
 import { Button } from "@/shared/ui/Button";
 import { it } from "@/shared/i18n/it";
 import fields from "@/shared/ui/form.module.css";
@@ -45,6 +46,11 @@ export function LoginForm({ nextPath = "/area" }: { nextPath?: string }) {
           {pending ? it.signingIn : it.submitLogin}
         </Button>
       </div>
+      <p>
+        <Link href="/recupera-password" className={fields.textLink}>
+          {it.forgotPassword}
+        </Link>
+      </p>
     </form>
   );
 }

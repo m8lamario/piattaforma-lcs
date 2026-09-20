@@ -10,6 +10,7 @@ import {
   persistRegistrationStatus,
 } from "@/features/registrations/data/workspace";
 import { nextStepAfter } from "@/features/registrations/domain/wizard";
+import { workspaceWriteError } from "@/features/registrations/domain/writeGate";
 import { authorize } from "@/shared/authz/authorize";
 import { getActorByUserId } from "@/shared/authz/getActor";
 import { writeAuditLog } from "@/shared/lib/audit";
@@ -37,6 +38,10 @@ async function requireWritable() {
   });
   if (!allowed.allow) {
     return { ok: false as const, error: "Non puoi modificare questa iscrizione." };
+  }
+  const windowError = workspaceWriteError(workspace.registration);
+  if (windowError) {
+    return { ok: false as const, error: windowError };
   }
 
   const user = await prisma.user.findUnique({
@@ -77,7 +82,7 @@ export async function savePrivacyConsentsAction(
 
   const { session, workspace } = access;
   const rateKey = await clientKey(`consent:${session.user!.id}`);
-  if (!consumeRateLimit(rateKey, RATE_LIMITS.consentWrite.limit, RATE_LIMITS.consentWrite.windowMs)) {
+  if (!(await consumeRateLimit(rateKey, RATE_LIMITS.consentWrite.limit, RATE_LIMITS.consentWrite.windowMs))) {
     return { error: "Troppe conferme in poco tempo. Riprova più tardi." };
   }
 
@@ -128,7 +133,7 @@ export async function saveMediaConsentAction(
 
   const { session, workspace } = access;
   const rateKey = await clientKey(`consent:${session.user!.id}`);
-  if (!consumeRateLimit(rateKey, RATE_LIMITS.consentWrite.limit, RATE_LIMITS.consentWrite.windowMs)) {
+  if (!(await consumeRateLimit(rateKey, RATE_LIMITS.consentWrite.limit, RATE_LIMITS.consentWrite.windowMs))) {
     return { error: "Troppe conferme in poco tempo. Riprova più tardi." };
   }
 

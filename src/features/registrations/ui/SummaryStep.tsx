@@ -36,6 +36,7 @@ export function SummaryStep({ checklist }: Props) {
   return (
     <div className={styles.placeholder}>
       <p>{it.summaryIntro}</p>
+      <p>{it.summaryWhatNow}</p>
       <ul className={styles.summaryList}>
         {checklist
           .filter((item) => item.status !== "not_applicable")

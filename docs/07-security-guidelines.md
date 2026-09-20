@@ -42,15 +42,17 @@ Vedi [06-roles-and-permissions.md](06-roles-and-permissions.md). Sempre server-s
 ## 7. CSRF / XSS / sessioni
 
 - Mutazioni via Server Actions o route con protezione CSRF Auth.js.
-- CSP di base in headers Next (strictness incrementale).
+- CSP con nonce sul script tema in `proxy.ts`; residuo `'unsafe-inline'`/`'unsafe-eval'` solo se richiesto da Next.
 - Logout invalida sessione server-side.
+- Reset password: token hashato, monouso, messaggio generico, rate limit.
 
 ## 8. Pagamenti
 
-- Adapter; webhook con verifica firma (quando live).
+- Adapter; webhook con verifica firma Stripe (`STRIPE_WEBHOOK_SECRET`) quando `PAYMENT_DRIVER=stripe`.
 - Idempotenza su `providerPaymentId`.
-- Nessun campo carta nel DOM nostro (hosted checkout).
+- Nessun campo carta nel DOM nostro (Stripe Checkout hosted).
 - Non loggare payload webhook grezzi.
+- Pagina `/area/pagamento/esito` non marca SUCCEEDED se il driver non è stub.
 
 ## 9. Logging
 
@@ -142,5 +144,13 @@ Non loggare: password, token, CF completo (mascherare), body documenti, Authoriz
 ## 20. Esito review M7
 
 - CSP + nosniff, referrer, frame deny, permissions policy.
-- Rate limit in-process su login/invito/upload/consensi/profilo (store non distribuito).
-- Residuo: Playwright CI, nonce CSP, monitoring live.
+- Rate limit Postgres (`RateLimitHit`) su login/invito/upload/consensi/profilo/reset/CSV.
+
+## 21. Esito review M8–M12
+
+- `/admin` dietro sessione + `admin:manage`; liste senza storageKey.
+- `StaffInvite` hashato; redeem senza Registration.
+- Withdraw senza delete; reset password anti-enumerazione.
+- Stripe webhook firmato; R2 bucket privato; HMAC file invariato.
+- Email Resend: variables `title` / URL, mai CF o motivo medico.
+- Playwright happy path in CI; nonce CSP sul bootstrap tema.

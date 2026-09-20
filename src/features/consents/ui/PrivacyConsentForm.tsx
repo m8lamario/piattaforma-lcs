@@ -41,8 +41,8 @@ export function PrivacyConsentForm({ documents }: Props) {
           <p className={fields.notice}>{it.legalPlaceholderNotice}</p>
           <pre className={styles.body}>{document.body}</pre>
           <input type="hidden" name={`version:${document.slug}`} value={document.versionId} />
-          <label className={styles.check}>
-            <input type="checkbox" name={`accept:${document.slug}`} />
+          <label className={styles.check} htmlFor={`accept-${document.slug}`}>
+            <input id={`accept-${document.slug}`} type="checkbox" name={`accept:${document.slug}`} />
             {it.consentAcceptLabel} {document.version}
           </label>
         </article>

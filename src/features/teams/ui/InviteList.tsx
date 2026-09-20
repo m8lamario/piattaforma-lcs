@@ -1,4 +1,8 @@
-import { revokeInviteAction } from "@/features/teams/actions";
+"use client";
+
+import { useActionState } from "react";
+import { resendInviteAction, revokeInviteAction } from "@/features/teams/actions";
+import { Button } from "@/shared/ui/Button";
 import { PendingSubmitButton } from "@/shared/ui/PendingSubmitButton";
 import { StatusChip, type StatusTone } from "@/shared/ui/StatusChip";
 import { it } from "@/shared/i18n/it";
@@ -28,9 +32,18 @@ const STATUS_TONE: Record<string, StatusTone> = {
 };
 
 export function InviteList({ teamId, invites }: { teamId: string; invites: Invite[] }) {
+  const [state, action, pending] = useActionState(resendInviteAction, undefined);
+
   return (
     <section className={styles.list}>
       <h2>{it.pendingInvites}</h2>
+      {state?.redeemUrl ? (
+        <div className={styles.success} role="status">
+          <p>{it.inviteCreated}</p>
+          <code className={styles.url}>{state.redeemUrl}</code>
+        </div>
+      ) : null}
+      {state?.error ? <p className={styles.meta}>{state.error}</p> : null}
       {invites.length === 0 ? <p className={styles.empty}>{it.emptyInvites}</p> : null}
       {invites.map((invite) => (
         <div key={invite.id} className={styles.row}>
@@ -47,12 +60,23 @@ export function InviteList({ teamId, invites }: { teamId: string; invites: Invit
               </StatusChip>
             </p>
           </div>
-          {invite.status === "PENDING" ? (
-            <form action={revokeInviteAction}>
-              <input type="hidden" name="teamId" value={teamId} />
-              <input type="hidden" name="inviteId" value={invite.id} />
-              <PendingSubmitButton idle={it.revoke} pendingLabel={it.loadingRevoke} variant="ghost" />
-            </form>
+          {invite.status === "PENDING" || invite.status === "EXPIRED" ? (
+            <div className={styles.actions}>
+              <form action={action}>
+                <input type="hidden" name="teamId" value={teamId} />
+                <input type="hidden" name="inviteId" value={invite.id} />
+                <Button type="submit" variant="ghost" disabled={pending} aria-busy={pending}>
+                  {pending ? it.resendingInvite : it.resendInvite}
+                </Button>
+              </form>
+              {invite.status === "PENDING" ? (
+                <form action={revokeInviteAction}>
+                  <input type="hidden" name="teamId" value={teamId} />
+                  <input type="hidden" name="inviteId" value={invite.id} />
+                  <PendingSubmitButton idle={it.revoke} pendingLabel={it.loadingRevoke} variant="ghost" />
+                </form>
+              ) : null}
+            </div>
           ) : null}
         </div>
       ))}

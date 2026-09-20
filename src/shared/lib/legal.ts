@@ -11,3 +11,8 @@ export async function readLegalDocument(slug: string) {
   const file = path.join(process.cwd(), "content/legal", `${slug}.md`);
   return readFile(file, "utf8");
 }
+
+export async function legalFilesHavePlaceholders() {
+  const bodies = await Promise.all(LEGAL_CATALOG.map((item) => readLegalDocument(item.slug)));
+  return bodies.some((body) => body.includes("[INSERIRE"));
+}

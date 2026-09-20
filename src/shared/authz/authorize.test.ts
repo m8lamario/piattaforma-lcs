@@ -85,4 +85,20 @@ describe("authorize deny-by-default", () => {
     expect(authorize(superAdmin, "platform:admin").allow).toBe(true);
     expect(authorize(superAdmin, "document:read_file", ownDoc).allow).toBe(true);
   });
+
+  it("nega al giocatore ritiro e maglia altrui, consente il proprio ritiro", () => {
+    expect(authorize(player, "registration:withdraw", ownDoc).allow).toBe(true);
+    expect(authorize(otherPlayer, "registration:withdraw", ownDoc).allow).toBe(false);
+    expect(authorize(orgAdmin, "registration:withdraw", ownDoc).allow).toBe(true);
+    expect(authorize(player, "team:update_roster", { teamId: "team-1" }).allow).toBe(false);
+    expect(authorize(rep, "team:update_roster", { teamId: "team-1" }).allow).toBe(true);
+    expect(authorize(player, "staff:invite", { teamId: "team-1" }).allow).toBe(false);
+    expect(authorize(orgAdmin, "staff:invite", { teamId: "team-1" }).allow).toBe(true);
+  });
+
+  it("nega player e rappresentante sulla console organizzazione", () => {
+    expect(authorize(player, "admin:manage").allow).toBe(false);
+    expect(authorize(rep, "admin:manage").allow).toBe(false);
+    expect(authorize(orgAdmin, "admin:manage").allow).toBe(true);
+  });
 });

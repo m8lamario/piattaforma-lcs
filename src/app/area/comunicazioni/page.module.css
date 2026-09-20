@@ -1,5 +1,5 @@
 .main {
-  width: min(40rem, 100%);
+  width: min(var(--content-max), 100%);
   display: grid;
   gap: var(--space-5);
   align-self: flex-start;
@@ -15,6 +15,14 @@
 .list li {
   padding: var(--space-4) 0;
   border-bottom: 1px solid var(--color-hairline);
+}
+
+.list li:first-child {
+  border-top: 1px solid var(--color-hairline);
+}
+
+.list strong {
+  display: block;
 }
 
 .list p {

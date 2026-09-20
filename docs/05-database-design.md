@@ -17,6 +17,7 @@ erDiagram
   Edition ||--o{ Team : has
   School ||--o{ Team : has
   Team ||--o{ PlayerInvite : sends
+  Team ||--o{ StaffInvite : staff
   Team ||--o{ Registration : roster
   Registration ||--o{ Document : attaches
   Registration ||--o{ Payment : pays
@@ -94,6 +95,8 @@ Un rappresentante che è anche giocatore ha `TEAM_REPRESENTATIVE` + membership `
 
 Il token in chiaro sta solo nell’URL/email; in DB si salva **hash**.
 
+**StaffInvite** — come PlayerInvite ma per rappresentanti: teamId, email, token hash, status, expiresAt, invitedBy. Il redeem **non** crea `Registration`. Se l’email ha già un User, si aggiunge `TEAM_REPRESENTATIVE` + membership `REPRESENTATIVE`.
+
 ## 6. Registrazione
 
 **Registration**
@@ -145,7 +148,7 @@ Mai un flag denormalizzato `privacyAccepted` sul User come unica prova.
 
 - registrationId nullable, teamId nullable, editionId
 - amount, currency, status PENDING|SUCCEEDED|FAILED|REFUNDED
-- provider (stringa libera, es. `stub`)
+- provider (stringa libera, es. `stub` | `stripe`)
 - providerPaymentId, providerSessionId
 - paidAt, failureCode, receiptUrl nullable
 - raw webhook **non** si salva intero se contiene PII; si salva event id + tipo
@@ -167,6 +170,8 @@ Check applicativo: almeno uno tra registrationId e teamId.
 
 Indici: `actorUserId`, `entityType+entityId`, `createdAt`.
 
+**RateLimitHit** — `key`, `createdAt`. Sliding window per login, inviti, upload, reset password, CSV. Non è un store in-process.
+
 ## 11. Indici previsti
 
 - User.email unique
@@ -183,5 +188,5 @@ Indici: `actorUserId`, `entityType+entityId`, `createdAt`.
 - File certificati
 - PAN/CVV
 - Password in chiaro (solo hash)
-- Token invito in chiaro
+- Token invito / reset password in chiaro
 - Privacy policy come unico booleano

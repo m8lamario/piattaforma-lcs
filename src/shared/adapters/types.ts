@@ -37,6 +37,7 @@ export type PaymentWebhookEvent = {
   type: string;
   providerPaymentId: string;
   status: "PENDING" | "SUCCEEDED" | "FAILED" | "REFUNDED";
+  paymentId?: string;
 };
 
 export interface PaymentAdapter {

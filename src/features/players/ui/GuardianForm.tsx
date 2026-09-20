@@ -88,6 +88,7 @@ export function GuardianForm({ defaults }: Props) {
               id="guardian-first"
               className={fields.input}
               autoComplete="given-name"
+              aria-invalid={Boolean(form.formState.errors.firstName)}
               {...form.register("firstName")}
             />
           </div>
@@ -99,6 +100,7 @@ export function GuardianForm({ defaults }: Props) {
               id="guardian-last"
               className={fields.input}
               autoComplete="family-name"
+              aria-invalid={Boolean(form.formState.errors.lastName)}
               {...form.register("lastName")}
             />
           </div>
@@ -107,7 +109,7 @@ export function GuardianForm({ defaults }: Props) {
           <label className={fields.label} htmlFor="relationship">
             {it.relationship}
           </label>
-          <select id="relationship" className={fields.select} {...form.register("relationship")}>
+          <select id="relationship" className={fields.select} aria-invalid={Boolean(form.formState.errors.relationship)} {...form.register("relationship")}>
             {GUARDIAN_RELATIONSHIPS.map((value) => (
               <option key={value} value={value}>
                 {RELATION_LABEL[value]}
@@ -129,6 +131,7 @@ export function GuardianForm({ defaults }: Props) {
               className={fields.input}
               type="email"
               autoComplete="email"
+              aria-invalid={Boolean(form.formState.errors.email)}
               {...form.register("email")}
             />
           </div>
@@ -141,6 +144,7 @@ export function GuardianForm({ defaults }: Props) {
               className={fields.input}
               type="tel"
               autoComplete="tel"
+              aria-invalid={Boolean(form.formState.errors.phone)}
               {...form.register("phone")}
             />
           </div>

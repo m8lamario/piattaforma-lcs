@@ -20,7 +20,9 @@ export type IconName =
   | "camera"
   | "payment"
   | "summary"
-  | "invite";
+  | "invite"
+  | "org"
+  | "upload";
 
 const PATHS: Record<IconName, ReactNode> = {
   menu: (
@@ -109,9 +111,8 @@ const PATHS: Record<IconName, ReactNode> = {
   ),
   privacy: (
     <>
-      <path d="M7 4.5h7l3.5 3.5V19.5H7V4.5Z" />
-      <path d="M14 4.5V8h3.5" />
-      <path d="M9.5 12.5h5M9.5 15.5h3.5" />
+      <path d="M12 3.5 19 6.5v5.2c0 4.3-2.9 7.4-7 8.8-4.1-1.4-7-4.5-7-8.8V6.5L12 3.5Z" />
+      <path d="M9.5 12.2 11.3 14l3.4-3.8" />
     </>
   ),
   camera: (
@@ -122,8 +123,8 @@ const PATHS: Record<IconName, ReactNode> = {
   ),
   payment: (
     <>
-      <path d="M7 6.5h10.5v14L12.5 18 7 20.5v-14Z" />
-      <path d="M9.5 10.5h5.5M9.5 13.5h4" />
+      <rect x="3.5" y="6.5" width="17" height="11" rx="1.2" />
+      <path d="M3.5 10h17M7 15h4" />
     </>
   ),
   summary: (
@@ -135,6 +136,21 @@ const PATHS: Record<IconName, ReactNode> = {
     <>
       <circle cx="10" cy="9" r="2.2" />
       <path d="M5 18c.8-2.3 2.4-3.5 5-3.5 1.2 0 2.2.3 3.1.8M16 10v6M13 13h6" />
+    </>
+  ),
+  org: (
+    <>
+      <path d="M4.5 20.5h15" />
+      <path d="M6.5 20.5V7.5l5.5-3 5.5 3v13" />
+      <path d="M10 10h1.5M13.5 10H15M10 13.5h1.5M13.5 13.5H15" />
+      <path d="M11 20.5v-3.5h2v3.5" />
+    </>
+  ),
+  upload: (
+    <>
+      <path d="M12 15.5V7" />
+      <path d="M8.5 10.5 12 7l3.5 3.5" />
+      <path d="M5 16.5v3h14v-3" />
     </>
   ),
 };

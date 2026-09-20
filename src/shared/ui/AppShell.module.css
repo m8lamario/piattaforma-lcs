@@ -1,7 +1,16 @@
 .shell {
-  min-height: 100vh;
+  min-height: 100%;
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
+  background-color: var(--color-surface);
+  background-image: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--color-primary) 12%, transparent),
+    transparent var(--wash-size)
+  );
+  background-repeat: no-repeat;
+  background-size: 100% var(--wash-size);
 }
 
 .skip {
@@ -27,9 +36,12 @@
   gap: var(--space-3);
   align-items: center;
   justify-content: space-between;
-  padding: var(--space-3) var(--space-5);
-  background: color-mix(in srgb, var(--color-surface) 86%, transparent);
+  padding: var(--space-3) var(--space-page-x-sm);
+  background: var(--color-surface);
   border-bottom: 1px solid var(--color-hairline);
+  position: sticky;
+  top: 0;
+  z-index: 20;
 }
 
 .menuToggle {
@@ -37,6 +49,7 @@
   align-items: center;
   gap: var(--space-2);
   min-height: var(--control-min);
+  min-width: var(--control-min);
   padding: 0 var(--space-3);
   border: 0;
   border-radius: var(--radius-sm);
@@ -46,19 +59,33 @@
   font: inherit;
   font-weight: 650;
   cursor: pointer;
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
   margin-left: auto;
 }
 
-.nav {
+.drawer {
   display: none;
   flex-direction: column;
-  gap: var(--space-1);
+  gap: var(--space-6);
   width: 100%;
   order: 3;
+  padding: 0 0 var(--space-4);
+  border-top: 1px solid var(--color-hairline);
 }
 
-.navOpen {
+.drawerOpen {
   display: flex;
+}
+
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
 }
 
 .nav a {
@@ -72,6 +99,21 @@
   border-radius: 0;
   color: var(--color-text-muted);
   border-left: var(--line-width) solid transparent;
+}
+
+.badge {
+  margin-left: auto;
+  min-width: 1.25rem;
+  height: 1.25rem;
+  padding: 0 0.35rem;
+  border-radius: var(--radius-pill);
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  font-size: 0.7rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .nav a:hover {
@@ -102,15 +144,36 @@
 }
 
 .content {
-  flex: 1;
-  padding: var(--space-6);
+  flex: 1 0 auto;
+  width: 100%;
+  padding: var(--space-page-y-sm) var(--space-page-x-sm);
   display: flex;
+  flex-direction: column;
+  align-items: start;
   justify-content: flex-start;
+}
+
+.content > * {
+  max-width: 100%;
 }
 
 @media (max-width: 959px) {
   .email {
     display: none;
+  }
+
+  .drawerTheme {
+    display: none;
+  }
+
+  .drawerOpen .email {
+    display: block;
+    max-width: none;
+  }
+
+  .drawerOpen .session {
+    flex-wrap: wrap;
+    padding-top: var(--space-2);
   }
 }
 
@@ -118,34 +181,58 @@
   .shell {
     display: grid;
     grid-template-columns: var(--nav-width) minmax(0, 1fr);
+    grid-template-rows: minmax(100dvh, auto);
+  }
+
+  .shell::before {
+    content: "";
+    grid-column: 1;
+    grid-row: 1;
+    background: var(--color-surface-raised);
+    border-right: 1px solid var(--color-hairline);
   }
 
   .header {
     grid-column: 1;
-    grid-row: 1 / -1;
+    grid-row: 1;
     position: sticky;
     top: 0;
-    height: 100vh;
+    align-self: start;
+    height: 100dvh;
+    max-height: 100dvh;
+    overflow: auto;
+    z-index: 1;
     flex-direction: column;
     flex-wrap: nowrap;
     align-items: stretch;
     justify-content: flex-start;
     padding: var(--space-6) var(--space-5);
     border-bottom: 0;
-    border-right: 1px solid var(--color-hairline);
-    background: color-mix(in srgb, var(--color-surface-raised) 70%, var(--color-surface));
+    background: transparent;
   }
 
   .menuToggle {
     display: none;
   }
 
-  .nav,
-  .navOpen {
+  .toolbar {
+    display: none;
+  }
+
+  .drawerTheme {
+    display: contents;
+  }
+
+  .drawer,
+  .drawerOpen {
     display: flex;
+    flex: 1 1 auto;
     order: 0;
-    margin-top: var(--space-8);
     width: auto;
+    min-height: 0;
+    margin-top: var(--space-8);
+    padding: 0;
+    border-top: 0;
   }
 
   .session {
@@ -161,7 +248,8 @@
 
   .content {
     grid-column: 2;
-    padding: var(--space-10) var(--space-8);
+    min-height: 100dvh;
+    padding: var(--space-page-y) var(--space-page-x);
   }
 }
 
@@ -172,5 +260,13 @@
 
   .content {
     padding: var(--space-5) var(--space-4);
+  }
+
+  .menuToggle span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
   }
 }

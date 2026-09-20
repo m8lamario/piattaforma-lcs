@@ -118,6 +118,12 @@ export async function revokePlayerInvite(inviteId: string, teamId: string) {
   return result.count === 1;
 }
 
+export async function getPlayerInviteForTeam(inviteId: string, teamId: string) {
+  return prisma.playerInvite.findFirst({
+    where: { id: inviteId, teamId },
+  });
+}
+
 export async function loadRedeemContext(email: string) {
   const existingUser = await prisma.user.findUnique({
     where: { email },

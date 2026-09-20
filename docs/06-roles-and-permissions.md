@@ -20,7 +20,10 @@ Principio: **deny by default**. Se un controllo non è esplicito, la risposta è
 | Modificare dati propri | sì | se anche player | impersonation no in v1 | sì tecnico |
 | Vedere roster propria squadra (minimo) | sì | sì | sì | sì |
 | Invitare giocatori | no | sì (proprio team) | sì | sì |
-| Vedere stato certificato del roster | no (solo il proprio) | **stato** | sì | sì |
+| Vedere stato certificato del roster | no (né dei compagni) | **stato** | sì | sì |
+| Aggiornare maglia/ruolo rosa | no | sì (proprio team) | sì | sì |
+| Ritirare iscrizione | la propria | no | sì | sì |
+| Invitare rappresentante | no | no | sì | sì |
 | Vedere/scaricare file certificato | solo il proprio via signed URL | **no** | sì + audit | sì + audit |
 | Approvare/rifiutare documento | no | no | sì | sì |
 | Pagare quota individuale | se paymentMode lo richiede | no (salvo anche player) | no | no |
@@ -44,7 +47,9 @@ Test obbligatori: tentativo di accesso a registrazione/documento di un altro use
 
 ## 4. Campi visibili in rosa (Team Rep e compagni)
 
-Consentiti: firstName, lastName, jerseyNumber, rosterRole, registration status, checklist summary, medical **status only**, payment **status only**.
+Consentiti al **rappresentante**: firstName, lastName, jerseyNumber, rosterRole, registration status, medical **status only**, payment **status only**.
+
+Consentiti ai **compagni** (`/area/squadra`): firstName, lastName, jerseyNumber, rosterRole. Non stato certificato, non pagamento, non checklist.
 
 Negati: fiscalCode, phone, email (rep può vedere email dell’invito che ha creato), birthDate, storageKey, consent bodies, guardian details (OPEN: il rep vede se “dati genitore completi” sì/no, non i dati).
 
@@ -61,6 +66,9 @@ type Action =
   | "document:review"
   | "team:invite"
   | "team:read"
+  | "team:update_roster"
+  | "registration:withdraw"
+  | "staff:invite"
   | "payment:create_player"
   | "payment:create_team"
   | "admin:manage";
@@ -72,6 +80,7 @@ Nessun bypass `if (role === SUPER_ADMIN) return true` sparso nelle pagine: il su
 
 ## 6. Privilege escalation
 
-- Un player non può auto-assegnarsi TEAM_REPRESENTATIVE.
-- Il codice invito squadra non concede admin.
+- Un player non può auto-assegnarsi TEAM_REPRESENTATIVE (solo `StaffInvite` o Super Admin).
+- Il codice invito giocatore non concede admin né ruolo rappresentante.
 - Le API admin vivono sotto `/admin` **e** sotto check ruolo, entrambi necessari.
+- `staff:invite` e `admin:manage` per Org/Super Admin; `platform:admin` solo Super Admin.

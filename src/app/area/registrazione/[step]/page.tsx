@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
-import { getActorByUserId, isStaff, representativeTeamIds } from "@/shared/authz/getActor";
+import { loadAppShell } from "@/shared/ui/loadAppShell";
+import { AppShell } from "@/shared/ui/AppShell";
 import { authorize } from "@/shared/authz/authorize";
 import { GuardianForm } from "@/features/players/ui/GuardianForm";
 import { PersonalDataForm } from "@/features/players/ui/PersonalDataForm";
@@ -21,7 +22,7 @@ import { isPaymentCovered } from "@/features/registrations/domain/requirements";
 import { PlaceholderStep } from "@/features/registrations/ui/PlaceholderStep";
 import { SummaryStep } from "@/features/registrations/ui/SummaryStep";
 import { WizardShell } from "@/features/registrations/ui/WizardShell";
-import { AppShell } from "@/shared/ui/AppShell";
+import { WindowNotice } from "@/features/registrations/ui/WindowNotice";
 import { it } from "@/shared/i18n/it";
 
 type Props = {
@@ -35,13 +36,13 @@ export default async function WizardStepPage({ params }: Props) {
     redirect(`/accedi?next=/area/registrazione/${raw}`);
   }
 
-  const [actor, workspace] = await Promise.all([
-    getActorByUserId(session.user.id),
+  const [shell, workspace] = await Promise.all([
+    loadAppShell(session.user.id),
     loadPlayerWorkspace(session.user.id),
   ]);
   if (!workspace) redirect("/area");
 
-  const allowed = authorize(actor ?? { userId: session.user.id, roles: [], membershipTeamIds: [] }, "registration:read", {
+  const allowed = authorize(shell.actor ?? { userId: session.user.id, roles: [], membershipTeamIds: [] }, "registration:read", {
     ownerUserId: session.user.id,
     teamId: workspace.registration.teamId,
   });
@@ -57,8 +58,6 @@ export default async function WizardStepPage({ params }: Props) {
   }
 
   const steps = visibleWizardSteps(workspace.checklist);
-  const showTeam = actor ? representativeTeamIds(actor).length > 0 : false;
-  const showAdmin = actor ? isStaff(actor) : false;
   const privacySlugs = privacySlugsFor(workspace.evidence.isMinor);
   const legalVersions = await getCurrentLegalVersions([...privacySlugs, MEDIA_RELEASE_SLUG]);
   const toView = (slug: string) => {
@@ -145,7 +144,20 @@ export default async function WizardStepPage({ params }: Props) {
   }
 
   return (
-    <AppShell email={session.user.email} showTeam={showTeam} showAdmin={showAdmin}>
+    <AppShell
+      email={session.user.email}
+      showTeam={shell.showTeam}
+      showAdmin={shell.showAdmin}
+      showPlayerTeam={shell.showPlayerTeam}
+      unreadCount={shell.unreadCount}
+    >
+      <WindowNotice
+        edition={{
+          isActive: workspace.registration.isActive,
+          registrationOpensAt: workspace.registration.registrationOpensAt,
+          registrationClosesAt: workspace.registration.registrationClosesAt,
+        }}
+      />
       <WizardShell step={raw} steps={steps}>
         {body}
       </WizardShell>

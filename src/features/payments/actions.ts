@@ -7,6 +7,8 @@ import { createPendingPayment } from "@/features/payments/data/payments";
 import { playerCheckoutAmount, teamCheckoutAmount } from "@/features/payments/domain/amounts";
 import { loadPlayerWorkspace } from "@/features/registrations/data/workspace";
 import { isPaymentCovered } from "@/features/registrations/domain/requirements";
+import { isRegistrationWindowOpen } from "@/features/registrations/domain/window";
+import { workspaceWriteError } from "@/features/registrations/domain/writeGate";
 import { authorize } from "@/shared/authz/authorize";
 import { getActorByUserId } from "@/shared/authz/getActor";
 import { writeAuditLog } from "@/shared/lib/audit";
@@ -31,6 +33,8 @@ export async function startPlayerCheckoutAction() {
     teamId: workspace.registration.teamId,
   });
   if (!allowed.allow) return { error: "Non puoi pagare questa iscrizione." };
+  const windowError = workspaceWriteError(workspace.registration);
+  if (windowError) return { error: windowError };
 
   if (isPaymentCovered(workspace.evidence.payment)) {
     return { error: "Il pagamento è già coperto. Non viene addebitato un secondo importo." };
@@ -89,6 +93,15 @@ export async function startTeamCheckoutAction(teamId: string) {
 
   const team = await getTeamForActor(teamId);
   if (!team) return { error: "Squadra non trovata." };
+  if (
+    !isRegistrationWindowOpen({
+      isActive: team.edition.isActive,
+      registrationOpensAt: team.edition.registrationOpensAt,
+      registrationClosesAt: team.edition.registrationClosesAt,
+    })
+  ) {
+    return { error: "Le iscrizioni di questa edizione non sono aperte adesso." };
+  }
 
   const already = await prisma.payment.findFirst({
     where: { teamId, status: "SUCCEEDED" },

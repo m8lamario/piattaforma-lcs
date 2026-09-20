@@ -1,5 +1,5 @@
 .main {
-  width: min(44rem, 100%);
+  width: min(var(--content-max-wide), 100%);
   display: grid;
   gap: var(--space-6);
   align-self: flex-start;
@@ -43,7 +43,7 @@
 
 .main h2 {
   margin: 0;
-  font-size: var(--text-xs);
+  font-size: var(--text-kicker);
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;

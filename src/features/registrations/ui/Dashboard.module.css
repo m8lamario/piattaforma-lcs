@@ -1,5 +1,5 @@
 .wrap {
-  width: min(44rem, 100%);
+  width: min(var(--content-max-wide), 100%);
   display: grid;
   gap: var(--space-6);
   align-self: start;
@@ -18,6 +18,19 @@
   line-height: 1.4;
   font-weight: 700;
   max-width: 32rem;
+}
+
+.heroActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  align-items: center;
+}
+
+.note {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
 }
 
 .progressBlock {
@@ -39,7 +52,7 @@
 
 .segment {
   flex: 1;
-  height: 0.35rem;
+  height: 0.4rem;
   background: var(--color-border);
 }
 
@@ -57,7 +70,7 @@
 
 .listTitle {
   margin: 0;
-  font-size: var(--text-sm);
+  font-size: var(--text-kicker);
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -88,7 +101,7 @@
   border-top: 1px solid var(--color-hairline);
 }
 
-.item:hover {
+.item:hover strong {
   color: var(--color-primary);
 }
 
@@ -110,6 +123,15 @@
 }
 
 @media (max-width: 640px) {
+  .hero {
+    padding-left: var(--space-4);
+  }
+
+  .heroActions {
+    display: grid;
+    width: 100%;
+  }
+
   .item {
     grid-template-columns: auto 1fr;
   }

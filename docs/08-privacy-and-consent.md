@@ -66,7 +66,7 @@ Le pagine pubbliche leggono il **file**. Il wizard, via `ensureLegalDocuments`, 
 
 ### 3.5 Area consensi / admin informative
 
-Route previste in IA (`/area/consensi`, `/admin/informative`): non sono lo slice di questi testi. I record restano interrogabili da `ConsentRecord` + versione.
+`/admin/informative` è sola lettura delle versioni `isCurrent` (OD-038: niente CMS). `/area/consensi` non è una route v1: i consensi si gestiscono nel wizard. I record restano interrogabili da `ConsentRecord` + versione.
 
 ---
 

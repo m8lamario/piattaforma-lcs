@@ -12,8 +12,11 @@ import {
 } from "@/features/registrations/domain/wizard";
 import { it } from "@/shared/i18n/it";
 import { ButtonLink } from "@/shared/ui/Button";
-import { StatusChip, type StatusTone } from "@/shared/ui/StatusChip";
 import { PageHeader } from "@/shared/ui/PageHeader";
+import { StatusChip, type StatusTone } from "@/shared/ui/StatusChip";
+import { WithdrawForm } from "@/features/registrations/ui/WithdrawForm";
+import { WindowNotice } from "@/features/registrations/ui/WindowNotice";
+import type { EditionWindow } from "@/features/registrations/domain/window";
 import styles from "./Dashboard.module.css";
 
 const STATUS_COPY: Record<RegistrationStatus, string> = {
@@ -95,6 +98,8 @@ type Props = {
   status: RegistrationStatus;
   checklist: ChecklistItem[];
   medicalStatus?: MedicalEvidence;
+  registrationId: string;
+  editionWindow: EditionWindow;
 };
 
 export function RegistrationDashboard({
@@ -104,11 +109,22 @@ export function RegistrationDashboard({
   status,
   checklist,
   medicalStatus,
+  registrationId,
+  editionWindow,
 }: Props) {
   const hero = nextHero(checklist);
   const hrefStep = hero.code === "DONE" ? "riepilogo" : (ITEM_HREF[hero.code] ?? "dati");
   const visible = checklist.filter((item) => item.status !== "not_applicable");
   const doneCount = visible.filter((item) => item.status === "complete").length;
+  const settled = hero.code === "DONE" || status === "APPROVED" || status === "WITHDRAWN";
+  const heroCopy =
+    status === "WITHDRAWN"
+      ? it.heroWithdrawn
+      : status === "APPROVED"
+        ? it.heroApproved
+        : hero.code === "DONE"
+          ? it.heroPendingNow
+          : heroText(hero, medicalStatus);
 
   return (
     <section className={styles.wrap}>
@@ -118,10 +134,15 @@ export function RegistrationDashboard({
         description={`${it.teamTitle}: ${teamName}`}
         aside={<StatusChip tone={STATUS_TONE[status]}>{STATUS_COPY[status]}</StatusChip>}
       />
+      <WindowNotice edition={editionWindow} />
+      <p className={styles.note}>{it.guardianEmailNote}</p>
 
       <div className={styles.hero}>
-        <p className={styles.heroCopy}>{heroText(hero, medicalStatus)}</p>
-        <ButtonLink href={`/area/registrazione/${hrefStep}`}>{it.ctaContinue}</ButtonLink>
+        <p className={styles.heroCopy}>{heroCopy}</p>
+        <div className={styles.heroActions}>
+          {settled ? null : <ButtonLink href={`/area/registrazione/${hrefStep}`}>{it.ctaContinue}</ButtonLink>}
+          {status !== "WITHDRAWN" ? <WithdrawForm registrationId={registrationId} /> : null}
+        </div>
       </div>
 
       <div className={styles.progressBlock}>

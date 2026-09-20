@@ -45,8 +45,25 @@ Ogni voce: problema, opzioni, decisione necessaria, conseguenze, impatto sullo s
 
 - **Problema:** Non scelto (Nexi, Stripe, PayPal, Satispay, altro).
 - **Opzioni:** adapter per ciascuno; uno solo.
-- **Decisione necessaria:** organizzazione (Italia, carte, bonifico, commissioni).
-- **Impatto:** M5. Workaround: `PaymentAdapter` stub.
+- **Decisione necessaria:** organizzazione (DPA, commissioni, metodi IT). **Scelta implementativa M11:** Stripe Checkout hosted (`PAYMENT_DRIVER=stripe`), webhook fonte di verità.
+- **Conseguenze:** OD-034 resta aperto (DPA/extra-SEE). Default `stub` se manca config.
+- **Impatto:** adapter live in `src/shared/adapters/live/stripe.ts`. Stub confirm solo con `PAYMENT_DRIVER=stub`.
+
+## OD-010 Object storage
+
+- **Problema:** S3, R2, GCS, altro.
+- **Opzioni:** adapter.
+- **Decisione necessaria:** hosting/ops + DPA. **Scelta implementativa M11:** Cloudflare R2 (`STORAGE_DRIVER=r2`), bucket privato.
+- **Conseguenze:** accesso file resta HMAC interno (M3-D1). Fail closed a stub se manca config. Locale: `STORAGE_DRIVER=local`.
+- **Impatto:** adapter `live/r2.ts`.
+
+## OD-011 Email provider
+
+- **Problema:** Resend, SES, Mailgun, altro.
+- **Opzioni:** adapter.
+- **Decisione necessaria:** ops + DPA. **Scelta implementativa M11:** Resend (`EMAIL_DRIVER=resend`).
+- **Conseguenze:** template con `title` / URL; mai CF o motivo medico. Default stub.
+- **Impatto:** adapter `live/resend.ts`.
 
 ## OD-007 Modalità BOTH (doppio canale)
 
@@ -67,19 +84,6 @@ Ogni voce: problema, opzioni, decisione necessaria, conseguenze, impatto sullo s
 - **Problema:** PDF nostro vs ricevuta provider.
 - **Opzioni:** solo `receiptUrl` provider; PDF interno.
 - **Impatto:** M5. Workaround: campo `receiptUrl` nullable.
-
-## OD-010 Object storage
-
-- **Problema:** S3, R2, GCS, altro.
-- **Opzioni:** adapter.
-- **Decisione necessaria:** hosting/ops.
-- **Impatto:** M3. Workaround: stub che rifiuta persistenza reale o salva locale **non** in prod.
-
-## OD-011 Email provider
-
-- **Problema:** Resend, SES, Mailgun, altro.
-- **Opzioni:** adapter.
-- **Impatto:** M1 comunicazioni. Workaround: stub log.
 
 ## OD-012 Hosting e database
 
@@ -211,7 +215,7 @@ Già coperti: no PWA in M0; scan OD-021.
 - **Opzioni:** nessuna email al genitore; elenco eventi obbligatori (invito, rifiuto certificato, approvazione); copia di tutte le comunicazioni.
 - **Decisione necessaria:** organizzazione + legale (informativa al genitore come interessato).
 - **Conseguenze:** template e adapter email; mai dettaglio sanitario nel canale.
-- **Impatto:** M1/M6 comunicazioni. Workaround: dati tutore persistiti; dispatch non implementato.
+- **Impatto:** M10: copia del `title` della notifica di servizio all’email tutore se il giocatore è minore. Non è firma del genitore. DPA/testi restano OD-001.
 
 ## OD-033 Titolarità hub nazionale vs coppe locali
 
@@ -388,3 +392,22 @@ Quando una decisione arriva, si sposta in fondo come **Chiusa** con data e si ag
 | M2-D4 | Codice fiscale: formato + checksum (OD-020), senza anagrafe |
 | M2-D5 | Rapporto tutore: `GENITORE` \| `TUTORE` \| `AFFIDATARIO` \| `ALTRO` |
 | M2-D6 | Data nascita nel passato e non oltre 100 anni: qualità dati, non regola di ammissione |
+
+## Decisioni autonome chiuse in M8–M12 (2026-09-20)
+
+| ID | Decisione |
+|---|---|
+| M8-D1 | Invito rappresentante = `StaffInvite` hashato; redeem senza `Registration` |
+| M8-D2 | `/admin/informative` sola lettura; CMS resta `content/legal/` (OD-038) |
+| M8-D3 | Status iscrizione resta proiezione del motore; niente bottone admin “approva iscrizione” |
+| M9-D1 | Reinvio = revoca pending + nuovo token (M1-D2); plaintext una volta |
+| M9-D2 | CSV max 50 righe `email,firstName,lastName`; CF mai |
+| M9-D3 | Cookie `eph-team` per selettore squadra; ogni action riautorizza `teamId` |
+| M10-D1 | Vista compagni: nome, maglia, ruolo; niente stato medico |
+| M10-D2 | Ritiro `WITHDRAWN` senza cancellazione dati |
+| M10-D3 | Reset password: messaggio generico, token monouso su `VerificationToken` |
+| M10-D4 | Fuori finestra edizione: no nuovi inviti/wizard/checkout; redeem già emesso fino a TTL |
+| M11-D1 | Stripe webhook fonte di verità; stub confirm solo se `PAYMENT_DRIVER=stub` |
+| M11-D2 | File medici: HMAC interno anche con R2 |
+| M11-D3 | Rate limit su tabella `RateLimitHit` |
+| M12-D1 | CSP nonce sul bootstrap tema; Playwright in CI |

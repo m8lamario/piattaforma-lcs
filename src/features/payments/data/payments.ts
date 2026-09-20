@@ -1,4 +1,5 @@
 import { Prisma } from "@generated/client";
+import { paymentProviderName } from "@/shared/config/drivers";
 import { prisma } from "@/shared/lib/prisma";
 
 export async function createPendingPayment(input: {
@@ -18,7 +19,7 @@ export async function createPendingPayment(input: {
       amount: new Prisma.Decimal(input.amount),
       currency: input.currency,
       status: "PENDING",
-      provider: "stub",
+      provider: paymentProviderName(),
     },
   });
 }
@@ -37,7 +38,7 @@ export async function applyProviderResult(input: {
   receiptUrl?: string | null;
 }) {
   const existing = await prisma.payment.findFirst({
-    where: { provider: "stub", providerPaymentId: input.providerPaymentId, status: "SUCCEEDED" },
+    where: { providerPaymentId: input.providerPaymentId, status: "SUCCEEDED" },
   });
   if (existing && existing.id !== input.paymentId) {
     return { ok: false as const, reason: "duplicate" as const };

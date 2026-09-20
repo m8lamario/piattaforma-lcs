@@ -2,21 +2,25 @@
   display: grid;
   gap: var(--space-3);
   justify-items: start;
+  align-content: start;
+  width: min(var(--content-max), 100%);
   padding-left: var(--space-5);
-  border-left: var(--line-width) solid var(--color-hairline);
+  border-left: var(--line-width) solid var(--color-line);
 }
 
 .icon {
   display: grid;
   place-items: center;
-  width: 2.5rem;
-  height: 2.5rem;
+  width: 2.25rem;
+  height: 2.25rem;
   color: var(--color-accent);
 }
 
 .title {
   margin: 0;
-  font-size: var(--text-xl);
+  font-family: var(--font-brand);
+  font-size: clamp(1.5rem, 4vw, var(--text-2xl));
+  letter-spacing: 0.04em;
 }
 
 .body {
@@ -32,4 +36,14 @@
 
 .action {
   margin-top: var(--space-2);
+}
+
+@media (max-width: 640px) {
+  .wrap {
+    padding-left: var(--space-4);
+  }
+
+  .action {
+    width: 100%;
+  }
 }

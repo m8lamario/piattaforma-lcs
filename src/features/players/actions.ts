@@ -13,6 +13,7 @@ import {
   savePersonalProfile,
 } from "@/features/registrations/data/workspace";
 import { nextStepAfter } from "@/features/registrations/domain/wizard";
+import { workspaceWriteError } from "@/features/registrations/domain/writeGate";
 import { authorize } from "@/shared/authz/authorize";
 import { getActorByUserId } from "@/shared/authz/getActor";
 import { writeAuditLog } from "@/shared/lib/audit";
@@ -45,6 +46,10 @@ async function requireWritableRegistration() {
   if (!decision.allow) {
     return { error: "Non puoi modificare questa iscrizione." as const, session, actor, workspace: null };
   }
+  const windowError = workspaceWriteError(workspace.registration);
+  if (windowError) {
+    return { error: windowError, session, actor, workspace: null };
+  }
   return { error: undefined, session, actor, workspace };
 }
 
@@ -70,7 +75,7 @@ export async function savePersonalDataAction(
   }
 
   const rateKey = await clientKey(`profile:${access.session.user!.id}`);
-  if (!consumeRateLimit(rateKey, RATE_LIMITS.profileWrite.limit, RATE_LIMITS.profileWrite.windowMs)) {
+  if (!(await consumeRateLimit(rateKey, RATE_LIMITS.profileWrite.limit, RATE_LIMITS.profileWrite.windowMs))) {
     return { error: "Troppe modifiche in poco tempo. Riprova più tardi." };
   }
 
@@ -134,7 +139,7 @@ export async function saveGuardianAction(
   }
 
   const rateKey = await clientKey(`guardian:${access.session.user!.id}`);
-  if (!consumeRateLimit(rateKey, RATE_LIMITS.profileWrite.limit, RATE_LIMITS.profileWrite.windowMs)) {
+  if (!(await consumeRateLimit(rateKey, RATE_LIMITS.profileWrite.limit, RATE_LIMITS.profileWrite.windowMs))) {
     return { error: "Troppe modifiche in poco tempo. Riprova più tardi." };
   }
 

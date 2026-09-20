@@ -39,6 +39,7 @@
   --text-lg: 1.125rem;
   --text-xl: 1.5rem;
   --text-2xl: 1.75rem;
+  --text-display: 2.25rem;
   --leading-tight: 1.2;
   --leading-body: 1.55;
 
@@ -61,6 +62,17 @@
   --control-min: 2.75rem;
   --nav-width: 16.5rem;
   --line-width: 3px;
+
+  --content-max: 42rem;
+  --content-max-wide: 48rem;
+  --space-page-x: var(--space-8);
+  --space-page-y: var(--space-10);
+  --space-page-x-sm: var(--space-4);
+  --space-page-y-sm: var(--space-5);
+  --duration-fast: 160ms;
+  --duration-med: 240ms;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --wash-size: 18rem;
 
   /* Alias: keep both naming schemes valid across the slice. */
   --color-primary-fill: #1f5eb8;

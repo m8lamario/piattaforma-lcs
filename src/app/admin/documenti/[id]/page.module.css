@@ -1,5 +1,5 @@
 .main {
-  width: min(42rem, 100%);
+  width: min(var(--content-max), 100%);
   display: grid;
   gap: var(--space-5);
   align-self: flex-start;

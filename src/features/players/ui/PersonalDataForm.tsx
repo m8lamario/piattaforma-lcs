@@ -75,13 +75,13 @@ export function PersonalDataForm({ email, defaults }: Props) {
             <label className={fields.label} htmlFor="firstName">
               {it.firstName}
             </label>
-            <input id="firstName" className={fields.input} autoComplete="given-name" {...form.register("firstName")} />
+            <input id="firstName" className={fields.input} autoComplete="given-name" aria-invalid={Boolean(form.formState.errors.firstName)} {...form.register("firstName")} />
           </div>
           <div className={fields.field}>
             <label className={fields.label} htmlFor="lastName">
               {it.lastName}
             </label>
-            <input id="lastName" className={fields.input} autoComplete="family-name" {...form.register("lastName")} />
+            <input id="lastName" className={fields.input} autoComplete="family-name" aria-invalid={Boolean(form.formState.errors.lastName)} {...form.register("lastName")} />
           </div>
         </div>
         <div className={fields.pair}>
@@ -89,7 +89,7 @@ export function PersonalDataForm({ email, defaults }: Props) {
             <label className={fields.label} htmlFor="birthDate">
               {it.birthDate}
             </label>
-            <input id="birthDate" className={fields.input} type="date" {...form.register("birthDate")} />
+            <input id="birthDate" className={fields.input} type="date" aria-invalid={Boolean(form.formState.errors.birthDate)} {...form.register("birthDate")} />
           </div>
           <div className={fields.field}>
             <label className={fields.label} htmlFor="fiscalCode">
@@ -100,6 +100,7 @@ export function PersonalDataForm({ email, defaults }: Props) {
               className={fields.input}
               autoComplete="off"
               spellCheck={false}
+              aria-invalid={Boolean(form.formState.errors.fiscalCode)}
               {...form.register("fiscalCode")}
             />
           </div>
@@ -115,7 +116,7 @@ export function PersonalDataForm({ email, defaults }: Props) {
           <label className={fields.label} htmlFor="phone">
             {it.phone}
           </label>
-          <input id="phone" className={fields.input} type="tel" autoComplete="tel" {...form.register("phone")} />
+          <input id="phone" className={fields.input} type="tel" autoComplete="tel" aria-invalid={Boolean(form.formState.errors.phone)} {...form.register("phone")} />
         </div>
       </fieldset>
 

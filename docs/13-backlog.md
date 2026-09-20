@@ -260,4 +260,61 @@ Ogni task: obiettivo, requisiti, dipendenze, acceptance criteria, test. I task M
 | M7-01 | Playwright happy path | M5 | E2E — **residuo**: verifica browser manuale fatta; suite Playwright non introdotta |
 | M7-02 | Rate limit e CSP | M0 | smoke — **fatto:** rate limit in-process + CSP incrementale |
 
-Dettagliare i task della milestone **subito prima** di implementarla, con acceptance pieni.
+---
+
+## M8
+
+### M8-01 Console organizzazione
+
+- **Obiettivo:** Org/Super Admin gestisce coppe, edizioni, istituti, squadre e vede iscrizioni senza seed-only.
+- **Requisiti:** IA `/admin/*`; `admin:manage`; `StaffInvite` hashato; nessun CMS informative.
+- **Dipendenze:** M7.
+- **Acceptance:**
+  - `/admin` hub con conteggi;
+  - CRUD edizione (finestre, paymentMode, fee, requisiti) e squadra (school + team);
+  - invito rappresentante: token hashato, redeem senza `Registration`;
+  - lista registrazioni filtrabile (edizione, squadra, stato, nome — mai CF in query);
+  - scheda giocatore staff: anagrafica incluso CF, tutore, checklist, consensi versione/timestamp; file medico solo via flusso auditato;
+  - filtri documenti; lista pagamenti senza PAN; audit in lettura; `/admin/informative` sola lettura;
+  - edizione con registrazioni non cancellabile.
+- **Test:** IDOR player/rep su actions admin; staff invite expired/revoked; filtri senza `storageKey`.
+
+## M9
+
+### M9-01 Rosa quotidiana
+
+- **Obiettivo:** Il rappresentante vede lo stato della rosa e invita in blocco senza PII extra.
+- **Acceptance:** selettore squadra (`eph-team`); striscia conteggi; reinvio = revoca pending + nuovo token visibile una volta; CSV max 50; sollecito `REGISTRATION_REMINDER` senza motivo medico; maglia/ruolo; nuovi inviti bloccati fuori finestra edizione.
+- **Test:** `toRosterRow` senza CF/email/storageKey; CSV parziale; switcher IDOR; domain `isRegistrationWindowOpen`.
+
+## M10
+
+### M10-01 Account e post-iscrizione
+
+- **Obiettivo:** L’area resta utilizzabile dopo l’iscrizione; recupero password; ritiro senza cancellare dati.
+- **Acceptance:** dashboard DONE/APPROVED senza “Continua”; `/area/account` cambio password; reset con messaggio generico; `/area/squadra` nome+maglia+ruolo; badge unread; withdraw owner/staff; countdown finestre; email tutore solo `title`.
+- **Test:** reset token riusato; withdraw IDOR; compagni senza medicalStatus.
+
+## M11
+
+### M11-01 Adapter Resend / R2 / Stripe
+
+- **Obiettivo:** Provider live dietro driver env, fail-closed a stub se manca config.
+- **Acceptance:** SDK solo in `src/shared/adapters/live`; checkout Stripe hosted; webhook firma; esito interno non marca SUCCEEDED se driver ≠ stub; rate limit Postgres; variabili email senza CF/motivo medico.
+- **Test:** firma webhook invalida; stub esito; interfaccia storage invariata.
+
+## M12
+
+### M12-01 CSP nonce e Playwright
+
+- **Obiettivo:** Chiudere i residui M7-01 (E2E) e nonce CSP.
+- **Acceptance:** nonce sul bootstrap tema; suite Playwright happy path in CI; banner staff se `[INSERIRE` è ancora nei file legal.
+- **Test:** `test:e2e`; lint/typecheck/build.
+
+| ID | Obiettivo | Dipendenze | Test chiave |
+|---|---|---|---|
+| M8-01 | Console org + StaffInvite | M7 | IDOR admin, invite hash |
+| M9-01 | Rosa, reinvio, CSV, sollecito | M8 | roster PII, window |
+| M10-01 | Account, reset, ritiro, compagni | M9 | reset reuse, withdraw IDOR |
+| M11-01 | Resend/R2/Stripe + rate limit DB | M10 | webhook sig, stub esito |
+| M12-01 | CSP nonce + Playwright CI | M11 | e2e happy path |

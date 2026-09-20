@@ -15,7 +15,7 @@ I permessi sono **resource-scoped** (`userId`, `teamId`, `competitionId`) per po
 | Validazione | Zod (client e server) + React Hook Form | Un solo schema condivisibile |
 | Auth | Auth.js (NextAuth v5) | Sessioni, CSRF, adapter Prisma |
 | DB | PostgreSQL + Prisma 7 | Relazionale, migrate, type-safe |
-| Email / storage / pay / errors | Adapter + stub | Provider non deciso |
+| Email / storage / pay / errors | Adapter + stub / live | Resend, R2, Stripe dietro driver env; default stub |
 
 Prisma 7 richiede `prisma.config.ts`, `dotenv` esplicito, driver adapter `@prisma/adapter-pg` e client generato in `/generated` (import `@generated/client`).
 
@@ -83,11 +83,11 @@ Le route in `app/` chiamano domain + data. Nessuna query Prisma dentro un compon
 
 Interfacce in `src/shared/adapters`. Implementazioni:
 
-- `stub/` in development e in M0
+- `stub/` default se manca config (fail closed)
 - `local/` per blob privati in non-produzione (`STORAGE_DRIVER=local`, directory `.local-storage` fuori da `public/`)
-- `live/` quando il provider è deciso (non in M0)
+- `live/` Resend (`EMAIL_DRIVER=resend`), Cloudflare R2 (`STORAGE_DRIVER=r2`), Stripe Checkout (`PAYMENT_DRIVER=stripe`)
 
-In produzione, senza `STORAGE_DRIVER=local`, lo storage resta stub. L’accesso applicativo ai file **non** usa `getSignedReadUrl` del provider: si emette un token HMAC e si streamma da `/api/documents/file` dopo `authorize` + audit.
+Nessun SDK provider importato dalle feature: solo da `src/shared/adapters/live`. L’accesso applicativo ai file **non** usa `getSignedReadUrl` del provider: token HMAC e stream da `/api/documents/file` dopo `authorize` + audit, anche con R2 privato.
 
 ```ts
 export interface EmailAdapter {
@@ -111,7 +111,7 @@ export interface MonitoringAdapter {
 }
 ```
 
-Nessun SDK di Stripe/Nexi/S3/Resend importato in M0.
+SDK live solo negli adapter. Checkout Stripe hosted: nessun campo carta nel DOM. Webhook: verifica firma, niente payload grezzo nei log.
 
 ## 6. Motore requisiti
 
@@ -138,7 +138,7 @@ Default foundation (documentato, modificabile):
 
 Magic link e OAuth: non in M0; vedi OPEN_DECISIONS.
 
-L’account si crea **solo** con `PlayerInvite` valido (o invito rappresentante da admin). Non esiste `/register` aperto.
+L’account si crea **solo** con `PlayerInvite` valido o `StaffInvite` (rappresentante). Non esiste `/register` aperto. Reset password usa `VerificationToken` con identifier `password-reset:{email}`.
 
 ## 8. Dati estendibili del profilo
 
@@ -180,7 +180,11 @@ Non si introduce un EAV `PlayerProfileField` in M0: troppa complessità per camp
 | ADR-016 | Pacchetto privacy in un passo; media con decisione esplicita accept/refuse; record in append |
 | ADR-017 | Pagamenti: adapter + success interno per stub; webhook route pronta; cover dal primo SUCCEEDED |
 | ADR-018 | Rosa squadra come proiezione PII-minima; notifiche in-app + email stub |
-| ADR-019 | CSP incrementale in `next.config.ts`; E2E Playwright rinviato a env CI dedicato |
+| ADR-019 | CSP con nonce sul bootstrap tema (proxy); Playwright in CI |
+| ADR-020 | `StaffInvite` distinto da `PlayerInvite`; redeem senza Registration |
+| ADR-021 | Stripe webhook fonte di verità; stub confirm solo con `PAYMENT_DRIVER=stub` |
+| ADR-022 | Rate limit su Postgres (`RateLimitHit`), non Map in-process |
+| ADR-023 | Vista compagni senza stato medico; rosa rep con stato certificato |
 
 ## 12. Nota audit M0
 

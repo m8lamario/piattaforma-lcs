@@ -53,15 +53,15 @@ export function MediaConsentForm({ document, required, currentDecision }: Props)
       <fieldset className={fields.group}>
         <legend className={fields.legend}>{it.mediaChoiceTitle}</legend>
         <div className={styles.choices}>
-          <div className={`${styles.choice} ${styles.choiceAccept}`}>
+          <div className={`${styles.choice} ${styles.choiceAccept} ${currentDecision === "accepted" ? styles.choiceCurrent : ""}`}>
             <h3>{it.consentMediaAccept}</h3>
             <p>{it.mediaChoiceAcceptHelp}</p>
-          <Button type="submit" name="decision" value="accept" disabled={pending} aria-busy={pending}>
-            {pending ? it.saving : it.consentMediaAccept}
-          </Button>
+            <Button type="submit" name="decision" value="accept" disabled={pending} aria-busy={pending}>
+              {pending ? it.saving : it.consentMediaAccept}
+            </Button>
           </div>
           {required ? null : (
-            <div className={`${styles.choice} ${styles.choiceRefuse}`}>
+            <div className={`${styles.choice} ${styles.choiceRefuse} ${currentDecision === "refused" ? styles.choiceCurrent : ""}`}>
               <h3>{it.consentMediaRefuse}</h3>
               <p>{it.mediaChoiceRefuseHelp}</p>
               <Button type="submit" name="decision" value="refuse" variant="ghost" disabled={pending}>

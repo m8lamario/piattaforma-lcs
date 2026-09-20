@@ -15,6 +15,7 @@ import {
   persistRegistrationStatus,
 } from "@/features/registrations/data/workspace";
 import { nextStepAfter } from "@/features/registrations/domain/wizard";
+import { workspaceWriteError } from "@/features/registrations/domain/writeGate";
 import { authorize } from "@/shared/authz/authorize";
 import { getActorByUserId } from "@/shared/authz/getActor";
 import { SIGNED_URL_TTL_SECONDS } from "@/shared/config/app";
@@ -54,6 +55,8 @@ export async function uploadMedicalCertificateAction(
     teamId: workspace.registration.teamId,
   });
   if (!allowed.allow) return { error: "Non puoi caricare documenti per questa iscrizione." };
+  const windowError = workspaceWriteError(workspace.registration);
+  if (windowError) return { error: windowError };
 
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
@@ -64,7 +67,7 @@ export async function uploadMedicalCertificateAction(
   }
 
   const rateKey = await clientKey(`upload:${session.user.id}`);
-  if (!consumeRateLimit(rateKey, RATE_LIMITS.upload.limit, RATE_LIMITS.upload.windowMs)) {
+  if (!(await consumeRateLimit(rateKey, RATE_LIMITS.upload.limit, RATE_LIMITS.upload.windowMs))) {
     return { error: "Troppi upload. Riprova più tardi." };
   }
 

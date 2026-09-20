@@ -36,6 +36,16 @@ describe("inspectInvite", () => {
     expect(inspectInvite(pending({ status: "REVOKED" }), now).outcome).toBe("revoked");
   });
 
+  it("stesso esito per invito staff scaduto o revocato", () => {
+    expect(
+      inspectInvite(pending({ firstName: null, lastName: null, expiresAt: new Date("2026-09-01T00:00:00.000Z") }), now)
+        .outcome,
+    ).toBe("expired");
+    expect(inspectInvite(pending({ status: "REVOKED", firstName: null, lastName: null }), now).outcome).toBe(
+      "revoked",
+    );
+  });
+
   it("consente il redeem se pending e non scaduto", () => {
     const inspection = inspectInvite(pending(), now);
     expect(inspection.outcome).toBe("redeemable");

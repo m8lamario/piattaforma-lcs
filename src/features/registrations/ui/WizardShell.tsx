@@ -53,18 +53,25 @@ export function WizardShell({ step, steps, children }: Props) {
     .replace("{total}", String(steps.length));
   const featured = step === "liberatorie";
   const solemn = step === "privacy";
+  const fill = `${Math.round((current / steps.length) * 100)}%`;
+  const kicker = solemn ? it.wizardKickerPrivacy : featured ? it.wizardKickerMedia : null;
 
   return (
     <section className={`${styles.wrap} ${featured ? styles.featured : ""} ${solemn ? styles.solemn : ""}`}>
-      <p className={styles.progress}>
-        <span className="srOnly">{progress}</span>
-        <span aria-hidden="true">
-          {current}
-          <span className={styles.of}>/{steps.length}</span>
-        </span>
-      </p>
+      <div className={styles.progressRow}>
+        <p className={styles.progress}>
+          <span className="srOnly">{progress}</span>
+          <span aria-hidden="true">
+            {current}
+            <span className={styles.of}>/{steps.length}</span>
+          </span>
+        </p>
+        <div className={styles.track} aria-hidden="true">
+          <span className={styles.trackFill} style={{ width: fill }} />
+        </div>
+      </div>
 
-      <ol className={styles.steps} aria-label={it.wizardProgress.replace("{current}", String(current)).replace("{total}", String(steps.length))}>
+      <ol className={styles.steps} aria-label={progress}>
         {steps.map((id, index) => {
           const active = id === step;
           const done = index < current - 1;
@@ -97,6 +104,7 @@ export function WizardShell({ step, steps, children }: Props) {
           <Icon name={STEP_ICONS[step]} size={20} />
         </span>
         <div>
+          {kicker ? <p className={styles.kicker}>{kicker}</p> : null}
           <h1>{LABELS[step]}</h1>
           <p className={styles.lead}>{LEADS[step]}</p>
         </div>

@@ -16,7 +16,7 @@
   gap: var(--space-3);
   padding: var(--space-4);
   background: var(--color-danger-soft);
-  box-shadow: inset var(--rail-width) 0 0 var(--color-danger);
+  border-left: var(--line-width) solid var(--color-danger);
 }
 
 .label {
@@ -43,4 +43,15 @@
   color: var(--color-danger);
   margin: 0;
   font-weight: 650;
+}
+
+@media (max-width: 640px) {
+  .row {
+    display: grid;
+  }
+
+  .row :global(button),
+  .reject :global(button) {
+    width: 100%;
+  }
 }
