@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { bulkInviteAction } from "@/features/teams/actions";
 import { Button } from "@/shared/ui/Button";
+import { ActionError } from "@/shared/ui/ActionError";
 import { it } from "@/shared/i18n/it";
 import fields from "@/shared/ui/form.module.css";
 import styles from "./InviteForm.module.css";
@@ -22,11 +23,7 @@ export function BulkInviteForm({ teamId }: { teamId: string }) {
           </label>
           <textarea id="bulk-csv" name="csv" className={fields.input} rows={6} required />
         </div>
-        {state?.error ? (
-          <p className={fields.summary} role="alert">
-            {state.error}
-          </p>
-        ) : null}
+        {state?.error ? <ActionError error={state.error} code={state.code} /> : null}
         {state?.created ? (
           <p className={fields.help} role="status">
             {it.bulkInviteCreated.replace("{count}", String(state.created))}

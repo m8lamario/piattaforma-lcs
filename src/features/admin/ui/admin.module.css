@@ -151,3 +151,18 @@
     grid-template-columns: 1fr;
   }
 }
+
+.dangerZone {
+  display: grid;
+  gap: var(--space-5);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-hairline);
+}
+
+.dangerCard {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border: 1px solid var(--color-danger);
+  border-radius: var(--radius-sm);
+}

@@ -8,6 +8,7 @@ import { loginSchema } from "@/features/auth/schemas/login";
 import { changePasswordSchema, requestResetSchema, resetPasswordSchema } from "@/features/auth/schemas/account";
 import { hashPassword, verifyPassword } from "@/features/auth/domain/password";
 import { createInviteToken, isWellFormedInviteToken } from "@/features/teams/domain/token";
+import { fail, failValidation, type ActionFailure, type ActionState } from "@/shared/errors";
 import {
   consumePasswordResetToken,
   createPasswordResetToken,
@@ -25,19 +26,19 @@ function originFromHeaders(headerList: Headers) {
   return process.env.AUTH_URL ?? "http://localhost:3000";
 }
 
-export async function loginAction(_prev: { error?: string } | undefined, formData: FormData) {
+export async function loginAction(_prev: ActionFailure | undefined, formData: FormData) {
   const parsed = loginSchema.safeParse({
     email: formData.get("email"),
     password: formData.get("password"),
   });
 
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Controlla i dati inseriti." };
+    return failValidation(parsed.error.issues[0]?.message);
   }
 
   const loginKey = await clientKey("login");
   if (!(await consumeRateLimit(loginKey, RATE_LIMITS.login.limit, RATE_LIMITS.login.windowMs))) {
-    return { error: "Troppi tentativi. Riprova tra qualche minuto." };
+    return fail("AUTH_RATE_LIMITED");
   }
 
   const nextPath = String(formData.get("next") ?? "/area");
@@ -49,10 +50,10 @@ export async function loginAction(_prev: { error?: string } | undefined, formDat
       password: parsed.data.password,
       redirectTo,
     });
-    return { error: undefined };
+    return {};
   } catch (error) {
     if (error instanceof AuthError) {
-      return { error: "Email o password non corretti." };
+      return fail("AUTH_INVALID_CREDENTIALS");
     }
     throw error;
   }
@@ -65,9 +66,9 @@ export async function logoutAction(formData?: FormData) {
 }
 
 export async function changePasswordAction(
-  _prev: { error?: string; ok?: boolean } | undefined,
+  _prev: ActionState<{ ok?: boolean }> | undefined,
   formData: FormData,
-) {
+): Promise<ActionState<{ ok?: boolean }>> {
   const session = await auth();
   if (!session?.user?.id) redirect("/accedi?next=/area/account");
   const parsed = changePasswordSchema.safeParse({
@@ -76,15 +77,15 @@ export async function changePasswordAction(
     confirmPassword: formData.get("confirmPassword"),
   });
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Controlla i dati inseriti." };
+    return failValidation(parsed.error.issues[0]?.message);
   }
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
     select: { id: true, passwordHash: true },
   });
-  if (!user?.passwordHash) return { error: "Account senza password locale." };
+  if (!user?.passwordHash) return fail("AUTH_NO_LOCAL_PASSWORD");
   const matches = await verifyPassword(parsed.data.currentPassword, user.passwordHash);
-  if (!matches) return { error: "La password attuale non è corretta." };
+  if (!matches) return fail("AUTH_CURRENT_PASSWORD_MISMATCH");
   await prisma.user.update({
     where: { id: user.id },
     data: { passwordHash: await hashPassword(parsed.data.newPassword) },
@@ -125,7 +126,7 @@ export async function requestPasswordResetAction(
 }
 
 export async function resetPasswordAction(
-  _prev: { error?: string } | undefined,
+  _prev: ActionFailure | undefined,
   formData: FormData,
 ) {
   const parsed = resetPasswordSchema.safeParse({
@@ -134,22 +135,22 @@ export async function resetPasswordAction(
     confirmPassword: formData.get("confirmPassword"),
   });
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Controlla i dati inseriti." };
+    return failValidation(parsed.error.issues[0]?.message);
   }
   if (!isWellFormedInviteToken(parsed.data.token)) {
-    return { error: "Questo link non è valido o è già stato usato." };
+    return fail("AUTH_RESET_TOKEN_INVALID");
   }
   const found = await findPasswordResetByToken(parsed.data.token);
   if (!found) {
-    return { error: "Questo link non è valido o è già stato usato." };
+    return fail("AUTH_RESET_TOKEN_INVALID");
   }
   const consumed = await consumePasswordResetToken(found.email, parsed.data.token);
   if (!consumed.ok) {
-    return { error: "Questo link non è valido o è già stato usato." };
+    return fail("AUTH_RESET_TOKEN_INVALID");
   }
   const user = await prisma.user.findUnique({ where: { email: found.email } });
   if (!user) {
-    return { error: "Questo link non è valido o è già stato usato." };
+    return fail("AUTH_RESET_TOKEN_INVALID");
   }
   await prisma.user.update({
     where: { id: user.id },

@@ -2,6 +2,7 @@ export type RosterRow = {
   registrationId: string;
   userId?: string;
   membershipId?: string;
+  membershipRole?: "PLAYER" | "REPRESENTATIVE";
   firstName: string;
   lastName: string;
   jerseyNumber: string | null;
@@ -23,6 +24,7 @@ export function toRosterRow(input: {
   registrationId: string;
   userId?: string;
   membershipId?: string;
+  membershipRole?: "PLAYER" | "REPRESENTATIVE";
   firstName: string;
   lastName: string;
   jerseyNumber?: string | null;
@@ -44,6 +46,7 @@ export function toRosterRow(input: {
     registrationId: input.registrationId,
     userId: input.userId,
     membershipId: input.membershipId,
+    membershipRole: input.membershipRole,
     firstName: input.firstName,
     lastName: input.lastName,
     jerseyNumber: input.jerseyNumber ?? null,

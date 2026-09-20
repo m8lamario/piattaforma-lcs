@@ -27,17 +27,23 @@ function isTeamMember(actor: Actor, teamId?: string) {
   return typeof teamId === "string" && actor.membershipTeamIds.includes(teamId);
 }
 
+const SUPER_ONLY: Action[] = ["platform:admin", "user:delete", "user:anonymize"];
+
 export function authorize(
   actor: Actor,
   action: Action,
   resource: Resource = {},
 ): Decision {
+  if (action === "audit:delete") {
+    return deny("L’audit non si cancella da questa interfaccia.");
+  }
+
   if (isSuperAdmin(actor)) {
     return { allow: true };
   }
 
   if (isOrgAdmin(actor)) {
-    if (action === "platform:admin") {
+    if (SUPER_ONLY.includes(action)) {
       return deny("Solo Super Admin può gestire la piattaforma.");
     }
     return { allow: true };
@@ -48,9 +54,12 @@ export function authorize(
     case "admin:manage":
     case "document:review":
     case "staff:invite":
+    case "user:delete":
+    case "user:anonymize":
       return deny("Permesso negato.");
     case "team:invite":
     case "team:update_roster":
+    case "team:remove_player":
     case "payment:create_team":
       return isTeamRepFor(actor, resource.teamId)
         ? { allow: true }

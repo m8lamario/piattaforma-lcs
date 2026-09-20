@@ -1,6 +1,7 @@
 import { it } from "@/shared/i18n/it";
 import type { RosterRow } from "@/features/teams/domain/roster";
 import { nudgeRegistrationAction, updateRosterRowAction } from "@/features/teams/actions";
+import { RemovePlayerForm } from "@/features/teams/ui/RemovePlayerForm";
 import { PendingSubmitButton } from "@/shared/ui/PendingSubmitButton";
 import { StatusChip, type StatusTone } from "@/shared/ui/StatusChip";
 import fields from "@/shared/ui/form.module.css";
@@ -31,6 +32,7 @@ const REG_COPY: Record<string, string> = {
   PAYMENT_PENDING: it.statusPAYMENT_PENDING,
   APPROVED: it.statusAPPROVED,
   WITHDRAWN: it.statusWITHDRAWN,
+  REMOVED: it.statusREMOVED,
 };
 
 type Props = {
@@ -79,6 +81,9 @@ export function TeamRoster({ teamId, rows, canEditRoster = true }: Props) {
                   />
                   <PendingSubmitButton idle={it.rosterSave} pendingLabel={it.saving} variant="ghost" />
                 </form>
+              ) : null}
+              {canEditRoster && row.membershipId && row.membershipRole !== "REPRESENTATIVE" ? (
+                <RemovePlayerForm teamId={teamId} membershipId={row.membershipId} lastName={row.lastName} />
               ) : null}
               {row.userId && row.registrationStatus !== "APPROVED" && row.registrationStatus !== "WITHDRAWN" ? (
                 <form action={nudgeRegistrationAction}>

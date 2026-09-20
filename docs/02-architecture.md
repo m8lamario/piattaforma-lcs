@@ -46,7 +46,8 @@ src/
     ui/                         # primitive design system
     authz/                      # deny-by-default
     config/                     # env, tokens, flags
-    lib/                        # prisma, logger, errors
+    lib/                        # prisma, logger, audit
+    errors/                     # catalogo codici, fail(), metadati HTTP/recovery
     adapters/                   # email, storage, payments, monitoring
     i18n/                       # copy IT centralizzato
 prisma/
@@ -70,7 +71,7 @@ Le route in `app/` chiamano domain + data. Nessuna query Prisma dentro un compon
 |---|---|---|
 | auth | identità, sessione, verifica email | autorizzazione di business |
 | authz | “può questo attore fare questa azione su questa risorsa?” | UI |
-| players | profilo, guardian, minorenne | storage file |
+| players | profilo, guardian, identità fiscale | storage file |
 | registrations | stato, checklist, requisiti edizione | pagamenti provider |
 | documents | metadata, review, policy upload | servire file pubblici |
 | consents | versioni e acceptance | testi legali inventati |

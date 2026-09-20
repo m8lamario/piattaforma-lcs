@@ -4,6 +4,7 @@ import { useActionState } from "react";
 import { createEditionAction, deleteEditionAction, updateEditionAction } from "@/features/admin/actions";
 import { REQUIREMENT_CODES } from "@/features/admin/schemas/org";
 import { Button } from "@/shared/ui/Button";
+import { ActionError } from "@/shared/ui/ActionError";
 import { PendingSubmitButton } from "@/shared/ui/PendingSubmitButton";
 import { it } from "@/shared/i18n/it";
 import fields from "@/shared/ui/form.module.css";
@@ -133,11 +134,7 @@ export function EditionForm({ mode, edition }: Props) {
           </label>
         ))}
       </fieldset>
-      {state?.error ? (
-        <p className={fields.summary} role="alert">
-          {state.error}
-        </p>
-      ) : null}
+      {state?.error ? <ActionError error={state.error} code={state.code} /> : null}
       <div className={fields.actions}>
         <Button type="submit" disabled={pending} aria-busy={pending}>
           {pending ? it.saving : it.save}

@@ -131,7 +131,7 @@ export async function getPlayerAdmin(profileId: string) {
   return prisma.playerProfile.findUnique({
     where: { id: profileId },
     include: {
-      user: { select: { id: true, email: true, emailVerified: true } },
+      user: { select: { id: true, email: true, emailVerified: true, lifecycleStatus: true } },
       guardians: { orderBy: { createdAt: "asc" }, take: 1 },
       registrations: {
         include: {

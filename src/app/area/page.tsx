@@ -45,6 +45,7 @@ export default async function AreaPage() {
             registrationOpensAt: workspace.registration.registrationOpensAt,
             registrationClosesAt: workspace.registration.registrationClosesAt,
           }}
+          identityConflict={workspace.identityConflict}
         />
       ) : (
         <EmptyState

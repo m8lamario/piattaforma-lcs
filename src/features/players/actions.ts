@@ -13,9 +13,10 @@ import {
   savePersonalProfile,
 } from "@/features/registrations/data/workspace";
 import { nextStepAfter } from "@/features/registrations/domain/wizard";
-import { workspaceWriteError } from "@/features/registrations/domain/writeGate";
+import { workspaceWriteCode } from "@/features/registrations/domain/writeGate";
 import { authorize } from "@/shared/authz/authorize";
 import { getActorByUserId } from "@/shared/authz/getActor";
+import { fail, failValidation, type ActionFailure } from "@/shared/errors";
 import { writeAuditLog } from "@/shared/lib/audit";
 import {
   RATE_LIMITS,
@@ -37,29 +38,29 @@ async function requireWritableRegistration() {
   if (!actor) redirect("/accedi");
   const workspace = await loadPlayerWorkspace(session.user.id);
   if (!workspace) {
-    return { error: "Non hai un’iscrizione da completare." as const, session, actor, workspace: null };
+    return { failure: fail("REGISTRATION_NOT_FOUND"), session, actor, workspace: null };
   }
   const decision = authorize(actor, "registration:write", {
     ownerUserId: session.user.id,
     teamId: workspace.registration.teamId,
   });
   if (!decision.allow) {
-    return { error: "Non puoi modificare questa iscrizione." as const, session, actor, workspace: null };
+    return { failure: fail("FORBIDDEN_REGISTRATION_WRITE"), session, actor, workspace: null };
   }
-  const windowError = workspaceWriteError(workspace.registration);
-  if (windowError) {
-    return { error: windowError, session, actor, workspace: null };
+  const windowCode = workspaceWriteCode(workspace.registration);
+  if (windowCode) {
+    return { failure: fail(windowCode), session, actor, workspace: null };
   }
-  return { error: undefined, session, actor, workspace };
+  return { failure: undefined as ActionFailure | undefined, session, actor, workspace };
 }
 
 export async function savePersonalDataAction(
-  _prev: { error?: string } | undefined,
+  _prev: ActionFailure | undefined,
   formData: FormData,
 ) {
   const access = await requireWritableRegistration();
-  if (access.error || !access.workspace) {
-    return { error: access.error ?? "Non puoi modificare questa iscrizione." };
+  if (access.failure || !access.workspace) {
+    return access.failure ?? fail("FORBIDDEN_REGISTRATION_WRITE");
   }
 
   const parsed = personalDataSchema.safeParse({
@@ -71,17 +72,17 @@ export async function savePersonalDataAction(
     intent: formData.get("intent") || "continue",
   });
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Controlla i dati inseriti." };
+    return failValidation(parsed.error.issues[0]?.message);
   }
 
   const rateKey = await clientKey(`profile:${access.session.user!.id}`);
   if (!(await consumeRateLimit(rateKey, RATE_LIMITS.profileWrite.limit, RATE_LIMITS.profileWrite.windowMs))) {
-    return { error: "Troppe modifiche in poco tempo. Riprova più tardi." };
+    return fail("RATE_LIMITED");
   }
 
   const birthDate = parseDateOnly(parsed.data.birthDate);
   if (!birthDate) {
-    return { error: "Inserisci una data di nascita valida." };
+    return fail("VALIDATION_BIRTH_DATE_INVALID");
   }
 
   const saved = await savePersonalProfile(access.session.user!.id, {
@@ -92,7 +93,21 @@ export async function savePersonalDataAction(
     phone: parsed.data.phone,
   });
   if (!saved.ok) {
-    return { error: "Questo codice fiscale è già associato a un altro account." };
+    if (saved.reason === "identity_conflict") {
+      const trace = await userAgentAndIp();
+      await writeAuditLog({
+        actorUserId: access.session.user!.id,
+        action: "IDENTITY_CONFLICT",
+        entityType: "PlayerProfile",
+        entityId: access.workspace.profile.id,
+        metadata: {
+          conflictKind: saved.classification.kind === "foreign_identity" ? saved.classification.primary : saved.publicCode,
+        },
+        ...trace,
+      });
+      return fail(saved.publicCode);
+    }
+    return fail("REGISTRATION_NOT_FOUND");
   }
 
   const updated = await loadPlayerWorkspace(access.session.user!.id);
@@ -115,15 +130,15 @@ export async function savePersonalDataAction(
 }
 
 export async function saveGuardianAction(
-  _prev: { error?: string } | undefined,
+  _prev: ActionFailure | undefined,
   formData: FormData,
 ) {
   const access = await requireWritableRegistration();
-  if (access.error || !access.workspace) {
-    return { error: access.error ?? "Non puoi modificare questa iscrizione." };
+  if (access.failure || !access.workspace) {
+    return access.failure ?? fail("FORBIDDEN_REGISTRATION_WRITE");
   }
   if (!access.workspace.evidence.isMinor) {
-    return { error: "Questo passo non è richiesto per il tuo profilo." };
+    return fail("REGISTRATION_STEP_NOT_REQUIRED");
   }
 
   const parsed = guardianSchema.safeParse({
@@ -135,12 +150,12 @@ export async function saveGuardianAction(
     intent: formData.get("intent") || "continue",
   });
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Controlla i dati inseriti." };
+    return failValidation(parsed.error.issues[0]?.message);
   }
 
   const rateKey = await clientKey(`guardian:${access.session.user!.id}`);
   if (!(await consumeRateLimit(rateKey, RATE_LIMITS.profileWrite.limit, RATE_LIMITS.profileWrite.windowMs))) {
-    return { error: "Troppe modifiche in poco tempo. Riprova più tardi." };
+    return fail("RATE_LIMITED");
   }
 
   const saved = await saveGuardianProfile(access.session.user!.id, {
@@ -151,7 +166,7 @@ export async function saveGuardianAction(
     phone: parsed.data.phone,
   });
   if (!saved.ok) {
-    return { error: "Non è stato possibile salvare i dati del tutore." };
+    return fail("GUARDIAN_SAVE_FAILED");
   }
 
   const updated = await loadPlayerWorkspace(access.session.user!.id);

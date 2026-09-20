@@ -7,8 +7,11 @@ import { savePersonalDataAction } from "@/features/players/actions";
 import { formatDateOnly } from "@/features/players/domain/dates";
 import { personalDataSchema } from "@/features/players/schemas/personal";
 import { Button } from "@/shared/ui/Button";
+import { ActionError } from "@/shared/ui/ActionError";
+import { IdentityConflictPanel } from "@/features/players/ui/IdentityConflictPanel";
 import { it } from "@/shared/i18n/it";
 import fields from "@/shared/ui/form.module.css";
+import type { ErrorCode } from "@/shared/errors";
 
 type Values = {
   firstName: string;
@@ -21,6 +24,8 @@ type Values = {
 
 type Props = {
   email: string;
+  registrationId: string;
+  identityConflict?: { code: ErrorCode } | null;
   defaults: {
     firstName: string;
     lastName: string;
@@ -30,7 +35,7 @@ type Props = {
   };
 };
 
-export function PersonalDataForm({ email, defaults }: Props) {
+export function PersonalDataForm({ email, defaults, registrationId, identityConflict }: Props) {
   const [state, action, pending] = useActionState(savePersonalDataAction, undefined);
   const form = useForm<Values>({
     resolver: zodResolver(personalDataSchema),
@@ -59,14 +64,13 @@ export function PersonalDataForm({ email, defaults }: Props) {
   }
 
   const clientError = Object.values(form.formState.errors).find((error) => error?.message)?.message;
+  const stuckWithoutIdentity =
+    Boolean(identityConflict) || (state?.code === "IDENTITY_FISCAL_CODE_ASSOCIATED" && !defaults.fiscalCode);
 
   return (
     <form className={fields.form} noValidate aria-busy={pending} onSubmit={(event) => event.preventDefault()}>
-      {clientError || state?.error ? (
-        <p className={fields.summary} role="alert">
-          {state?.error ?? clientError ?? it.formErrorSummary}
-        </p>
-      ) : null}
+      {stuckWithoutIdentity ? <IdentityConflictPanel registrationId={registrationId} showFormHint={false} /> : null}
+      {clientError || state?.error ? <ActionError error={state?.error ?? clientError} code={state?.code} /> : null}
 
       <fieldset className={fields.group}>
         <legend className={fields.legend}>{it.fieldGroupIdentity}</legend>

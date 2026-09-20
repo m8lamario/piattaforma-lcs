@@ -14,6 +14,7 @@ import { it } from "@/shared/i18n/it";
 import { ButtonLink } from "@/shared/ui/Button";
 import { PageHeader } from "@/shared/ui/PageHeader";
 import { StatusChip, type StatusTone } from "@/shared/ui/StatusChip";
+import { IdentityConflictPanel } from "@/features/players/ui/IdentityConflictPanel";
 import { WithdrawForm } from "@/features/registrations/ui/WithdrawForm";
 import { WindowNotice } from "@/features/registrations/ui/WindowNotice";
 import type { EditionWindow } from "@/features/registrations/domain/window";
@@ -28,6 +29,7 @@ const STATUS_COPY: Record<RegistrationStatus, string> = {
   PAYMENT_PENDING: it.statusPAYMENT_PENDING,
   APPROVED: it.statusAPPROVED,
   WITHDRAWN: it.statusWITHDRAWN,
+  REMOVED: it.statusREMOVED,
 };
 
 const STATUS_TONE: Record<RegistrationStatus, StatusTone> = {
@@ -39,6 +41,7 @@ const STATUS_TONE: Record<RegistrationStatus, StatusTone> = {
   PAYMENT_PENDING: "attention",
   APPROVED: "complete",
   WITHDRAWN: "neutral",
+  REMOVED: "neutral",
 };
 
 const ITEM_LABEL: Record<ChecklistItem["code"], string> = {
@@ -100,6 +103,7 @@ type Props = {
   medicalStatus?: MedicalEvidence;
   registrationId: string;
   editionWindow: EditionWindow;
+  identityConflict?: { code: string } | null;
 };
 
 export function RegistrationDashboard({
@@ -111,20 +115,30 @@ export function RegistrationDashboard({
   medicalStatus,
   registrationId,
   editionWindow,
+  identityConflict,
 }: Props) {
   const hero = nextHero(checklist);
   const hrefStep = hero.code === "DONE" ? "riepilogo" : (ITEM_HREF[hero.code] ?? "dati");
   const visible = checklist.filter((item) => item.status !== "not_applicable");
   const doneCount = visible.filter((item) => item.status === "complete").length;
-  const settled = hero.code === "DONE" || status === "APPROVED" || status === "WITHDRAWN";
-  const heroCopy =
-    status === "WITHDRAWN"
+  const blocked = Boolean(identityConflict);
+  const settled =
+    hero.code === "DONE" ||
+    status === "APPROVED" ||
+    status === "WITHDRAWN" ||
+    status === "REMOVED" ||
+    blocked;
+  const heroCopy = blocked
+    ? it.identityHeroBlocked
+    : status === "WITHDRAWN"
       ? it.heroWithdrawn
-      : status === "APPROVED"
-        ? it.heroApproved
-        : hero.code === "DONE"
-          ? it.heroPendingNow
-          : heroText(hero, medicalStatus);
+      : status === "REMOVED"
+        ? it.heroRemoved
+        : status === "APPROVED"
+          ? it.heroApproved
+          : hero.code === "DONE"
+            ? it.heroPendingNow
+            : heroText(hero, medicalStatus);
 
   return (
     <section className={styles.wrap}>
@@ -135,13 +149,16 @@ export function RegistrationDashboard({
         aside={<StatusChip tone={STATUS_TONE[status]}>{STATUS_COPY[status]}</StatusChip>}
       />
       <WindowNotice edition={editionWindow} />
+      {blocked ? <IdentityConflictPanel registrationId={registrationId} /> : null}
       <p className={styles.note}>{it.guardianEmailNote}</p>
 
       <div className={styles.hero}>
         <p className={styles.heroCopy}>{heroCopy}</p>
         <div className={styles.heroActions}>
           {settled ? null : <ButtonLink href={`/area/registrazione/${hrefStep}`}>{it.ctaContinue}</ButtonLink>}
-          {status !== "WITHDRAWN" ? <WithdrawForm registrationId={registrationId} /> : null}
+          {status !== "WITHDRAWN" && status !== "REMOVED" && !blocked ? (
+            <WithdrawForm registrationId={registrationId} />
+          ) : null}
         </div>
       </div>
 

@@ -4,6 +4,7 @@ import { logoutAction } from "@/features/auth/actions";
 import { findInviteByPlainToken, loadRedeemContext } from "@/features/teams/data/invites";
 import { decideRedeemPath } from "@/features/teams/domain/invite";
 import { isWellFormedInviteToken } from "@/features/teams/domain/token";
+import { userMessage } from "@/shared/errors";
 import { RedeemForm } from "@/features/teams/ui/RedeemForm";
 import { AttachInviteForm } from "@/features/teams/ui/AttachInviteForm";
 import { it } from "@/shared/i18n/it";
@@ -43,7 +44,7 @@ export default async function InviteRedeemPage({ params }: Props) {
   if (!isWellFormedInviteToken(token)) {
     return (
       <Frame>
-        <InviteMessage title={it.inviteTitle} body={it.inviteInvalid} />
+        <InviteMessage title={it.inviteTitle} body={userMessage("INVITE_INVALID")} />
       </Frame>
     );
   }
@@ -54,21 +55,21 @@ export default async function InviteRedeemPage({ params }: Props) {
   if (outcome === "expired") {
     return (
       <Frame>
-        <InviteMessage title={it.inviteTitle} body={it.inviteExpired} />
+        <InviteMessage title={it.inviteTitle} body={userMessage("INVITE_EXPIRED")} />
       </Frame>
     );
   }
   if (outcome === "already_used") {
     return (
       <Frame>
-        <InviteMessage title={it.inviteTitle} body={it.inviteUsed} />
+        <InviteMessage title={it.inviteTitle} body={userMessage("INVITE_ALREADY_USED")} />
       </Frame>
     );
   }
   if (outcome === "revoked") {
     return (
       <Frame>
-        <InviteMessage title={it.inviteTitle} body={it.inviteRevoked} />
+        <InviteMessage title={it.inviteTitle} body={userMessage("INVITE_REVOKED")} />
       </Frame>
     );
   }
@@ -76,7 +77,7 @@ export default async function InviteRedeemPage({ params }: Props) {
   if (!found || !inspection || inspection.outcome !== "redeemable") {
     return (
       <Frame>
-        <InviteMessage title={it.inviteTitle} body={it.inviteInvalid} />
+        <InviteMessage title={it.inviteTitle} body={userMessage("INVITE_INVALID")} />
       </Frame>
     );
   }
@@ -138,7 +139,7 @@ export default async function InviteRedeemPage({ params }: Props) {
   if (path.path === "already_on_team") {
     return (
       <Frame>
-        <InviteMessage title={it.inviteTitle} body={it.inviteAlreadyOnTeam} />
+        <InviteMessage title={it.inviteTitle} body={userMessage("INVITE_ALREADY_ON_TEAM")} />
       </Frame>
     );
   }
@@ -148,7 +149,7 @@ export default async function InviteRedeemPage({ params }: Props) {
       <Frame>
         <section className={styles.sheet}>
           <h1>{it.inviteTitle}</h1>
-          <p>{it.inviteWrongSession}</p>
+          <p>{userMessage("INVITE_WRONG_SESSION")}</p>
           <form action={logoutAction}>
             <input type="hidden" name="next" value={`/invito/${token}`} />
             <Button type="submit">{it.logoutRetryInvite}</Button>
@@ -162,7 +163,7 @@ export default async function InviteRedeemPage({ params }: Props) {
     <Frame>
       <InviteMessage
         title={it.inviteTitle}
-        body={it.inviteOtherCompetition}
+        body={userMessage("INVITE_EDITION_CONFLICT")}
       />
     </Frame>
   );

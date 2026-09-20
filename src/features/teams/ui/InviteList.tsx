@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { resendInviteAction, revokeInviteAction } from "@/features/teams/actions";
 import { Button } from "@/shared/ui/Button";
+import { ActionError } from "@/shared/ui/ActionError";
 import { PendingSubmitButton } from "@/shared/ui/PendingSubmitButton";
 import { StatusChip, type StatusTone } from "@/shared/ui/StatusChip";
 import { it } from "@/shared/i18n/it";
@@ -43,7 +44,7 @@ export function InviteList({ teamId, invites }: { teamId: string; invites: Invit
           <code className={styles.url}>{state.redeemUrl}</code>
         </div>
       ) : null}
-      {state?.error ? <p className={styles.meta}>{state.error}</p> : null}
+      {state?.error ? <ActionError error={state.error} code={state.code} /> : null}
       {invites.length === 0 ? <p className={styles.empty}>{it.emptyInvites}</p> : null}
       {invites.map((invite) => (
         <div key={invite.id} className={styles.row}>

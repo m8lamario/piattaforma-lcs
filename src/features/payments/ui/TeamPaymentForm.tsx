@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { startTeamCheckoutAction } from "@/features/payments/actions";
 import { Button } from "@/shared/ui/Button";
+import { ActionError } from "@/shared/ui/ActionError";
 import { it } from "@/shared/i18n/it";
 import fields from "@/shared/ui/form.module.css";
 
@@ -38,11 +39,7 @@ export function TeamPaymentForm({ teamId, covered, amount, currency }: Props) {
         </strong>
       </p>
       <p className={fields.help}>{it.paymentPlaceholderFee}</p>
-      {state?.error ? (
-        <p className={fields.summary} role="alert">
-          {state.error}
-        </p>
-      ) : null}
+      {state?.error ? <ActionError error={state.error} code={state.code} /> : null}
       <Button type="submit" disabled={pending} aria-busy={pending}>
         {pending ? it.redirecting : it.paymentPay}
       </Button>

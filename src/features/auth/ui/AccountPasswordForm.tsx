@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { changePasswordAction } from "@/features/auth/actions";
 import { Button } from "@/shared/ui/Button";
+import { ActionError } from "@/shared/ui/ActionError";
 import { it } from "@/shared/i18n/it";
 import fields from "@/shared/ui/form.module.css";
 
@@ -52,11 +53,7 @@ export function AccountPasswordForm() {
           className={fields.input}
         />
       </div>
-      {state?.error ? (
-        <p className={fields.summary} role="alert">
-          {state.error}
-        </p>
-      ) : null}
+      {state?.error ? <ActionError error={state.error} code={state.code} /> : null}
       {state?.ok ? (
         <p className={`${fields.banner} ${fields.bannerOk}`} role="status">
           {it.passwordChanged}

@@ -37,17 +37,17 @@ async function ensureRole(userId: string, role: "SUPER_ADMIN" | "ORGANIZATION_AD
 async function main() {
   const superAdmin = await upsertUser(
     "super@esl-player-hub.local",
-    "ChangeMe_SuperAdmin1!",
+    "ciaociao",
     "Super Admin",
   );
   const orgAdmin = await upsertUser(
     "org@esl-player-hub.local",
-    "ChangeMe_OrgAdmin1!",
+    "ciaociao",
     "Organization Admin",
   );
   const rep = await upsertUser(
     "rep@esl-player-hub.local",
-    "ChangeMe_TeamRep1!",
+    "ciaociao",
     "Rappresentante Demo",
   );
 

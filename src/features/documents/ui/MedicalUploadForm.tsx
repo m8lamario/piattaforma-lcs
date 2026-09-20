@@ -6,6 +6,7 @@ import { OpenDocumentButton } from "@/features/documents/ui/OpenDocumentButton";
 import { MAX_UPLOAD_BYTES } from "@/shared/config/app";
 import { Button } from "@/shared/ui/Button";
 import { FileDropzone } from "@/shared/ui/FileDropzone";
+import { ActionError } from "@/shared/ui/ActionError";
 import { it } from "@/shared/i18n/it";
 import fields from "@/shared/ui/form.module.css";
 
@@ -35,11 +36,7 @@ export function MedicalUploadForm({ document }: Props) {
 
   return (
     <form className={fields.form} action={action} aria-busy={pending}>
-      {state?.error ? (
-        <p className={fields.summary} role="alert">
-          {state.error}
-        </p>
-      ) : null}
+      {state?.error ? <ActionError error={state.error} code={state.code} /> : null}
 
       {banner ? (
         <p className={`${fields.banner} ${banner.className}`} role="status">

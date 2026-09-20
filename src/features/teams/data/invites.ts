@@ -313,6 +313,14 @@ export async function attachExistingUserToInvite(input: {
           status: "ACCOUNT_CREATED",
         },
       });
+    } else if (
+      existingRegistration.teamId === invite.teamId &&
+      (existingRegistration.status === "REMOVED" || existingRegistration.status === "WITHDRAWN")
+    ) {
+      await tx.registration.update({
+        where: { id: existingRegistration.id },
+        data: { status: "ACCOUNT_CREATED", teamId: invite.teamId },
+      });
     }
 
     return { ok: true as const, teamName: invite.team.name };

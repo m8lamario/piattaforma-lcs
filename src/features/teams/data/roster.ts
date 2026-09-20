@@ -21,20 +21,23 @@ export async function listTeamRoster(teamId: string) {
 
   const membershipByUser = new Map(memberships.map((row) => [row.userId, row]));
 
-  return registrations.map((registration) => {
-    const membership = membershipByUser.get(registration.playerProfile.userId);
-    return toRosterRow({
-      registrationId: registration.id,
-      userId: registration.playerProfile.userId,
-      membershipId: membership?.id,
-      firstName: registration.playerProfile.firstName,
-      lastName: registration.playerProfile.lastName,
-      jerseyNumber: membership?.jerseyNumber,
-      rosterRole: membership?.rosterRole,
-      registrationStatus: registration.status,
-      medicalStatus: registration.documents[0]?.status,
-    });
-  });
+  return registrations
+    .map((registration) => {
+      const membership = membershipByUser.get(registration.playerProfile.userId);
+      return toRosterRow({
+        registrationId: registration.id,
+        userId: registration.playerProfile.userId,
+        membershipId: membership?.id,
+        membershipRole: membership?.role,
+        firstName: registration.playerProfile.firstName,
+        lastName: registration.playerProfile.lastName,
+        jerseyNumber: membership?.jerseyNumber,
+        rosterRole: membership?.rosterRole,
+        registrationStatus: registration.status,
+        medicalStatus: registration.documents[0]?.status,
+      });
+    })
+    .filter((row) => Boolean(row.membershipId) && row.registrationStatus !== "REMOVED");
 }
 
 export async function listTeammates(teamId: string) {

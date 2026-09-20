@@ -23,6 +23,10 @@ export const ACTIONS = [
   "payment:create_team",
   "admin:manage",
   "platform:admin",
+  "team:remove_player",
+  "user:delete",
+  "user:anonymize",
+  "audit:delete",
 ] as const;
 
 export type Action = (typeof ACTIONS)[number];

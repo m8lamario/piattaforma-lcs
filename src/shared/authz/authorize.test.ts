@@ -101,4 +101,31 @@ describe("authorize deny-by-default", () => {
     expect(authorize(rep, "admin:manage").allow).toBe(false);
     expect(authorize(orgAdmin, "admin:manage").allow).toBe(true);
   });
+
+  it("consente al rappresentante di togliere un giocatore solo dalla propria squadra", () => {
+    expect(authorize(rep, "team:remove_player", { teamId: "team-1" }).allow).toBe(true);
+    expect(authorize(otherRep, "team:remove_player", { teamId: "team-1" }).allow).toBe(false);
+    expect(authorize(player, "team:remove_player", { teamId: "team-1" }).allow).toBe(false);
+    expect(authorize(orgAdmin, "team:remove_player", { teamId: "team-1" }).allow).toBe(true);
+    expect(authorize(superAdmin, "team:remove_player", { teamId: "team-1" }).allow).toBe(true);
+    expect(authorize(rep, "team:remove_player").allow).toBe(false);
+  });
+
+  it("riserva delete e anonymize al super admin e nega audit:delete a tutti", () => {
+    expect(authorize(rep, "user:delete", { ownerUserId: "player-1" }).allow).toBe(false);
+    expect(authorize(rep, "user:anonymize", { ownerUserId: "player-1" }).allow).toBe(false);
+    expect(authorize(otherRep, "user:delete", { ownerUserId: "rep-1" }).allow).toBe(false);
+    expect(authorize(orgAdmin, "user:delete").allow).toBe(false);
+    expect(authorize(orgAdmin, "user:anonymize").allow).toBe(false);
+    expect(authorize(orgAdmin, "platform:admin").allow).toBe(false);
+    expect(authorize(superAdmin, "user:delete").allow).toBe(true);
+    expect(authorize(superAdmin, "user:anonymize").allow).toBe(true);
+    expect(authorize(player, "user:delete").allow).toBe(false);
+    expect(authorize(player, "user:anonymize").allow).toBe(false);
+    expect(authorize(player, "user:delete", { ownerUserId: "player-1" }).allow).toBe(false);
+    expect(authorize(player, "audit:delete").allow).toBe(false);
+    expect(authorize(rep, "audit:delete").allow).toBe(false);
+    expect(authorize(orgAdmin, "audit:delete").allow).toBe(false);
+    expect(authorize(superAdmin, "audit:delete").allow).toBe(false);
+  });
 });

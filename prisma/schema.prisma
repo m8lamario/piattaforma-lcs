@@ -29,6 +29,13 @@ enum RegistrationStatus {
   PAYMENT_PENDING
   APPROVED
   WITHDRAWN
+  REMOVED
+}
+
+enum UserLifecycleStatus {
+  ACTIVE
+  DELETED
+  ANONYMIZED
 }
 
 enum PaymentMode {
@@ -93,14 +100,17 @@ enum InviteStatus {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  email         String    @unique
-  emailVerified DateTime?
-  passwordHash  String?
-  name          String?
-  image         String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id               String              @id @default(cuid())
+  email            String              @unique
+  emailVerified    DateTime?
+  passwordHash     String?
+  name             String?
+  image            String?
+  lifecycleStatus  UserLifecycleStatus @default(ACTIVE)
+  deletedAt        DateTime?
+  anonymizedAt     DateTime?
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
 
   accounts               Account[]
   sessions               Session[]
@@ -117,6 +127,8 @@ model User {
   auditLogs              AuditLog[]
   payments               Payment[]           @relation("PaymentPayer")
   representativeTeams    Team[]              @relation("TeamRepresentativeUser")
+
+  @@index([lifecycleStatus])
 }
 
 model Account {

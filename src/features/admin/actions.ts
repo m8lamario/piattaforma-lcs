@@ -27,6 +27,9 @@ import { emailAdapter } from "@/shared/adapters";
 import { writeAuditLog } from "@/shared/lib/audit";
 import { RATE_LIMITS, clientKey, consumeRateLimit, userAgentAndIp } from "@/shared/lib/request-guard";
 import { isWellFormedInviteToken } from "@/features/teams/domain/token";
+import { fail, failValidation, type ActionFailure, type ActionState } from "@/shared/errors";
+import { anonymizeUserAccount, deleteUserAccount } from "@/features/admin/data/lifecycle";
+import { anonymizeAccountSchema, deleteAccountSchema } from "@/features/admin/schemas/lifecycle";
 
 function originFromHeaders(headerList: Headers) {
   const host = headerList.get("x-forwarded-host") ?? headerList.get("host");
@@ -63,7 +66,7 @@ async function requireAdminActor() {
   return { session, actor };
 }
 
-export async function createEditionAction(_prev: { error?: string } | undefined, formData: FormData) {
+export async function createEditionAction(_prev: ActionFailure | undefined, formData: FormData) {
   const { session } = await requireAdminActor();
   const parsed = editionFormSchema.safeParse({
     competitionName: formData.get("competitionName"),
@@ -77,7 +80,7 @@ export async function createEditionAction(_prev: { error?: string } | undefined,
     registrationClosesAt: formData.get("registrationClosesAt") || undefined,
   });
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Controlla i dati inseriti." };
+    return failValidation(parsed.error.issues[0]?.message);
   }
   const created = await createCompetitionWithEdition({
     ...parsed.data,
@@ -99,11 +102,11 @@ export async function createEditionAction(_prev: { error?: string } | undefined,
   redirect(editionId ? `/admin/edizioni/${editionId}` : "/admin/edizioni");
 }
 
-export async function updateEditionAction(_prev: { error?: string } | undefined, formData: FormData) {
+export async function updateEditionAction(_prev: ActionFailure | undefined, formData: FormData) {
   const { session } = await requireAdminActor();
   const id = String(formData.get("id") ?? "");
   const existing = await getEditionAdmin(id);
-  if (!existing) return { error: "Edizione non trovata." };
+  if (!existing) return fail("EDITION_NOT_FOUND");
   const parsed = editionFormSchema.safeParse({
     competitionName: existing.competition.name,
     editionName: formData.get("editionName"),
@@ -116,7 +119,7 @@ export async function updateEditionAction(_prev: { error?: string } | undefined,
     registrationClosesAt: formData.get("registrationClosesAt") || undefined,
   });
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Controlla i dati inseriti." };
+    return failValidation(parsed.error.issues[0]?.message);
   }
   await updateEditionAdmin({
     id,
@@ -138,10 +141,10 @@ export async function updateEditionAction(_prev: { error?: string } | undefined,
   });
   revalidatePath("/admin/edizioni");
   revalidatePath(`/admin/edizioni/${id}`);
-  return { error: undefined };
+  return {};
 }
 
-export async function createTeamAction(_prev: { error?: string } | undefined, formData: FormData) {
+export async function createTeamAction(_prev: ActionFailure | undefined, formData: FormData) {
   const { session } = await requireAdminActor();
   const parsed = teamFormSchema.safeParse({
     editionId: formData.get("editionId"),
@@ -150,7 +153,7 @@ export async function createTeamAction(_prev: { error?: string } | undefined, fo
     teamName: formData.get("teamName"),
   });
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Controlla i dati inseriti." };
+    return failValidation(parsed.error.issues[0]?.message);
   }
   const team = await createSchoolAndTeam(parsed.data);
   await writeAuditLog({
@@ -164,23 +167,23 @@ export async function createTeamAction(_prev: { error?: string } | undefined, fo
 }
 
 export async function createStaffInviteAction(
-  _prev: { error?: string; redeemUrl?: string } | undefined,
+  _prev: ActionState<{ redeemUrl?: string }> | undefined,
   formData: FormData,
-) {
+): Promise<ActionState<{ redeemUrl?: string }>> {
   const { session, actor } = await requireAdminActor();
   const parsed = staffInviteSchema.safeParse({
     teamId: formData.get("teamId"),
     email: formData.get("email"),
   });
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Controlla i dati inseriti." };
+    return failValidation(parsed.error.issues[0]?.message);
   }
   if (!authorize(actor, "staff:invite", { teamId: parsed.data.teamId }).allow) {
-    return { error: "Non puoi invitare un rappresentante." };
+    return fail("FORBIDDEN_STAFF_INVITE");
   }
   const rateKey = await clientKey(`staff-invite:${session.user.id}`);
   if (!(await consumeRateLimit(rateKey, RATE_LIMITS.inviteCreate.limit, RATE_LIMITS.inviteCreate.windowMs))) {
-    return { error: "Troppi inviti in poco tempo. Riprova più tardi." };
+    return fail("INVITE_RATE_LIMITED");
   }
   const headerList = await headers();
   const { invite, redeemUrl } = await createStaffInvite({
@@ -207,7 +210,7 @@ export async function createStaffInviteAction(
 }
 
 export async function redeemStaffInviteAction(
-  _prev: { error?: string } | undefined,
+  _prev: ActionFailure | undefined,
   formData: FormData,
 ) {
   const parsed = redeemStaffSchema.safeParse({
@@ -216,18 +219,18 @@ export async function redeemStaffInviteAction(
     confirmPassword: formData.get("confirmPassword") || undefined,
   });
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Controlla i dati inseriti." };
+    return failValidation(parsed.error.issues[0]?.message);
   }
   if (!isWellFormedInviteToken(parsed.data.token)) {
-    return { error: "Questo invito non è valido." };
+    return fail("STAFF_INVITE_INVALID");
   }
   const rateKey = await clientKey("staff-redeem");
   if (!(await consumeRateLimit(rateKey, RATE_LIMITS.inviteRedeem.limit, RATE_LIMITS.inviteRedeem.windowMs))) {
-    return { error: "Troppi tentativi. Riprova più tardi." };
+    return fail("INVITE_RATE_LIMITED");
   }
   const found = await findStaffInviteByPlainToken(parsed.data.token);
   if (!found || found.inspection.outcome !== "redeemable") {
-    return { error: "Questo invito non è valido o è scaduto." };
+    return fail("STAFF_INVITE_INVALID");
   }
   const session = await auth();
   try {
@@ -238,15 +241,15 @@ export async function redeemStaffInviteAction(
     });
     if (!result.ok) {
       if (result.reason === "login_required") {
-        return { error: "Esiste già un account con questa email. Accedi e apri di nuovo il link." };
+        return fail("STAFF_INVITE_LOGIN_REQUIRED");
       }
       if (result.reason === "create_account") {
-        return { error: "Imposta una password per creare l’account del rappresentante." };
+        return fail("STAFF_INVITE_PASSWORD_REQUIRED");
       }
       if (result.reason === "wrong_session_email") {
-        return { error: "Sei connesso con un account diverso da quello dell’invito." };
+        return fail("STAFF_INVITE_WRONG_SESSION");
       }
-      return { error: "Questo invito non è valido." };
+      return fail("STAFF_INVITE_INVALID");
     }
     await writeAuditLog({
       actorUserId: result.user.id,
@@ -264,7 +267,7 @@ export async function redeemStaffInviteAction(
     redirect("/squadra");
   } catch (error) {
     if (error instanceof AuthError) {
-      return { error: "Account creato. Accedi dalla pagina di login." };
+      return fail("STAFF_INVITE_LOGIN_FAILED");
     }
     throw error;
   }
@@ -285,4 +288,69 @@ export async function deleteEditionAction(formData: FormData) {
   });
   revalidatePath("/admin/edizioni");
   redirect("/admin/edizioni");
+}
+
+export async function deleteAccountAction(
+  _prev: ActionFailure | undefined,
+  formData: FormData,
+): Promise<ActionFailure | undefined> {
+  const { session, actor } = await requireAdminActor();
+  const parsed = deleteAccountSchema.safeParse({
+    userId: formData.get("userId"),
+    confirm: formData.get("confirm"),
+  });
+  if (!parsed.success) {
+    return failValidation(parsed.error.issues[0]?.message);
+  }
+  if (!authorize(actor, "user:delete", { ownerUserId: parsed.data.userId }).allow) {
+    return fail("LIFECYCLE_DELETE_FORBIDDEN");
+  }
+  const rateKey = await clientKey(`lifecycle:${session.user.id}`);
+  if (!(await consumeRateLimit(rateKey, RATE_LIMITS.lifecycle.limit, RATE_LIMITS.lifecycle.windowMs))) {
+    return fail("RATE_LIMITED");
+  }
+  const result = await deleteUserAccount({
+    userId: parsed.data.userId,
+    confirm: parsed.data.confirm,
+    actorUserId: session.user.id,
+  });
+  if (!result.ok) {
+    return fail(result.code);
+  }
+  revalidatePath("/admin/utenti");
+  revalidatePath("/admin/audit");
+  redirect("/admin/utenti?done=deleted");
+}
+
+export async function anonymizeAccountAction(
+  _prev: ActionFailure | undefined,
+  formData: FormData,
+): Promise<ActionFailure | undefined> {
+  const { session, actor } = await requireAdminActor();
+  const parsed = anonymizeAccountSchema.safeParse({
+    userId: formData.get("userId"),
+    confirm: formData.get("confirm"),
+  });
+  if (!parsed.success) {
+    return failValidation(parsed.error.issues[0]?.message);
+  }
+  if (!authorize(actor, "user:anonymize", { ownerUserId: parsed.data.userId }).allow) {
+    return fail("LIFECYCLE_ANONYMIZE_FORBIDDEN");
+  }
+  const rateKey = await clientKey(`lifecycle:${session.user.id}`);
+  if (!(await consumeRateLimit(rateKey, RATE_LIMITS.lifecycle.limit, RATE_LIMITS.lifecycle.windowMs))) {
+    return fail("RATE_LIMITED");
+  }
+  const result = await anonymizeUserAccount({
+    userId: parsed.data.userId,
+    confirm: parsed.data.confirm,
+    actorUserId: session.user.id,
+  });
+  if (!result.ok) {
+    return fail(result.code);
+  }
+  revalidatePath("/admin/utenti");
+  revalidatePath(`/admin/utenti/${parsed.data.userId}`);
+  revalidatePath("/admin/audit");
+  redirect(`/admin/utenti/${parsed.data.userId}?done=anonymized`);
 }

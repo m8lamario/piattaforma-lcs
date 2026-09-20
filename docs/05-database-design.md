@@ -182,6 +182,7 @@ Indici: `actorUserId`, `entityType+entityId`, `createdAt`.
 - Document.registrationId, Document.status
 - Team.inviteCode unique
 - ConsentRecord (userId, legalDocumentVersionId)
+- User.lifecycleStatus
 
 ## 12. Cosa non sta nel DB
 
@@ -190,3 +191,24 @@ Indici: `actorUserId`, `entityType+entityId`, `createdAt`.
 - Password in chiaro (solo hash)
 - Token invito / reset password in chiaro
 - Privacy policy come unico booleano
+
+## 13. Ciclo di vita account (non `DELETE FROM users`)
+
+Tre operazioni distinte. Il ritiro (`WITHDRAWN`) resta un quarto stato, già esistente, e **non** equivale a togliere dalla rosa né a chiudere l’account.
+
+**User**
+
+- `lifecycleStatus` `ACTIVE` | `DELETED` | `ANONYMIZED` (default `ACTIVE`)
+- `deletedAt`, `anonymizedAt` nullable
+- Indice su `lifecycleStatus`
+- La riga User **non** si cancella: FKs `Restrict` (inviti creati, review documenti) e audit lo impedirebbero in modo sicuro
+
+**Registration.status** aggiunge `REMOVED`: rimosso dalla rosa, distinta da `WITHDRAWN`. Unique `(playerProfileId, editionId)` resta. Un re-invito sulla **stessa** squadra può riattivare la registration `REMOVED`/`WITHDRAWN`; un’altra squadra sulla stessa edizione resta conflitto v1.
+
+| Operazione | Chi | Cosa si toglie | Cosa si tiene |
+|---|---|---|---|
+| `REMOVE_FROM_TEAM` | Rep del team (e staff) | `TeamMembership` PLAYER, inviti pending, visibilità rosa | Account, PII, documenti, pagamenti, consensi, audit; registration → `REMOVED` |
+| `DELETE_ACCOUNT` | Super Admin | Login (password, sessioni, Account OAuth, ruoli, membership, notifiche); email tombstone; iscrizioni non terminali → `REMOVED` | Riga User, PII profilo incluso CF (fino ad anonymize), Document+blob, Payment, ConsentRecord, AuditLog |
+| `ANONYMIZE_ACCOUNT` | Super Admin | PII (nome, email, CF, tutore, filename, IP/UA consensi); iscrizioni non terminali → `REMOVED` | Id, stati, pagamenti, blob medici (niente purge OD-030), audit |
+
+Audit: `PLAYER_REMOVE`, `ACCOUNT_DELETE`, `ACCOUNT_ANONYMIZE`. Metadata senza CF, storageKey, motivi medici. L’audit non è cancellabile dalla UI.

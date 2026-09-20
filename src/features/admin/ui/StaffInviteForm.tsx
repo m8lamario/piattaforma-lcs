@@ -3,6 +3,7 @@
 import { useActionState, useState } from "react";
 import { createStaffInviteAction } from "@/features/admin/actions";
 import { Button } from "@/shared/ui/Button";
+import { ActionError } from "@/shared/ui/ActionError";
 import { it } from "@/shared/i18n/it";
 import fields from "@/shared/ui/form.module.css";
 import inviteStyles from "@/features/teams/ui/InviteForm.module.css";
@@ -32,11 +33,7 @@ export function StaffInviteForm({ teamId }: { teamId: string }) {
           </label>
           <input id="staff-email" name="email" type="email" required className={fields.input} autoComplete="email" />
         </div>
-        {state?.error ? (
-          <p className={fields.summary} role="alert">
-            {state.error}
-          </p>
-        ) : null}
+        {state?.error ? <ActionError error={state.error} code={state.code} /> : null}
         <div className={fields.actions}>
           <Button type="submit" disabled={pending} aria-busy={pending}>
             {pending ? it.sendingInvite : it.sendInvite}

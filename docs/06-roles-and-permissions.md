@@ -23,6 +23,10 @@ Principio: **deny by default**. Se un controllo non è esplicito, la risposta è
 | Vedere stato certificato del roster | no (né dei compagni) | **stato** | sì | sì |
 | Aggiornare maglia/ruolo rosa | no | sì (proprio team) | sì | sì |
 | Ritirare iscrizione | la propria | no | sì | sì |
+| Rimuovere giocatore dalla rosa | no | sì (proprio team, solo PLAYER) | sì | sì |
+| Chiudere account (`user:delete`) | no | no | no | sì (policy piattaforma) |
+| Anonimizzare account (`user:anonymize`) | no | no | no | sì |
+| Cancellare audit log | no | no | no | no (retention futura, non UI) |
 | Invitare rappresentante | no | no | sì | sì |
 | Vedere/scaricare file certificato | solo il proprio via signed URL | **no** | sì + audit | sì + audit |
 | Approvare/rifiutare documento | no | no | sì | sì |
@@ -71,7 +75,12 @@ type Action =
   | "staff:invite"
   | "payment:create_player"
   | "payment:create_team"
-  | "admin:manage";
+  | "admin:manage"
+  | "platform:admin"
+  | "team:remove_player"
+  | "user:delete"
+  | "user:anonymize"
+  | "audit:delete";
 
 function authorize(actor: Actor, action: Action, resource: Resource): Decision
 ```
@@ -83,4 +92,6 @@ Nessun bypass `if (role === SUPER_ADMIN) return true` sparso nelle pagine: il su
 - Un player non può auto-assegnarsi TEAM_REPRESENTATIVE (solo `StaffInvite` o Super Admin).
 - Il codice invito giocatore non concede admin né ruolo rappresentante.
 - Le API admin vivono sotto `/admin` **e** sotto check ruolo, entrambi necessari.
-- `staff:invite` e `admin:manage` per Org/Super Admin; `platform:admin` solo Super Admin.
+- `staff:invite` e `admin:manage` per Org/Super Admin; `platform:admin`, `user:delete`, `user:anonymize` solo Super Admin.
+- `team:remove_player` scoped a `teamId`: il rappresentante non tocca altre squadre né account altrui.
+- `audit:delete` è sempre deny, Super Admin compreso: i log non si cancellano da prodotto.

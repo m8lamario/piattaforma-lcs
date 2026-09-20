@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { AdminSubnav } from "./AdminSubnav";
 import { isStaff, representativeTeamIds } from "@/shared/authz/getActor";
+import { authorize } from "@/shared/authz/authorize";
 import { countUnreadNotifications } from "@/features/notifications/data/notifications";
 import { requireStaff } from "@/shared/authz/requireStaff";
 import { legalFilesHavePlaceholders } from "@/shared/lib/legal";
@@ -28,7 +29,7 @@ export async function AdminFrame({ path, children }: Props) {
     >
       <main className={styles.main}>
         {placeholders ? <p className={styles.banner}>{it.adminLegalBanner}</p> : null}
-        <AdminSubnav pathname={path} />
+        <AdminSubnav pathname={path} showAccounts={authorize(actor, "platform:admin").allow} />
         {children}
       </main>
     </AppShell>

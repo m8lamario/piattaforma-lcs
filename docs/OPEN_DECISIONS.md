@@ -192,6 +192,7 @@ Già coperti: no PWA in M0; scan OD-021.
 - **Decisione necessaria:** legale + organizzazione (tempi, verifica identità, limiti su certificati e log).
 - **Conseguenze:** può richiedere UI admin e policy di redazione.
 - **Impatto:** non blocca lo sviluppo del wizard. Workaround: canale `[INSERIRE EMAIL PRIVACY]`, niente delete-all in prodotto.
+- **Implementazione (sviluppo, non chiude OD-029):** Super Admin può chiudere o anonimizzare un account da `/admin/utenti`. Il rappresentante può solo rimuovere un giocatore dalla propria rosa. Purge file medici e cancellazione audit restano aperti (OD-022/030). Non è self-service.
 
 ## OD-030 Retention certificati e file sostituiti
 
@@ -311,7 +312,15 @@ Già coperti: no PWA in M0; scan OD-021.
 
 ---
 
-Quando una decisione arriva, si sposta in fondo come **Chiusa** con data e si aggiornano spec/architecture/schema se serve.
+## OD-045 Conflitto codice fiscale / due account
+
+- **Problema:** Una persona può riscattare due inviti con due email. Il CF unique emerge solo al passo anagrafica: il secondo account ha già User + Registration e restava bloccato in loop sul wizard.
+- **Opzioni:** (a) merge automatico col CF; (b) takeover del primo account; (c) un account = un CF, niente merge in prodotto, recovery esplicita; (d) unique solo per edizione.
+- **Decisione implementata (c, provvisoria):** User resta il login; PlayerProfile 1:1; CF unique globale già in schema (no migration 0004). Classificazione dominio (`new_player` / `own_identity` / `foreign_identity` con duplicate account, duplicate registration, already on team). Fail utente sempre `IDENTITY_FISCAL_CODE_ASSOCIATED` senza PII dell’altro account. Recovery: correggere il CF, usare l’account originale, ritirare *questa* iscrizione, contattare l’org. Persistenza del blocco in `PlayerProfile.metadata.identityConflict` solo se il secondo profilo non ha ancora un CF.
+- **Decisione ancora dell’organizzazione:** merge dei due User, quale email è canonica, riuso del CF dopo ritiro / rimozione rosa / chiusura (`DELETED` tiene il CF). L’anonimizzazione azzera già il CF (unique libero). Non è self-service.
+- **Impatto:** nessuna unione account in v1; unique DB come rete di sicurezza.
+
+---
 
 ## Decisioni autonome chiuse in M6 (2026-09-19)
 

@@ -10,7 +10,8 @@ import {
   persistRegistrationStatus,
 } from "@/features/registrations/data/workspace";
 import { nextStepAfter } from "@/features/registrations/domain/wizard";
-import { workspaceWriteError } from "@/features/registrations/domain/writeGate";
+import { workspaceWriteCode } from "@/features/registrations/domain/writeGate";
+import { fail, type ActionFailure } from "@/shared/errors";
 import { authorize } from "@/shared/authz/authorize";
 import { getActorByUserId } from "@/shared/authz/getActor";
 import { writeAuditLog } from "@/shared/lib/audit";
@@ -29,7 +30,7 @@ async function requireWritable() {
   if (!actor) redirect("/accedi");
   const workspace = await loadPlayerWorkspace(session.user.id);
   if (!workspace) {
-    return { ok: false as const, error: "Non hai un’iscrizione da completare." };
+    return { ok: false as const, error: fail("REGISTRATION_NOT_FOUND") };
   }
 
   const allowed = authorize(actor, "registration:write", {
@@ -37,11 +38,11 @@ async function requireWritable() {
     teamId: workspace.registration.teamId,
   });
   if (!allowed.allow) {
-    return { ok: false as const, error: "Non puoi modificare questa iscrizione." };
+    return { ok: false as const, error: fail("FORBIDDEN_REGISTRATION_WRITE") };
   }
-  const windowError = workspaceWriteError(workspace.registration);
-  if (windowError) {
-    return { ok: false as const, error: windowError };
+  const windowCode = workspaceWriteCode(workspace.registration);
+  if (windowCode) {
+    return { ok: false as const, error: fail(windowCode) };
   }
 
   const user = await prisma.user.findUnique({
@@ -49,7 +50,7 @@ async function requireWritable() {
     select: { emailVerified: true },
   });
   if (!user?.emailVerified) {
-    return { ok: false as const, error: "Verifica l’email prima di confermare i consensi." };
+    return { ok: false as const, error: fail("AUTH_EMAIL_NOT_VERIFIED") };
   }
 
   return { ok: true as const, session, workspace };
@@ -74,16 +75,16 @@ async function persistAndRedirect(
 }
 
 export async function savePrivacyConsentsAction(
-  _prev: { error?: string } | undefined,
+  _prev: ActionFailure | undefined,
   formData: FormData,
 ) {
   const access = await requireWritable();
-  if (!access.ok) return { error: access.error };
+  if (!access.ok) return access.error;
 
   const { session, workspace } = access;
   const rateKey = await clientKey(`consent:${session.user!.id}`);
   if (!(await consumeRateLimit(rateKey, RATE_LIMITS.consentWrite.limit, RATE_LIMITS.consentWrite.windowMs))) {
-    return { error: "Troppe conferme in poco tempo. Riprova più tardi." };
+    return fail("CONSENT_RATE_LIMITED");
   }
 
   const requiredSlugs = privacySlugsFor(workspace.evidence.isMinor);
@@ -93,7 +94,7 @@ export async function savePrivacyConsentsAction(
     const versionId = String(formData.get(`version:${slug}`) ?? "");
     const accepted = formData.get(`accept:${slug}`) === "on";
     if (!accepted || !versionId) {
-      return { error: "Devi confermare ogni informativa di questo passo. Nessuna è preselezionata." };
+      return fail("CONSENT_REQUIRED_UNCHECKED");
     }
     const stored = await recordConsent({
       userId: session.user!.id,
@@ -104,7 +105,7 @@ export async function savePrivacyConsentsAction(
       ...trace,
     });
     if (!stored.ok) {
-      return { error: "Il testo è stato aggiornato. Rileggi la versione corrente e conferma di nuovo." };
+      return fail("CONSENT_VERSION_STALE");
     }
     await writeAuditLog({
       actorUserId: session.user!.id,
@@ -125,31 +126,31 @@ export async function savePrivacyConsentsAction(
 }
 
 export async function saveMediaConsentAction(
-  _prev: { error?: string } | undefined,
+  _prev: ActionFailure | undefined,
   formData: FormData,
 ) {
   const access = await requireWritable();
-  if (!access.ok) return { error: access.error };
+  if (!access.ok) return access.error;
 
   const { session, workspace } = access;
   const rateKey = await clientKey(`consent:${session.user!.id}`);
   if (!(await consumeRateLimit(rateKey, RATE_LIMITS.consentWrite.limit, RATE_LIMITS.consentWrite.windowMs))) {
-    return { error: "Troppe conferme in poco tempo. Riprova più tardi." };
+    return fail("CONSENT_RATE_LIMITED");
   }
 
   const decision = String(formData.get("decision") ?? "");
   if (decision !== "accept" && decision !== "refuse") {
-    return { error: "Scegli se accettare o non accettare la liberatoria." };
+    return fail("CONSENT_MEDIA_DECISION_REQUIRED");
   }
 
   const mediaRequired =
     workspace.checklist.find((item) => item.code === "MEDIA_RELEASE")?.required ?? false;
   if (mediaRequired && decision === "refuse") {
-    return { error: "Per questa edizione la liberatoria è obbligatoria." };
+    return fail("CONSENT_MEDIA_REQUIRED");
   }
 
   const versionId = String(formData.get("versionId") ?? "");
-  if (!versionId) return { error: "Versione informativa mancante. Ricarica la pagina." };
+  if (!versionId) return fail("CONSENT_VERSION_MISSING");
 
   const trace = await userAgentAndIp();
   const stored = await recordConsent({
@@ -161,7 +162,7 @@ export async function saveMediaConsentAction(
     ...trace,
   });
   if (!stored.ok) {
-    return { error: "Il testo è stato aggiornato. Rileggi la versione corrente e scegli di nuovo." };
+    return fail("CONSENT_VERSION_STALE");
   }
 
   await writeAuditLog({

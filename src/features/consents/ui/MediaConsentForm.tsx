@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { saveMediaConsentAction } from "@/features/consents/actions";
 import { Button, ButtonLink } from "@/shared/ui/Button";
+import { ActionError } from "@/shared/ui/ActionError";
 import { it } from "@/shared/i18n/it";
 import fields from "@/shared/ui/form.module.css";
 import styles from "./ConsentForm.module.css";
@@ -30,11 +31,7 @@ export function MediaConsentForm({ document, required, currentDecision }: Props)
           {it.consentMediaCurrentRefuse}
         </p>
       ) : null}
-      {state?.error ? (
-        <p className={fields.summary} role="alert">
-          {state.error}
-        </p>
-      ) : null}
+      {state?.error ? <ActionError error={state.error} code={state.code} /> : null}
 
       <article className={`${styles.block} ${styles.featured}`}>
         <div className={styles.headline}>

@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { resetPasswordAction } from "@/features/auth/actions";
 import { Button } from "@/shared/ui/Button";
+import { ActionError } from "@/shared/ui/ActionError";
 import { it } from "@/shared/i18n/it";
 import fields from "@/shared/ui/form.module.css";
 
@@ -39,11 +40,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
           className={fields.input}
         />
       </div>
-      {state?.error ? (
-        <p className={fields.summary} role="alert">
-          {state.error}
-        </p>
-      ) : null}
+      {state?.error ? <ActionError error={state.error} code={state.code} /> : null}
       <div className={fields.actions}>
         <Button type="submit" disabled={pending} aria-busy={pending}>
           {pending ? it.saving : it.resetPasswordSubmit}

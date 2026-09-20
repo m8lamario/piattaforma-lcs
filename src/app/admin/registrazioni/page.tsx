@@ -20,6 +20,7 @@ const STATUS_COPY: Record<string, string> = {
   PAYMENT_PENDING: it.statusPAYMENT_PENDING,
   APPROVED: it.statusAPPROVED,
   WITHDRAWN: it.statusWITHDRAWN,
+  REMOVED: it.statusREMOVED,
 };
 
 type Props = {

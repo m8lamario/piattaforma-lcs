@@ -3,10 +3,13 @@ import Link from "next/link";
 import { getPlayerAdmin } from "@/features/admin/data/catalog";
 import { loadPlayerWorkspace } from "@/features/registrations/data/workspace";
 import { AdminFrame } from "@/features/admin/ui/AdminFrame";
+import { AccountLifecycleForm } from "@/features/admin/ui/AccountLifecycleForm";
 import { OpenDocumentButton } from "@/features/documents/ui/OpenDocumentButton";
 import { PageHeader } from "@/shared/ui/PageHeader";
 import { StatusChip } from "@/shared/ui/StatusChip";
 import { WithdrawForm } from "@/features/registrations/ui/WithdrawForm";
+import { authorize } from "@/shared/authz/authorize";
+import { requireStaff } from "@/shared/authz/requireStaff";
 import { it } from "@/shared/i18n/it";
 import styles from "@/features/admin/ui/admin.module.css";
 
@@ -19,11 +22,13 @@ const STATUS_COPY: Record<string, string> = {
   PAYMENT_PENDING: it.statusPAYMENT_PENDING,
   APPROVED: it.statusAPPROVED,
   WITHDRAWN: it.statusWITHDRAWN,
+  REMOVED: it.statusREMOVED,
 };
 
 type Props = { params: Promise<{ id: string }> };
 
 export default async function AdminPlayerPage({ params }: Props) {
+  const { actor } = await requireStaff(`/admin/giocatori`);
   const { id } = await params;
   const profile = await getPlayerAdmin(id);
   if (!profile) notFound();
@@ -102,9 +107,21 @@ export default async function AdminPlayerPage({ params }: Props) {
           <OpenDocumentButton documentId={document.id} />
         </p>
       ) : null}
-      {registration && registration.status !== "WITHDRAWN" ? (
+      {registration && registration.status !== "WITHDRAWN" && registration.status !== "REMOVED" ? (
         <WithdrawForm registrationId={registration.id} />
       ) : null}
+      {authorize(actor, "platform:admin").allow ? (
+        <p>
+          <Link href={`/admin/utenti/${profile.user.id}`}>{it.lifecycleUsersTitle}</Link>
+        </p>
+      ) : null}
+      <AccountLifecycleForm
+        userId={profile.user.id}
+        email={profile.user.email}
+        lifecycleStatus={profile.user.lifecycleStatus}
+        canDelete={authorize(actor, "user:delete", { ownerUserId: profile.user.id }).allow}
+        canAnonymize={authorize(actor, "user:anonymize", { ownerUserId: profile.user.id }).allow}
+      />
     </AdminFrame>
   );
 }

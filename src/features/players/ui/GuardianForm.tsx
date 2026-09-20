@@ -7,6 +7,7 @@ import { saveGuardianAction } from "@/features/players/actions";
 import { GUARDIAN_RELATIONSHIPS, type GuardianRelationship } from "@/features/players/domain/personal";
 import { guardianSchema } from "@/features/players/schemas/guardian";
 import { Button } from "@/shared/ui/Button";
+import { ActionError } from "@/shared/ui/ActionError";
 import { it } from "@/shared/i18n/it";
 import fields from "@/shared/ui/form.module.css";
 
@@ -71,11 +72,7 @@ export function GuardianForm({ defaults }: Props) {
 
   return (
     <form className={fields.form} noValidate aria-busy={pending} onSubmit={(event) => event.preventDefault()}>
-      {clientError || state?.error ? (
-        <p className={fields.summary} role="alert">
-          {state?.error ?? clientError ?? it.formErrorSummary}
-        </p>
-      ) : null}
+      {clientError || state?.error ? <ActionError error={state?.error ?? clientError} code={state?.code} /> : null}
 
       <fieldset className={fields.group}>
         <legend className={fields.legend}>{it.fieldGroupGuardianPerson}</legend>

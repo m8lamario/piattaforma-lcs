@@ -14,6 +14,7 @@ describe("team roster projection", () => {
       registrationId: "r1",
       userId: undefined,
       membershipId: undefined,
+      membershipRole: undefined,
       firstName: "Anna",
       lastName: "Rossi",
       jerseyNumber: null,

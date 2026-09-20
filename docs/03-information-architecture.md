@@ -46,6 +46,8 @@ Un utente può avere più ruoli (es. rappresentante che è anche giocatore). La 
 /admin/edizioni/[id]
 /admin/informative             sola lettura versioni correnti
 /admin/pagamenti
+/admin/utenti                  Super Admin: chiusura / anonimizzazione account
+/admin/utenti/[id]
 /admin/audit
 ```
 

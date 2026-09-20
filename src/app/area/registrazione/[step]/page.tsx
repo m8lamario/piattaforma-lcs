@@ -6,6 +6,7 @@ import { authorize } from "@/shared/authz/authorize";
 import { GuardianForm } from "@/features/players/ui/GuardianForm";
 import { PersonalDataForm } from "@/features/players/ui/PersonalDataForm";
 import { loadPlayerWorkspace } from "@/features/registrations/data/workspace";
+import { isTerminalRegistrationStatus } from "@/features/registrations/domain/requirements";
 import {
   gateWizardStep,
   isWizardStepId,
@@ -47,6 +48,9 @@ export default async function WizardStepPage({ params }: Props) {
     teamId: workspace.registration.teamId,
   });
   if (!allowed.allow) redirect("/area");
+  if (isTerminalRegistrationStatus(workspace.registration.status)) {
+    redirect("/area");
+  }
 
   if (!isWizardStepId(raw)) {
     redirect("/area/registrazione");
@@ -79,6 +83,8 @@ export default async function WizardStepPage({ params }: Props) {
         <PersonalDataForm
           email={workspace.user.email}
           defaults={workspace.profile}
+          registrationId={workspace.registration.id}
+          identityConflict={workspace.identityConflict}
         />
       );
       break;
