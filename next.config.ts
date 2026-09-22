@@ -1,24 +1,22 @@
 import type { NextConfig } from "next";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
 
-const projectRoot = path.dirname(fileURLToPath(import.meta.url));
-const generatedDir = path.join(projectRoot, "generated");
-const generatedClient = path.join(generatedDir, "client.ts");
+/**
+ * Project-relative. An absolute path is treated as a server-relative import
+ * (`/home/runner/...`) and Turbopack refuses it.
+ */
+const generatedClient = "./generated/client.ts";
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
   turbopack: {
     resolveAlias: {
       "@generated/client": generatedClient,
-      "@generated": generatedDir,
     },
   },
   webpack: (config) => {
     config.resolve.alias = {
       ...config.resolve.alias,
       "@generated/client": generatedClient,
-      "@generated": generatedDir,
     };
     return config;
   },
