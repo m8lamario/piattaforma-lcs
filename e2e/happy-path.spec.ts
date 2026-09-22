@@ -9,8 +9,8 @@ test("happy path: invito, redeem, wizard minimo, pagamento stub", async ({ page,
   const fiscalCode = `${body}${fiscalCodeControlChar(body)}`;
 
   await page.goto("/accedi");
-  await page.getByLabel("Email").fill("rep@esl-player-hub.local");
-  await page.getByLabel("Password").fill("ChangeMe_TeamRep1!");
+  await page.getByLabel("Email").fill("rep@gmail.com");
+  await page.getByLabel("Password").fill("CiaoCiao");
   await page.getByRole("button", { name: "Entra" }).click();
   await expect(page).toHaveURL(/\/(area|squadra)/);
 

@@ -49,9 +49,9 @@ La foundation **non** include il wizard di iscrizione. **M1–M7** del roadmap v
 
 Seed di sviluppo (`npm run db:seed`):
 
-- `rep@esl-player-hub.local` / `ChangeMe_TeamRep1!` — rappresentante, area `/squadra`
-- `org@esl-player-hub.local` / `ChangeMe_OrgAdmin1!`
-- `super@esl-player-hub.local` / `ChangeMe_SuperAdmin1!`
+- `rep@gmail.com` / `CiaoCiao` — rappresentante, area `/squadra`
+- `org@gmail.com` / `CiaoCiao`
+- `super@gmail.com` / `CiaoCiao`
 
 Cambiare queste password prima di qualsiasi ambiente condiviso.
 

@@ -3,19 +3,22 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const projectRoot = path.dirname(fileURLToPath(import.meta.url));
-const generatedClientDir = path.join(projectRoot, "generated");
+const generatedDir = path.join(projectRoot, "generated");
+const generatedClient = path.join(generatedDir, "client.ts");
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
   turbopack: {
     resolveAlias: {
-      "@generated": generatedClientDir,
+      "@generated/client": generatedClient,
+      "@generated": generatedDir,
     },
   },
   webpack: (config) => {
     config.resolve.alias = {
       ...config.resolve.alias,
-      "@generated": generatedClientDir,
+      "@generated/client": generatedClient,
+      "@generated": generatedDir,
     };
     return config;
   },
