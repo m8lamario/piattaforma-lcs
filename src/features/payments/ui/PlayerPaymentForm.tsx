@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { startPlayerCheckoutAction } from "@/features/payments/actions";
 import { Button } from "@/shared/ui/Button";
+import { ActionError } from "@/shared/ui/ActionError";
 import { it } from "@/shared/i18n/it";
 import fields from "@/shared/ui/form.module.css";
 
@@ -30,20 +31,16 @@ export function PlayerPaymentForm({ covered, teamOnly, amount, currency }: Props
   return (
     <form className={fields.form} action={action} aria-busy={pending}>
       <p className={fields.help}>{it.paymentHelp}</p>
-      <p>
-        {it.paymentAmount}:{" "}
+      <p className={fields.amount}>
+        <span>{it.paymentAmount}</span>
         <strong>
           {amount} {currency}
         </strong>
       </p>
       <p className={fields.help}>{it.paymentPlaceholderFee}</p>
-      {state?.error ? (
-        <p className={fields.summary} role="alert">
-          {state.error}
-        </p>
-      ) : null}
+      {state?.error ? <ActionError error={state.error} code={state.code} /> : null}
       <div className={`${fields.actions} ${fields.sticky}`}>
-        <Button type="submit" disabled={pending} aria-busy={pending}>
+        <Button type="submit" variant="success" icon="payment" disabled={pending} aria-busy={pending}>
           {pending ? it.redirecting : it.paymentPay}
         </Button>
       </div>

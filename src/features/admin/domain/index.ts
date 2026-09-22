@@ -1,2 +1,4 @@
-/** Area organizzazione — review documenti in M3; altre console in milestone successive. */
-export {};
+/** Console organizzazione M8. */
+export * from "./format";
+export * from "./edition";
+export * from "./lifecycle";

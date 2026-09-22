@@ -17,6 +17,7 @@ erDiagram
   Edition ||--o{ Team : has
   School ||--o{ Team : has
   Team ||--o{ PlayerInvite : sends
+  Team ||--o{ StaffInvite : staff
   Team ||--o{ Registration : roster
   Registration ||--o{ Document : attaches
   Registration ||--o{ Payment : pays
@@ -94,6 +95,8 @@ Un rappresentante che è anche giocatore ha `TEAM_REPRESENTATIVE` + membership `
 
 Il token in chiaro sta solo nell’URL/email; in DB si salva **hash**.
 
+**StaffInvite** — come PlayerInvite ma per rappresentanti: teamId, email, token hash, status, expiresAt, invitedBy. Il redeem **non** crea `Registration`. Se l’email ha già un User, si aggiunge `TEAM_REPRESENTATIVE` + membership `REPRESENTATIVE`.
+
 ## 6. Registrazione
 
 **Registration**
@@ -145,7 +148,7 @@ Mai un flag denormalizzato `privacyAccepted` sul User come unica prova.
 
 - registrationId nullable, teamId nullable, editionId
 - amount, currency, status PENDING|SUCCEEDED|FAILED|REFUNDED
-- provider (stringa libera, es. `stub`)
+- provider (stringa libera, es. `stub` | `stripe`)
 - providerPaymentId, providerSessionId
 - paidAt, failureCode, receiptUrl nullable
 - raw webhook **non** si salva intero se contiene PII; si salva event id + tipo
@@ -167,6 +170,8 @@ Check applicativo: almeno uno tra registrationId e teamId.
 
 Indici: `actorUserId`, `entityType+entityId`, `createdAt`.
 
+**RateLimitHit** — `key`, `createdAt`. Sliding window per login, inviti, upload, reset password, CSV. Non è un store in-process.
+
 ## 11. Indici previsti
 
 - User.email unique
@@ -177,11 +182,33 @@ Indici: `actorUserId`, `entityType+entityId`, `createdAt`.
 - Document.registrationId, Document.status
 - Team.inviteCode unique
 - ConsentRecord (userId, legalDocumentVersionId)
+- User.lifecycleStatus
 
 ## 12. Cosa non sta nel DB
 
 - File certificati
 - PAN/CVV
 - Password in chiaro (solo hash)
-- Token invito in chiaro
+- Token invito / reset password in chiaro
 - Privacy policy come unico booleano
+
+## 13. Ciclo di vita account (non `DELETE FROM users`)
+
+Tre operazioni distinte. Il ritiro (`WITHDRAWN`) resta un quarto stato, già esistente, e **non** equivale a togliere dalla rosa né a chiudere l’account.
+
+**User**
+
+- `lifecycleStatus` `ACTIVE` | `DELETED` | `ANONYMIZED` (default `ACTIVE`)
+- `deletedAt`, `anonymizedAt` nullable
+- Indice su `lifecycleStatus`
+- La riga User **non** si cancella: FKs `Restrict` (inviti creati, review documenti) e audit lo impedirebbero in modo sicuro
+
+**Registration.status** aggiunge `REMOVED`: rimosso dalla rosa, distinta da `WITHDRAWN`. Unique `(playerProfileId, editionId)` resta. Un re-invito sulla **stessa** squadra può riattivare la registration `REMOVED`/`WITHDRAWN`; un’altra squadra sulla stessa edizione resta conflitto v1.
+
+| Operazione | Chi | Cosa si toglie | Cosa si tiene |
+|---|---|---|---|
+| `REMOVE_FROM_TEAM` | Rep del team (e staff) | `TeamMembership` PLAYER, inviti pending, visibilità rosa | Account, PII, documenti, pagamenti, consensi, audit; registration → `REMOVED` |
+| `DELETE_ACCOUNT` | Super Admin | Login (password, sessioni, Account OAuth, ruoli, membership, notifiche); email tombstone; iscrizioni non terminali → `REMOVED` | Riga User, PII profilo incluso CF (fino ad anonymize), Document+blob, Payment, ConsentRecord, AuditLog |
+| `ANONYMIZE_ACCOUNT` | Super Admin | PII (nome, email, CF, tutore, filename, IP/UA consensi); iscrizioni non terminali → `REMOVED` | Id, stati, pagamenti, blob medici (niente purge OD-030), audit |
+
+Audit: `PLAYER_REMOVE`, `ACCOUNT_DELETE`, `ACCOUNT_ANONYMIZE`. Metadata senza CF, storageKey, motivi medici. L’audit non è cancellabile dalla UI.

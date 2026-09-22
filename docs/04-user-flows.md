@@ -6,13 +6,15 @@
 sequenceDiagram
   participant SA as SuperAdmin
   participant OA as OrgAdmin
+  participant Sys as Hub
   participant TR as TeamRep
   SA->>OA: crea utente admin
   OA->>OA: crea Competition e Edition
   OA->>OA: configura requisiti e paymentMode
   OA->>OA: crea School e Team
-  OA->>TR: invito rappresentante
-  TR->>TR: attiva account
+  OA->>TR: StaffInvite (email, team, token hashato)
+  TR->>Sys: apre /invito-staff/[token]
+  TR->>TR: crea o collega account; ruolo TEAM_REPRESENTATIVE; niente Registration
 ```
 
 ## 2. Invito giocatore (ingresso unico v1)
@@ -53,14 +55,16 @@ Passi guidati, uno schermo alla volta, salvataggio per passo:
 6. Pagamento (se dovuto al giocatore)
 7. Riepilogo e “cosa succede ora”
 
-L’utente può uscire e riprendere. La dashboard mostra sempre il prossimo passo.
+L’utente può uscire e riprendere. La dashboard mostra il prossimo passo **finché** restano voci da fare o in attenzione. Se lo stato è `APPROVED` o `WITHDRAWN`, o la checklist è completa, non c’è CTA “Continua” verso il wizard.
+
+Fuori dalla finestra `registrationOpensAt`/`registrationClosesAt`: nuovi inviti, scritture wizard e checkout sono bloccati. Il redeem di un invito già emesso resta valido fino al TTL.
 
 ## 4. Minore
 
 1. Data di nascita → `isMinor = age < 18` (assunzione, da validare).
 2. Se minore, il passo guardian è obbligatorio per avanzare.
 3. Consensi con audience `GUARDIAN` / `MINOR` mostrati con copy dedicato (placeholder legale).
-4. Il login resta del minore. Il genitore riceve comunicazioni sulla propria email quando l’adapter è live.
+4. Il login resta del minore. Se c’è `Guardian.email`, le comunicazioni di servizio (stesso `title` della notifica, niente body sanitario) possono partire anche al tutore. Non è una firma del genitore (OD-002/032).
 5. Non si afferma che il click digitale del minore o del genitore abbia valore legale: tracciamo acceptance; la validità è OPEN_DECISIONS.
 
 ## 5. Documento medico
@@ -81,7 +85,8 @@ Admin lista registrazioni filtrabili per edizione, squadra, stato.
 
 - `PENDING_REVIEW` quando i requisiti “di contenuto” sono soddisfatti e resta la revisione umana (certificato).
 - `CHANGES_REQUESTED` se un requisito è rifiutato.
-- `APPROVED` quando tutti i requisiti required sono ok **e** il pagamento dovuto è coperto.
+- `APPROVED` quando tutti i requisiti required sono ok **e** il pagamento dovuto è coperto (proiezione del motore, niente bottone admin “approva iscrizione”).
+- `WITHDRAWN` se giocatore o staff ritira: i dati restano; non è un delete-all (OD-029).
 
 ## 7. Pagamento
 
@@ -99,7 +104,7 @@ flowchart TD
   status -->|SUCCEEDED giocatore| self[Solo quella registration]
 ```
 
-Nessun dato carta nel nostro DB. Il ritorno utente e il webhook devono essere idempotenti.
+Nessun dato carta nel nostro DB. Con `PAYMENT_DRIVER=stripe` il webhook firmato è la fonte di verità; la pagina esito non marca SUCCEEDED. Con `stub` resta la conferma interna sul return URL. Idempotenza su `providerPaymentId`.
 
 ## 8. Correzioni
 
@@ -114,3 +119,13 @@ Se l’admin chiede modifiche:
 Eventi (da notificare in-app; email quando provider scelto): invito, account creato, documento rifiutato, pagamento riuscito/fallito, iscrizione approvata, reminder requisiti mancanti.
 
 I template hanno placeholder e non includono CF o link firmati lunghi in chiaro oltre il necessario.
+
+## 10. Invito rappresentante e reinvio giocatore
+
+- Staff: `StaffInvite` per email+squadra; redeem su `/invito-staff/[token]`; account unico se l’email è già giocatore.
+- Reinvio giocatore: revoca il pending precedente e emette un nuovo token (visibile una volta in UI). Il plaintext non si rimostra.
+- CSV rappresentante: `email,firstName,lastName`, max 50, CF mai.
+
+## 11. Recupero password
+
+`/recupera-password` invia (se l’account esiste) un token hashato. Messaggio UI **sempre** generico. Token monouso. Rate limit. Cambio password da loggato su `/area/account` richiede la password attuale.

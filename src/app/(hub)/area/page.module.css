@@ -1,0 +1,33 @@
+.card {
+  width: min(var(--content-max), 100%);
+  align-self: flex-start;
+  padding-left: var(--space-5);
+  border-left: var(--line-width) solid var(--color-primary);
+}
+
+.card h1 {
+  margin: 0 0 var(--space-3);
+  font-size: clamp(1.5rem, 4vw, var(--text-2xl));
+}
+
+.card p {
+  color: var(--color-text-muted);
+  line-height: 1.55;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-top: var(--space-5);
+}
+
+@media (max-width: 640px) {
+  .card {
+    padding-left: var(--space-4);
+  }
+
+  .actions {
+    display: grid;
+  }
+}

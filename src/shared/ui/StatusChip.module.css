@@ -3,8 +3,7 @@
   align-items: center;
   gap: var(--space-2);
   min-height: 1.75rem;
-  padding: 0 var(--space-2) 0 var(--space-2);
-  border-radius: var(--radius-xs);
+  padding: 0 var(--space-2);
   font-size: var(--text-xs);
   font-weight: 700;
   letter-spacing: 0.02em;

@@ -56,4 +56,34 @@ Rate limit già su login/invito/upload/consensi; header di sicurezza + CSP incre
 
 **Exit:** test, lint, typecheck, build; CSP presente; rate limit documentati.
 
-Il roadmap v1 (M0–M7) è chiuso. I residui (Playwright CI, nonce CSP, provider live, testi legali, retention purge) restano in `OPEN_DECISIONS.md` e non costituiscono una milestone successiva.
+Il roadmap v1 (M0–M7) è chiuso. M8–M12 coprono ops organizzazione, comfort rappresentante/giocatore, adapter live (Resend, R2, Stripe) e hardening E2E. I testi legali ufficiali (OD-001) e la retention purge (OD-022) restano aperti.
+
+## M8 — Console organizzazione
+
+CRUD competizioni/edizioni/istituti/squadre, invito rappresentante (`StaffInvite`), elenco iscrizioni filtrabile, scheda giocatore staff, filtri documenti, pagamenti, audit, informative in sola lettura.
+
+**Exit:** test, lint, typecheck, build; deny-by-default su `/admin`; staff invite hashato; nessuna cancellazione edizione con registrazioni; lista documenti senza `storageKey`.
+
+## M9 — Rosa e rappresentante
+
+Selettore squadra, striscia stato rosa, reinvio invito, CSV (max 50), sollecito checklist, maglia/ruolo, gate finestra iscrizioni sugli inviti nuovi.
+
+**Exit:** test, lint, typecheck, build; rosa senza CF/email/storageKey; CSV riga invalida non blocca le altre; sollecito senza motivo medico.
+
+## M10 — Area dopo l’iscrizione e account
+
+Dashboard post-`APPROVED`/`DONE` senza CTA wizard; `/area/account`; reset password; `/area/squadra` compagni senza stato medico; badge comunicazioni; ritiro `WITHDRAWN`; countdown finestre; email tutore title-only.
+
+**Exit:** test, lint, typecheck, build; reset token riusato rifiutato; withdraw IDOR; vista compagni senza medicalStatus.
+
+## M11 — Adapter live e rate limit distribuito
+
+`EMAIL_DRIVER=resend`, `STORAGE_DRIVER=r2`, `PAYMENT_DRIVER=stripe` dietro adapter. Webhook Stripe come fonte di verità. Rate limit su Postgres. Default stub/local se manca config.
+
+**Exit:** test, lint, typecheck, build; webhook firma invalida 400; stub esito SUCCEEDED solo con driver stub; niente campi carta.
+
+## M12 — CSP nonce e Playwright
+
+Nonce sul bootstrap tema; Playwright happy path in CI; banner staff se i testi legali contengono ancora `[INSERIRE`.
+
+**Exit:** test, lint, typecheck, build, `test:e2e` in CI.

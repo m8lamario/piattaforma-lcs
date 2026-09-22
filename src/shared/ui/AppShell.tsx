@@ -8,10 +8,12 @@ type Props = {
   email?: string | null;
   showTeam?: boolean;
   showAdmin?: boolean;
+  showPlayerTeam?: boolean;
+  unreadCount?: number;
   children: ReactNode;
 };
 
-export function AppShell({ email, showTeam, showAdmin, children }: Props) {
+export function AppShell({ email, showTeam, showAdmin, showPlayerTeam, unreadCount, children }: Props) {
   return (
     <div className={styles.shell}>
       <a href="#contenuto" className={styles.skip}>
@@ -19,7 +21,13 @@ export function AppShell({ email, showTeam, showAdmin, children }: Props) {
       </a>
       <header className={styles.header}>
         <BrandMark href="/area" compact />
-        <AppNav email={email} showTeam={showTeam} showAdmin={showAdmin} />
+        <AppNav
+          email={email}
+          showTeam={showTeam}
+          showAdmin={showAdmin}
+          showPlayerTeam={showPlayerTeam}
+          unreadCount={unreadCount}
+        />
       </header>
       <div id="contenuto" className={styles.content} tabIndex={-1}>
         {children}

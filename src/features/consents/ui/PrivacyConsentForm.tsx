@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { savePrivacyConsentsAction } from "@/features/consents/actions";
 import { Button } from "@/shared/ui/Button";
+import { ActionError } from "@/shared/ui/ActionError";
 import { it } from "@/shared/i18n/it";
 import fields from "@/shared/ui/form.module.css";
 import styles from "./ConsentForm.module.css";
@@ -24,11 +25,7 @@ export function PrivacyConsentForm({ documents }: Props) {
 
   return (
     <form className={fields.form} action={action} aria-busy={pending}>
-      {state?.error ? (
-        <p className={fields.summary} role="alert">
-          {state.error}
-        </p>
-      ) : null}
+      {state?.error ? <ActionError error={state.error} code={state.code} /> : null}
 
       {documents.map((document) => (
         <article key={document.slug} className={styles.block}>
@@ -41,8 +38,8 @@ export function PrivacyConsentForm({ documents }: Props) {
           <p className={fields.notice}>{it.legalPlaceholderNotice}</p>
           <pre className={styles.body}>{document.body}</pre>
           <input type="hidden" name={`version:${document.slug}`} value={document.versionId} />
-          <label className={styles.check}>
-            <input type="checkbox" name={`accept:${document.slug}`} />
+          <label className={styles.check} htmlFor={`accept-${document.slug}`}>
+            <input id={`accept-${document.slug}`} type="checkbox" name={`accept:${document.slug}`} />
             {it.consentAcceptLabel} {document.version}
           </label>
         </article>

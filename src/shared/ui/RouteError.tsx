@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import { it } from "@/shared/i18n/it";
 import { Button } from "@/shared/ui/Button";
+import { userMessage } from "@/shared/errors";
 import styles from "./RouteError.module.css";
 
 type Props = {
@@ -15,7 +16,11 @@ export function RouteError({ onRetry, homeHref = "/area" }: Props) {
   return (
     <section className={styles.card} role="alert">
       <h1>{it.errorRecoverTitle}</h1>
-      <p>{it.errorRecoverBody}</p>
+      <p>{userMessage("SYSTEM_UNEXPECTED")}</p>
+      <p>{it.errorHintRetrySafe}</p>
+      <p>
+        {it.errorRefLabel}: <code>SYSTEM_UNEXPECTED</code>
+      </p>
       <div className={styles.actions}>
         <Button type="button" onClick={onRetry}>
           {it.errorRecoverRetry}

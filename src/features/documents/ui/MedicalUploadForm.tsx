@@ -5,10 +5,10 @@ import { uploadMedicalCertificateAction } from "@/features/documents/actions";
 import { OpenDocumentButton } from "@/features/documents/ui/OpenDocumentButton";
 import { MAX_UPLOAD_BYTES } from "@/shared/config/app";
 import { Button } from "@/shared/ui/Button";
-import { IndeterminateProgress } from "@/shared/ui/Skeleton";
+import { FileDropzone } from "@/shared/ui/FileDropzone";
+import { ActionError } from "@/shared/ui/ActionError";
 import { it } from "@/shared/i18n/it";
 import fields from "@/shared/ui/form.module.css";
-import styles from "./MedicalUploadForm.module.css";
 
 type DocumentState = {
   id: string;
@@ -36,11 +36,7 @@ export function MedicalUploadForm({ document }: Props) {
 
   return (
     <form className={fields.form} action={action} aria-busy={pending}>
-      {state?.error ? (
-        <p className={fields.summary} role="alert">
-          {state.error}
-        </p>
-      ) : null}
+      {state?.error ? <ActionError error={state.error} code={state.code} /> : null}
 
       {banner ? (
         <p className={`${fields.banner} ${banner.className}`} role="status">
@@ -56,31 +52,18 @@ export function MedicalUploadForm({ document }: Props) {
         </p>
       ) : null}
 
-      {document ? (
-        <div className={styles.fileRow}>
-          <p className={styles.fileMeta}>{document.originalFilename}</p>
-          <OpenDocumentButton documentId={document.id} />
-        </div>
-      ) : null}
-
-      <div className={fields.field}>
-        <label className={fields.label} htmlFor="file">
-          {mustUpload ? it.uploadFile : it.replaceFile}
-        </label>
-        <input
-          id="file"
-          name="file"
-          className={fields.input}
-          type="file"
-          accept="application/pdf,image/jpeg,image/png,.pdf,.jpg,.jpeg,.png"
-          required={mustUpload}
-          disabled={pending}
-        />
-        <p className={fields.help}>
-          {it.medicalAccept} {maxMb} MB.
-        </p>
-      </div>
-      {pending ? <IndeterminateProgress label={it.loadingUpload} /> : null}
+      <FileDropzone
+        id="file"
+        name="file"
+        label={mustUpload ? it.uploadFile : it.replaceFile}
+        help={`${it.medicalAccept} ${maxMb} MB.`}
+        accept="application/pdf,image/jpeg,image/png,.pdf,.jpg,.jpeg,.png"
+        required={mustUpload}
+        disabled={pending}
+        uploading={pending}
+        existingName={document?.originalFilename}
+        existingSlot={document ? <OpenDocumentButton documentId={document.id} /> : null}
+      />
 
       <div className={`${fields.actions} ${fields.sticky}`}>
         <Button type="submit" name="intent" value="continue" disabled={pending} aria-busy={pending}>

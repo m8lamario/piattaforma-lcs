@@ -6,13 +6,16 @@
 |---|---|---|
 | Unit | Vitest | domain: età/minore, checklist, authorize, masking |
 | Integration | Vitest + Prisma (quando DB disponibile) | repository, invito hash, unique registration |
-| HTTP / UI | Playwright (non in M0 obbligatorio) | wizard, IDOR browser, admin review |
+| HTTP / UI | Playwright | happy path invito → area → pagamento stub in CI |
 | Static | tsc, eslint | sempre in CI |
 
 M4: unit sul pacchetto privacy (minore vs adulto, versionId) e sulla decisione media (refuse opzionale completa, refuse required no).
 M5: importi/cover; niente campi carta.
 M6: proiezione rosa senza PII extra.
-M7: Playwright CI è residuo; happy path coperto da verifica browser agente su M1–M6.
+M7: rate limit e CSP di base.
+M8–M10: authorize nuove action; window edizione; roster PII; reset/withdraw IDOR.
+M11: webhook firma; adapter stub default in test.
+M12: Playwright CI (`npm run test:e2e`) su postgres di servizio + seed.
 
 ## 2. Casi obbligatori (prodotto)
 
@@ -23,6 +26,9 @@ M7: Playwright CI è residuo; happy path coperto da verifica browser agente su M
 - Pagamento TEAM succeeded copre player (quando implementato).
 - Upload MIME spoofing rifiutato (quando implementato).
 - Invito scaduto/revocato non crea account.
+- Staff invite scaduto/revocato non concede TEAM_REPRESENTATIVE.
+- Reset password: secondo uso dello stesso token rifiutato.
+- Giocatore non ritira l’iscrizione di un altro.
 
 ## 3. Sicurezza nei test
 
@@ -34,9 +40,9 @@ Il backlog indica i test per task. Se un task tocca authz o documenti, include a
 
 ## 5. CI
 
-Su pull request / push: `npm ci`, `lint`, `typecheck`, `test`, `build`.
+Su pull request / push: `npm ci`, `lint`, `typecheck`, `test`, `build`, `test:e2e`.
 
-`DATABASE_URL` in CI può essere dummy per generate/build se il client è generato; la build Next non deve fallire senza Postgres in M0 (le pagine non interrogono il DB al build time, oppure usano skip). Prisma generate non richiede DB.
+CI ha Postgres 16, `prisma migrate deploy`, seed. Playwright usa `next start` sullo stesso job. `prisma generate` gira nel `build` (e esplicitamente in CI); non richiede un DB raggiungibile.
 
 ## 6. Loading UX
 

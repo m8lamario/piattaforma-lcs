@@ -1,36 +1,52 @@
-.wrap {
-  width: min(40rem, 100%);
-  display: grid;
-  gap: var(--space-5);
-  align-self: start;
+.canvas {
+  width: 100%;
+  max-width: var(--content-max-canvas);
+  margin: 0;
 }
 
-.featured,
-.solemn {
-  padding: var(--space-5);
-  margin: 0 calc(var(--space-5) * -1);
-  border-left: var(--line-width) solid var(--color-line);
-  background: color-mix(in srgb, var(--color-accent-soft) 35%, transparent);
+/* Mobile / Tablet Horizontal Progress Bar */
+.mobileProgress {
+  display: block;
+  margin-bottom: var(--space-5);
+  width: 100%;
 }
 
-.solemn {
-  border-left-color: var(--color-primary);
-  background: color-mix(in srgb, var(--color-primary-soft) 45%, transparent);
+.progressRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3) var(--space-5);
+  align-items: flex-end;
+  justify-content: space-between;
 }
 
 .progress {
   margin: 0;
   font-family: var(--font-brand);
-  font-size: 1.5rem;
+  font-size: var(--text-2xl);
   font-weight: 700;
   letter-spacing: 0.04em;
-  line-height: 1;
+  line-height: 0.9;
   color: var(--color-text);
 }
 
 .of {
   color: var(--color-text-muted);
   font-weight: 600;
+  font-size: 0.6em;
+}
+
+.track {
+  flex: 1 1 8rem;
+  height: 0.28rem;
+  background: var(--color-border);
+  min-width: 6rem;
+}
+
+.trackFill {
+  display: block;
+  height: 100%;
+  background: var(--color-line);
+  transition: width var(--duration-med) var(--ease-out);
 }
 
 .steps {
@@ -38,8 +54,9 @@
   gap: 0;
   list-style: none;
   padding: 0;
-  margin: 0;
+  margin: var(--space-3) 0 0;
   overflow-x: auto;
+  overflow-y: hidden;
   scrollbar-width: thin;
 }
 
@@ -84,7 +101,6 @@
   place-items: center;
   width: 1.4rem;
   height: 1.4rem;
-  border-radius: var(--radius-xs);
   background: var(--color-surface-inset);
   color: var(--color-text-muted);
   font-size: 0.7rem;
@@ -117,19 +133,54 @@
   line-height: 1.25;
 }
 
+/* Grid layout for Desktop 2-column */
+.grid {
+  display: grid;
+  gap: var(--gap-canvas);
+  align-items: start;
+}
+
+.mainStage {
+  width: 100%;
+  max-width: var(--content-max-form);
+  display: grid;
+  gap: var(--space-5);
+}
+
+.featured,
+.solemn {
+  padding: var(--space-5) var(--space-5) var(--space-6);
+  border-left: var(--line-width) solid var(--color-line);
+}
+
+.featured {
+  background: color-mix(in srgb, var(--color-accent-soft) 40%, transparent);
+}
+
+.solemn {
+  border-left-color: var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary-soft) 50%, transparent);
+}
+
+.stageTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
 .back {
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
   min-height: var(--control-min);
-  color: var(--color-text);
+  color: var(--color-text-muted);
   font-weight: 650;
   font-size: var(--text-sm);
   text-decoration: none;
 }
 
 .back:hover {
-  color: var(--color-primary);
+  color: var(--color-text);
 }
 
 .heading {
@@ -137,24 +188,230 @@
   grid-template-columns: auto 1fr;
   gap: var(--space-3);
   align-items: start;
+  padding-bottom: var(--space-2);
 }
 
 .headingIcon {
   display: grid;
   place-items: center;
-  width: 2.25rem;
-  height: 2.25rem;
+  width: 2.5rem;
+  height: 2.5rem;
+  color: var(--color-accent);
+  background: var(--color-surface-raised);
+  border: 1px solid var(--color-hairline);
+  margin-top: 0.15rem;
+}
+
+.headingText {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.kicker {
+  margin: 0;
+  font-size: var(--text-kicker);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
   color: var(--color-accent);
 }
 
 .heading h1 {
   margin: 0;
-  font-size: var(--text-xl);
+  font-size: clamp(1.5rem, 3.5vw, var(--text-2xl));
+  letter-spacing: 0.03em;
 }
 
 .lead {
-  margin: var(--space-2) 0 0;
+  margin: var(--space-1) 0 0;
   color: var(--color-text-muted);
+  line-height: var(--leading-body);
+  max-width: 38rem;
+}
+
+.stageBody {
+  width: 100%;
+}
+
+/* Desktop Rail */
+.rail {
+  display: none;
+}
+
+.railCard {
+  background: var(--color-surface-raised);
+  border: 1px solid var(--color-hairline);
+  padding: var(--space-5);
+  display: grid;
+  gap: var(--space-4);
+  position: sticky;
+  top: calc(var(--space-4) + 1px);
+}
+
+.railHeader {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.railTitle {
+  margin: 0;
+  font-size: var(--text-kicker);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+}
+
+.railProgressText {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  font-weight: 650;
+}
+
+.railTrack {
+  height: 0.25rem;
+  background: var(--color-border);
+  width: 100%;
+}
+
+.railTrackFill {
+  display: block;
+  height: 100%;
+  background: var(--color-line);
+  transition: width var(--duration-med) var(--ease-out);
+}
+
+.journeyList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-1);
+}
+
+.journeyItem {
+  border-radius: var(--radius-xs);
+}
+
+.journeyLink,
+.journeyStatic {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  text-decoration: none;
+  color: inherit;
+  min-height: 2.25rem;
+}
+
+.journeyLink:hover {
+  background: var(--color-surface-inset);
+}
+
+.journeyItemActive {
+  background: color-mix(in srgb, var(--color-primary-soft) 40%, transparent);
+  border-left: var(--line-width) solid var(--color-primary);
+}
+
+.journeyTick {
+  display: grid;
+  place-items: center;
+  width: 1.35rem;
+  height: 1.35rem;
+  background: var(--color-surface-inset);
+  color: var(--color-text-muted);
+  font-size: 0.65rem;
+  font-weight: 700;
+  box-shadow: inset 0 0 0 1px var(--color-border);
+  flex-shrink: 0;
+}
+
+.journeyDone {
+  background: var(--color-success-soft);
+  color: var(--color-success);
+  box-shadow: none;
+}
+
+.journeyActive {
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  box-shadow: none;
+}
+
+.journeyInfo {
+  display: grid;
+  gap: 1px;
+}
+
+.journeyLabel {
+  font-size: var(--text-sm);
+  font-weight: 650;
+  line-height: 1.25;
+}
+
+.journeyStatus {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
+.tipBox {
+  margin-top: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-surface-inset);
+  border-left: var(--line-width) solid var(--color-border);
+  display: grid;
+  gap: var(--space-2);
+}
+
+.tipHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-text-muted);
+}
+
+.tipText {
+  margin: 0;
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  line-height: 1.5;
+}
+
+.railFooter {
+  border-top: 1px solid var(--color-hairline);
+  padding-top: var(--space-3);
+}
+
+.railBackLink {
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  font-weight: 650;
+  text-decoration: none;
+}
+
+.railBackLink:hover {
+  color: var(--color-text);
+  text-decoration: underline;
+}
+
+/* Responsive Queries */
+@media (min-width: 1024px) {
+  .mobileProgress {
+    display: none;
+  }
+
+  .grid {
+    grid-template-columns: minmax(0, 1fr) minmax(19rem, 22rem);
+  }
+
+  .rail {
+    display: block;
+  }
 }
 
 @media (max-width: 640px) {
@@ -170,5 +427,9 @@
 
   .stepActive .stepLabel {
     display: block;
+  }
+
+  .progress {
+    font-size: 1.85rem;
   }
 }

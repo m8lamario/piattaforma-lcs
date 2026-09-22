@@ -37,3 +37,10 @@
 .summaryItem:first-child {
   border-top: 1px solid var(--color-hairline);
 }
+
+@media (max-width: 640px) {
+  .summaryItem {
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+}

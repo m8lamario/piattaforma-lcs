@@ -67,7 +67,8 @@ export type RegistrationStatus =
   | "CHANGES_REQUESTED"
   | "PAYMENT_PENDING"
   | "APPROVED"
-  | "WITHDRAWN";
+  | "WITHDRAWN"
+  | "REMOVED";
 
 export type ChecklistItem = {
   code: RequirementCode;
@@ -132,6 +133,14 @@ export function isBlocking(item: ChecklistItem) {
   if (item.status === "not_applicable") return false;
   if (!item.required) return false;
   return item.status !== "complete";
+}
+
+export function isTerminalRegistrationStatus(status: string) {
+  return status === "WITHDRAWN" || status === "REMOVED";
+}
+
+export function isInactiveRegistrationStatus(status: string) {
+  return status === "WITHDRAWN" || status === "REMOVED";
 }
 
 export function projectRegistrationStatus(

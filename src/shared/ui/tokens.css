@@ -17,10 +17,13 @@
   --color-line: #2ec9b3;
   --color-danger: #f07171;
   --color-danger-soft: #3a1b22;
+  --color-on-danger: #1a0508;
   --color-warning: #e6b23c;
   --color-warning-soft: #3a2d12;
+  --color-on-warning: #1f1604;
   --color-success: #3dce9a;
   --color-success-soft: #10382d;
+  --color-on-success: #042218;
   --color-text: #f4f7fb;
   --color-text-muted: #9aadc2;
   --color-border: #1e334c;
@@ -39,6 +42,7 @@
   --text-lg: 1.125rem;
   --text-xl: 1.5rem;
   --text-2xl: 1.75rem;
+  --text-display: 2.25rem;
   --leading-tight: 1.2;
   --leading-body: 1.55;
 
@@ -61,6 +65,23 @@
   --control-min: 2.75rem;
   --nav-width: 16.5rem;
   --line-width: 3px;
+
+  --content-max: 42rem;
+  --content-max-text: 42rem;
+  --content-max-form: 46rem;
+  --content-max-wide: 64rem;
+  --content-max-canvas: 80rem;
+  --content-max-full: 90rem;
+  --space-page-x: clamp(1.25rem, 3vw, 2.5rem);
+  --space-page-y: clamp(1.5rem, 3.5vw, 3rem);
+  --space-page-x-sm: clamp(0.875rem, 2.5vw, 1.25rem);
+  --space-page-y-sm: clamp(1rem, 2.5vw, 1.5rem);
+  --gap-canvas: clamp(1.5rem, 2.5vw, 2.5rem);
+  --gap-section: clamp(1.25rem, 2vw, 2rem);
+  --duration-fast: 160ms;
+  --duration-med: 240ms;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --wash-size: 22rem;
 
   /* Alias: keep both naming schemes valid across the slice. */
   --color-primary-fill: #1f5eb8;
@@ -87,10 +108,13 @@ html[data-theme="light"] {
   --color-line: #0d8f86;
   --color-danger: #b42318;
   --color-danger-soft: #fde8e6;
+  --color-on-danger: #fff7f6;
   --color-warning: #9a6700;
   --color-warning-soft: #fbe8c4;
+  --color-on-warning: #fffaf0;
   --color-success: #067647;
   --color-success-soft: #d7f5e7;
+  --color-on-success: #f3fdf8;
   --color-text: #0f172a;
   --color-text-muted: #3d4f66;
   --color-border: #d5deea;

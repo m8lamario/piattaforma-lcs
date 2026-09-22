@@ -11,7 +11,7 @@ export const getActorByUserId = cache(async (userId: string): Promise<Actor | nu
       teamMemberships: true,
     },
   });
-  if (!user) return null;
+  if (!user || user.lifecycleStatus !== "ACTIVE") return null;
 
   const roles: ActorRole[] = user.roles.map((role) => ({
     role: role.role as Role,

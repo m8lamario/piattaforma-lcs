@@ -1,3 +1,6 @@
+import { isInactiveRegistrationStatus } from "@/features/registrations/domain/requirements";
+import { ERROR_CODES, type ErrorCode } from "@/shared/errors";
+
 export type InviteStatus = "PENDING" | "ACCEPTED" | "EXPIRED" | "REVOKED";
 
 export type InviteInspection =
@@ -84,17 +87,24 @@ export function decideRedeemPath(input: {
   const sameEdition = existingRegistrations.find(
     (registration) => registration.editionId === invite.editionId,
   );
-  if (sameEdition) {
+  if (sameEdition && !isInactiveRegistrationStatus(sameEdition.status)) {
     if (sameEdition.teamId === invite.teamId) {
       return { path: "already_on_team" };
     }
+    return { path: "edition_conflict", editionId: sameEdition.editionId };
+  }
+  if (
+    sameEdition &&
+    isInactiveRegistrationStatus(sameEdition.status) &&
+    sameEdition.teamId !== invite.teamId
+  ) {
     return { path: "edition_conflict", editionId: sameEdition.editionId };
   }
 
   const otherActive = existingRegistrations.find(
     (registration) =>
       registration.editionId !== invite.editionId &&
-      registration.status !== "WITHDRAWN",
+      !isInactiveRegistrationStatus(registration.status),
   );
   if (otherActive) {
     return { path: "edition_conflict", editionId: otherActive.editionId };
@@ -117,7 +127,7 @@ export function inviteCreateBlocker(
   editionId: string,
   registrations: RegistrationConflict[],
 ): "already_on_team" | "edition_conflict" | null {
-  const active = registrations.filter((registration) => registration.status !== "WITHDRAWN");
+  const active = registrations.filter((registration) => !isInactiveRegistrationStatus(registration.status));
   if (active.some((registration) => registration.teamId === teamId)) {
     return "already_on_team";
   }
@@ -128,4 +138,42 @@ export function inviteCreateBlocker(
     return "edition_conflict";
   }
   return null;
+}
+
+export function inviteOutcomeCode(outcome: string): ErrorCode {
+  switch (outcome) {
+    case "expired":
+      return ERROR_CODES.INVITE_EXPIRED;
+    case "already_used":
+      return ERROR_CODES.INVITE_ALREADY_USED;
+    case "revoked":
+      return ERROR_CODES.INVITE_REVOKED;
+    case "login_required":
+      return ERROR_CODES.INVITE_LOGIN_REQUIRED;
+    case "wrong_session_email":
+      return ERROR_CODES.INVITE_WRONG_SESSION;
+    default:
+      return ERROR_CODES.INVITE_INVALID;
+  }
+}
+
+export function redeemPathCode(path: RedeemPath["path"] | string): ErrorCode {
+  switch (path) {
+    case "login_required":
+      return ERROR_CODES.INVITE_LOGIN_REQUIRED;
+    case "wrong_session_email":
+      return ERROR_CODES.INVITE_WRONG_SESSION;
+    case "edition_conflict":
+      return ERROR_CODES.INVITE_EDITION_CONFLICT;
+    case "already_on_team":
+      return ERROR_CODES.INVITE_ALREADY_ON_TEAM;
+    default:
+      return ERROR_CODES.INVITE_INVALID;
+  }
+}
+
+export function inviteCreateBlockerCode(blocker: "already_on_team" | "edition_conflict"): ErrorCode {
+  return blocker === "already_on_team"
+    ? ERROR_CODES.TEAM_PLAYER_ALREADY_ON_TEAM
+    : ERROR_CODES.TEAM_EDITION_CONFLICT;
 }

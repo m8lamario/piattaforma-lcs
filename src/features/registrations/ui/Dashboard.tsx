@@ -12,8 +12,12 @@ import {
 } from "@/features/registrations/domain/wizard";
 import { it } from "@/shared/i18n/it";
 import { ButtonLink } from "@/shared/ui/Button";
-import { StatusChip, type StatusTone } from "@/shared/ui/StatusChip";
 import { PageHeader } from "@/shared/ui/PageHeader";
+import { StatusChip, type StatusTone } from "@/shared/ui/StatusChip";
+import { IdentityConflictPanel } from "@/features/players/ui/IdentityConflictPanel";
+import { WithdrawForm } from "@/features/registrations/ui/WithdrawForm";
+import { WindowNotice } from "@/features/registrations/ui/WindowNotice";
+import type { EditionWindow } from "@/features/registrations/domain/window";
 import styles from "./Dashboard.module.css";
 
 const STATUS_COPY: Record<RegistrationStatus, string> = {
@@ -25,6 +29,7 @@ const STATUS_COPY: Record<RegistrationStatus, string> = {
   PAYMENT_PENDING: it.statusPAYMENT_PENDING,
   APPROVED: it.statusAPPROVED,
   WITHDRAWN: it.statusWITHDRAWN,
+  REMOVED: it.statusREMOVED,
 };
 
 const STATUS_TONE: Record<RegistrationStatus, StatusTone> = {
@@ -36,6 +41,7 @@ const STATUS_TONE: Record<RegistrationStatus, StatusTone> = {
   PAYMENT_PENDING: "attention",
   APPROVED: "complete",
   WITHDRAWN: "neutral",
+  REMOVED: "neutral",
 };
 
 const ITEM_LABEL: Record<ChecklistItem["code"], string> = {
@@ -95,6 +101,9 @@ type Props = {
   status: RegistrationStatus;
   checklist: ChecklistItem[];
   medicalStatus?: MedicalEvidence;
+  registrationId: string;
+  editionWindow: EditionWindow;
+  identityConflict?: { code: string } | null;
 };
 
 export function RegistrationDashboard({
@@ -104,65 +113,123 @@ export function RegistrationDashboard({
   status,
   checklist,
   medicalStatus,
+  registrationId,
+  editionWindow,
+  identityConflict,
 }: Props) {
   const hero = nextHero(checklist);
   const hrefStep = hero.code === "DONE" ? "riepilogo" : (ITEM_HREF[hero.code] ?? "dati");
   const visible = checklist.filter((item) => item.status !== "not_applicable");
   const doneCount = visible.filter((item) => item.status === "complete").length;
+  const blocked = Boolean(identityConflict);
+  const settled =
+    hero.code === "DONE" ||
+    status === "APPROVED" ||
+    status === "WITHDRAWN" ||
+    status === "REMOVED" ||
+    blocked;
+  const heroCopy = blocked
+    ? it.identityHeroBlocked
+    : status === "WITHDRAWN"
+      ? it.heroWithdrawn
+      : status === "REMOVED"
+        ? it.heroRemoved
+        : status === "APPROVED"
+          ? it.heroApproved
+          : hero.code === "DONE"
+            ? it.heroPendingNow
+            : heroText(hero, medicalStatus);
 
   return (
-    <section className={styles.wrap}>
-      <PageHeader
-        kicker={`${competitionName} · ${editionName}`}
-        title={it.areaTitle}
-        description={`${it.teamTitle}: ${teamName}`}
-        aside={<StatusChip tone={STATUS_TONE[status]}>{STATUS_COPY[status]}</StatusChip>}
-      />
+    <div className={styles.canvas}>
+      <header className={styles.header}>
+        <PageHeader
+          kicker={`${competitionName} · ${editionName}`}
+          title={it.areaTitle}
+          description={`${it.teamTitle}: ${teamName}`}
+          aside={<StatusChip tone={STATUS_TONE[status]}>{STATUS_COPY[status]}</StatusChip>}
+        />
+      </header>
 
-      <div className={styles.hero}>
-        <p className={styles.heroCopy}>{heroText(hero, medicalStatus)}</p>
-        <ButtonLink href={`/area/registrazione/${hrefStep}`}>{it.ctaContinue}</ButtonLink>
+      {blocked ? <IdentityConflictPanel registrationId={registrationId} /> : null}
+
+      <div className={styles.grid}>
+        {/* Main Stage: Hero status & checklist */}
+        <section className={styles.mainStage}>
+          <div className={styles.hero}>
+            <p className={styles.heroCopy}>{heroCopy}</p>
+            <div className={styles.heroActions}>
+              {settled ? null : <ButtonLink href={`/area/registrazione/${hrefStep}`}>{it.ctaContinue}</ButtonLink>}
+            </div>
+          </div>
+
+          <div className={styles.checklistSection}>
+            <div className={styles.checklistHeader}>
+              <h2 className={styles.listTitle}>{it.checklistTitle}</h2>
+              <span className={styles.checklistCount}>
+                {doneCount}/{visible.length}
+              </span>
+            </div>
+
+            <ol className={styles.list}>
+              {visible.map((item, index) => {
+                const implemented = WIZARD_STEPS.find((step) => step.code === item.code)?.implemented ?? true;
+                return (
+                  <li key={item.code}>
+                    <Link href={`/area/registrazione/${ITEM_HREF[item.code]}`} className={styles.item}>
+                      <span className={styles.index} aria-hidden="true">
+                        {index + 1}
+                      </span>
+                      <span className={styles.itemContent}>
+                        <strong>{ITEM_LABEL[item.code]}</strong>
+                        <span className={styles.meta}>
+                          {!implemented ? it.checklistUpcoming : it.checklistOpenStep}
+                        </span>
+                      </span>
+                      <StatusChip tone={ITEM_TONE[item.status]}>
+                        {item.status === "complete"
+                          ? it.checklistComplete
+                          : item.status === "attention"
+                            ? it.checklistAttention
+                            : it.checklistTodo}
+                      </StatusChip>
+                    </Link>
+                  </li>
+                );
+              })}
+            </ol>
+          </div>
+        </section>
+
+        {/* Side Rail: Progress overview, window countdown, notes, secondary actions */}
+        <aside className={styles.rail}>
+          <div className={styles.sideCard}>
+            <div className={styles.progressBlock}>
+              <h3 className={styles.railCardTitle}>{it.wizardJourneyTitle}</h3>
+              <p className={styles.progressLabel}>
+                {it.checklistProgress.replace("{done}", String(doneCount)).replace("{total}", String(visible.length))}
+              </p>
+              <div className={styles.segments} aria-hidden="true">
+                {visible.map((item) => (
+                  <span key={item.code} className={`${styles.segment} ${SEG_CLASS[item.status] ?? ""}`} />
+                ))}
+              </div>
+            </div>
+
+            <WindowNotice edition={editionWindow} />
+
+            <div className={styles.noteBlock}>
+              <p className={styles.note}>{it.guardianEmailNote}</p>
+            </div>
+
+            {status !== "WITHDRAWN" && status !== "REMOVED" && !blocked ? (
+              <div className={styles.secondaryActions}>
+                <WithdrawForm registrationId={registrationId} />
+              </div>
+            ) : null}
+          </div>
+        </aside>
       </div>
-
-      <div className={styles.progressBlock}>
-        <p className={styles.progressLabel}>
-          {it.checklistProgress.replace("{done}", String(doneCount)).replace("{total}", String(visible.length))}
-        </p>
-        <div className={styles.segments} aria-hidden="true">
-          {visible.map((item) => (
-            <span key={item.code} className={`${styles.segment} ${SEG_CLASS[item.status] ?? ""}`} />
-          ))}
-        </div>
-      </div>
-
-      <h2 className={styles.listTitle}>{it.checklistTitle}</h2>
-      <ol className={styles.list}>
-        {visible.map((item, index) => {
-          const implemented = WIZARD_STEPS.find((step) => step.code === item.code)?.implemented ?? true;
-          return (
-            <li key={item.code}>
-              <Link href={`/area/registrazione/${ITEM_HREF[item.code]}`} className={styles.item}>
-                <span className={styles.index} aria-hidden="true">
-                  {index + 1}
-                </span>
-                <span>
-                  <strong>{ITEM_LABEL[item.code]}</strong>
-                  <span className={styles.meta}>
-                    {!implemented ? it.checklistUpcoming : it.checklistOpenStep}
-                  </span>
-                </span>
-                <StatusChip tone={ITEM_TONE[item.status]}>
-                  {item.status === "complete"
-                    ? it.checklistComplete
-                    : item.status === "attention"
-                      ? it.checklistAttention
-                      : it.checklistTodo}
-                </StatusChip>
-              </Link>
-            </li>
-          );
-        })}
-      </ol>
-    </section>
+    </div>
   );
 }

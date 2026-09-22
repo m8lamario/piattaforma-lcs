@@ -1,7 +1,8 @@
 .stack {
-  width: min(40rem, 100%);
+  width: 100%;
+  max-width: var(--content-max-canvas);
   display: grid;
-  gap: var(--space-12);
+  gap: var(--space-10);
 }
 
 .hero {
@@ -14,7 +15,7 @@
 .badge {
   display: inline-flex;
   margin: 0;
-  font-size: var(--text-xs);
+  font-size: var(--text-kicker);
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -30,9 +31,9 @@
 .hero h1 {
   margin: 0;
   font-family: var(--font-brand);
-  font-size: clamp(1.75rem, 5vw, 2.4rem);
+  font-size: clamp(2rem, 5vw, 3.25rem);
   font-weight: 700;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.05em;
   line-height: 0.95;
 }
 
@@ -41,11 +42,11 @@
   margin: 0;
   color: var(--color-text-muted);
   line-height: var(--leading-body);
-  max-width: 34rem;
+  max-width: 36rem;
 }
 
 .lead {
-  font-size: var(--text-lg);
+  font-size: clamp(1rem, 2vw, var(--text-lg));
   color: var(--color-text);
 }
 
@@ -58,7 +59,7 @@
 
 .how h2 {
   margin: 0 0 var(--space-5);
-  font-size: var(--text-sm);
+  font-size: var(--text-kicker);
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -78,24 +79,60 @@
   grid-template-columns: 3rem 1fr;
   gap: var(--space-4);
   align-items: start;
-  padding: var(--space-4) 0;
-  border-top: 1px solid var(--color-hairline);
+  padding: var(--space-5) 0;
+  position: relative;
 }
 
-.steps .step:last-child {
-  border-bottom: 1px solid var(--color-hairline);
+.step:not(:last-child)::before {
+  content: "";
+  position: absolute;
+  left: 0.85rem;
+  top: 2.6rem;
+  bottom: 0;
+  width: var(--line-width);
+  background: var(--color-hairline);
+}
+
+.steps .step:first-child {
+  border-top: 0;
+  padding-top: 0;
 }
 
 .step p {
   margin: var(--space-1) 0 0;
   color: var(--color-text-muted);
+  line-height: var(--leading-body);
 }
 
 .num {
   font-family: var(--font-brand);
-  font-size: 1.25rem;
+  font-size: 1.35rem;
   font-weight: 700;
   letter-spacing: 0.06em;
-  color: var(--color-text-muted);
+  color: var(--color-accent);
   line-height: 1.2;
+}
+
+@media (min-width: 960px) {
+  .stack {
+    grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+    gap: var(--gap-canvas);
+    align-items: start;
+    padding-top: var(--space-4);
+  }
+
+  .how {
+    padding-left: var(--space-8);
+    border-left: 1px solid var(--color-hairline);
+  }
+}
+
+@media (max-width: 640px) {
+  .hero {
+    padding-left: var(--space-4);
+  }
+
+  .actions {
+    display: grid;
+  }
 }

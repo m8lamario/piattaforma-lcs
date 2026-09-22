@@ -17,7 +17,12 @@ export function ReviewForm({ documentId, reasonRequired }: Props) {
       <form action={reviewDocumentAction} className={styles.row}>
         <input type="hidden" name="documentId" value={documentId} />
         <input type="hidden" name="decision" value="APPROVED" />
-        <PendingSubmitButton idle={it.adminApprove} pendingLabel={it.loadingApprove} />
+        <PendingSubmitButton
+          idle={it.adminApprove}
+          pendingLabel={it.loadingApprove}
+          variant="success"
+          icon="check"
+        />
       </form>
 
       <form action={reviewDocumentAction} className={styles.reject}>
@@ -32,7 +37,12 @@ export function ReviewForm({ documentId, reasonRequired }: Props) {
           {it.adminRejectReason}
         </label>
         <textarea id="reason" name="reason" className={styles.textarea} rows={4} required />
-        <PendingSubmitButton idle={it.adminReject} pendingLabel={it.loadingReject} variant="danger" />
+        <PendingSubmitButton
+          idle={it.adminReject}
+          pendingLabel={it.loadingReject}
+          variant="danger"
+          icon="close"
+        />
       </form>
     </div>
   );

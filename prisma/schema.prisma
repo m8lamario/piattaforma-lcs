@@ -29,6 +29,13 @@ enum RegistrationStatus {
   PAYMENT_PENDING
   APPROVED
   WITHDRAWN
+  REMOVED
+}
+
+enum UserLifecycleStatus {
+  ACTIVE
+  DELETED
+  ANONYMIZED
 }
 
 enum PaymentMode {
@@ -93,14 +100,17 @@ enum InviteStatus {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  email         String    @unique
-  emailVerified DateTime?
-  passwordHash  String?
-  name          String?
-  image         String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id               String              @id @default(cuid())
+  email            String              @unique
+  emailVerified    DateTime?
+  passwordHash     String?
+  name             String?
+  image            String?
+  lifecycleStatus  UserLifecycleStatus @default(ACTIVE)
+  deletedAt        DateTime?
+  anonymizedAt     DateTime?
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
 
   accounts               Account[]
   sessions               Session[]
@@ -109,12 +119,16 @@ model User {
   teamMemberships        TeamMembership[]
   invitedPlayers         PlayerInvite[]      @relation("InviteAuthor")
   acceptedInvites        PlayerInvite[]      @relation("InviteAcceptedBy")
+  invitedStaff           StaffInvite[]       @relation("StaffInviteAuthor")
+  acceptedStaffInvites   StaffInvite[]       @relation("StaffInviteAcceptedBy")
   documentReviews        DocumentReview[]
   notifications          Notification[]
   consentRecords         ConsentRecord[]
   auditLogs              AuditLog[]
   payments               Payment[]           @relation("PaymentPayer")
   representativeTeams    Team[]              @relation("TeamRepresentativeUser")
+
+  @@index([lifecycleStatus])
 }
 
 model Account {
@@ -310,6 +324,7 @@ model Team {
   representative User?            @relation("TeamRepresentativeUser", fields: [representativeUserId], references: [id])
   memberships    TeamMembership[]
   invites        PlayerInvite[]
+  staffInvites   StaffInvite[]
   registrations  Registration[]
   payments       Payment[]
   userRoles      UserRole[]
@@ -353,6 +368,28 @@ model PlayerInvite {
   team       Team  @relation(fields: [teamId], references: [id], onDelete: Cascade)
   invitedBy  User  @relation("InviteAuthor", fields: [invitedByUserId], references: [id], onDelete: Restrict)
   acceptedBy User? @relation("InviteAcceptedBy", fields: [acceptedByUserId], references: [id], onDelete: SetNull)
+
+  @@index([teamId, email])
+  @@index([status])
+  @@index([invitedByUserId])
+  @@index([acceptedByUserId])
+}
+
+model StaffInvite {
+  id               String       @id @default(cuid())
+  teamId           String
+  email            String
+  tokenHash        String       @unique
+  status           InviteStatus @default(PENDING)
+  expiresAt        DateTime
+  invitedByUserId  String
+  acceptedByUserId String?
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  team       Team  @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  invitedBy  User  @relation("StaffInviteAuthor", fields: [invitedByUserId], references: [id], onDelete: Restrict)
+  acceptedBy User? @relation("StaffInviteAcceptedBy", fields: [acceptedByUserId], references: [id], onDelete: SetNull)
 
   @@index([teamId, email])
   @@index([status])
@@ -557,4 +594,12 @@ model AuditLog {
   @@index([entityType, entityId])
   @@index([createdAt])
   @@index([action])
+}
+
+model RateLimitHit {
+  id        String   @id @default(cuid())
+  key       String
+  createdAt DateTime @default(now())
+
+  @@index([key, createdAt])
 }

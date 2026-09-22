@@ -16,7 +16,8 @@ export function ThemeToggle({ showLabel = false }: Props) {
   useLayoutEffect(() => {
     const stored = readStoredTheme();
     applyTheme(stored);
-    setTheme(stored);
+    const frame = requestAnimationFrame(() => setTheme(stored));
+    return () => cancelAnimationFrame(frame);
   }, []);
 
   function toggle() {

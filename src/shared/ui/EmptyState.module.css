@@ -1,29 +1,39 @@
 .wrap {
   display: grid;
-  gap: var(--space-3);
+  gap: var(--space-4);
   justify-items: start;
-  padding-left: var(--space-5);
-  border-left: var(--line-width) solid var(--color-hairline);
+  align-content: start;
+  width: 100%;
+  max-width: var(--content-max-canvas);
+  padding: var(--space-8);
+  background: var(--color-surface-raised);
+  border: 1px solid var(--color-hairline);
+  border-left: var(--line-width) solid var(--color-line);
 }
 
 .icon {
   display: grid;
   place-items: center;
-  width: 2.5rem;
-  height: 2.5rem;
+  width: 3rem;
+  height: 3rem;
   color: var(--color-accent);
+  background: var(--color-surface-inset);
+  border: 1px solid var(--color-hairline);
 }
 
 .title {
   margin: 0;
-  font-size: var(--text-xl);
+  font-family: var(--font-brand);
+  font-size: clamp(1.75rem, 4vw, var(--text-2xl));
+  letter-spacing: 0.04em;
 }
 
 .body {
   display: grid;
   gap: var(--space-2);
-  max-width: 32rem;
+  max-width: 44rem;
   color: var(--color-text-muted);
+  line-height: var(--leading-body);
 }
 
 .body p {
@@ -31,5 +41,20 @@
 }
 
 .action {
-  margin-top: var(--space-2);
+  margin-top: var(--space-3);
+}
+
+@media (max-width: 640px) {
+  .wrap {
+    padding: var(--space-5) var(--space-4);
+  }
+
+  .action {
+    width: 100%;
+  }
+
+  .action :global(a),
+  .action :global(button) {
+    width: 100%;
+  }
 }

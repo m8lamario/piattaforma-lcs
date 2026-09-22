@@ -7,8 +7,11 @@ import { savePersonalDataAction } from "@/features/players/actions";
 import { formatDateOnly } from "@/features/players/domain/dates";
 import { personalDataSchema } from "@/features/players/schemas/personal";
 import { Button } from "@/shared/ui/Button";
+import { ActionError } from "@/shared/ui/ActionError";
+import { IdentityConflictPanel } from "@/features/players/ui/IdentityConflictPanel";
 import { it } from "@/shared/i18n/it";
 import fields from "@/shared/ui/form.module.css";
+import type { ErrorCode } from "@/shared/errors";
 
 type Values = {
   firstName: string;
@@ -21,6 +24,8 @@ type Values = {
 
 type Props = {
   email: string;
+  registrationId: string;
+  identityConflict?: { code: ErrorCode } | null;
   defaults: {
     firstName: string;
     lastName: string;
@@ -30,7 +35,7 @@ type Props = {
   };
 };
 
-export function PersonalDataForm({ email, defaults }: Props) {
+export function PersonalDataForm({ email, defaults, registrationId, identityConflict }: Props) {
   const [state, action, pending] = useActionState(savePersonalDataAction, undefined);
   const form = useForm<Values>({
     resolver: zodResolver(personalDataSchema),
@@ -59,14 +64,13 @@ export function PersonalDataForm({ email, defaults }: Props) {
   }
 
   const clientError = Object.values(form.formState.errors).find((error) => error?.message)?.message;
+  const stuckWithoutIdentity =
+    Boolean(identityConflict) || (state?.code === "IDENTITY_FISCAL_CODE_ASSOCIATED" && !defaults.fiscalCode);
 
   return (
     <form className={fields.form} noValidate aria-busy={pending} onSubmit={(event) => event.preventDefault()}>
-      {clientError || state?.error ? (
-        <p className={fields.summary} role="alert">
-          {state?.error ?? clientError ?? it.formErrorSummary}
-        </p>
-      ) : null}
+      {stuckWithoutIdentity ? <IdentityConflictPanel registrationId={registrationId} showFormHint={false} /> : null}
+      {clientError || state?.error ? <ActionError error={state?.error ?? clientError} code={state?.code} /> : null}
 
       <fieldset className={fields.group}>
         <legend className={fields.legend}>{it.fieldGroupIdentity}</legend>
@@ -75,13 +79,13 @@ export function PersonalDataForm({ email, defaults }: Props) {
             <label className={fields.label} htmlFor="firstName">
               {it.firstName}
             </label>
-            <input id="firstName" className={fields.input} autoComplete="given-name" {...form.register("firstName")} />
+            <input id="firstName" className={fields.input} autoComplete="given-name" aria-invalid={Boolean(form.formState.errors.firstName)} {...form.register("firstName")} />
           </div>
           <div className={fields.field}>
             <label className={fields.label} htmlFor="lastName">
               {it.lastName}
             </label>
-            <input id="lastName" className={fields.input} autoComplete="family-name" {...form.register("lastName")} />
+            <input id="lastName" className={fields.input} autoComplete="family-name" aria-invalid={Boolean(form.formState.errors.lastName)} {...form.register("lastName")} />
           </div>
         </div>
         <div className={fields.pair}>
@@ -89,7 +93,7 @@ export function PersonalDataForm({ email, defaults }: Props) {
             <label className={fields.label} htmlFor="birthDate">
               {it.birthDate}
             </label>
-            <input id="birthDate" className={fields.input} type="date" {...form.register("birthDate")} />
+            <input id="birthDate" className={fields.input} type="date" aria-invalid={Boolean(form.formState.errors.birthDate)} {...form.register("birthDate")} />
           </div>
           <div className={fields.field}>
             <label className={fields.label} htmlFor="fiscalCode">
@@ -100,6 +104,7 @@ export function PersonalDataForm({ email, defaults }: Props) {
               className={fields.input}
               autoComplete="off"
               spellCheck={false}
+              aria-invalid={Boolean(form.formState.errors.fiscalCode)}
               {...form.register("fiscalCode")}
             />
           </div>
@@ -115,7 +120,7 @@ export function PersonalDataForm({ email, defaults }: Props) {
           <label className={fields.label} htmlFor="phone">
             {it.phone}
           </label>
-          <input id="phone" className={fields.input} type="tel" autoComplete="tel" {...form.register("phone")} />
+          <input id="phone" className={fields.input} type="tel" autoComplete="tel" aria-invalid={Boolean(form.formState.errors.phone)} {...form.register("phone")} />
         </div>
       </fieldset>
 

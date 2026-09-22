@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { redeemInviteAction } from "@/features/teams/actions";
 import { Button } from "@/shared/ui/Button";
+import { ActionError } from "@/shared/ui/ActionError";
 import { it } from "@/shared/i18n/it";
 import fields from "@/shared/ui/form.module.css";
 
@@ -79,11 +80,7 @@ export function RedeemForm({ token, email, teamName, firstName, lastName }: Prop
           autoComplete="new-password"
         />
       </div>
-      {state?.error ? (
-        <p className={fields.summary} role="alert">
-          {state.error}
-        </p>
-      ) : null}
+      {state?.error ? <ActionError error={state.error} code={state.code} /> : null}
       <div className={fields.actions}>
         <Button type="submit" disabled={pending} aria-busy={pending}>
           {pending ? it.creatingAccount : it.submitRedeem}

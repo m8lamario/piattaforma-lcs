@@ -40,8 +40,8 @@ Elenco **operativo** da far qualificare al legale (tecnico / non tecnico, durata
 | Cookie di sessione Auth.js (nome tipico `authjs.session-token`) | cookie httpOnly | mantenere l’accesso all’area | **[INSERIRE DURATA SESSIONE AUTH.JS IN PROD]** | prima parte | **[INSERIRE]** |
 | Cookie CSRF Auth.js (nome tipico `authjs.csrf-token`) | cookie | protezione CSRF del flusso auth | **[INSERIRE]** | prima parte | **[INSERIRE]** |
 | `authjs.callback-url` (nome tipico) | cookie | ritorno post-login | **[INSERIRE]** | prima parte | **[INSERIRE]** |
-| Cookie del provider di pagamento | dominio del provider, dopo redirect al checkout | pagamento quota | **[INSERIRE QUANDO IL PROVIDER SARÀ SCELTO]** | terza parte | **[INSERIRE]** |
-| Cookie email / monitoring / storage | **[INSERIRE QUANDO LIVE]** | **[INSERIRE]** | **[INSERIRE]** | **[INSERIRE]** | **[INSERIRE]** |
+| Cookie Stripe Checkout (dominio stripe.com, dopo redirect) | terza parte | pagamento quota se `PAYMENT_DRIVER=stripe` | **[INSERIRE DURATA / INFORMATIVA STRIPE]** | terza parte | **[INSERIRE QUALIFICAZIONE]** |
+| `eph-team` | cookie prima parte | ricordare la squadra selezionata dal rappresentante | sessione / persistenza UI | prima parte | **[INSERIRE SE STRETTAMENTE NECESSARIO]** |
 
 **[INSERIRE TABELLA UFFICIALE CON NOMI ESATTI RILEVATI IN PRODUZIONE]**
 
@@ -84,7 +84,7 @@ Finché esistono solo cookie di tema e di autenticazione, **[INSERIRE VALUTAZION
 
 **[INSERIRE TRASFERIMENTI LEGATI A COOKIE DI TERZE PARTI]**
 
-Checkout e webhook: quando il payment adapter sarà live, i cookie e i dati sul dominio del provider seguono l’informativa di quel provider. **[INSERIRE NOME PAYMENT PROVIDER E LINK]**
+Checkout e webhook: con Stripe Checkout i cookie e i dati sul dominio del provider seguono l’informativa Stripe. **[INSERIRE LINK INFORMATIVA STRIPE UFFICIALE]** Resend e R2 non impostano cookie di tracciamento in questa app. **[INSERIRE CONFERMA]**.
 
 ---
 

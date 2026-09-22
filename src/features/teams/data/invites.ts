@@ -118,6 +118,12 @@ export async function revokePlayerInvite(inviteId: string, teamId: string) {
   return result.count === 1;
 }
 
+export async function getPlayerInviteForTeam(inviteId: string, teamId: string) {
+  return prisma.playerInvite.findFirst({
+    where: { id: inviteId, teamId },
+  });
+}
+
 export async function loadRedeemContext(email: string) {
   const existingUser = await prisma.user.findUnique({
     where: { email },
@@ -306,6 +312,14 @@ export async function attachExistingUserToInvite(input: {
           editionId: invite.team.editionId,
           status: "ACCOUNT_CREATED",
         },
+      });
+    } else if (
+      existingRegistration.teamId === invite.teamId &&
+      (existingRegistration.status === "REMOVED" || existingRegistration.status === "WITHDRAWN")
+    ) {
+      await tx.registration.update({
+        where: { id: existingRegistration.id },
+        data: { status: "ACCOUNT_CREATED", teamId: invite.teamId },
       });
     }
 

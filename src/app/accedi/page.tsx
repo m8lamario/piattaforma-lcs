@@ -15,15 +15,33 @@ export default async function LoginPage({ searchParams }: Props) {
   return (
     <PublicShell>
       <main className={styles.main}>
-        <section className={styles.auth}>
-          <p className={styles.kicker}>{it.brandOrg}</p>
-          <h1>{it.loginTitle}</h1>
-          <p className={styles.lead}>{it.loginSubtitle}</p>
-          <LoginForm nextPath={nextPath} />
-          <Link href="/" className={styles.back}>
-            {it.backHome}
-          </Link>
-        </section>
+        <div className={styles.container}>
+          <section className={styles.brandPanel}>
+            <p className={styles.kicker}>{it.brandOrg}</p>
+            <h2>{it.appName}</h2>
+            <p className={styles.brandLead}>{it.tagline}</p>
+            <div className={styles.brandPoints}>
+              <div className={styles.point}>
+                <strong>{it.landingHowInvite}</strong>
+                <p>{it.landingHowInviteCopy}</p>
+              </div>
+              <div className={styles.point}>
+                <strong>{it.landingHowAccount}</strong>
+                <p>{it.landingHowAccountCopy}</p>
+              </div>
+            </div>
+          </section>
+
+          <section className={styles.auth}>
+            <p className={styles.kicker}>{it.brandProduct}</p>
+            <h1>{it.loginTitle}</h1>
+            <p className={styles.lead}>{it.loginSubtitle}</p>
+            <LoginForm nextPath={nextPath} />
+            <Link href="/" className={styles.back}>
+              {it.backHome}
+            </Link>
+          </section>
+        </div>
       </main>
     </PublicShell>
   );

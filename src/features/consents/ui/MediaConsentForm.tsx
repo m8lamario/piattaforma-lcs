@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { saveMediaConsentAction } from "@/features/consents/actions";
 import { Button, ButtonLink } from "@/shared/ui/Button";
+import { ActionError } from "@/shared/ui/ActionError";
 import { it } from "@/shared/i18n/it";
 import fields from "@/shared/ui/form.module.css";
 import styles from "./ConsentForm.module.css";
@@ -30,11 +31,7 @@ export function MediaConsentForm({ document, required, currentDecision }: Props)
           {it.consentMediaCurrentRefuse}
         </p>
       ) : null}
-      {state?.error ? (
-        <p className={fields.summary} role="alert">
-          {state.error}
-        </p>
-      ) : null}
+      {state?.error ? <ActionError error={state.error} code={state.code} /> : null}
 
       <article className={`${styles.block} ${styles.featured}`}>
         <div className={styles.headline}>
@@ -53,15 +50,15 @@ export function MediaConsentForm({ document, required, currentDecision }: Props)
       <fieldset className={fields.group}>
         <legend className={fields.legend}>{it.mediaChoiceTitle}</legend>
         <div className={styles.choices}>
-          <div className={`${styles.choice} ${styles.choiceAccept}`}>
+          <div className={`${styles.choice} ${styles.choiceAccept} ${currentDecision === "accepted" ? styles.choiceCurrent : ""}`}>
             <h3>{it.consentMediaAccept}</h3>
             <p>{it.mediaChoiceAcceptHelp}</p>
-          <Button type="submit" name="decision" value="accept" disabled={pending} aria-busy={pending}>
-            {pending ? it.saving : it.consentMediaAccept}
-          </Button>
+            <Button type="submit" name="decision" value="accept" disabled={pending} aria-busy={pending}>
+              {pending ? it.saving : it.consentMediaAccept}
+            </Button>
           </div>
           {required ? null : (
-            <div className={`${styles.choice} ${styles.choiceRefuse}`}>
+            <div className={`${styles.choice} ${styles.choiceRefuse} ${currentDecision === "refused" ? styles.choiceCurrent : ""}`}>
               <h3>{it.consentMediaRefuse}</h3>
               <p>{it.mediaChoiceRefuseHelp}</p>
               <Button type="submit" name="decision" value="refuse" variant="ghost" disabled={pending}>
@@ -73,7 +70,7 @@ export function MediaConsentForm({ document, required, currentDecision }: Props)
       </fieldset>
 
       <p>
-        <ButtonLink href="/area" variant="ghost">
+        <ButtonLink href="/area" variant="ghost" icon="back">
           {it.backToArea}
         </ButtonLink>
       </p>

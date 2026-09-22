@@ -30,7 +30,14 @@ export function OpenDocumentButton({ documentId }: Props) {
 
   return (
     <div className={styles.wrap}>
-      <Button type="button" variant="ghost" disabled={pending} aria-busy={pending} onClick={() => void openFile()}>
+      <Button
+        type="button"
+        variant="ghost"
+        icon="externalLink"
+        disabled={pending}
+        aria-busy={pending}
+        onClick={() => void openFile()}
+      >
         {pending ? it.openingFile : it.openDocument}
       </Button>
       {error ? (

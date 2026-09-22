@@ -1,4 +1,5 @@
 import { Prisma } from "@generated/client";
+import { paymentProviderName } from "@/shared/config/drivers";
 import { prisma } from "@/shared/lib/prisma";
 
 export async function createPendingPayment(input: {
@@ -18,8 +19,50 @@ export async function createPendingPayment(input: {
       amount: new Prisma.Decimal(input.amount),
       currency: input.currency,
       status: "PENDING",
-      provider: "stub",
+      provider: paymentProviderName(),
     },
+  });
+}
+
+export async function claimCheckoutPayment(input: {
+  editionId: string;
+  amount: number;
+  currency: string;
+  payerUserId: string;
+  registrationId?: string;
+  teamId?: string;
+}) {
+  const where = input.registrationId
+    ? { registrationId: input.registrationId }
+    : { teamId: input.teamId };
+
+  return prisma.$transaction(async (tx) => {
+    const succeeded = await tx.payment.findFirst({
+      where: { ...where, status: "SUCCEEDED" },
+    });
+    if (succeeded) {
+      return { ok: false as const, reason: "covered" as const, payment: succeeded };
+    }
+    const pending = await tx.payment.findFirst({
+      where: { ...where, status: "PENDING" },
+      orderBy: { createdAt: "desc" },
+    });
+    if (pending) {
+      return { ok: true as const, reused: true, payment: pending };
+    }
+    const payment = await tx.payment.create({
+      data: {
+        editionId: input.editionId,
+        registrationId: input.registrationId,
+        teamId: input.teamId,
+        payerUserId: input.payerUserId,
+        amount: new Prisma.Decimal(input.amount),
+        currency: input.currency,
+        status: "PENDING",
+        provider: paymentProviderName(),
+      },
+    });
+    return { ok: true as const, reused: false, payment };
   });
 }
 
@@ -37,7 +80,7 @@ export async function applyProviderResult(input: {
   receiptUrl?: string | null;
 }) {
   const existing = await prisma.payment.findFirst({
-    where: { provider: "stub", providerPaymentId: input.providerPaymentId, status: "SUCCEEDED" },
+    where: { providerPaymentId: input.providerPaymentId, status: "SUCCEEDED" },
   });
   if (existing && existing.id !== input.paymentId) {
     return { ok: false as const, reason: "duplicate" as const };

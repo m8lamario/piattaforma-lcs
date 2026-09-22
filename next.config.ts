@@ -1,7 +1,25 @@
 import type { NextConfig } from "next";
 
+/**
+ * Project-relative. An absolute path is treated as a server-relative import
+ * (`/home/runner/...`) and Turbopack refuses it.
+ */
+const generatedClient = "./generated/client.ts";
+
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  turbopack: {
+    resolveAlias: {
+      "@generated/client": generatedClient,
+    },
+  },
+  webpack: (config) => {
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      "@generated/client": generatedClient,
+    };
+    return config;
+  },
   async headers() {
     return [
       {
@@ -13,11 +31,6 @@ const nextConfig: NextConfig = {
           {
             key: "Permissions-Policy",
             value: "camera=(), microphone=(), geolocation=(), payment=()",
-          },
-          {
-            key: "Content-Security-Policy",
-            value:
-              "default-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'",
           },
         ],
       },

@@ -66,7 +66,7 @@ Le pagine pubbliche leggono il **file**. Il wizard, via `ensureLegalDocuments`, 
 
 ### 3.5 Area consensi / admin informative
 
-Route previste in IA (`/area/consensi`, `/admin/informative`): non sono lo slice di questi testi. I record restano interrogabili da `ConsentRecord` + versione.
+`/admin/informative` è sola lettura delle versioni `isCurrent` (OD-038: niente CMS). `/area/consensi` non è una route v1: i consensi si gestiscono nel wizard. I record restano interrogabili da `ConsentRecord` + versione.
 
 ---
 
@@ -151,7 +151,16 @@ Informative in `document-processing.md`: finalità, accesso staff vs stato-only 
 
 ## 10. Diritti e cancellazione
 
-Sezioni 14–15 di `privacy-policy.md`. Processo organizzativo: OD-029. Nessuna cancellazione audit da UI utente.
+Sezioni 14–15 di `privacy-policy.md`. Processo organizzativo: OD-029 (resta aperto: niente self-service export/cancellazione “totale”).
+
+Tool admin (non è l’esercizio del diritto dell’interessato, è un attrezzo di piattaforma):
+
+- Rappresentante: solo **rimozione dalla propria rosa**. L’account del giocatore resta.
+- Super Admin: **chiusura account** (niente login) e **anonimizzazione** (PII tolta, tracce operative e audit restano).
+- File medici: **non** si purgano in automatico (OD-030). Accesso resta HMAC + staff; il giocatore chiuso non accede.
+- Audit: **nessuna** cancellazione da UI, neanche per Super Admin. Nessun payload sanitario nei metadata.
+
+Workaround canale: `[INSERIRE EMAIL PRIVACY]`.
 
 ---
 

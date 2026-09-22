@@ -1,16 +1,15 @@
 .card {
-  width: min(40rem, 100%);
+  width: min(var(--content-max), 100%);
   align-self: flex-start;
   display: grid;
   gap: var(--space-4);
   padding-left: var(--space-5);
-  box-shadow: inset var(--rail-width) 0 0 var(--color-danger);
+  border-left: var(--line-width) solid var(--color-danger);
 }
 
 .card h1 {
   margin: 0;
-  font-size: var(--text-xl);
-  letter-spacing: -0.02em;
+  font-size: clamp(1.5rem, 4vw, var(--text-2xl));
 }
 
 .card p {
@@ -38,11 +37,20 @@
   flex: 1;
   display: flex;
   justify-content: flex-start;
-  padding: var(--space-10) var(--space-6);
+  padding: var(--space-page-y) var(--space-6);
 }
 
 @media (max-width: 640px) {
+  .card {
+    padding-left: var(--space-4);
+  }
+
   .publicWrap {
     padding: var(--space-8) var(--space-4);
+  }
+
+  .actions {
+    display: grid;
+    width: 100%;
   }
 }

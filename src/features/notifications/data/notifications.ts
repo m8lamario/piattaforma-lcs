@@ -1,5 +1,18 @@
 import { emailAdapter } from "@/shared/adapters";
+import { isMinor } from "@/features/players/domain/age";
 import { prisma } from "@/shared/lib/prisma";
+
+async function minorGuardianEmail(userId: string) {
+  const profile = await prisma.playerProfile.findUnique({
+    where: { userId },
+    select: {
+      birthDate: true,
+      guardians: { orderBy: { createdAt: "asc" }, take: 1, select: { email: true } },
+    },
+  });
+  if (!profile?.birthDate || !isMinor(profile.birthDate)) return null;
+  return profile.guardians[0]?.email?.trim().toLowerCase() || null;
+}
 
 export async function createNotification(input: {
   userId: string;
@@ -26,6 +39,14 @@ export async function createNotification(input: {
       variables: { title: input.title },
     });
   }
+  const guardianEmail = await minorGuardianEmail(input.userId);
+  if (guardianEmail && guardianEmail !== user?.email?.toLowerCase()) {
+    await emailAdapter.send({
+      to: guardianEmail,
+      template: input.type,
+      variables: { title: input.title },
+    });
+  }
   return row;
 }
 
@@ -43,6 +64,10 @@ export async function listNotifications(userId: string) {
       createdAt: true,
     },
   });
+}
+
+export async function countUnreadNotifications(userId: string) {
+  return prisma.notification.count({ where: { userId, readAt: null } });
 }
 
 export async function markNotificationsRead(userId: string) {

@@ -1,0 +1,63 @@
+.panel {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-5);
+  background: var(--color-danger-soft);
+  border-left: var(--line-width) solid var(--color-danger);
+}
+
+.title {
+  margin: 0;
+  font-size: var(--text-lg);
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.panel p {
+  margin: 0;
+  color: var(--color-text);
+  line-height: var(--leading-body);
+}
+
+.steps {
+  margin: 0;
+  padding-left: 1.25rem;
+  display: grid;
+  gap: var(--space-2);
+  color: var(--color-text);
+  line-height: var(--leading-body);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  align-items: center;
+}
+
+.ref {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  font-weight: 650;
+}
+
+.ref code {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 0.85em;
+}
+
+.login {
+  margin: 0;
+}
+
+@media (max-width: 640px) {
+  .actions {
+    display: grid;
+  }
+
+  .actions :global(button),
+  .actions :global(a),
+  .actions :global(form) {
+    width: 100%;
+  }
+}

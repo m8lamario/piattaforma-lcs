@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { decideRedeemPath, inspectInvite, inviteCreateBlocker, type InviteRecord } from "./invite";
+import { decideRedeemPath, inspectInvite, inviteCreateBlocker, inviteOutcomeCode, redeemPathCode, type InviteRecord } from "./invite";
+import { ERROR_CODES } from "@/shared/errors";
 
 const now = new Date("2026-09-19T18:00:00.000Z");
 
@@ -34,6 +35,24 @@ describe("inspectInvite", () => {
       "already_used",
     );
     expect(inspectInvite(pending({ status: "REVOKED" }), now).outcome).toBe("revoked");
+  });
+
+  it("stesso esito per invito staff scaduto o revocato", () => {
+    expect(
+      inspectInvite(pending({ firstName: null, lastName: null, expiresAt: new Date("2026-09-01T00:00:00.000Z") }), now)
+        .outcome,
+    ).toBe("expired");
+    expect(inspectInvite(pending({ status: "REVOKED", firstName: null, lastName: null }), now).outcome).toBe(
+      "revoked",
+    );
+  });
+
+  it("mappa esiti e path su codici errore stabili", () => {
+    expect(inviteOutcomeCode("expired")).toBe(ERROR_CODES.INVITE_EXPIRED);
+    expect(inviteOutcomeCode("already_used")).toBe(ERROR_CODES.INVITE_ALREADY_USED);
+    expect(inviteOutcomeCode("revoked")).toBe(ERROR_CODES.INVITE_REVOKED);
+    expect(redeemPathCode("wrong_session_email")).toBe(ERROR_CODES.INVITE_WRONG_SESSION);
+    expect(redeemPathCode("edition_conflict")).toBe(ERROR_CODES.INVITE_EDITION_CONFLICT);
   });
 
   it("consente il redeem se pending e non scaduto", () => {
@@ -140,6 +159,11 @@ describe("inviteCreateBlocker", () => {
     expect(
       inviteCreateBlocker("team-1", "edition-1", [
         { editionId: "edition-2", teamId: "team-9", status: "WITHDRAWN" },
+      ]),
+    ).toBeNull();
+    expect(
+      inviteCreateBlocker("team-1", "edition-1", [
+        { editionId: "edition-1", teamId: "team-1", status: "REMOVED" },
       ]),
     ).toBeNull();
   });

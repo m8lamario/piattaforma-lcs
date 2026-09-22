@@ -4,7 +4,7 @@
 
 | Area | Audience | Prefisso | Auth |
 |---|---|---|---|
-| Pubblica | non autenticati | `/` `/accedi` `/invito` `/invito/[token]` `/privacy` | no |
+| Pubblica | non autenticati | `/` `/accedi` `/invito` `/invito/[token]` `/invito-staff/[token]` `/recupera-password` `/privacy` | no |
 | Giocatore | Player | `/area` | sì |
 | Squadra (rappresentante) | Team Representative | `/squadra` | sì + ruolo |
 | Organizzazione | Org Admin / Super Admin | `/admin` | sì + ruolo |
@@ -16,36 +16,38 @@ Un utente può avere più ruoli (es. rappresentante che è anche giocatore). La 
 ```
 /                              landing minima (non vetrina coppa)
 /accedi
-/invito                        incolla link/codice invito
-/invito/[token]                redeem invito, creazione account o collegamento account esistente
+/recupera-password
+/recupera-password/[token]
+/invito                        incolla link/codice invito giocatore
+/invito/[token]                redeem invito giocatore
+/invito-staff/[token]          redeem invito rappresentante
 /privacy                       informative (placeholder versionati)
 /liberatorie                   indice informative media (placeholder)
 
-/area                          dashboard giocatore
-/area/registrazione            wizard (post-M0)
+/area                          dashboard giocatore (post-iscrizione senza CTA wizard)
+/area/registrazione            wizard
 /area/registrazione/[step]
-/area/dati
-/area/documenti
-/area/consensi
-/area/pagamento
-/area/squadra
+/area/dati                     redirige al passo dati
+/area/squadra                  compagni: nome, maglia, ruolo (niente stato medico)
 /area/comunicazioni
 /area/account
+/area/pagamento/esito
 
-/squadra                       dashboard rappresentante
-/squadra/rosa
-/squadra/inviti
-/squadra/pagamenti
-/squadra/impostazioni
+/squadra                       cruscotto rappresentante (conteggi, pagamento TEAM/BOTH)
+/squadra/inviti                inviti, reinvio, CSV
 
-/admin
+/admin                         hub organizzazione
 /admin/registrazioni
 /admin/giocatori/[id]
 /admin/documenti
 /admin/squadre
+/admin/squadre/[id]
 /admin/edizioni
-/admin/informative
+/admin/edizioni/[id]
+/admin/informative             sola lettura versioni correnti
 /admin/pagamenti
+/admin/utenti                  Super Admin: chiusura / anonimizzazione account
+/admin/utenti/[id]
 /admin/audit
 ```
 
@@ -56,18 +58,20 @@ M3: `/area/registrazione/certificato`; `/admin/documenti`; `/api/documents/file`
 M4: `/area/registrazione/privacy` e `/liberatorie`; `/liberatorie` pubblica.
 M5: `/area/registrazione/pagamento`; `/area/pagamento/esito`; `/api/webhooks/payments`.
 M6: `/squadra` rosa PII minima; `/area/comunicazioni`.
+M8: `/admin` hub e CRUD; `/invito-staff/[token]`.
+M9: `/squadra/inviti`; selettore squadra.
+M10: `/area/account`, `/area/squadra`, `/recupera-password`.
 
 ## 3. Navigazione giocatore
 
 Priorità visiva:
 
-1. Stato iscrizione + CTA “cosa fare ora”
+1. Stato iscrizione + CTA “cosa fare ora” (assente se in regola / ritirato)
 2. Checklist
 3. Percorso registrazione
-4. Documenti, consensi, pagamento
-5. Squadra
-6. Comunicazioni
-7. Account
+4. Squadra (compagni)
+5. Comunicazioni (con badge non lette)
+6. Account
 
 Le liberatorie foto/video **non** sono un link minore in footer. Hanno uno step nel percorso e una voce in consensi.
 
@@ -89,4 +93,4 @@ Pagine pubbliche con il contenuto della **versione corrente** di `LegalDocument`
 
 Visibili: nome squadra, logo, competizione, edizione, nome referente (se previsto), elenco compagni con **nome e cognome** + eventuale ruolo/numero maglia.
 
-Non visibili: email, telefono, CF, età esatta, documenti, pagamenti altrui, consensi altrui.
+Non visibili: email, telefono, CF, età esatta, documenti, **stato certificato**, pagamenti altrui, consensi altrui. Lo stato medico resta sulla rosa del rappresentante (`/squadra`), non sulla vista compagni.

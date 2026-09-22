@@ -85,4 +85,47 @@ describe("authorize deny-by-default", () => {
     expect(authorize(superAdmin, "platform:admin").allow).toBe(true);
     expect(authorize(superAdmin, "document:read_file", ownDoc).allow).toBe(true);
   });
+
+  it("nega al giocatore ritiro e maglia altrui, consente il proprio ritiro", () => {
+    expect(authorize(player, "registration:withdraw", ownDoc).allow).toBe(true);
+    expect(authorize(otherPlayer, "registration:withdraw", ownDoc).allow).toBe(false);
+    expect(authorize(orgAdmin, "registration:withdraw", ownDoc).allow).toBe(true);
+    expect(authorize(player, "team:update_roster", { teamId: "team-1" }).allow).toBe(false);
+    expect(authorize(rep, "team:update_roster", { teamId: "team-1" }).allow).toBe(true);
+    expect(authorize(player, "staff:invite", { teamId: "team-1" }).allow).toBe(false);
+    expect(authorize(orgAdmin, "staff:invite", { teamId: "team-1" }).allow).toBe(true);
+  });
+
+  it("nega player e rappresentante sulla console organizzazione", () => {
+    expect(authorize(player, "admin:manage").allow).toBe(false);
+    expect(authorize(rep, "admin:manage").allow).toBe(false);
+    expect(authorize(orgAdmin, "admin:manage").allow).toBe(true);
+  });
+
+  it("consente al rappresentante di togliere un giocatore solo dalla propria squadra", () => {
+    expect(authorize(rep, "team:remove_player", { teamId: "team-1" }).allow).toBe(true);
+    expect(authorize(otherRep, "team:remove_player", { teamId: "team-1" }).allow).toBe(false);
+    expect(authorize(player, "team:remove_player", { teamId: "team-1" }).allow).toBe(false);
+    expect(authorize(orgAdmin, "team:remove_player", { teamId: "team-1" }).allow).toBe(true);
+    expect(authorize(superAdmin, "team:remove_player", { teamId: "team-1" }).allow).toBe(true);
+    expect(authorize(rep, "team:remove_player").allow).toBe(false);
+  });
+
+  it("riserva delete e anonymize al super admin e nega audit:delete a tutti", () => {
+    expect(authorize(rep, "user:delete", { ownerUserId: "player-1" }).allow).toBe(false);
+    expect(authorize(rep, "user:anonymize", { ownerUserId: "player-1" }).allow).toBe(false);
+    expect(authorize(otherRep, "user:delete", { ownerUserId: "rep-1" }).allow).toBe(false);
+    expect(authorize(orgAdmin, "user:delete").allow).toBe(false);
+    expect(authorize(orgAdmin, "user:anonymize").allow).toBe(false);
+    expect(authorize(orgAdmin, "platform:admin").allow).toBe(false);
+    expect(authorize(superAdmin, "user:delete").allow).toBe(true);
+    expect(authorize(superAdmin, "user:anonymize").allow).toBe(true);
+    expect(authorize(player, "user:delete").allow).toBe(false);
+    expect(authorize(player, "user:anonymize").allow).toBe(false);
+    expect(authorize(player, "user:delete", { ownerUserId: "player-1" }).allow).toBe(false);
+    expect(authorize(player, "audit:delete").allow).toBe(false);
+    expect(authorize(rep, "audit:delete").allow).toBe(false);
+    expect(authorize(orgAdmin, "audit:delete").allow).toBe(false);
+    expect(authorize(superAdmin, "audit:delete").allow).toBe(false);
+  });
 });

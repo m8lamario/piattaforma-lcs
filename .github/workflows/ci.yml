@@ -38,3 +38,9 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
+      - run: npx prisma db seed
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
+      - name: npm audit (high)
+        run: npm audit --audit-level=high
+        continue-on-error: true

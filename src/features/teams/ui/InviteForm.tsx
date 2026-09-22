@@ -3,6 +3,7 @@
 import { useActionState, useState } from "react";
 import { createInviteAction } from "@/features/teams/actions";
 import { Button } from "@/shared/ui/Button";
+import { ActionError } from "@/shared/ui/ActionError";
 import { it } from "@/shared/i18n/it";
 import fields from "@/shared/ui/form.module.css";
 import styles from "./InviteForm.module.css";
@@ -60,13 +61,9 @@ export function InviteForm({ teamId }: { teamId: string }) {
             <input id="invite-last" name="lastName" className={fields.input} autoComplete="family-name" />
           </div>
         </div>
-        {state?.error ? (
-          <p className={fields.summary} role="alert">
-            {state.error}
-          </p>
-        ) : null}
+        {state?.error ? <ActionError error={state.error} code={state.code} /> : null}
         <div className={fields.actions}>
-          <Button type="submit" disabled={pending} aria-busy={pending}>
+          <Button type="submit" icon="send" disabled={pending} aria-busy={pending}>
             {pending ? it.sendingInvite : it.sendInvite}
           </Button>
         </div>
@@ -75,7 +72,7 @@ export function InviteForm({ teamId }: { teamId: string }) {
         <div className={styles.success} role="status">
           <p>{copied ? it.copied : it.inviteCreated}</p>
           <code className={styles.url}>{redeemUrl}</code>
-          <Button type="button" variant="accent" onClick={copyLink}>
+          <Button type="button" variant="accent" icon="plus" onClick={copyLink}>
             {copied ? it.copiedShort : it.copyLink}
           </Button>
         </div>

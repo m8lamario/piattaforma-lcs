@@ -228,16 +228,16 @@ Categorie da confermare:
 
 **[INSERIRE ELENCO RESPONSABILI EX ART. 28 E SUB-RESPONSABILI]**
 
-Stato prodotto: i provider non sono scelti; esistono adapter e stub.
+Stato prodotto: adapter live opzionali (driver env). **[INSERIRE CONFERMA ORGANIZZAZIONE / DPA PRIMA DEL GO-LIVE CON DATI REALI]**.
 
 | Funzione | Stato attuale | Fornitore live | Extra-SEE | Clausole |
 |----------|---------------|----------------|-----------|----------|
 | Hosting applicazione | **[INSERIRE HOSTING — OGGI NON DECISIO]** | **[INSERIRE NOME FORNITORE HOSTING]** | **[INSERIRE SÌ/NO E GARANZIE]** | **[INSERIRE DPA]** |
 | Database PostgreSQL | URL generico; provider non deciso | **[INSERIRE NOME FORNITORE DB]** | **[INSERIRE]** | **[INSERIRE DPA]** |
 | Autenticazione | Auth.js nel perimetro app | **[INSERIRE SE SI AGGIUNGONO IDP ESTERNI]** | **[INSERIRE]** | **[INSERIRE]** |
-| Storage file privati | stub in produzione; `local` solo fuori produzione | **[INSERIRE NOME OBJECT STORAGE]** | **[INSERIRE]** | **[INSERIRE DPA]** |
-| Email transazionale | stub (log senza corpo sensibile) | **[INSERIRE NOME EMAIL PROVIDER]** | **[INSERIRE]** | **[INSERIRE DPA]** |
-| Pagamenti | stub, nessun dato carta in piattaforma | **[INSERIRE NOME PAYMENT PROVIDER]** | **[INSERIRE]** | **[INSERIRE DPA / TITOLARE AUTONOMO]** |
+| Storage file privati | `local` in dev; `r2` se `STORAGE_DRIVER=r2` (Cloudflare R2, bucket privato) | **[INSERIRE CONFERMA R2 / ACCOUNT]** | **[INSERIRE SÌ/NO E GARANZIE]** | **[INSERIRE DPA]** |
+| Email transazionale | stub di default; `resend` se `EMAIL_DRIVER=resend` | **[INSERIRE CONFERMA RESEND / MITTENTE]** | **[INSERIRE]** | **[INSERIRE DPA]** |
+| Pagamenti | stub di default; Stripe Checkout hosted se `PAYMENT_DRIVER=stripe`; nessun dato carta in piattaforma | **[INSERIRE CONFERMA STRIPE / ACCOUNT]** | **[INSERIRE]** | **[INSERIRE DPA / TITOLARE AUTONOMO]** |
 | Monitoring / error tracking | stub console | **[INSERIRE NOME MONITORING]** | **[INSERIRE]** | **[INSERIRE DPA]** |
 | Antivirus upload | stub che non analizza davvero | **[INSERIRE NOME SCAN]** | **[INSERIRE]** | **[INSERIRE]** |
 | CDN / DNS / captcha | **[INSERIRE SE PRESENTI]** | **[INSERIRE]** | **[INSERIRE]** | **[INSERIRE]** |
@@ -254,7 +254,7 @@ I testi ufficiali andranno aggiornati **prima** del passaggio live di ciascun ad
 - Strumento: **[INSERIRE: DECISIONE DI ADEGUATEZZA / SCC / ALTRO]**
 - Valutazione impatto trasferimenti: **[INSERIRE RINVIO O SINTESI]**
 
-Finché hosting, DB, storage, email e pagamenti sono stub o locali di sviluppo, **non** si dichiara un trasferimento. La dichiarazione ufficiale va scritta dopo la scelta dei fornitori.
+Finché i driver restano stub/local, **non** si dichiara un trasferimento. Con Resend/R2/Stripe attivi restano da compilare DPA, extra-SEE e SCC: **[INSERIRE VALUTAZIONE UFFICIALE]**.
 
 ---
 

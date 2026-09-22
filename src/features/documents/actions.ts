@@ -15,6 +15,8 @@ import {
   persistRegistrationStatus,
 } from "@/features/registrations/data/workspace";
 import { nextStepAfter } from "@/features/registrations/domain/wizard";
+import { workspaceWriteCode } from "@/features/registrations/domain/writeGate";
+import { fail, type ActionFailure } from "@/shared/errors";
 import { authorize } from "@/shared/authz/authorize";
 import { getActorByUserId } from "@/shared/authz/getActor";
 import { SIGNED_URL_TTL_SECONDS } from "@/shared/config/app";
@@ -37,7 +39,7 @@ async function persistWorkspaceStatus(userId: string) {
 }
 
 export async function uploadMedicalCertificateAction(
-  _prev: { error?: string } | undefined,
+  _prev: ActionFailure | undefined,
   formData: FormData,
 ) {
   const session = await auth();
@@ -47,25 +49,27 @@ export async function uploadMedicalCertificateAction(
   if (!actor) redirect("/accedi");
 
   const workspace = await loadPlayerWorkspace(session.user.id);
-  if (!workspace) return { error: "Non hai un’iscrizione da completare." };
+  if (!workspace) return fail("REGISTRATION_NOT_FOUND");
 
   const allowed = authorize(actor, "registration:write", {
     ownerUserId: session.user.id,
     teamId: workspace.registration.teamId,
   });
-  if (!allowed.allow) return { error: "Non puoi caricare documenti per questa iscrizione." };
+  if (!allowed.allow) return fail("FORBIDDEN_REGISTRATION_WRITE");
+  const windowCode = workspaceWriteCode(workspace.registration);
+  if (windowCode) return fail(windowCode);
 
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
     select: { emailVerified: true },
   });
   if (!user?.emailVerified) {
-    return { error: "Verifica l’email prima di caricare documenti." };
+    return fail("AUTH_EMAIL_NOT_VERIFIED");
   }
 
   const rateKey = await clientKey(`upload:${session.user.id}`);
-  if (!consumeRateLimit(rateKey, RATE_LIMITS.upload.limit, RATE_LIMITS.upload.windowMs)) {
-    return { error: "Troppi upload. Riprova più tardi." };
+  if (!(await consumeRateLimit(rateKey, RATE_LIMITS.upload.limit, RATE_LIMITS.upload.windowMs))) {
+    return fail("DOCUMENT_UPLOAD_RATE_LIMITED");
   }
 
   const file = formData.get("file");
@@ -75,7 +79,7 @@ export async function uploadMedicalCertificateAction(
     !current || current.status === "REJECTED" || current.status === "EXPIRED";
 
   if (!hasFile && mustReplace) {
-    return { error: "Seleziona un file PDF, JPEG o PNG." };
+    return fail("DOCUMENT_MISSING_FILE");
   }
 
   if (hasFile && file instanceof File) {
@@ -89,9 +93,12 @@ export async function uploadMedicalCertificateAction(
     });
     if (!stored.ok) {
       if (stored.reason === "size") {
-        return { error: "Il file supera la dimensione massima consentita." };
+        return fail("DOCUMENT_TOO_LARGE");
       }
-      return { error: "Formato non valido. Usa PDF, JPEG o PNG." };
+      if (stored.reason === "scan") {
+        return fail("DOCUMENT_SCAN_FAILED");
+      }
+      return fail("DOCUMENT_INVALID_TYPE");
     }
 
     const trace = await userAgentAndIp();
@@ -118,18 +125,18 @@ export async function uploadMedicalCertificateAction(
 
 export async function createSignedDocumentUrlAction(documentId: string) {
   const session = await auth();
-  if (!session?.user?.id) return { error: "Devi accedere." };
+  if (!session?.user?.id) return fail("AUTH_SESSION_REQUIRED");
   const actor = await getActorByUserId(session.user.id);
-  if (!actor) return { error: "Account non trovato." };
+  if (!actor) return fail("AUTH_ACCOUNT_MISSING");
 
   const document = await getDocumentById(documentId);
-  if (!document) return { error: "Documento non disponibile." };
+  if (!document) return fail("DOCUMENT_NOT_FOUND");
 
   const decision = authorize(actor, "document:read_file", {
     ownerUserId: document.playerProfile.userId,
     teamId: document.registration.teamId,
   });
-  if (!decision.allow) return { error: "Non puoi aprire questo file." };
+  if (!decision.allow) return fail("FORBIDDEN_DOCUMENT_FILE");
 
   const expiresAtUnix = Math.floor(Date.now() / 1000) + SIGNED_URL_TTL_SECONDS;
   const token = createDocumentAccessToken({

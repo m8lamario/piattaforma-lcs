@@ -26,7 +26,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         const user = await prisma.user.findUnique({
           where: { email: parsed.data.email.toLowerCase() },
         });
-        if (!user?.passwordHash) {
+        if (!user?.passwordHash || user.lifecycleStatus !== "ACTIVE") {
           logger.warn("auth.login.denied", { reason: "unknown_or_no_password" });
           return null;
         }
@@ -42,9 +42,18 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     }),
   ],
   callbacks: {
-    jwt({ token, user }) {
+    async jwt({ token, user }) {
       if (user?.id) {
         token.sub = user.id;
+      }
+      if (token.sub) {
+        const row = await prisma.user.findUnique({
+          where: { id: token.sub },
+          select: { lifecycleStatus: true },
+        });
+        if (!row || row.lifecycleStatus !== "ACTIVE") {
+          return {};
+        }
       }
       return token;
     },

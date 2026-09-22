@@ -1,8 +1,20 @@
 import { Prisma } from "@generated/client";
 import { isMinor } from "@/features/players/domain/age";
+import {
+  classifyFiscalIdentity,
+  classifyOccupiedFiscalCode,
+  clearIdentityConflict,
+  holderFromProfile,
+  publicIdentityErrorCode,
+  shouldPersistIdentityBlock,
+  workspaceIdentityBlock,
+  writeIdentityConflict,
+} from "@/features/players/domain/identity";
+import { normalizeFiscalCode } from "@/features/players/domain/fiscalCode";
 import { hasCompleteGuardian, hasCompletePersonalData } from "@/features/players/domain/personal";
 import {
   DEFAULT_EDITION_REQUIREMENTS,
+  isTerminalRegistrationStatus,
   projectChecklist,
   projectRegistrationStatus,
   type EditionRequirement,
@@ -112,7 +124,9 @@ export async function loadPlayerWorkspace(userId: string) {
   };
 
   const checklist = projectChecklist(requirements, evidence);
-  const status = projectRegistrationStatus(evidence, checklist);
+  const projected = isTerminalRegistrationStatus(registration.status)
+    ? (registration.status as RegistrationStatus)
+    : projectRegistrationStatus(evidence, checklist);
 
   return {
     user: { id: user.id, email: user.email },
@@ -124,6 +138,11 @@ export async function loadPlayerWorkspace(userId: string) {
       fiscalCode: profile.fiscalCode,
       phone: profile.phone,
     },
+    identityConflict: workspaceIdentityBlock({
+      fiscalCode: profile.fiscalCode,
+      metadata: profile.metadata,
+      registrationStatus: registration.status,
+    }),
     guardian: profile.guardians[0]
       ? {
           firstName: profile.guardians[0].firstName,
@@ -145,10 +164,13 @@ export async function loadPlayerWorkspace(userId: string) {
       currency: registration.team.edition.currency,
       playerFeeAmount: registration.team.edition.playerFeeAmount,
       teamFeeAmount: registration.team.edition.teamFeeAmount,
+      isActive: registration.team.edition.isActive,
+      registrationOpensAt: registration.team.edition.registrationOpensAt,
+      registrationClosesAt: registration.team.edition.registrationClosesAt,
     },
     evidence,
     checklist,
-    projectedStatus: status,
+    projectedStatus: projected,
     medicalDocument: medicalDoc
       ? {
           id: medicalDoc.id,
@@ -167,9 +189,27 @@ export async function persistRegistrationStatus(
   registrationId: string,
   status: RegistrationStatus,
 ) {
+  const current = await prisma.registration.findUnique({
+    where: { id: registrationId },
+    select: { status: true },
+  });
+  if (current && isTerminalRegistrationStatus(current.status)) return;
   await prisma.registration.update({
     where: { id: registrationId },
     data: { status },
+  });
+}
+
+export async function findProfileByFiscalCode(fiscalCode: string) {
+  return prisma.playerProfile.findUnique({
+    where: { fiscalCode },
+    select: {
+      id: true,
+      userId: true,
+      fiscalCode: true,
+      user: { select: { lifecycleStatus: true } },
+      registrations: { select: { teamId: true, editionId: true, status: true } },
+    },
   });
 }
 
@@ -183,6 +223,66 @@ export async function savePersonalProfile(
     phone: string;
   },
 ) {
+  const fiscalCode = normalizeFiscalCode(input.fiscalCode);
+  const current = await prisma.playerProfile.findUnique({
+    where: { userId },
+    include: {
+      registrations: {
+        select: { id: true, teamId: true, editionId: true, status: true },
+        orderBy: { createdAt: "desc" },
+        take: 1,
+      },
+    },
+  });
+  if (!current) {
+    return { ok: false as const, reason: "missing_profile" as const };
+  }
+
+  const registration = current.registrations[0];
+  const holderRow = await findProfileByFiscalCode(fiscalCode);
+  const holder =
+    holderRow && holderRow.id !== current.id
+      ? holderFromProfile({
+          userId: holderRow.userId,
+          registrations: holderRow.registrations,
+          lifecycleStatus: holderRow.user.lifecycleStatus,
+        })
+      : holderRow && holderRow.id === current.id
+        ? holderFromProfile({
+            userId: current.userId,
+            registrations: current.registrations,
+            lifecycleStatus: "ACTIVE",
+          })
+        : null;
+
+  const classification = classifyFiscalIdentity({
+    currentUserId: userId,
+    currentTeamId: registration?.teamId ?? "",
+    currentEditionId: registration?.editionId ?? "",
+    currentRegistrationStatus: registration?.status ?? "ACCOUNT_CREATED",
+    holder,
+  });
+
+  if (classification.kind === "foreign_identity") {
+    if (shouldPersistIdentityBlock({ classification, currentFiscalCode: current.fiscalCode })) {
+      await prisma.playerProfile.update({
+        where: { id: current.id },
+        data: {
+          metadata: writeIdentityConflict(current.metadata, {
+            code: classification.primary,
+            detectedAt: new Date().toISOString(),
+          }) as Prisma.InputJsonValue,
+        },
+      });
+    }
+    return {
+      ok: false as const,
+      reason: "identity_conflict" as const,
+      publicCode: publicIdentityErrorCode(),
+      classification,
+    };
+  }
+
   try {
     await prisma.playerProfile.update({
       where: { userId },
@@ -190,18 +290,51 @@ export async function savePersonalProfile(
         firstName: input.firstName,
         lastName: input.lastName,
         birthDate: input.birthDate,
-        fiscalCode: input.fiscalCode,
+        fiscalCode,
         phone: input.phone,
+        metadata: clearIdentityConflict(current.metadata) as Prisma.InputJsonValue,
       },
     });
     await prisma.user.update({
       where: { id: userId },
       data: { name: `${input.firstName} ${input.lastName}`.trim() },
     });
-    return { ok: true as const };
+    return { ok: true as const, classification };
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
-      return { ok: false as const, reason: "fiscal_code_taken" as const };
+      const raced = await findProfileByFiscalCode(fiscalCode);
+      const foreign = classifyOccupiedFiscalCode({
+        currentUserId: userId,
+        currentTeamId: registration?.teamId ?? "",
+        currentEditionId: registration?.editionId ?? "",
+        currentRegistrationStatus: registration?.status ?? "ACCOUNT_CREATED",
+        holder: holderFromProfile(
+          raced
+            ? {
+                userId: raced.userId,
+                registrations: raced.registrations,
+                lifecycleStatus: raced.user.lifecycleStatus,
+              }
+            : null,
+        ),
+      });
+      if (shouldPersistIdentityBlock({ classification: foreign, currentFiscalCode: current.fiscalCode })) {
+        await prisma.playerProfile.update({
+          where: { id: current.id },
+          data: {
+            metadata: writeIdentityConflict(current.metadata, {
+              code: foreign.primary,
+              detectedAt: new Date().toISOString(),
+            }) as Prisma.InputJsonValue,
+          },
+        });
+      }
+      return {
+        ok: false as const,
+        reason: "identity_conflict" as const,
+        publicCode: publicIdentityErrorCode(),
+        classification: foreign,
+      };
     }
     throw error;
   }
