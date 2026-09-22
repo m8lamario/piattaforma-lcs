@@ -42,7 +42,7 @@ Il backlog indica i test per task. Se un task tocca authz o documenti, include a
 
 Su pull request / push: `npm ci`, `lint`, `typecheck`, `test`, `build`, `test:e2e`.
 
-CI ha Postgres 16, `prisma migrate deploy`, seed. Playwright usa `next start` sullo stesso job. `prisma generate` gira in `postinstall` e di nuovo nel `build`; non richiede un DB raggiungibile, ma `prisma.config.ts` legge `DATABASE_URL`.
+CI ha Postgres 16, `prisma migrate deploy`, seed. Playwright usa `next start` sullo stesso job. `prisma generate` gira nel `build` (e esplicitamente in CI); non richiede un DB raggiungibile.
 
 ## 6. Loading UX
 

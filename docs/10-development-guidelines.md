@@ -59,7 +59,6 @@ Aggiungere una libreria solo se serve a un requisito. Provider cloud dietro adap
 | Script | Uso |
 |---|---|
 | `dev` | Next dev |
-| `postinstall` | `prisma generate` (client in `/generated`) |
 | `build` | `prisma generate` + Next build |
 | `start` | Next start |
 | `lint` | ESLint |

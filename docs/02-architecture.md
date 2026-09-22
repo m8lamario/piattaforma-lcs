@@ -17,7 +17,7 @@ I permessi sono **resource-scoped** (`userId`, `teamId`, `competitionId`) per po
 | DB | PostgreSQL + Prisma 7 | Relazionale, migrate, type-safe |
 | Email / storage / pay / errors | Adapter + stub / live | Resend, R2, Stripe dietro driver env; default stub |
 
-Prisma 7 richiede `prisma.config.ts`, `dotenv` esplicito, driver adapter `@prisma/adapter-pg` e client generato in `/generated` (gitignored; import `@generated/client`). `postinstall` e `npm run build` eseguono `prisma generate` così CI e GitHub/Vercel hanno il client prima di `next build`.
+Prisma 7 richiede `prisma.config.ts`, `dotenv` esplicito, driver adapter `@prisma/adapter-pg` e client generato in `/generated` (gitignored; import `@generated/client`). `npm run build` esegue `prisma generate` prima di `next build` (non in `postinstall`: su Vercel `npm install` non ha sempre `DATABASE_URL`). `prisma.config.ts` accetta un URL placeholder solo per il generate; migrate/runtime usano `DATABASE_URL`.
 
 Protezione route in Next.js 16: `src/proxy.ts` (non `middleware.ts`).
 
