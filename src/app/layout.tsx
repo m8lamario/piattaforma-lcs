@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import type { ReactNode } from "react";
 import { headers } from "next/headers";
 import { Barlow_Condensed, Geist } from "next/font/google";
 import "@/shared/ui/tokens.css";
@@ -22,7 +23,7 @@ export const metadata: Metadata = {
   description: it.tagline,
 };
 
-export default async function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: { children: ReactNode }) {
   const nonce = (await headers()).get("x-nonce") ?? undefined;
   return (
     <html
