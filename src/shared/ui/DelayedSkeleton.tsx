@@ -17,11 +17,9 @@ export function DelayedSkeleton({ children, delayMs = DELAY_MS }: Props) {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      setVisible(true);
-      return;
-    }
-    const timer = window.setTimeout(() => setVisible(true), delayMs);
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const waitMs = reduceMotion ? 0 : delayMs;
+    const timer = window.setTimeout(() => setVisible(true), waitMs);
     return () => window.clearTimeout(timer);
   }, [delayMs]);
 
