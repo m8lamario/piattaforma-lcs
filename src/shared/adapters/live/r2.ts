@@ -1,4 +1,5 @@
 import { DeleteObjectCommand, GetObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { r2S3Endpoint } from "@/shared/config/drivers";
 import type { StorageAdapter } from "../types";
 
 function streamToBuffer(body: unknown): Promise<Buffer> {
@@ -25,7 +26,7 @@ export function createR2StorageAdapter(): StorageAdapter {
   }
   const client = new S3Client({
     region: "auto",
-    endpoint: `https://${accountId}.r2.cloudflarestorage.com`,
+    endpoint: r2S3Endpoint(accountId),
     credentials: { accessKeyId, secretAccessKey },
   });
 

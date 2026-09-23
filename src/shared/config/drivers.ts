@@ -41,6 +41,17 @@ export function r2Configured() {
   );
 }
 
+/** S3 API base URL for Cloudflare R2 (EU buckets need `.eu.` in the hostname). */
+export function r2S3Endpoint(accountId: string) {
+  const custom = process.env.R2_S3_ENDPOINT?.trim();
+  if (custom) return custom.replace(/\/$/, "");
+  const jurisdiction = process.env.R2_JURISDICTION?.trim().toLowerCase();
+  if (jurisdiction === "eu") {
+    return `https://${accountId}.eu.r2.cloudflarestorage.com`;
+  }
+  return `https://${accountId}.r2.cloudflarestorage.com`;
+}
+
 export function stripeConfigured() {
   return Boolean(process.env.STRIPE_SECRET_KEY && process.env.STRIPE_WEBHOOK_SECRET);
 }
