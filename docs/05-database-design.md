@@ -83,7 +83,7 @@ Un rappresentante che è anche giocatore ha `TEAM_REPRESENTATIVE` + membership `
 
 **Team** — edition + school.
 
-- name, logoStorageKey nullable, inviteCode unique (codice squadra, oltre agli inviti singoli)
+- name, logoStorageKey nullable, inviteCode unique (codice interno), registrationToken unique (link pubblico `/iscrizione/[token]`, uno per squadra, non per giocatore)
 - contactName / contactEmail placeholder referente
 
 **PlayerInvite**

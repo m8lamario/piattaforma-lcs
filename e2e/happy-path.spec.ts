@@ -15,18 +15,14 @@ test("happy path: invito, redeem, wizard minimo, pagamento stub", async ({ page,
   await expect(page).toHaveURL(/\/(area|squadra)/);
 
   await page.goto("/squadra/inviti");
-  await page.locator("#invite-email").fill(email);
-  await page.locator("#invite-first").fill("Eva");
-  await page.locator("#invite-last").fill("Test");
-  await page.getByRole("button", { name: "Invia invito" }).click();
-  await expect(page.locator("code").first()).toBeVisible();
   const redeemUrl = await page.locator("code").first().innerText();
-  expect(redeemUrl).toContain("/invito/");
+  expect(redeemUrl).toContain("/iscrizione/");
 
   const playerContext = await browser.newContext();
   const player = await playerContext.newPage();
   await player.goto(redeemUrl);
-  await expect(player.locator("#password")).toBeVisible();
+  await expect(player.locator("#email")).toBeVisible();
+  await player.locator("#email").fill(email);
   await player.locator("#password").fill(password);
   await player.locator("#confirmPassword").fill(password);
   await player.getByRole("button", { name: "Crea account e continua" }).click();

@@ -327,6 +327,158 @@ export async function attachExistingUserToInvite(input: {
   });
 }
 
+export async function findTeamByRegistrationToken(token: string) {
+  return prisma.team.findUnique({
+    where: { registrationToken: token },
+    include: { edition: true },
+  });
+}
+
+function displayNameFromEmail(email: string) {
+  const local = email.split("@")[0]?.replace(/[._+-]+/g, " ").trim();
+  return local && local.length > 0 ? local.slice(0, 80) : "Giocatore";
+}
+
+async function linkPlayerToTeam(
+  tx: Parameters<Parameters<typeof prisma.$transaction>[0]>[0],
+  input: {
+    userId: string;
+    profileId: string;
+    teamId: string;
+    editionId: string;
+  },
+) {
+  await tx.teamMembership.upsert({
+    where: { teamId_userId: { teamId: input.teamId, userId: input.userId } },
+    update: { role: "PLAYER" },
+    create: { teamId: input.teamId, userId: input.userId, role: "PLAYER" },
+  });
+
+  const existingRegistration = await tx.registration.findUnique({
+    where: {
+      playerProfileId_editionId: {
+        playerProfileId: input.profileId,
+        editionId: input.editionId,
+      },
+    },
+  });
+  if (!existingRegistration) {
+    await tx.registration.create({
+      data: {
+        playerProfileId: input.profileId,
+        teamId: input.teamId,
+        editionId: input.editionId,
+        status: "ACCOUNT_CREATED",
+      },
+    });
+    return { ok: true as const };
+  }
+  if (
+    existingRegistration.teamId === input.teamId &&
+    (existingRegistration.status === "REMOVED" || existingRegistration.status === "WITHDRAWN")
+  ) {
+    await tx.registration.update({
+      where: { id: existingRegistration.id },
+      data: { status: "ACCOUNT_CREATED", teamId: input.teamId },
+    });
+    return { ok: true as const };
+  }
+  if (existingRegistration.teamId === input.teamId) {
+    return { ok: false as const, reason: "already_on_team" as const };
+  }
+  return { ok: false as const, reason: "edition_conflict" as const };
+}
+
+export async function createAccountFromTeamLink(input: {
+  token: string;
+  email: string;
+  password: string;
+}) {
+  const email = input.email.toLowerCase();
+  return prisma.$transaction(async (tx) => {
+    const team = await tx.team.findUnique({
+      where: { registrationToken: input.token },
+      include: { edition: true },
+    });
+    if (!team) return { ok: false as const, reason: "invalid" as const };
+
+    const existing = await tx.user.findUnique({ where: { email } });
+    if (existing) return { ok: false as const, reason: "login_required" as const };
+
+    const firstName = displayNameFromEmail(email);
+    const passwordHash = await hashPassword(input.password);
+    const user = await tx.user.create({
+      data: {
+        email,
+        passwordHash,
+        emailVerified: new Date(),
+        name: firstName,
+        roles: { create: { role: "PLAYER" } },
+        playerProfile: { create: { firstName, lastName: "—" } },
+      },
+      include: { playerProfile: true },
+    });
+    if (!user.playerProfile) throw new Error("PlayerProfile non creato.");
+
+    const linked = await linkPlayerToTeam(tx, {
+      userId: user.id,
+      profileId: user.playerProfile.id,
+      teamId: team.id,
+      editionId: team.editionId,
+    });
+    if (!linked.ok) return linked;
+
+    return {
+      ok: true as const,
+      user: { id: user.id, email: user.email },
+      teamId: team.id,
+      teamName: team.name,
+    };
+  });
+}
+
+export async function attachExistingUserToTeamLink(input: {
+  token: string;
+  userId: string;
+  email: string;
+}) {
+  return prisma.$transaction(async (tx) => {
+    const team = await tx.team.findUnique({ where: { registrationToken: input.token } });
+    if (!team) return { ok: false as const, reason: "invalid" as const };
+
+    const user = await tx.user.findUnique({ where: { id: input.userId } });
+    if (!user || user.email.toLowerCase() !== input.email.toLowerCase()) {
+      return { ok: false as const, reason: "wrong_session_email" as const };
+    }
+
+    const profile =
+      (await tx.playerProfile.findUnique({ where: { userId: input.userId } })) ??
+      (await tx.playerProfile.create({
+        data: {
+          userId: input.userId,
+          firstName: displayNameFromEmail(input.email),
+          lastName: "—",
+        },
+      }));
+
+    const playerRole = await tx.userRole.findFirst({
+      where: { userId: input.userId, role: "PLAYER" },
+    });
+    if (!playerRole) {
+      await tx.userRole.create({ data: { userId: input.userId, role: "PLAYER" } });
+    }
+
+    const linked = await linkPlayerToTeam(tx, {
+      userId: input.userId,
+      profileId: profile.id,
+      teamId: team.id,
+      editionId: team.editionId,
+    });
+    if (!linked.ok) return linked;
+    return { ok: true as const, teamId: team.id, teamName: team.name };
+  });
+}
+
 export async function getTeamForActor(teamId: string) {
   return prisma.team.findUnique({
     where: { id: teamId },

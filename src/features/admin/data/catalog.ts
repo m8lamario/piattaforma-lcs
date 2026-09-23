@@ -288,6 +288,7 @@ export async function createSchoolAndTeam(input: {
       editionId: input.editionId,
       schoolId: school.id,
       inviteCode: createTeamInviteCode(),
+      registrationToken: randomBytes(32).toString("base64url"),
     },
   });
   return team;

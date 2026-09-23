@@ -20,12 +20,33 @@
   gap: 0.1rem;
 }
 
-.esl {
+.markRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.logo {
+  width: 1.85rem;
+  height: 1.85rem;
+  object-fit: contain;
+}
+
+html[data-theme="light"] .logo {
+  filter: invert(1);
+}
+
+.wordmark {
   font-family: var(--font-brand);
   font-size: 1.2rem;
   font-weight: 700;
   letter-spacing: 0.14em;
   line-height: 1;
+}
+.wormarkVertical {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
 }
 
 .product,

@@ -139,7 +139,7 @@ Default foundation (documentato, modificabile):
 
 Magic link e OAuth: non in M0; vedi OPEN_DECISIONS.
 
-L’account si crea **solo** con `PlayerInvite` valido o `StaffInvite` (rappresentante). Non esiste `/register` aperto. Reset password usa `VerificationToken` con identifier `password-reset:{email}`.
+L’account giocatore si crea **solo** dal link stabile della squadra (`/iscrizione/[registrationToken]`). `StaffInvite` resta il ingresso del rappresentante. Non esiste `/register` aperto. Reset password usa `VerificationToken` con identifier `password-reset:{email}`.
 
 ## 8. Dati estendibili del profilo
 

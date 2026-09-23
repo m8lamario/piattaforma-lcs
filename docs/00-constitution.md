@@ -23,7 +23,7 @@ Leonessa Cup e altri siti locali **non** vengono modificati da questo repository
 7. **Nessun dark pattern.** I consensi non necessari non sono obbligatori per sbloccare l’iscrizione.
 8. **Documentazione come fonte di verità.** Il codice segue i documenti. Una decisione nuova si scrive nei docs, poi si implementa.
 9. **Una persona, un account.** Anche i minorenni hanno un account proprio. Il genitore/tutore è un contatto collegato, non il titolare del login.
-10. **Ingresso controllato.** In v1 non esiste iscrizione pubblica da catalogo. Si entra con invito del rappresentante di squadra.
+10. **Ingresso controllato.** In v1 non esiste iscrizione pubblica da catalogo. Ogni squadra ha un solo link di iscrizione: il rappresentante lo condivide, il giocatore indica la propria email nel form. Gli inviti staff restano personali.
 
 ## 3. Cosa il prodotto è / non è
 

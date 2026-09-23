@@ -16,7 +16,7 @@ Oggi le iscrizioni a coppe studentesche locali sono frammentate. ESL/LCS opera a
 
 ## 3. Promessa v1
 
-Il giocatore entra **solo su invito** del rappresentante, crea il proprio account, completa un percorso guidato (dati, eventuale genitore, certificato, privacy, liberatorie, pagamento se dovuto) e ha una dashboard con stato e checklist. Il rappresentante gestisce la squadra. L’organizzazione revisiona.
+Il giocatore entra **solo con il link della propria squadra**, indica la propria email, crea l’account e completa un percorso guidato (dati, eventuale genitore, certificato, privacy, liberatorie, pagamento se dovuto) e ha una dashboard con stato e checklist. Il rappresentante condivide un unico link. L’organizzazione revisiona.
 
 ## 4. Fuori scope v1 / M0
 
@@ -30,7 +30,7 @@ Il giocatore entra **solo su invito** del rappresentante, crea il proprio accoun
 
 ## 5. Capacità del giocatore (prodotto, non M0)
 
-- Creare l’account **da invito** (email + password + verifica email).
+- Creare l’account **dal link della squadra** (email + password).
 - Completare la registrazione a passi, con salvataggio e ripresa.
 - Vedere i propri dati e lo stato.
 - Caricare/sostituire il certificato medico agonistico.
@@ -44,7 +44,7 @@ Il giocatore entra **solo su invito** del rappresentante, crea il proprio accoun
 ## 6. Capacità del rappresentante
 
 - Accedere alla propria squadra (invito da Organization/Super Admin).
-- Invitare giocatori con codice/link (email obbligatoria; altri campi roster minimi configurabili).
+- Condividere l’unico link di iscrizione della squadra. L’email del giocatore si raccoglie nel form, non in un invito separato.
 - Vedere checklist e stati di registrazione/pagamento dei propri giocatori.
 - Vedere **stato** del certificato (caricato / in revisione / approvato / rifiutato / scaduto), **mai il file**.
 - Non vedere codice fiscale, telefono, email completa dei compagni oltre quanto strettamente necessario al roster (vedi ruoli).

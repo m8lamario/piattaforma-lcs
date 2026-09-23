@@ -29,7 +29,9 @@ function tokenFromInvitePath(raw: string): string | null {
   try {
     const url = raw.includes("://") ? new URL(raw) : new URL(raw, "https://esl-player-hub.local");
     const parts = url.pathname.split("/").filter(Boolean);
-    const index = parts.lastIndexOf("invito");
+    const inviteIndex = parts.lastIndexOf("invito");
+    const joinIndex = parts.lastIndexOf("iscrizione");
+    const index = Math.max(inviteIndex, joinIndex);
     const token = index >= 0 ? parts[index + 1] : undefined;
     if (token && isWellFormedInviteToken(token)) return token;
   } catch {
