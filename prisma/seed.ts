@@ -1,4 +1,5 @@
 import "dotenv/config";
+import { randomBytes } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { PrismaClient } from "../generated/client";
@@ -126,6 +127,7 @@ async function main() {
       schoolId: school.id,
       name: "Liceo Demo",
       inviteCode: "DEMO-TEAM",
+      registrationToken: randomBytes(32).toString("base64url"),
       contactName: "Rappresentante Demo",
       contactEmail: rep.email,
       representativeUserId: rep.id,

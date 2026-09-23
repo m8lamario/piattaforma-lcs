@@ -313,6 +313,7 @@ model Team {
   name                 String
   logoStorageKey       String?
   inviteCode           String   @unique
+  registrationToken    String   @unique
   contactName          String?
   contactEmail         String?
   representativeUserId String?

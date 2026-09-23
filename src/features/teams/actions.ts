@@ -19,6 +19,7 @@ import {
 } from "@/shared/lib/request-guard";
 import {
   decideRedeemPath,
+  decideTeamJoinPath,
   inviteCreateBlocker,
   inviteCreateBlockerCode,
   inviteOutcomeCode,
@@ -33,16 +34,19 @@ import { loadPlayerWorkspace } from "@/features/registrations/data/workspace";
 import { createNotification } from "@/features/notifications/data/notifications";
 import {
   attachExistingUserToInvite,
+  attachExistingUserToTeamLink,
   createAccountFromInvite,
+  createAccountFromTeamLink,
   createPlayerInvite,
   findInviteByPlainToken,
+  findTeamByRegistrationToken,
   getPlayerInviteForTeam,
   getTeamForActor,
   loadRedeemContext,
   revokePlayerInvite,
 } from "@/features/teams/data/invites";
 import { updateMembershipRoster } from "@/features/teams/data/roster";
-import { createInviteSchema, redeemInviteSchema } from "@/features/teams/schemas/invite";
+import { createInviteSchema, joinTeamSchema, redeemInviteSchema } from "@/features/teams/schemas/invite";
 import { removePlayerFromTeam } from "@/features/admin/data/lifecycle";
 import { removePlayerSchema } from "@/features/admin/schemas/lifecycle";
 
@@ -313,6 +317,140 @@ export async function attachInviteAction(formData: FormData) {
     }
     throw error;
   }
+}
+
+export async function joinTeamAction(
+  _prev: ActionFailure | undefined,
+  formData: FormData,
+) {
+  const parsed = joinTeamSchema.safeParse({
+    token: formData.get("token"),
+    email: formData.get("email"),
+    password: formData.get("password"),
+    confirmPassword: formData.get("confirmPassword"),
+  });
+  if (!parsed.success) {
+    return failValidation(parsed.error.issues[0]?.message);
+  }
+  if (!isWellFormedInviteToken(parsed.data.token)) {
+    return fail("INVITE_INVALID");
+  }
+
+  const rateKey = await clientKey("redeem");
+  if (!(await consumeRateLimit(rateKey, RATE_LIMITS.inviteRedeem.limit, RATE_LIMITS.inviteRedeem.windowMs))) {
+    return fail("INVITE_RATE_LIMITED");
+  }
+
+  const team = await findTeamByRegistrationToken(parsed.data.token);
+  if (!team) return fail("INVITE_INVALID");
+  if (
+    !isRegistrationWindowOpen({
+      isActive: team.edition.isActive,
+      registrationOpensAt: team.edition.registrationOpensAt,
+      registrationClosesAt: team.edition.registrationClosesAt,
+    })
+  ) {
+    return fail("REGISTRATION_WINDOW_CLOSED");
+  }
+
+  const session = await auth();
+  const context = await loadRedeemContext(parsed.data.email);
+  const path = decideTeamJoinPath({
+    email: parsed.data.email,
+    teamId: team.id,
+    editionId: team.editionId,
+    existingUser: context.existingUser,
+    session: session?.user?.id
+      ? { userId: session.user.id, email: session.user.email ?? "" }
+      : null,
+    existingRegistrations: context.existingRegistrations,
+  });
+  if (path.path !== "create_account") {
+    return fail(redeemPathCode(path.path));
+  }
+
+  try {
+    const result = await createAccountFromTeamLink(parsed.data);
+    if (!result.ok) return fail(inviteOutcomeCode(result.reason));
+
+    const trace = await userAgentAndIp();
+    await writeAuditLog({
+      actorUserId: result.user.id,
+      action: "TEAM_LINK_JOIN",
+      entityType: "Team",
+      entityId: result.teamId,
+      metadata: { teamName: result.teamName },
+      ...trace,
+    });
+
+    await signIn("credentials", {
+      email: result.user.email,
+      password: parsed.data.password,
+      redirectTo: "/area",
+    });
+    return {};
+  } catch (error) {
+    if (error instanceof AuthError) {
+      return fail("AUTH_ACCOUNT_CREATED_LOGIN_FAILED");
+    }
+    throw error;
+  }
+}
+
+export async function attachTeamLinkAction(formData: FormData) {
+  const token = String(formData.get("token") ?? "");
+  const session = await auth();
+  if (!session?.user?.id || !session.user.email) {
+    redirect(`/accedi?next=${encodeURIComponent(`/iscrizione/${token}`)}`);
+  }
+  if (!isWellFormedInviteToken(token)) return fail("INVITE_INVALID");
+
+  const rateKey = await clientKey("redeem");
+  if (!(await consumeRateLimit(rateKey, RATE_LIMITS.inviteRedeem.limit, RATE_LIMITS.inviteRedeem.windowMs))) {
+    return fail("INVITE_RATE_LIMITED");
+  }
+
+  const team = await findTeamByRegistrationToken(token);
+  if (!team) return fail("INVITE_INVALID");
+  if (
+    !isRegistrationWindowOpen({
+      isActive: team.edition.isActive,
+      registrationOpensAt: team.edition.registrationOpensAt,
+      registrationClosesAt: team.edition.registrationClosesAt,
+    })
+  ) {
+    return fail("REGISTRATION_WINDOW_CLOSED");
+  }
+
+  const context = await loadRedeemContext(session.user.email);
+  const path = decideTeamJoinPath({
+    email: session.user.email,
+    teamId: team.id,
+    editionId: team.editionId,
+    existingUser: context.existingUser,
+    session: { userId: session.user.id, email: session.user.email },
+    existingRegistrations: context.existingRegistrations,
+  });
+  if (path.path === "already_on_team") redirect("/area");
+  if (path.path !== "attach_existing") return fail(redeemPathCode(path.path));
+
+  const result = await attachExistingUserToTeamLink({
+    token,
+    userId: session.user.id,
+    email: session.user.email,
+  });
+  if (!result.ok) return fail(inviteOutcomeCode(result.reason));
+
+  const trace = await userAgentAndIp();
+  await writeAuditLog({
+    actorUserId: session.user.id,
+    action: "TEAM_LINK_JOIN",
+    entityType: "Team",
+    entityId: result.teamId,
+    metadata: { teamName: result.teamName },
+    ...trace,
+  });
+  redirect("/area");
 }
 
 async function requireTeamAction(

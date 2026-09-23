@@ -1,9 +1,7 @@
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { InviteForm } from "@/features/teams/ui/InviteForm";
-import { InviteList } from "@/features/teams/ui/InviteList";
-import { BulkInviteForm } from "@/features/teams/ui/BulkInviteForm";
-import { getTeamForActor, listTeamInvites } from "@/features/teams/data/invites";
+import { TeamLinkPanel } from "@/features/teams/ui/TeamLinkPanel";
+import { getTeamForActor } from "@/features/teams/data/invites";
 import { requireRepresentativeTeamId } from "@/features/teams/actions";
 import { authorize } from "@/shared/authz/authorize";
 import { TEAM_COOKIE } from "@/shared/config/app";
@@ -17,6 +15,13 @@ import { PageHeader } from "@/shared/ui/PageHeader";
 import { it } from "@/shared/i18n/it";
 import styles from "../page.module.css";
 
+function originFromHeaders(headerList: Headers) {
+  const host = headerList.get("x-forwarded-host") ?? headerList.get("host");
+  const proto = headerList.get("x-forwarded-proto") ?? "http";
+  if (host) return `${proto}://${host}`;
+  return process.env.AUTH_URL ?? "http://localhost:3000";
+}
+
 export default async function TeamInvitesPage() {
   const { actor, teamIds } = await requireRepresentativeTeamId();
   const jar = await cookies();
@@ -26,11 +31,7 @@ export default async function TeamInvitesPage() {
   const allowed = authorize(actor, "team:invite", { teamId });
   if (!allowed.allow) redirect("/area");
 
-  const [team, invites, teams] = await Promise.all([
-    getTeamForActor(teamId),
-    listTeamInvites(teamId),
-    listTeamsByIds(teamIds),
-  ]);
+  const [team, teams] = await Promise.all([getTeamForActor(teamId), listTeamsByIds(teamIds)]);
   if (!team) redirect("/area");
   const editionWindow = {
     isActive: team.edition.isActive,
@@ -38,6 +39,8 @@ export default async function TeamInvitesPage() {
     registrationClosesAt: team.edition.registrationClosesAt,
   };
   const windowOpen = isRegistrationWindowOpen(editionWindow);
+  const headerList = await headers();
+  const joinUrl = `${originFromHeaders(headerList)}/iscrizione/${team.registrationToken}`;
 
   return (
     <main className={styles.main}>
@@ -45,18 +48,7 @@ export default async function TeamInvitesPage() {
       <TeamSubnav current="invites" />
       <TeamSwitcher teams={teams} selectedId={teamId} />
       <WindowNotice edition={editionWindow} />
-
-      <div className={styles.invitesGrid}>
-        {windowOpen ? (
-          <section className={styles.formsCol}>
-            <InviteForm teamId={teamId} />
-            <BulkInviteForm teamId={teamId} />
-          </section>
-        ) : null}
-        <section className={styles.listCol}>
-          <InviteList teamId={teamId} invites={invites} />
-        </section>
-      </div>
+      {windowOpen ? <TeamLinkPanel url={joinUrl} teamName={team.name} /> : null}
     </main>
   );
 }

@@ -122,6 +122,30 @@ export function decideRedeemPath(input: {
   return { path: "login_required" };
 }
 
+export function decideTeamJoinPath(input: {
+  email: string;
+  teamId: string;
+  editionId: string;
+  existingUser: { id: string; email: string } | null;
+  session: { userId: string; email: string } | null;
+  existingRegistrations: RegistrationConflict[];
+}): RedeemPath {
+  return decideRedeemPath({
+    inspection: {
+      outcome: "redeemable",
+      email: input.email,
+      firstName: null,
+      lastName: null,
+      teamId: input.teamId,
+      teamName: "",
+      editionId: input.editionId,
+    },
+    existingUser: input.existingUser,
+    session: input.session,
+    existingRegistrations: input.existingRegistrations,
+  });
+}
+
 export function inviteCreateBlocker(
   teamId: string,
   editionId: string,

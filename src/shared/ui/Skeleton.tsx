@@ -1,5 +1,6 @@
 import type { CSSProperties, ReactNode } from "react";
 import { it } from "@/shared/i18n/it";
+import { DelayedSkeleton } from "./DelayedSkeleton";
 import styles from "./Skeleton.module.css";
 
 type BoneVariant = "text" | "title" | "block" | "circle" | "chip" | "button" | "input";
@@ -48,6 +49,7 @@ function Region({ label, className, children }: RegionProps) {
 
 export function DashboardSkeleton() {
   return (
+    <DelayedSkeleton>
     <Region label={it.skeletonDashboardLabel} className={styles.dashboard}>
       <div className={styles.dashboardHead}>
         <Skeleton width="14rem" />
@@ -93,11 +95,13 @@ export function DashboardSkeleton() {
         </div>
       </div>
     </Region>
+    </DelayedSkeleton>
   );
 }
 
 export function WizardSkeleton() {
   return (
+    <DelayedSkeleton>
     <Region label={it.skeletonWizardLabel} className={styles.wizard}>
       <div className={styles.wizardLayout}>
         <div className={styles.stack} style={{ gap: "var(--space-5)" }}>
@@ -141,11 +145,13 @@ export function WizardSkeleton() {
         </div>
       </div>
     </Region>
+    </DelayedSkeleton>
   );
 }
 
 export function TeamSkeleton() {
   return (
+    <DelayedSkeleton>
     <Region label={it.skeletonTeamLabel} className={styles.team}>
       <div className={styles.hero}>
         <Skeleton width="16rem" />
@@ -179,11 +185,13 @@ export function TeamSkeleton() {
         </div>
       </div>
     </Region>
+    </DelayedSkeleton>
   );
 }
 
 export function CommunicationsSkeleton() {
   return (
+    <DelayedSkeleton>
     <Region label={it.skeletonCommunicationsLabel} className={styles.communications}>
       <Skeleton variant="title" width="12rem" />
       <div className={styles.messageList}>
@@ -196,11 +204,13 @@ export function CommunicationsSkeleton() {
         ))}
       </div>
     </Region>
+    </DelayedSkeleton>
   );
 }
 
 export function AdminDocumentsSkeleton() {
   return (
+    <DelayedSkeleton>
     <Region label={it.skeletonDocumentsLabel} className={styles.admin}>
       <div className={styles.adminHero}>
         <Skeleton variant="title" width="16rem" />
@@ -227,11 +237,13 @@ export function AdminDocumentsSkeleton() {
         </div>
       </div>
     </Region>
+    </DelayedSkeleton>
   );
 }
 
 export function AdminDocumentDetailSkeleton() {
   return (
+    <DelayedSkeleton>
     <Region label={it.skeletonDocumentLabel} className={styles.admin}>
       <Skeleton width="10rem" />
       <div className={styles.adminDetail}>
@@ -245,11 +257,13 @@ export function AdminDocumentDetailSkeleton() {
         </div>
       </div>
     </Region>
+    </DelayedSkeleton>
   );
 }
 
 export function AuthCardSkeleton() {
   return (
+    <DelayedSkeleton>
     <Region label={it.skeletonAuthLabel} className={styles.auth}>
       <div className={styles.authSheet}>
         <Skeleton width="7rem" />
@@ -262,11 +276,13 @@ export function AuthCardSkeleton() {
         <Skeleton variant="button" />
       </div>
     </Region>
+    </DelayedSkeleton>
   );
 }
 
 export function LegalArticleSkeleton() {
   return (
+    <DelayedSkeleton>
     <Region label={it.skeletonLegalLabel} className={styles.legal}>
       <div className={styles.legalCard}>
         <Skeleton variant="title" width="12rem" />
@@ -277,16 +293,19 @@ export function LegalArticleSkeleton() {
         <Skeleton variant="button" width="8rem" />
       </div>
     </Region>
+    </DelayedSkeleton>
   );
 }
 
 export function PaymentResultSkeleton() {
   return (
+    <DelayedSkeleton>
     <Region label={it.loadingPaymentConfirm} className={styles.payment}>
       <p className={styles.progressLabel}>{it.loadingPaymentConfirm}</p>
       <p className={styles.progressLabel}>{it.loadingPaymentConfirmLead}</p>
       <Skeleton variant="block" className={styles.progressTrack} />
     </Region>
+    </DelayedSkeleton>
   );
 }
 

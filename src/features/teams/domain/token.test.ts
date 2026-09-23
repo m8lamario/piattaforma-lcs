@@ -22,6 +22,7 @@ describe("invite token", () => {
     const token = createInviteToken();
     expect(extractInviteToken(`https://esempio.it/invito/${token}`)).toBe(token);
     expect(extractInviteToken(`/invito/${token}`)).toBe(token);
+    expect(extractInviteToken(`https://esempio.it/iscrizione/${token}`)).toBe(token);
     expect(extractInviteToken(`  ${token}  `)).toBe(token);
     expect(extractInviteToken("/invito/../etc/passwd")).toBeNull();
     expect(extractInviteToken("not-a-token")).toBeNull();

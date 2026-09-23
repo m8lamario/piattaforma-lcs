@@ -17,31 +17,32 @@ sequenceDiagram
   TR->>TR: crea o collega account; ruolo TEAM_REPRESENTATIVE; niente Registration
 ```
 
-## 2. Invito giocatore (ingresso unico v1)
+## 2. Link di iscrizione della squadra (ingresso unico v1)
 
 ```mermaid
 sequenceDiagram
   participant TR as TeamRep
   participant Sys as Hub
   participant P as Player
-  TR->>Sys: crea PlayerInvite (email, team, dati roster minimi)
-  Sys->>P: email con link token (quando adapter live; in M1 stub: link una tantum al rappresentante)
-  P->>Sys: apre /invito/[token] (o incolla il link su /invito)
-  alt token valido e email nuova
-    P->>Sys: crea account proprio (email+password)
-    Sys->>Sys: User PLAYER, Membership, Registration ACCOUNT_CREATED, emailVerified
+  TR->>Sys: copia il link stabile della squadra (/iscrizione/token)
+  TR->>P: condivide lo stesso link con tutti i giocatori
+  P->>Sys: apre il link e indica la propria email e una password
+  alt email nuova e finestra aperta
+    Sys->>Sys: User PLAYER, Membership, Registration ACCOUNT_CREATED sulla squadra del token
   else email già registrata
     P->>Sys: login obbligatorio, poi conferma collegamento (niente takeover password)
-  else token invalido/scaduto/usato/revocato
+  else token sconosciuto o finestra chiusa
     Sys->>P: errore chiaro, niente account
   end
 ```
 
 Regole:
 
-- Un invito è legato a **un’email** e **un team/edizione**.
-- Non esiste registrazione senza token valido.
-- Se l’email ha già un account, il redeem collega membership/registration senza creare un secondo user (dettaglio conflitti in OPEN_DECISIONS se già iscritto ad altra edizione).
+- Un link per squadra (`Team.registrationToken`), non un invito per calciatore.
+- L’email è del giocatore, raccolta nel form di iscrizione, e resta collegata a User, membership e `Registration.teamId`.
+- Non esiste registrazione senza quel token e senza finestra iscrizioni aperta.
+- Se l’email ha già un account, il redeem collega membership/registration senza creare un secondo user.
+- `PlayerInvite` per singolo giocatore non è più il percorso di ingresso. `StaffInvite` resta personale.
 
 ## 3. Percorso giocatore (post-M0)
 
@@ -57,7 +58,7 @@ Passi guidati, uno schermo alla volta, salvataggio per passo:
 
 L’utente può uscire e riprendere. La dashboard mostra il prossimo passo **finché** restano voci da fare o in attenzione. Se lo stato è `APPROVED` o `WITHDRAWN`, o la checklist è completa, non c’è CTA “Continua” verso il wizard.
 
-Fuori dalla finestra `registrationOpensAt`/`registrationClosesAt`: nuovi inviti, scritture wizard e checkout sono bloccati. Il redeem di un invito già emesso resta valido fino al TTL.
+Fuori dalla finestra `registrationOpensAt`/`registrationClosesAt`: il link di squadra non crea nuovi account, e scritture wizard e checkout sono bloccati.
 
 ## 4. Minore
 
