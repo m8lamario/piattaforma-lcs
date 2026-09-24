@@ -1,7 +1,7 @@
 .canvas {
   width: 100%;
   max-width: var(--content-max-canvas);
-  margin: 0;
+  margin-inline: auto;
 }
 
 /* Mobile / Tablet Horizontal Progress Bar */
@@ -153,8 +153,10 @@
 .mainStage {
   width: 100%;
   max-width: var(--content-max-form);
+  min-width: 0;
   display: grid;
   gap: var(--space-5);
+  margin-inline: auto;
 }
 
 .featured,
@@ -419,15 +421,28 @@
     grid-template-columns: minmax(0, 1fr) minmax(19rem, 22rem);
   }
 
+  .mainStage {
+    margin-inline: 0;
+  }
+
   .rail {
     display: block;
+  }
+}
+
+@media (max-width: 1023px) {
+  .grid {
+    justify-items: stretch;
+  }
+
+  .mainStage {
+    max-width: none;
   }
 }
 
 @media (max-width: 640px) {
   .featured,
   .solemn {
-    margin: 0 calc(var(--space-4) * -1);
     padding: var(--space-4);
   }
 
