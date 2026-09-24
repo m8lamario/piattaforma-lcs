@@ -1,4 +1,6 @@
 .stack {
+  position: relative;
+  z-index: 1;
   width: 100%;
   max-width: var(--content-max-canvas);
   display: grid;
@@ -31,10 +33,23 @@
 .hero h1 {
   margin: 0;
   font-family: var(--font-brand);
-  font-size: clamp(2rem, 5vw, 3.25rem);
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  line-height: 0.95;
+  font-size: clamp(2.4rem, 5.5vw, 3.6rem);
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  line-height: 1.2;
+  position: relative;
+  z-index: 1;
+}
+
+.script {
+  font-family: var(--font-accent);
+  font-size: 1.2em;
+  font-weight: 400;
+  font-style: normal;
+  font-synthesis: none;
+  letter-spacing: 0;
+  line-height: 1;
+  text-transform: none;
 }
 
 .lead,
@@ -106,9 +121,9 @@
 
 .num {
   font-family: var(--font-brand);
-  font-size: 1.35rem;
-  font-weight: 700;
-  letter-spacing: 0.06em;
+  font-size: 1.5rem;
+  font-weight: 400;
+  letter-spacing: 0.1em;
   color: var(--color-accent);
   line-height: 1.2;
 }

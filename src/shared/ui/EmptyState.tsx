@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { FieldMark } from "./FieldMark";
 import { Icon, type IconName } from "./Icon";
 import styles from "./EmptyState.module.css";
 
@@ -12,6 +13,7 @@ type Props = {
 export function EmptyState({ icon, title, children, action }: Props) {
   return (
     <section className={styles.wrap}>
+      <FieldMark variant="corner" />
       {icon ? (
         <span className={styles.icon} aria-hidden="true">
           <Icon name={icon} size={22} />

@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { it } from "@/shared/i18n/it";
 import { BrandMark } from "./BrandMark";
@@ -21,7 +22,10 @@ export function PublicShell({ children }: Props) {
       </header>
       {children}
       <footer className={styles.footer}>
-        <p>{it.orgLine}</p>
+        <p className={styles.orgLine}>
+          <Image src="/logoLCSw.png" alt="" width={28} height={37} className={styles.footerLogo} />
+          {it.orgLine}
+        </p>
         <nav aria-label={it.legalNav}>
           <Link href="/privacy">{it.privacy}</Link>
           <Link href="/liberatorie">{it.stepLiberatorie}</Link>

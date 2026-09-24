@@ -1,21 +1,19 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { headers } from "next/headers";
-import { Barlow_Condensed, Geist } from "next/font/google";
+import localFont from "next/font/local";
 import "@/shared/ui/tokens.css";
 import "./globals.css";
 import { it } from "@/shared/i18n/it";
 import { DEFAULT_THEME, THEME_BOOTSTRAP_SCRIPT } from "@/shared/ui/theme";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const display = Barlow_Condensed({
-  variable: "--font-display",
-  subsets: ["latin"],
-  weight: ["600", "700"],
+const machton = localFont({
+  src: "./fonts/Machton.ttf",
+  variable: "--font-machton",
+  weight: "400",
+  style: "normal",
+  display: "swap",
+  adjustFontFallback: false,
 });
 
 export const metadata: Metadata = {
@@ -26,13 +24,11 @@ export const metadata: Metadata = {
 export default async function RootLayout({ children }: { children: ReactNode }) {
   const nonce = (await headers()).get("x-nonce") ?? undefined;
   return (
-    <html
-      lang="it"
-      className={`${geistSans.variable} ${display.variable}`}
-      data-theme={DEFAULT_THEME}
-      suppressHydrationWarning
-    >
+    <html lang="it" className={machton.variable} data-theme={DEFAULT_THEME} suppressHydrationWarning>
       <head>
+        <link rel="preconnect" href="https://use.typekit.net" crossOrigin="" />
+        <link rel="preconnect" href="https://p.typekit.net" crossOrigin="" />
+        <link rel="stylesheet" href="https://use.typekit.net/ajb7nmd.css" />
         <script nonce={nonce} dangerouslySetInnerHTML={{ __html: THEME_BOOTSTRAP_SCRIPT }} />
       </head>
       <body>{children}</body>

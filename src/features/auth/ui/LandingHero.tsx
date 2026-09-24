@@ -24,7 +24,11 @@ export function LandingHero() {
       <section className={styles.hero}>
         <p className={styles.badge}>{it.landingBadge}</p>
         <p className={styles.org}>{it.orgLine}</p>
-        <h1>{it.appName}</h1>
+        <h1>
+          <span>{it.brandShort}</span>{" "}
+          <span className={styles.script}>{it.brandProduct.split(" ")[0]}</span>{" "}
+          <span>{it.brandProduct.split(" ").slice(1).join(" ")}</span>
+        </h1>
         <p className={styles.lead}>{it.tagline}</p>
         <p className={styles.copy}>{it.landingLead}</p>
         <div className={styles.actions}>

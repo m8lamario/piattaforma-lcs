@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { LoginForm } from "@/features/auth/ui/LoginForm";
 import { it } from "@/shared/i18n/it";
@@ -17,6 +18,13 @@ export default async function LoginPage({ searchParams }: Props) {
       <main className={styles.main}>
         <div className={styles.container}>
           <section className={styles.brandPanel}>
+            <Image
+              src="/logoLCSw.png"
+              alt=""
+              width={393}
+              height={524}
+              className={styles.panelLogo}
+            />
             <p className={styles.kicker}>{it.brandOrg}</p>
             <h2>{it.appName}</h2>
             <p className={styles.brandLead}>{it.tagline}</p>

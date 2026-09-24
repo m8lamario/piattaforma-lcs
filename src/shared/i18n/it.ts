@@ -1,10 +1,10 @@
 export const it = {
-  appName: "ESL Player Hub",
-  brandOrg: "ESL / LCS",
+  appName: "LCS Player Hub",
+  brandOrg: "LCS",
   brandShort: "LCS",
   brandProduct: "Player Hub",
   orgLine: "Competizioni sportive studentesche nazionali",
-  tagline: "L’area personale del giocatore per le competizioni ESL / LCS.",
+  tagline: "L’area personale del giocatore per le competizioni LCS / LCS.",
   landingBadge: "Link di squadra",
   landingLead:
     "Apri il link della tua squadra, indica la tua email e completa l’iscrizione un passo alla volta.",

@@ -38,9 +38,9 @@ html[data-theme="light"] .logo {
 
 .wordmark {
   font-family: var(--font-brand);
-  font-size: 1.2rem;
-  font-weight: 700;
-  letter-spacing: 0.14em;
+  font-size: 1.35rem;
+  font-weight: 400;
+  letter-spacing: 0.16em;
   line-height: 1;
 }
 .wormarkVertical {
@@ -51,9 +51,10 @@ html[data-theme="light"] .logo {
 
 .product,
 .productCompact {
+  font-family: var(--font-sans);
   font-size: var(--text-kicker);
-  font-weight: 650;
-  letter-spacing: 0.16em;
+  font-weight: 700;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--color-text-muted);
   line-height: 1.2;
