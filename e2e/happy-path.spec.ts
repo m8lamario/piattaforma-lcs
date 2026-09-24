@@ -1,5 +1,23 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, type Page } from "@playwright/test";
 import { fiscalCodeControlChar } from "../src/features/players/domain/fiscalCode";
+
+async function readLegalDocuments(page: Page) {
+  const open = page.getByRole("button", { name: "Leggi l’informativa" });
+  await expect(open.first()).toBeVisible();
+  while ((await open.count()) > 0) {
+    await open.first().click();
+    const dialog = page.locator("dialog[open]");
+    const scroller = dialog.locator("[data-legal-scroller]");
+    await expect(scroller).toBeVisible();
+    await scroller.evaluate((el) => {
+      el.scrollTo(0, el.scrollHeight);
+    });
+    const done = dialog.getByRole("button", { name: "Ho letto" });
+    await expect(done).toBeEnabled();
+    await done.click();
+    await expect(dialog).toHaveCount(0);
+  }
+}
 
 test("happy path: invito, redeem, wizard minimo, pagamento stub", async ({ page, browser }) => {
   const stamp = String(Date.now());
@@ -45,16 +63,18 @@ test("happy path: invito, redeem, wizard minimo, pagamento stub", async ({ page,
   await player.getByRole("button", { name: "Salva e continua" }).click();
 
   await expect(player).toHaveURL(/\/area\/registrazione\/privacy/);
+  await readLegalDocuments(player);
   const boxes = player.locator('input[type="checkbox"]');
-  await expect(boxes.first()).toBeVisible();
+  await expect(boxes.first()).toBeEnabled();
   const boxCount = await boxes.count();
   expect(boxCount).toBeGreaterThan(0);
   for (let index = 0; index < boxCount; index += 1) {
-    await boxes.nth(index).check({ force: true });
+    await boxes.nth(index).check();
   }
   await player.getByRole("button", { name: "Salva e continua" }).click();
 
   await expect(player).toHaveURL(/\/area\/registrazione\/liberatorie/);
+  await readLegalDocuments(player);
   await player.getByRole("button", { name: "Non accetto e continuo" }).click();
 
   await expect(player).toHaveURL(/\/area\/registrazione\/pagamento/);
