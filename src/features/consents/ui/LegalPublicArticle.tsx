@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { LEGAL_CATALOG, legalEntryBySlug } from "@/features/consents/domain/catalog";
+import { LegalProse } from "@/features/consents/ui/LegalProse";
 import { readLegalDocument } from "@/shared/lib/legal";
 import { it } from "@/shared/i18n/it";
 import { PublicShell } from "@/shared/ui/PublicShell";
@@ -23,7 +24,7 @@ export async function LegalPublicArticle({ slug }: Props) {
           <p className={styles.kicker}>{it.legalIndexTitle}</p>
           <h1>{entry.title}</h1>
           <p className={styles.notice}>{it.legalPlaceholderNotice}</p>
-          <pre className={styles.body}>{body}</pre>
+          <LegalProse body={body} />
           <nav className={styles.index} aria-label={it.legalNav}>
             {LEGAL_CATALOG.map((item) =>
               item.slug === slug ? (

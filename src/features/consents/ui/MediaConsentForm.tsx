@@ -1,11 +1,12 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useCallback, useState } from "react";
 import { saveMediaConsentAction } from "@/features/consents/actions";
 import { Button, ButtonLink } from "@/shared/ui/Button";
 import { ActionError } from "@/shared/ui/ActionError";
 import { it } from "@/shared/i18n/it";
 import fields from "@/shared/ui/form.module.css";
+import { LegalReader } from "./LegalReader";
 import styles from "./ConsentForm.module.css";
 import type { ConsentDocumentView } from "./PrivacyConsentForm";
 
@@ -17,6 +18,9 @@ type Props = {
 
 export function MediaConsentForm({ document, required, currentDecision }: Props) {
   const [state, action, pending] = useActionState(saveMediaConsentAction, undefined);
+  const [read, setRead] = useState(false);
+  const markRead = useCallback(() => setRead(true), []);
+  const canDecide = read || currentDecision !== "none";
 
   return (
     <form className={fields.form} action={action} aria-busy={pending}>
@@ -34,14 +38,7 @@ export function MediaConsentForm({ document, required, currentDecision }: Props)
       {state?.error ? <ActionError error={state.error} code={state.code} /> : null}
 
       <article className={`${styles.block} ${styles.featured}`}>
-        <div className={styles.headline}>
-          <h2>{document.title}</h2>
-          <p className={styles.version}>
-            {it.consentVersion} {document.version}
-          </p>
-        </div>
-        <p className={fields.notice}>{it.legalPlaceholderNotice}</p>
-        <pre className={styles.body}>{document.body}</pre>
+        <LegalReader document={document} read={read} onRead={markRead} />
       </article>
 
       <input type="hidden" name="versionId" value={document.versionId} />
@@ -49,11 +46,12 @@ export function MediaConsentForm({ document, required, currentDecision }: Props)
 
       <fieldset className={fields.group}>
         <legend className={fields.legend}>{it.mediaChoiceTitle}</legend>
+        {canDecide ? null : <p className={fields.notice}>{it.consentReadLocked}</p>}
         <div className={styles.choices}>
           <div className={`${styles.choice} ${styles.choiceAccept} ${currentDecision === "accepted" ? styles.choiceCurrent : ""}`}>
             <h3>{it.consentMediaAccept}</h3>
             <p>{it.mediaChoiceAcceptHelp}</p>
-            <Button type="submit" name="decision" value="accept" disabled={pending} aria-busy={pending}>
+            <Button type="submit" name="decision" value="accept" disabled={pending || !canDecide} aria-busy={pending}>
               {pending ? it.saving : it.consentMediaAccept}
             </Button>
           </div>
@@ -61,7 +59,7 @@ export function MediaConsentForm({ document, required, currentDecision }: Props)
             <div className={`${styles.choice} ${styles.choiceRefuse} ${currentDecision === "refused" ? styles.choiceCurrent : ""}`}>
               <h3>{it.consentMediaRefuse}</h3>
               <p>{it.mediaChoiceRefuseHelp}</p>
-              <Button type="submit" name="decision" value="refuse" variant="ghost" disabled={pending}>
+              <Button type="submit" name="decision" value="refuse" variant="ghost" disabled={pending || !canDecide}>
                 {it.consentMediaRefuse}
               </Button>
             </div>
