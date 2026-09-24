@@ -97,12 +97,13 @@ export function WizardShell({ step, steps, children }: Props) {
                   <span className={styles.tick} aria-hidden="true">
                     {done ? <Icon name="check" size={12} /> : index + 1}
                   </span>
-                  <span className={styles.stepLabel}>{LABELS[id]}</span>
+                  <span className={`${styles.stepLabel} srOnly`}>{LABELS[id]}</span>
                 </Link>
               </li>
             );
           })}
         </ol>
+        <p className={styles.currentLabel}>{LABELS[step]}</p>
       </div>
 
       <div className={styles.grid}>

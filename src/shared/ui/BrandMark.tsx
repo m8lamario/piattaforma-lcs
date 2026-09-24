@@ -17,7 +17,7 @@ export function BrandMark({ href = "/", compact = false }: Props) {
           <Image
             src="/logoLCSw.png"
             alt=""
-            width={40}
+            width={30}
             height={40}
             className={styles.logo}
             priority

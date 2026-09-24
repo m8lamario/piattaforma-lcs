@@ -222,6 +222,7 @@
   z-index: 4;
   margin: 0 calc(var(--space-page-x-sm) * -1);
   padding: var(--space-4) var(--space-page-x-sm) var(--space-3);
+  background: var(--color-surface-inset);
   border-top: 1px solid var(--color-hairline);
 }
 
