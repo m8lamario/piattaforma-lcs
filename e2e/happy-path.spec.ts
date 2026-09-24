@@ -3,16 +3,19 @@ import { fiscalCodeControlChar } from "../src/features/players/domain/fiscalCode
 
 async function readLegalDocuments(page: Page) {
   const open = page.getByRole("button", { name: "Leggi l’informativa" });
+  await expect(open.first()).toBeVisible();
   while ((await open.count()) > 0) {
     await open.first().click();
-    const scroller = page.locator("[data-legal-scroller]");
+    const dialog = page.locator("dialog[open]");
+    const scroller = dialog.locator("[data-legal-scroller]");
     await expect(scroller).toBeVisible();
     await scroller.evaluate((el) => {
       el.scrollTo(0, el.scrollHeight);
     });
-    const done = page.getByRole("button", { name: "Ho letto" });
+    const done = dialog.getByRole("button", { name: "Ho letto" });
     await expect(done).toBeEnabled();
     await done.click();
+    await expect(dialog).toHaveCount(0);
   }
 }
 
