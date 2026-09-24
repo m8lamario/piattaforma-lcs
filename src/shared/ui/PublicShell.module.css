@@ -62,6 +62,22 @@
   margin: 0;
 }
 
+.orgLine {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.footerLogo {
+  width: 1.35rem;
+  height: auto;
+  flex-shrink: 0;
+}
+
+:global(html[data-theme="light"]) .footerLogo {
+  filter: invert(1);
+}
+
 .footer nav {
   display: flex;
   flex-wrap: wrap;

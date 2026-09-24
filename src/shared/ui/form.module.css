@@ -192,7 +192,9 @@
 .amount strong {
   font-family: var(--font-brand);
   font-size: var(--text-2xl);
-  letter-spacing: 0.04em;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  line-height: 1.15;
 }
 
 @media (min-width: 640px) {

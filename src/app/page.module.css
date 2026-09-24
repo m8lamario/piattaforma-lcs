@@ -1,10 +1,12 @@
 .main {
+  position: relative;
   flex: 1;
   display: flex;
   justify-content: center;
   align-items: center;
   padding: clamp(var(--space-8), 6vh, var(--space-16)) var(--space-page-x);
   width: 100%;
+  overflow: clip;
 }
 
 @media (max-width: 959px) {

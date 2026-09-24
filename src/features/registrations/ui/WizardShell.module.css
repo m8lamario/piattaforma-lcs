@@ -23,16 +23,18 @@
   margin: 0;
   font-family: var(--font-brand);
   font-size: var(--text-2xl);
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  line-height: 0.9;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  line-height: 1.15;
   color: var(--color-text);
 }
 
 .of {
+  font-family: var(--font-sans);
   color: var(--color-text-muted);
-  font-weight: 600;
-  font-size: 0.6em;
+  font-weight: 300;
+  font-size: 0.55em;
+  letter-spacing: 0;
 }
 
 .track {

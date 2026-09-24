@@ -106,9 +106,9 @@
 
 .index {
   font-family: var(--font-brand);
-  font-size: 1.15rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
+  font-size: 1.25rem;
+  font-weight: 400;
+  letter-spacing: 0.08em;
   color: var(--color-accent);
   width: 1.5rem;
   display: grid;

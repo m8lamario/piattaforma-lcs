@@ -34,8 +34,11 @@
   --color-glow: rgba(58, 123, 213, 0.16);
   --shadow-soft: 0 1px 0 var(--color-hairline);
 
-  --font-sans: var(--font-geist-sans), "Segoe UI", sans-serif;
-  --font-brand: var(--font-display), var(--font-sans);
+  /* Lettura: Helvetica LT Pro (kit Adobe, pesi 300 e 700).
+     Identità: Komu New C, un solo peso 400. Accento: Machton, file locale. */
+  --font-sans: "helvetica-lt-pro", "Segoe UI", sans-serif;
+  --font-brand: "komu-new-c", "helvetica-lt-pro", sans-serif;
+  --font-accent: var(--font-machton), "helvetica-lt-pro", sans-serif;
   --text-xs: 0.75rem;
   --text-sm: 0.875rem;
   --text-md: 1rem;

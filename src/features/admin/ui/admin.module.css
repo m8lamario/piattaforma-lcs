@@ -116,8 +116,9 @@
 .stat strong {
   font-family: var(--font-brand);
   font-size: var(--text-2xl);
-  letter-spacing: 0.04em;
-  line-height: 1;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  line-height: 1.1;
 }
 
 .stat span {

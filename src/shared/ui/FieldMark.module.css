@@ -1,0 +1,49 @@
+.wash,
+.corner {
+  position: absolute;
+  pointer-events: none;
+  color: var(--color-line);
+  user-select: none;
+}
+
+.wash {
+  right: clamp(1.25rem, 5vw, 4.5rem);
+  top: 22%;
+  width: min(15rem, 26vw);
+  z-index: 0;
+}
+
+.corner {
+  top: var(--space-4);
+  right: var(--space-4);
+  width: 4.5rem;
+  opacity: 0.85;
+}
+
+.arc {
+  position: absolute;
+  inset: -12% auto auto -8%;
+  width: 78%;
+  height: auto;
+}
+
+.logo {
+  display: block;
+  width: 100%;
+  height: auto;
+  opacity: 0.16;
+}
+
+.corner .logo {
+  opacity: 0.14;
+}
+
+:global(html[data-theme="light"]) .logo {
+  filter: invert(1);
+}
+
+@media (max-width: 959px) {
+  .wash {
+    display: none;
+  }
+}

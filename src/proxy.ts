@@ -12,8 +12,9 @@ function csp(nonce: string) {
   return [
     "default-src 'self'",
     "img-src 'self' data: blob:",
-    "style-src 'self' 'unsafe-inline'",
+    "style-src 'self' 'unsafe-inline' https://use.typekit.net https://p.typekit.net",
     `script-src ${scriptSrc}`,
+    "font-src 'self' https://use.typekit.net https://p.typekit.net",
     "connect-src 'self'",
     "frame-ancestors 'none'",
     "base-uri 'self'",
