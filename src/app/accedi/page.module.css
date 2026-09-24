@@ -22,8 +22,9 @@
 }
 
 .panelLogo {
-  width: 4.5rem;
-  height: auto;
+  width: auto;
+  height: 4.5rem;
+  object-fit: contain;
 }
 
 :global(html[data-theme="light"]) .panelLogo {

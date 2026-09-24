@@ -27,9 +27,11 @@
 }
 
 .logo {
-  width: 1.85rem;
+  width: auto;
   height: 1.85rem;
   object-fit: contain;
+  object-position: center;
+  flex-shrink: 0;
 }
 
 html[data-theme="light"] .logo {

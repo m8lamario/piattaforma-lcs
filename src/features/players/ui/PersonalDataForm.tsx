@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { startTransition, useActionState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { savePersonalDataAction } from "@/features/players/actions";
@@ -59,7 +59,9 @@ export function PersonalDataForm({ email, defaults, registrationId, identityConf
       data.set("fiscalCode", values.fiscalCode);
       data.set("phone", values.phone);
       data.set("intent", intent);
-      action(data);
+      startTransition(() => {
+        action(data);
+      });
     })();
   }
 

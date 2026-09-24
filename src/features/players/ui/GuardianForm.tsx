@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { startTransition, useActionState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { saveGuardianAction } from "@/features/players/actions";
@@ -64,7 +64,9 @@ export function GuardianForm({ defaults }: Props) {
       data.set("email", values.email);
       data.set("phone", values.phone);
       data.set("intent", intent);
-      action(data);
+      startTransition(() => {
+        action(data);
+      });
     })();
   }
 
