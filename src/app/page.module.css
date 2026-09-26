@@ -2,21 +2,10 @@
   position: relative;
   flex: 1;
   display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: clamp(var(--space-8), 6vh, var(--space-16)) var(--space-page-x);
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  padding: 0;
   width: 100%;
   overflow: clip;
-}
-
-@media (max-width: 959px) {
-  .main {
-    align-items: flex-start;
-  }
-}
-
-@media (max-width: 640px) {
-  .main {
-    padding: var(--space-6) var(--space-4);
-  }
 }

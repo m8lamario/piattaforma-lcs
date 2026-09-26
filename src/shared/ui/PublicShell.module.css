@@ -14,6 +14,10 @@
 }
 
 .topbar {
+  --brand-fg: var(--color-on-nav);
+  --brand-muted: var(--color-on-nav-muted);
+  --brand-logo-filter: none;
+  --brand-rail: var(--color-on-nav);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -22,27 +26,8 @@
   position: sticky;
   top: 0;
   z-index: 8;
-  background: var(--color-surface);
-  border-bottom: 1px solid var(--color-hairline);
-}
-
-.actions {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-}
-
-.actions a {
-  color: var(--color-text);
-  font-weight: 650;
-  min-height: var(--control-min);
-  display: inline-flex;
-  align-items: center;
-  text-decoration: none;
-}
-
-.actions a:hover {
-  color: var(--color-primary);
+  color: var(--color-on-nav);
+  background: var(--gradient-nav);
 }
 
 .footer {

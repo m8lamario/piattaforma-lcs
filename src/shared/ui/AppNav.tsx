@@ -7,7 +7,6 @@ import { logoutAction } from "@/features/auth/actions";
 import { it } from "@/shared/i18n/it";
 import { Button } from "./Button";
 import { Icon, type IconName } from "./Icon";
-import { ThemeToggle } from "./ThemeToggle";
 import styles from "./AppShell.module.css";
 
 type Props = {
@@ -59,7 +58,6 @@ export function AppNav({ email, showTeam, showAdmin, showPlayerTeam, unreadCount
   return (
     <>
       <div className={styles.toolbar}>
-        <ThemeToggle />
         <button
           type="button"
           className={styles.menuToggle}
@@ -92,9 +90,6 @@ export function AppNav({ email, showTeam, showAdmin, showPlayerTeam, unreadCount
           ))}
         </nav>
         <div className={styles.session}>
-          <div className={styles.drawerTheme}>
-            <ThemeToggle showLabel />
-          </div>
           {email ? <span className={styles.email}>{email}</span> : null}
           <form action={logoutAction}>
             <Button type="submit" variant="ghost" className={styles.logout}>

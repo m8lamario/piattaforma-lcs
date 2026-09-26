@@ -170,7 +170,7 @@ Tabella da compilare (una riga per finalità). Le «note di piattaforma» non so
 | F10 | **[INSERIRE: SICUREZZA, PREVENZIONE ABUSI, LOG]** | IP, UA, audit | **[INSERIRE BASE GIURIDICA F10]** | **[INSERIRE]** | **[INSERIRE PERIODO DI CONSERVAZIONE F10]** |
 | F11 | **[INSERIRE: GESTIONE SQUADRA DA PARTE DEL RAPPRESENTANTE]** | nome, stato iscrizione, **stato** certificato | **[INSERIRE BASE GIURIDICA F11]** | **[INSERIRE]** | **[INSERIRE PERIODO DI CONSERVAZIONE F11]** |
 | F12 | **[INSERIRE: ADEMPIMENTI DI LEGGE / ASSICURATIVI / FEDERALI]** | **[INSERIRE]** | **[INSERIRE BASE GIURIDICA F12]** | **[INSERIRE]** | **[INSERIRE PERIODO DI CONSERVAZIONE F12]** |
-| F13 | **[INSERIRE: COOKIE E PREFERENZA TEMA]** | cookie `eph-theme`, cookie di sessione | **[INSERIRE BASE GIURIDICA F13]** | vedi `cookie-policy` | **[INSERIRE PERIODO DI CONSERVAZIONE F13]** |
+| F13 | **[INSERIRE: COOKIE DI SESSIONE]** | cookie di sessione Auth.js | **[INSERIRE BASE GIURIDICA F13]** | vedi `cookie-policy` | **[INSERIRE PERIODO DI CONSERVAZIONE F13]** |
 
 Profilazione e decisioni automatizzate che producano effetti giuridici: **[INSERIRE: NON EFFETTUATE / EFFETTUATE COME SEGUE]**. Operativo v1: lo stato iscrizione è una *proiezione di checklist* (documenti, consensi, pagamento), non un sistema di credit scoring.
 

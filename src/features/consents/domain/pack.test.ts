@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  isConsentReceiptReady,
   isMediaComplete,
   isPrivacyPackComplete,
   mediaDecisionFrom,
@@ -37,5 +38,26 @@ describe("consent pack", () => {
         { slug: "media-release", versionId: "v1", isCurrent: true, accepted: false },
       ]),
     ).toBe("refused");
+  });
+
+  it("prepara la ricevuta solo con privacy corrente e decisione media", () => {
+    const adult = [
+      { slug: "privacy-policy", versionId: "v1", isCurrent: true, accepted: true },
+      { slug: "document-processing", versionId: "v1", isCurrent: true, accepted: true },
+    ];
+    expect(isConsentReceiptReady(false, { applies: true, required: false }, adult)).toBe(false);
+    expect(
+      isConsentReceiptReady(false, { applies: true, required: false }, [
+        ...adult,
+        { slug: "media-release", versionId: "v1", isCurrent: true, accepted: false },
+      ]),
+    ).toBe(true);
+    expect(
+      isConsentReceiptReady(false, { applies: true, required: true }, [
+        ...adult,
+        { slug: "media-release", versionId: "v1", isCurrent: true, accepted: false },
+      ]),
+    ).toBe(false);
+    expect(isConsentReceiptReady(false, { applies: false, required: false }, adult)).toBe(true);
   });
 });

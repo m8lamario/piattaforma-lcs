@@ -5,8 +5,6 @@ export type IconName =
   | "menu"
   | "close"
   | "back"
-  | "sun"
-  | "moon"
   | "area"
   | "team"
   | "documents"
@@ -51,17 +49,6 @@ const PATHS: Record<IconName, ReactNode> = {
     <>
       <path d="M14 6l-6 6 6 6" />
       <path d="M8 12h12" />
-    </>
-  ),
-  sun: (
-    <>
-      <circle cx="12" cy="12" r="3.5" />
-      <path d="M12 3.5v1.8M12 18.7v1.8M3.5 12h1.8M18.7 12h1.8M6.2 6.2l1.3 1.3M16.5 16.5l1.3 1.3M17.8 6.2l-1.3 1.3M7.5 16.5l-1.3 1.3" />
-    </>
-  ),
-  moon: (
-    <>
-      <path d="M15 4.5A7.5 7.5 0 1 0 19.5 14 6.2 6.2 0 0 1 15 4.5Z" />
     </>
   ),
   area: (

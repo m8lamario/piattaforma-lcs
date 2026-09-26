@@ -8,14 +8,19 @@ import styles from "@/app/privacy/page.module.css";
 
 type Props = {
   slug: string;
+  archivedVersion?: {
+    version: string;
+    body: string;
+    isCurrent: boolean;
+  };
 };
 
-export async function LegalPublicArticle({ slug }: Props) {
+export async function LegalPublicArticle({ slug, archivedVersion }: Props) {
   const entry = legalEntryBySlug(slug);
   if (!entry) {
     throw new Error("Documento legale sconosciuto.");
   }
-  const body = await readLegalDocument(slug);
+  const body = archivedVersion?.body ?? (await readLegalDocument(slug));
 
   return (
     <PublicShell>
@@ -23,8 +28,21 @@ export async function LegalPublicArticle({ slug }: Props) {
         <article className={styles.article}>
           <p className={styles.kicker}>{it.legalIndexTitle}</p>
           <h1>{entry.title}</h1>
+          {archivedVersion ? (
+            <p>
+              {it.consentVersion} {archivedVersion.version}
+            </p>
+          ) : null}
           <p className={styles.notice}>{it.legalPlaceholderNotice}</p>
+          {archivedVersion && !archivedVersion.isCurrent ? (
+            <p className={styles.notice}>{it.legalArchivedVersionNotice}</p>
+          ) : null}
           <LegalProse body={body} />
+          {archivedVersion ? (
+            <p>
+              <Link href={entry.publicPath}>{it.legalCurrentVersionLink}</Link>
+            </p>
+          ) : null}
           <nav className={styles.index} aria-label={it.legalNav}>
             {LEGAL_CATALOG.map((item) =>
               item.slug === slug ? (

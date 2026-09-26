@@ -50,3 +50,13 @@ export function isMediaComplete(required: boolean, decision: MediaDecision) {
   if (decision === "refused") return !required;
   return false;
 }
+
+export function isConsentReceiptReady(
+  isMinorPlayer: boolean,
+  media: { applies: boolean; required: boolean },
+  consents: CurrentConsent[],
+) {
+  if (!isPrivacyPackComplete(isMinorPlayer, consents)) return false;
+  if (!media.applies) return true;
+  return isMediaComplete(media.required, mediaDecisionFrom(consents));
+}

@@ -8,6 +8,7 @@ export const it = {
   landingBadge: "Link di squadra",
   landingLead:
     "Apri il link della tua squadra, indica la tua email e completa l’iscrizione un passo alla volta.",
+  landingPhotoAlt: "Competizioni sportive studentesche LCS",
   ctaLogin: "Accedi",
   ctaInvite: "Ho un invito",
   privacy: "Privacy",
@@ -230,6 +231,28 @@ export const it = {
   cookies: "Cookie",
   legalPlaceholderNotice:
     "I testi seguenti sono placeholder. Non costituiscono una informativa legale valida.",
+  legalArchivedVersionNotice:
+    "Questa pagina mostra la versione registrata al momento dell’accettazione, non necessariamente il testo corrente.",
+  legalCurrentVersionLink: "Apri il testo corrente",
+  consentReceiptAccepted: "accettata",
+  consentReceiptRefused: "non accettata",
+  notificationRegistrationReceivedTitle: "Conferma documenti dell’iscrizione",
+  notificationRegistrationReceivedBody:
+    "Hai confermato i documenti dell’iscrizione. Le versioni sono elencate nella comunicazione e-mail, con i link ai testi accettati.",
+  notificationRegistrationApprovedTitle: "Iscrizione approvata",
+  notificationRegistrationApprovedBody: "L’iscrizione risulta approvata. Apri l’area personale per i dettagli.",
+  emailRegistrationReceivedSubject: "Conferma iscrizione e documenti accettati",
+  emailRegistrationReceivedIntro:
+    "Confermiamo la registrazione dei documenti per la tua iscrizione. Riepilogo delle versioni:",
+  emailRegistrationReceivedOutro: "Apri la tua area personale:",
+  emailRegistrationApprovedSubject: "Iscrizione approvata",
+  emailRegistrationApprovedText: "L’iscrizione risulta approvata. Apri l’area personale:",
+  emailDocumentApprovedSubject: "Certificato approvato",
+  emailDocumentApprovedText:
+    "L’organizzazione ha approvato il certificato. Continua dall’area personale:",
+  emailDocumentRejectedSubject: "Certificato da aggiornare",
+  emailDocumentRejectedText:
+    "L’organizzazione chiede di caricare di nuovo il certificato. Apri l’area personale:",
   paymentHelp: "Il pagamento avviene su una pagina esterna. Non inseriamo dati della carta su questo sito.",
   paymentPlaceholderFee: "Importo di sviluppo (placeholder). L’importo ufficiale è una decisione dell’organizzazione (OD-008).",
   paymentAmount: "Importo",
@@ -251,11 +274,6 @@ export const it = {
   skipToContent: "Vai al contenuto",
   navMenu: "Menu",
   navClose: "Chiudi",
-  themeToggle: "Cambia tema",
-  themeToLight: "Passa al tema chiaro",
-  themeToDark: "Passa al tema scuro",
-  themeLight: "Tema chiaro",
-  themeDark: "Tema scuro",
   landingHowTitle: "Come funziona",
   landingHowInvite: "Apri il link",
   landingHowInviteCopy: "Il rappresentante condivide un unico link di squadra. Senza quel link non si crea un account.",

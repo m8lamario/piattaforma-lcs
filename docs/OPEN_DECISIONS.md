@@ -171,7 +171,7 @@ Già coperti: no PWA in M0; scan OD-021.
 
 ## OD-027 Cookie banner, analytics e tracciamenti
 
-- **Problema:** Oggi esistono cookie di sessione Auth.js e preferenza tema (`eph-theme`). Non c’è banner né analytics.
+- **Problema:** Oggi esistono cookie di sessione Auth.js. Non c’è banner né analytics. Il tema UI segue `prefers-color-scheme` e non usa cookie.
 - **Opzioni:** solo cookie tecnici senza banner; banner se si aggiungono analitici; niente terze parti.
 - **Decisione necessaria:** legale + prodotto, prima di introdurre analytics/pixel.
 - **Conseguenze:** un banner è lavoro UI; un nuovo consenso va come `LegalDocument` distinto, non come checkbox nascosta.

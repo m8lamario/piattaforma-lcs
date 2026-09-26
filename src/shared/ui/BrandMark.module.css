@@ -4,12 +4,12 @@
   gap: var(--space-3);
   min-height: var(--control-min);
   text-decoration: none;
-  color: var(--color-text);
+  color: var(--brand-fg, var(--color-text));
 }
 
 .rail {
   width: var(--line-width);
-  background: var(--color-line);
+  background: var(--brand-rail, var(--color-line));
   flex-shrink: 0;
 }
 
@@ -32,10 +32,11 @@
   object-fit: contain;
   object-position: center;
   flex-shrink: 0;
+  filter: var(--brand-logo-filter, none);
 }
 
 html[data-theme="light"] .logo {
-  filter: invert(1);
+  filter: var(--brand-logo-filter, invert(1));
 }
 
 .wordmark {
@@ -58,7 +59,7 @@ html[data-theme="light"] .logo {
   font-weight: 700;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--color-text-muted);
+  color: var(--brand-muted, var(--color-text-muted));
   line-height: 1.2;
 }
 

@@ -36,7 +36,6 @@ Elenco **operativo** da far qualificare al legale (tecnico / non tecnico, durata
 
 | Nome / chiave | Dove | Finalità operativa | Durata operativa | Prima / terza parte | **[INSERIRE QUALIFICAZIONE LEGALE]** |
 |---------------|------|--------------------|------------------|---------------------|--------------------------------------|
-| `eph-theme` | cookie (path `/`, `SameSite=Lax`, `max-age` 1 anno) e `localStorage` di fallback | ricordare tema chiaro/scuro | 1 anno circa | prima parte (questa app) | **[INSERIRE SE STrettamente NECESSARIO]** |
 | Cookie di sessione Auth.js (nome tipico `authjs.session-token`) | cookie httpOnly | mantenere l’accesso all’area | **[INSERIRE DURATA SESSIONE AUTH.JS IN PROD]** | prima parte | **[INSERIRE]** |
 | Cookie CSRF Auth.js (nome tipico `authjs.csrf-token`) | cookie | protezione CSRF del flusso auth | **[INSERIRE]** | prima parte | **[INSERIRE]** |
 | `authjs.callback-url` (nome tipico) | cookie | ritorno post-login | **[INSERIRE]** | prima parte | **[INSERIRE]** |
@@ -65,7 +64,7 @@ Permissions-Policy del prodotto svuota camera, microfono, geolocalizzazione e pa
 
 **[INSERIRE SE È DOVUTO UN BANNER CON ACCETTA/RIFIUTA E PREFERENZE GRANULARI]**
 
-Finché esistono solo cookie di tema e di autenticazione, **[INSERIRE VALUTAZIONE DEL LEGALE]**. Non si afferma che «i cookie tecnici non richiedono consenso».
+Finché esistono solo cookie di autenticazione, **[INSERIRE VALUTAZIONE DEL LEGALE]**. Non si afferma che «i cookie tecnici non richiedono consenso».
 
 ---
 
@@ -73,7 +72,7 @@ Finché esistono solo cookie di tema e di autenticazione, **[INSERIRE VALUTAZION
 
 **[INSERIRE ISTRUZIONI BROWSER]**
 
-- Tema: il toggle in intestazione riscrive `eph-theme`. **[INSERIRE SE DEVE ESISTERE UN PULSANTE «CANCELLA PREFERENZA»]**
+- Tema: segue `prefers-color-scheme` del dispositivo; l’app non imposta un cookie di preferenza. **[INSERIRE SE DEVE ESISTERE UN PULSANTE «CANCELLA PREFERENZA»]**
 - Sessione: il logout invalida la sessione lato applicazione secondo Auth.js.
 - Browser: **[INSERIRE LINK DI ISTRUZIONI PER I PRINCIPALI BROWSER]**
 - Non tracciamo un identificativo pubblicitario proprio.

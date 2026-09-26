@@ -1,7 +1,7 @@
 import { cache } from "react";
 import { prisma } from "@/shared/lib/prisma";
 import { readLegalDocument } from "@/shared/lib/legal";
-import { LEGAL_CATALOG } from "@/features/consents/domain/catalog";
+import { LEGAL_CATALOG, isLegalCatalogSlug } from "@/features/consents/domain/catalog";
 
 export const ensureLegalDocuments = cache(async () => {
   await Promise.all(
@@ -70,6 +70,17 @@ export async function getCurrentLegalBySlug(slug: string) {
   return version ?? null;
 }
 
+export async function getLegalVersionBySlugAndVersion(slug: string, version: string) {
+  if (!isLegalCatalogSlug(slug) || !version.trim()) return null;
+  return prisma.legalDocumentVersion.findFirst({
+    where: {
+      version,
+      legalDocument: { slug },
+    },
+    include: { legalDocument: true },
+  });
+}
+
 export async function recordConsent(input: {
   userId: string;
   registrationId: string;
@@ -98,5 +109,10 @@ export async function recordConsent(input: {
       userAgent: input.userAgent ?? null,
     },
   });
-  return { ok: true as const, record: created, slug: version.legalDocument.slug };
+  return {
+    ok: true as const,
+    record: created,
+    slug: version.legalDocument.slug,
+    version: version.version,
+  };
 }

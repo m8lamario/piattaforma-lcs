@@ -11,7 +11,6 @@ type Props = {
 export function BrandMark({ href = "/", compact = false }: Props) {
   const inner = (
     <>
-      <span className={styles.rail} aria-hidden="true" />
       <span className={styles.lockup} aria-hidden="true">
         <span className={styles.markRow}>
           <Image
