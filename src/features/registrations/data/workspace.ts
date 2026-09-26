@@ -1,5 +1,6 @@
 import { Prisma } from "@generated/client";
 import { isMinor } from "@/features/players/domain/age";
+import { notifyRegistrationApproved } from "@/features/notifications/data/notifications";
 import {
   classifyFiscalIdentity,
   classifyOccupiedFiscalCode,
@@ -28,6 +29,7 @@ import {
   type CurrentConsent,
 } from "@/features/consents/domain/pack";
 import { prisma } from "@/shared/lib/prisma";
+import { logger } from "@/shared/lib/logger";
 
 function medicalFromStatus(status: string | undefined): MedicalEvidence {
   switch (status) {
@@ -191,13 +193,23 @@ export async function persistRegistrationStatus(
 ) {
   const current = await prisma.registration.findUnique({
     where: { id: registrationId },
-    select: { status: true },
+    select: {
+      status: true,
+      playerProfile: { select: { userId: true } },
+    },
   });
   if (current && isTerminalRegistrationStatus(current.status)) return;
   await prisma.registration.update({
     where: { id: registrationId },
     data: { status },
   });
+  if (current && current.status !== "APPROVED" && status === "APPROVED") {
+    try {
+      await notifyRegistrationApproved(current.playerProfile.userId, registrationId);
+    } catch {
+      logger.error("notification.dispatch_failed", { type: "REGISTRATION_APPROVED" });
+    }
+  }
 }
 
 export async function findProfileByFiscalCode(fiscalCode: string) {

@@ -4,9 +4,9 @@
 
 Moderno, sportivo-istituzionale, **mobile-first**. Area personale del giocatore, non back-office anni 2000 e non sito vetrina di una coppa.
 
-Identità di sistema: **registro di campo**. Una linea di sideline (teal/acqua) marca lockup, titoli di pagina e passi critici. Il blu resta il colore delle azioni. Nessuna card ovunque, niente gradienti decorativi, icone solo se portano significato.
+Identità di sistema: **registro di campo**. Una linea di sideline (teal/acqua) marca lockup, titoli di pagina e passi critici. Il blu resta il colore delle azioni; il verde acqua è accento e titolo hero in scuro. Nessuna card ovunque, icone solo se portano significato. L’unica eccezione al divieto di gradienti è la **navbar** (blu → azzurro → verde acqua).
 
-Il tema **predefinito è scuro**. L’utente può passare al chiaro (e viceversa) da un controllo persistente in header. La scelta è salvata nel cookie `eph-theme` (e in `localStorage` come fallback). Nessun flash: uno script in `<head>` applica il tema prima del paint.
+Il tema segue `prefers-color-scheme` del dispositivo. Nessun toggle in interfaccia, nessun cookie o `localStorage` di preferenza. Default scuro se il sistema non esprime una preferenza chiara. Nessun flash: uno script in `<head>` applica `data-theme` prima del paint e si aggiorna se cambia lo schema di colore.
 
 ## 2. Design tokens
 
@@ -18,32 +18,34 @@ Placeholder scuro (default):
 
 | Token | Ruolo | Valore temporaneo |
 |---|---|---|
-| `--color-primary` | blu azione su scuro | `#3A7BD5` |
-| `--color-on-primary` | testo su primario | `#F4F7FB` |
-| `--color-surface` | sfondo | `#071018` |
-| `--color-surface-raised` | pannelli rari | `#0C1A28` |
-| `--color-surface-inset` | inset / body documenti | `#050C14` |
-| `--color-accent` / `--color-line` | teal/acqua, sideline | `#2EC9B3` |
+| `--color-primary` | azzurro azione su scuro | `#4A8FE0` |
+| `--color-on-primary` | testo su primario | `#F4F8FC` |
+| `--color-surface` | sfondo blu istituzionale | `#0B1A2E` |
+| `--color-surface-raised` | pannelli rari | `#12253F` |
+| `--color-surface-inset` | inset / body documenti | `#081424` |
+| `--color-accent` / `--color-line` | teal/acqua, sideline e titoli hero | `#2ED9C4` |
 | `--color-on-accent` | testo su accent | `#042F2E` |
 | `--color-danger` | errori | `#F07171` |
 | `--color-warning` | attenzione | `#E6B23C` |
 | `--color-success` | ok | `#3DCE9A` |
 | `--color-text` | testo | `#F4F7FB` |
-| `--color-text-muted` | secondario | `#9AADC2` |
-| `--color-hairline` | divisori | `#15283D` |
-| `--color-border` | controlli | `#1E334C` |
+| `--color-text-muted` | secondario | `#9BB0C6` |
+| `--color-hairline` | divisori | `#1A304C` |
+| `--color-border` | controlli | `#23405F` |
+| `--gradient-nav` | barra pubblica / mobile | `#123A66 → #1C6294 → #1A7A72` |
+| `--color-hero-fg` | titolo hero | teal (`--color-accent`) |
 
 Placeholder chiaro (`data-theme="light"`):
 
 | Token | Ruolo | Valore temporaneo |
 |---|---|---|
-| `--color-primary` | blu istituzionale | `#1B4FD8` |
-| `--color-on-primary` | testo su primario | `#F8FAFC` |
-| `--color-surface` | sfondo | `#F3F6FA` |
+| `--color-primary` | azzurro istituzionale | `#1A63C9` |
+| `--color-on-primary` | testo su primario | `#F8FBFF` |
+| `--color-surface` | sfondo | `#F3F7FB` |
 | `--color-surface-raised` | pannelli rari | `#FFFFFF` |
-| `--color-surface-inset` | inset | `#E8EEF6` |
-| `--color-accent` / `--color-line` | teal/acqua | `#0D8F86` |
-| `--color-on-accent` | testo su accent | `#F0FDFA` |
+| `--color-surface-inset` | inset | `#E6EEF6` |
+| `--color-accent` / `--color-line` | teal/acqua | `#0C8A82` |
+| `--color-on-accent` | testo su accent | `#F4FFFD` |
 | `--color-danger` | errori | `#B42318` |
 | `--color-warning` | attenzione | `#9A6700` |
 | `--color-success` | ok | `#067647` |
@@ -51,8 +53,10 @@ Placeholder chiaro (`data-theme="light"`):
 | `--color-text-muted` | secondario | `#3D4F66` |
 | `--color-hairline` | divisori | `#E4EBF3` |
 | `--color-border` | controlli | `#D5DEEA` |
+| `--gradient-nav` | barra pubblica / mobile | `#1A4E86 → #216C9C → #1C8F86` |
+| `--color-hero-bg` / `--color-hero-fg` | fascia hero | azzurro `#1870B8` / bianco |
 
-Token di supporto (stessi nomi in entrambi i temi): `--color-input`, `--color-primary-soft`, `--color-danger-soft`, `--color-warning-soft`, `--color-success-soft`, `--color-focus`, `--color-glow`, `--color-skeleton`, `--color-skeleton-shine`.
+Token di supporto (stessi nomi in entrambi i temi): `--color-input`, `--color-primary-soft`, `--color-danger-soft`, `--color-warning-soft`, `--color-success-soft`, `--color-focus`, `--color-glow`, `--color-skeleton`, `--color-skeleton-shine`, `--color-on-nav`, `--color-hero-muted`, `--color-hero-cta-bg`.
 
 Alias di compatibilità nello stesso file: `--control-height` = `--control-min` (44px), `--rail-width` = `--line-width` (3px), `--color-rail` = `--color-line`.
 
@@ -63,7 +67,9 @@ Typography: `--font-sans` (Geist) per UI; `--font-brand` (Barlow Condensed) solo
 - Mobile: colonna singola, nav in menu, CTA sticky sul wizard.
 - Tablet: contenuto max ~40–44rem nel percorso.
 - Desktop: shell con nav laterale nell’area autenticata (sideline sull’item attivo); il wizard resta stretto e guidato.
-- Pagine pubbliche (`/`, `/accedi`, `/invito`, `/privacy`, `/liberatorie`, informative collegate): topbar con marca ESL, toggle tema, privacy; footer con Privacy e Liberatorie.
+- Pagine pubbliche (`/`, `/accedi`, `/invito`, `/privacy`, `/liberatorie`, informative collegate): topbar con marca LCS su gradiente; footer con Privacy, Liberatorie, Termini e Cookie.
+- Hero di presentazione (landing, pannello marca del login, riquadro stato in area): in scuro titolo teal su blu; in chiaro fascia azzurra con titolo bianco. Non applicare questo trattamento ai titoli di form e wizard.
+- Bottoni: **primary** azzurro/blu; **accent** verde acqua per CTA già marcate così; **secondary** fondo tenue + bordo; **ghost** trasparente; **danger** invariato nel ruolo. Hover, active, focus e disabled coerenti.
 - Gerarchia di pagina: kicker tracked + titolo `--text-xl` + lead, con sideline a sinistra. Liste e checklist sono righe divise da hairline, non card innestate.
 
 ## 4. Wizard
@@ -80,7 +86,7 @@ Vietato un’unica card con tutti i campi.
 
 ## 5. Dashboard
 
-- Hero: stato in linguaggio naturale (“Devi caricare il certificato medico”) + CTA primaria, con sideline blu.
+- Hero: stato in linguaggio naturale (“Devi caricare il certificato medico”) + CTA primaria, con sideline teal.
 - Progress visivo a segmenti (completo / da fare / attenzione), non solo percentuale.
 - Percorso a elenco numerato: chip di stato (completo, attenzione, da fare) + testo + segno di forma diversa. Ogni voce porta al passo.
 
@@ -104,7 +110,6 @@ Micro-interazioni: Framer Motion su transizioni di passo e ingresso landing. Dur
 - Target touch ≥ 44px (`--control-min`).
 - Non affidare informazione al solo colore (checklist: chip + testo + segno).
 - Skip link verso il contenuto nell’area autenticata.
-- Il toggle tema ha un’etichetta che descrive l’azione (“Passa al tema chiaro” / “Passa al tema scuro”).
 
 ## 8. Copy
 
@@ -125,4 +130,4 @@ L’area admin è più densa ma usa gli stessi token. Elenco a righe con chip di
 
 ## 11. Iconografia
 
-Un solo set in `src/shared/ui/Icon.tsx`: 24×24, stroke 1.75, cap square. Nav, passi wizard, empty state, toggle tema. Niente icone decorative.
+Un solo set in `src/shared/ui/Icon.tsx`: 24×24, stroke 1.75, cap square. Nav, passi wizard, empty state. Niente icone decorative.

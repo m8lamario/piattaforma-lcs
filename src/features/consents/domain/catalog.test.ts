@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { LEGAL_CATALOG, privacyCatalogSlugs } from "./catalog";
+import { LEGAL_CATALOG, legalVersionPublicPath, privacyCatalogSlugs } from "./catalog";
 import { MEDIA_RELEASE_SLUG, PRIVACY_PACK_SLUGS, privacySlugsFor } from "./pack";
 
 describe("catalogo documenti legali", () => {
@@ -21,5 +21,11 @@ describe("catalogo documenti legali", () => {
     expect(privacySlugsFor(true)).not.toContain("terms");
     expect(privacyCatalogSlugs(true)).toEqual(privacySlugsFor(true));
     expect(MEDIA_RELEASE_SLUG).toBe("media-release");
+  });
+
+  it("costruisce il permalink della versione senza elenco storico", () => {
+    expect(legalVersionPublicPath("privacy-policy", "placeholder-1")).toBe(
+      "/documenti-legali/privacy-policy/placeholder-1",
+    );
   });
 });

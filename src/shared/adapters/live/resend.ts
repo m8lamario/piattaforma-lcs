@@ -1,11 +1,14 @@
 import { Resend } from "resend";
+import { it } from "@/shared/i18n/it";
 import { logger } from "@/shared/lib/logger";
 import type { EmailAdapter, EmailMessage } from "../types";
 
-function render(input: EmailMessage) {
-  const title = input.variables.title ?? "Comunicazione ESL Player Hub";
+export function renderEmailMessage(input: EmailMessage) {
+  const title = input.variables.title ?? it.appName;
   const redeemUrl = input.variables.redeemUrl;
   const resetUrl = input.variables.resetUrl;
+  const areaUrl = input.variables.areaUrl;
+  const documents = input.variables.documents;
   if (input.template === "player-invite" && redeemUrl) {
     return {
       subject: "Invito in squadra",
@@ -24,9 +27,35 @@ function render(input: EmailMessage) {
       text: `Apri questo link per scegliere una nuova password: ${resetUrl}`,
     };
   }
+  if (input.template === "REGISTRATION_RECEIVED") {
+    return {
+      subject: it.emailRegistrationReceivedSubject,
+      text: [it.emailRegistrationReceivedIntro, documents, it.emailRegistrationReceivedOutro, areaUrl]
+        .filter(Boolean)
+        .join("\n\n"),
+    };
+  }
+  if (input.template === "REGISTRATION_APPROVED") {
+    return {
+      subject: it.emailRegistrationApprovedSubject,
+      text: [it.emailRegistrationApprovedText, areaUrl].filter(Boolean).join("\n\n"),
+    };
+  }
+  if (input.template === "DOCUMENT_APPROVED") {
+    return {
+      subject: it.emailDocumentApprovedSubject,
+      text: [it.emailDocumentApprovedText, areaUrl].filter(Boolean).join("\n\n"),
+    };
+  }
+  if (input.template === "DOCUMENT_REJECTED") {
+    return {
+      subject: it.emailDocumentRejectedSubject,
+      text: [it.emailDocumentRejectedText, areaUrl].filter(Boolean).join("\n\n"),
+    };
+  }
   return {
     subject: title,
-    text: title,
+    text: areaUrl ? `${title}\n\n${areaUrl}` : title,
   };
 }
 
@@ -39,7 +68,7 @@ export function createResendEmailAdapter(): EmailAdapter {
   const client = new Resend(apiKey);
   return {
     async send(input) {
-      const message = render(input);
+      const message = renderEmailMessage(input);
       const result = await client.emails.send({
         from,
         to: input.to,

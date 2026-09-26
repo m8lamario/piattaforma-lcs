@@ -94,3 +94,7 @@ export function mediaCatalogSlug(): WizardLegalSlug {
   }
   return entry.slug;
 }
+
+export function legalVersionPublicPath(slug: string, version: string) {
+  return `/documenti-legali/${encodeURIComponent(slug)}/${encodeURIComponent(version)}`;
+}

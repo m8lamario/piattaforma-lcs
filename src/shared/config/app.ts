@@ -11,6 +11,11 @@ export const ALLOWED_DOCUMENT_MIME = [
 ] as const;
 
 export const APP_NAME = "ESL Player Hub";
+
+export function appOrigin() {
+  return (process.env.AUTH_URL ?? "http://localhost:3000").replace(/\/$/, "");
+}
+
 export const INVITE_TTL_DAYS = Number(process.env.INVITE_TTL_DAYS ?? 14);
 export const BULK_INVITE_MAX = 50;
 export const TEAM_COOKIE = "eph-team";

@@ -152,5 +152,5 @@ Non loggare: password, token, CF completo (mascherare), body documenti, Authoriz
 - `StaffInvite` hashato; redeem senza Registration.
 - Withdraw senza delete; reset password anti-enumerazione.
 - Stripe webhook firmato; R2 bucket privato; HMAC file invariato.
-- Email Resend: variables `title` / URL, mai CF o motivo medico.
+- Email Resend: variables `title` / URL / elenco versioni per la ricevuta consensi; mai CF o motivo medico. Permalink `/documenti-legali/{slug}/{version}` invece di allegati.
 - Playwright happy path in CI; nonce CSP sul bootstrap tema.

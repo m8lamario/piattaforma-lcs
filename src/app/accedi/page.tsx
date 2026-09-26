@@ -25,7 +25,6 @@ export default async function LoginPage({ searchParams }: Props) {
               height={524}
               className={styles.panelLogo}
             />
-            <p className={styles.kicker}>{it.brandOrg}</p>
             <h2>{it.appName}</h2>
             <p className={styles.brandLead}>{it.tagline}</p>
             <div className={styles.brandPoints}>

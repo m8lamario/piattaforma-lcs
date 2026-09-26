@@ -60,9 +60,9 @@ Nessun testo legale extra nel passo upload. L’informativa documenti è nel pac
 
 ### 3.4 Pagine pubbliche
 
-Stesso CSS di `/privacy` (`page.module.css`). Ogni pagina mostra body markdown + indice link agli altri slug. Header pubblico continua a puntare a `/privacy` (nessun restyle della shell).
+Stesso CSS di `/privacy` (`page.module.css`). Privacy, liberatorie, termini e cookie restano nel footer pubblico.
 
-Le pagine pubbliche leggono il **file**. Il wizard, via `ensureLegalDocuments`, allinea il body in DB e, se il file è cambiato, crea una **nuova** versione (`placeholder-{timestamp}`): non sovrascrive il body di una versione già accettata.
+Le pagine pubbliche (`/privacy`, `/termini`, …) leggono il **file** corrente. Il permalink storico `/documenti-legali/{slug}/{version}` legge il `body` di `LegalDocumentVersion` in DB (404 se assente). L’email di ricevuta usa solo quel permalink, senza allegati. Il wizard, via `ensureLegalDocuments`, allinea il body in DB e, se il file è cambiato, crea una **nuova** versione (`placeholder-{timestamp}`): non sovrascrive il body di una versione già accettata.
 
 ### 3.5 Area consensi / admin informative
 
@@ -84,10 +84,10 @@ Non è un elenco legale chiuso. Serve al compilatore dei testi. Dettaglio nelle 
 | Certificato | file privato + metadati + review (motivo rifiuto) | file: giocatore e staff + audit; rep: **stato only** |
 | Consensi | versione, accepted, timestamp, IP/UA | staff può consultare versione/data, non serve il body in rosa |
 | Pagamenti | importo, stato, id provider, pagatore; **niente carta** | stub; provider live = OD-006 |
-| Comunicazioni | notifica in-app; email stub con `template=type` e `title` | niente motivo sanitario in email |
+| Comunicazioni | notifica in-app; email Resend/stub con `template=type`, `title`, URL | niente CF né motivo sanitario; ricevuta consensi con link alle versioni |
 | Audit / log | azione, entità, metadati redatti, IP/UA | CF/token/password/storageKey redatti nei log |
 | Squadra / scuola | nome squadra, logo key, istituto, maglia/ruolo | compagni: nome e maglia, non PII extra |
-| Tema UI | cookie `eph-theme` + localStorage | visitatori inclusi |
+| Tema UI | `prefers-color-scheme`, nessun cookie | visitatori inclusi |
 | Media | **nessun album in DB**; solo la decisione di liberatoria | usi esterni da descrivere nel testo ufficiale |
 
 Categorie particolari (sanitarie): file certificato e possibile contenuto del PDF/immagine. Trattamento descritto in `document-processing.md` con placeholder sulla base giuridica.
@@ -122,6 +122,10 @@ L’elenco nominativo va in `privacy-policy.md` sezione responsabili **prima** d
 Re-consent: OD-024. IP/UA retention: OD-022.
 
 Copy UI: presa visione della versione X in data Y. Vietato dire che il click è legalmente valido.
+
+Quando il pacchetto wizard è completo (privacy dell’audience + decisione sulla liberatoria), parte una notifica `REGISTRATION_RECEIVED` con email di ricevuta: elenco slug/versioni e link a `/documenti-legali/{slug}/{version}`. Idempotente su `Notification.metadata.fingerprint` + `registrationId`. Una nuova versione accettata cambia l’impronta e genera una nuova ricevuta.
+
+La prima transizione della registration a `APPROVED` invia `REGISTRATION_APPROVED` (link ad `/area`, senza ripetere l’elenco versioni). Certificato approvato/da aggiornare riusa le notifiche esistenti, con link all’area e senza motivo sanitario nel canale email. Audit `CONSENT_ACCEPT` / `CONSENT_REFUSE` include `slug`, `versionId` e l’etichetta `version`.
 
 ---
 
@@ -166,7 +170,7 @@ Workaround canale: `[INSERIRE EMAIL PRIVACY]`.
 
 ## 11. Cookie
 
-`cookie-policy.md` elenca i cookie/storage **effettivi** (`eph-theme`, sessione/CSRF Auth.js) e lascia vuoti analytics/pixel. Banner: OD-027. Non è un `ConsentRecord`.
+`cookie-policy.md` elenca i cookie/storage **effettivi** (sessione/CSRF Auth.js) e lascia vuoti analytics/pixel. Banner: OD-027. Non è un `ConsentRecord`. Il tema UI segue `prefers-color-scheme` e non imposta cookie.
 
 ---
 

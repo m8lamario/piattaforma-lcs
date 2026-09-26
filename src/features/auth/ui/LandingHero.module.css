@@ -2,67 +2,84 @@
   position: relative;
   z-index: 1;
   width: 100%;
-  max-width: var(--content-max-canvas);
-  display: grid;
-  gap: var(--space-10);
+  display: flex;
+  flex-direction: column;
 }
 
 .hero {
-  padding-left: var(--space-5);
-  border-left: var(--line-width) solid var(--color-line);
+  position: relative;
+  isolation: isolate;
+  width: 100%;
+  overflow: hidden;
+  background: var(--color-hero-bg);
+  color: var(--color-hero-fg);
+  padding-block: clamp(var(--space-8), 6vh, var(--space-12));
+}
+
+.hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(
+    165deg,
+    color-mix(in srgb, var(--color-surface) 88%, transparent) 0%,
+    color-mix(in srgb, var(--color-surface) 62%, transparent) 48%,
+    color-mix(in srgb, var(--color-surface) 80%, transparent) 100%
+  );
+}
+
+:global(html[data-theme="light"]) .hero::before {
+  background: linear-gradient(
+    165deg,
+    color-mix(in srgb, var(--color-hero-bg) 90%, transparent) 0%,
+    color-mix(in srgb, var(--color-hero-bg) 64%, transparent) 48%,
+    color-mix(in srgb, var(--color-hero-bg) 82%, transparent) 100%
+  );
+}
+
+.heroInner {
+  position: relative;
+  z-index: 2;
+  max-width: var(--content-max-wide);
   display: grid;
   gap: var(--space-3);
-}
-
-.badge {
-  display: inline-flex;
-  margin: 0;
-  font-size: var(--text-kicker);
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--color-accent);
-}
-
-.org {
-  margin: 0;
-  color: var(--color-text-muted);
-  font-size: var(--text-sm);
+  margin-left: var(--space-page-x);
+  margin-right: var(--space-page-x);
 }
 
 .hero h1 {
   margin: 0;
   font-family: var(--font-brand);
-  font-size: clamp(2.4rem, 5.5vw, 3.6rem);
+  font-size: clamp(2.85rem, 8vw, 4rem);
   font-weight: 400;
-  letter-spacing: 0.08em;
-  line-height: 1.2;
-  position: relative;
-  z-index: 1;
+  letter-spacing: 0.06em;
+  line-height: 1.05;
+  color: var(--color-hero-fg);
 }
 
 .script {
   font-family: var(--font-accent);
-  font-size: 1.2em;
+  font-size: 1.28em;
   font-weight: 400;
   font-style: normal;
   font-synthesis: none;
   letter-spacing: 0;
-  line-height: 1;
+  line-height: 0.9;
   text-transform: none;
 }
 
 .lead,
 .copy {
   margin: 0;
-  color: var(--color-text-muted);
+  color: var(--color-hero-muted);
   line-height: var(--leading-body);
   max-width: 36rem;
 }
 
 .lead {
   font-size: clamp(1rem, 2vw, var(--text-lg));
-  color: var(--color-text);
 }
 
 .actions {
@@ -70,6 +87,62 @@
   flex-wrap: wrap;
   gap: var(--space-3);
   margin-top: var(--space-3);
+}
+
+.heroPrimary {
+  background: var(--color-hero-cta-bg);
+  color: var(--color-hero-cta-fg);
+}
+
+.heroPrimary:hover {
+  background: var(--color-hero-cta-bg-hover);
+}
+
+.heroSecondary {
+  background: transparent;
+  color: var(--color-hero-fg);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-hero-fg) 48%, transparent);
+}
+
+.heroSecondary:hover {
+  background: color-mix(in srgb, var(--color-hero-fg) 12%, transparent);
+}
+
+.stage {
+  position: absolute;
+  z-index: 0;
+  pointer-events: none;
+  inset: 0;
+}
+
+.stageBack,
+.stageRail {
+  display: none;
+}
+
+.stagePhoto {
+  position: absolute;
+  inset: 0;
+}
+
+.stage picture,
+.stageImage {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.stageImage {
+  object-fit: cover;
+  object-position: center;
+}
+
+.how {
+  padding: var(--space-10) var(--space-page-x) var(--space-12);
+}
+
+.howInner {
+  width: 100%;
 }
 
 .how h2 {
@@ -109,11 +182,17 @@
 }
 
 .steps .step:first-child {
-  border-top: 0;
   padding-top: 0;
 }
 
-.step p {
+.stepBody strong {
+  display: block;
+  font-size: var(--text-md);
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.stepBody p {
   margin: var(--space-1) 0 0;
   color: var(--color-text-muted);
   line-height: var(--leading-body);
@@ -129,22 +208,129 @@
 }
 
 @media (min-width: 960px) {
-  .stack {
-    grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
-    gap: var(--gap-canvas);
-    align-items: start;
-    padding-top: var(--space-4);
+  .hero {
+    display: grid;
+    grid-template-columns: minmax(22rem, 1fr) minmax(20rem, 1.15fr);
+    grid-template-areas: "copy photo";
+    align-items: stretch;
+    min-height: min(36rem, 78vh);
+    padding-block: 0;
+    padding: 70px 0px;
+  }
+
+  .hero::before {
+    display: none;
+  }
+
+  .heroInner {
+    grid-area: copy;
+    align-self: center;
+    margin-right: var(--space-6);
+    padding-block: clamp(var(--space-10), 8vh, 8rem);
+  }
+
+  .stage {
+    --photo-clip: polygon(2% 16%, 68% 0%, 99% 10%, 100% 78%, 34% 100%, 0% 84%);
+    position: relative;
+    grid-area: photo;
+    inset: auto;
+    width: auto;
+    min-height: 100%;
+    margin: var(--space-8) var(--space-page-x) var(--space-8) var(--space-4);
+    pointer-events: auto;
+  }
+
+  .stageBack,
+  .stagePhoto,
+  .stageRail {
+    position: absolute;
+    inset: 0;
+  }
+
+  .stageBack {
+    display: block;
+    inset: 4% -5% -6% 5%;
+    background: var(--color-line);
+    clip-path: var(--photo-clip);
+  }
+
+  .stagePhoto {
+    clip-path: var(--photo-clip);
+    z-index: 1;
+  }
+
+  .stageRail {
+    display: block;
+    left: 6%;
+    right: auto;
+    width: 0.55rem;
+    background: var(--color-line);
+    clip-path: polygon(0 18%, 100% 8%, 100% 92%, 0 100%);
+    z-index: 2;
+  }
+
+  .hero h1 {
+    font-size: clamp(3.4rem, 5.8vw, 5.1rem);
   }
 
   .how {
-    padding-left: var(--space-8);
-    border-left: 1px solid var(--color-hairline);
+    padding-top: var(--space-16);
+    padding-bottom: var(--space-16);
+  }
+
+  .how h2 {
+    margin-bottom: var(--space-10);
+  }
+
+  .steps {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-8);
+  }
+
+  .step {
+    grid-template-columns: 1fr;
+    gap: var(--space-4);
+    padding: 0;
+  }
+
+  .step:not(:last-child)::before {
+    left: 3.4rem;
+    right: calc(-1 * var(--space-8));
+    top: 1.05rem;
+    bottom: auto;
+    width: auto;
+    height: 1px;
+    background: color-mix(in srgb, var(--color-line) 42%, var(--color-hairline));
+  }
+
+  .num {
+    font-size: 2.15rem;
+    letter-spacing: 0.12em;
+    line-height: 1;
+  }
+
+  .stepBody strong {
+    font-size: var(--text-lg);
+  }
+
+  .stepBody p {
+    max-width: 22rem;
   }
 }
 
 @media (max-width: 640px) {
   .hero {
-    padding-left: var(--space-4);
+    padding-block: var(--space-10);
+    min-height: min(32rem, 72dvh);
+  }
+
+  .heroInner {
+    margin-left: var(--space-4);
+    margin-right: var(--space-4);
+  }
+
+  .how {
+    padding: var(--space-8) var(--space-4) var(--space-12);
   }
 
   .actions {

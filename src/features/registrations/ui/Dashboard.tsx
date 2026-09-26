@@ -159,7 +159,11 @@ export function RegistrationDashboard({
           <div className={styles.hero}>
             <p className={styles.heroCopy}>{heroCopy}</p>
             <div className={styles.heroActions}>
-              {settled ? null : <ButtonLink href={`/area/registrazione/${hrefStep}`}>{it.ctaContinue}</ButtonLink>}
+              {settled ? null : (
+                <ButtonLink href={`/area/registrazione/${hrefStep}`} className={styles.heroPrimary}>
+                  {it.ctaContinue}
+                </ButtonLink>
+              )}
             </div>
           </div>
 

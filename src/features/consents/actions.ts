@@ -4,7 +4,8 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { recordConsent } from "@/features/consents/data/legal";
-import { MEDIA_RELEASE_SLUG, privacySlugsFor } from "@/features/consents/domain/pack";
+import { dispatchConsentReceiptIfComplete } from "@/features/consents/data/receipt";
+import { privacySlugsFor } from "@/features/consents/domain/pack";
 import {
   loadPlayerWorkspace,
   persistRegistrationStatus,
@@ -89,6 +90,7 @@ export async function savePrivacyConsentsAction(
 
   const requiredSlugs = privacySlugsFor(workspace.evidence.isMinor);
   const trace = await userAgentAndIp();
+  const mediaItem = workspace.checklist.find((item) => item.code === "MEDIA_RELEASE");
 
   for (const slug of requiredSlugs) {
     const versionId = String(formData.get(`version:${slug}`) ?? "");
@@ -112,10 +114,18 @@ export async function savePrivacyConsentsAction(
       action: "CONSENT_ACCEPT",
       entityType: "ConsentRecord",
       entityId: stored.record.id,
-      metadata: { slug: stored.slug, versionId },
+      metadata: { slug: stored.slug, versionId, version: stored.version },
       ...trace,
     });
   }
+
+  await dispatchConsentReceiptIfComplete({
+    userId: session.user!.id,
+    registrationId: workspace.registration.id,
+    isMinor: workspace.evidence.isMinor,
+    mediaApplies: mediaItem != null && mediaItem.status !== "not_applicable",
+    mediaRequired: mediaItem?.required ?? false,
+  });
 
   await persistAndRedirect(
     session.user!.id,
@@ -170,8 +180,21 @@ export async function saveMediaConsentAction(
     action: decision === "accept" ? "CONSENT_ACCEPT" : "CONSENT_REFUSE",
     entityType: "ConsentRecord",
     entityId: stored.record.id,
-    metadata: { slug: MEDIA_RELEASE_SLUG, accepted: decision === "accept" },
+    metadata: {
+      slug: stored.slug,
+      versionId,
+      version: stored.version,
+      accepted: decision === "accept",
+    },
     ...trace,
+  });
+
+  await dispatchConsentReceiptIfComplete({
+    userId: session.user!.id,
+    registrationId: workspace.registration.id,
+    isMinor: workspace.evidence.isMinor,
+    mediaApplies: true,
+    mediaRequired: mediaRequired,
   });
 
   await persistAndRedirect(
