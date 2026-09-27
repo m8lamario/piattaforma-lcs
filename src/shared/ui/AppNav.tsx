@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { logoutAction } from "@/features/auth/actions";
+import { WithdrawForm } from "@/features/registrations/ui/WithdrawForm";
 import { it } from "@/shared/i18n/it";
 import { Button } from "./Button";
 import { Icon, type IconName } from "./Icon";
@@ -15,6 +16,7 @@ type Props = {
   showAdmin?: boolean;
   showPlayerTeam?: boolean;
   unreadCount?: number;
+  withdrawRegistrationId?: string | null;
 };
 
 function isActive(href: string, pathname: string) {
@@ -29,7 +31,14 @@ function isActive(href: string, pathname: string) {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-export function AppNav({ email, showTeam, showAdmin, showPlayerTeam, unreadCount = 0 }: Props) {
+export function AppNav({
+  email,
+  showTeam,
+  showAdmin,
+  showPlayerTeam,
+  unreadCount = 0,
+  withdrawRegistrationId = null,
+}: Props) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [openForPath, setOpenForPath] = useState(pathname);
@@ -96,6 +105,7 @@ export function AppNav({ email, showTeam, showAdmin, showPlayerTeam, unreadCount
               {it.logout}
             </Button>
           </form>
+          {withdrawRegistrationId ? <WithdrawForm registrationId={withdrawRegistrationId} quiet /> : null}
         </div>
       </div>
     </>

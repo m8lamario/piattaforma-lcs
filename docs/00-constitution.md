@@ -67,7 +67,7 @@ Dopo ogni milestone: verifica implementazione, test, TypeScript, lint, build, si
 ## 7. Placeholder e decisioni aperte
 
 - Testi legali: `[INSERIRE PRIVACY POLICY UFFICIALE]`, `[INSERIRE TITOLARE DEL TRATTAMENTO]`, ecc.
-- Colori HEX: token CSS con valori temporanei, mai sparsi nel codice.
+- Colori HEX: solo in `src/shared/ui/tokens.css`, mai sparsi nel codice.
 - Provider email, storage, pagamenti, error tracking: interfacce + stub.
 
 Ciò che non può essere deciso senza l’organizzazione sta in [`OPEN_DECISIONS.md`](OPEN_DECISIONS.md). Si continua a costruire tutto il resto.

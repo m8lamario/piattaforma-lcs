@@ -1,8 +1,10 @@
 "use client";
 
-import { motion, useReducedMotion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { useEffect, useState, type CSSProperties } from "react";
 import { it } from "@/shared/i18n/it";
 import { ButtonLink } from "@/shared/ui/Button";
+import { HERO_PHOTO_INTERVAL_MS, HERO_PHOTOS } from "./heroPhotos";
 import styles from "./LandingHero.module.css";
 
 const STEPS = [
@@ -10,6 +12,59 @@ const STEPS = [
   { n: "02", title: it.landingHowAccount, copy: it.landingHowAccountCopy },
   { n: "03", title: it.landingHowPath, copy: it.landingHowPathCopy },
 ] as const;
+
+function HeroStage() {
+  const reduceMotion = useReducedMotion();
+  const [index, setIndex] = useState(0);
+  const canRotate = !reduceMotion && HERO_PHOTOS.length > 1;
+
+  useEffect(() => {
+    if (!canRotate) return;
+    const id = window.setInterval(() => {
+      setIndex((current) => (current + 1) % HERO_PHOTOS.length);
+    }, HERO_PHOTO_INTERVAL_MS);
+    return () => window.clearInterval(id);
+  }, [canRotate]);
+
+  const slide = HERO_PHOTOS[index] ?? HERO_PHOTOS[0];
+
+  return (
+    <div className={styles.stage} data-graphic-slot="" aria-hidden="true">
+      <div className={styles.stageBack} />
+      <div className={styles.stagePhoto}>
+        <AnimatePresence initial={false}>
+          <motion.div
+            key={`${slide.desktop}:${slide.mobile}`}
+            className={styles.stageSlide}
+            initial={reduceMotion ? false : { opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={reduceMotion ? undefined : { opacity: 0 }}
+            transition={{ duration: reduceMotion ? 0 : 0.85, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <picture>
+              <source media="(min-width: 960px)" srcSet={slide.desktop} />
+              <img
+                className={styles.stageImage}
+                src={slide.mobile}
+                alt=""
+                width={1565}
+                height={2783}
+                decoding="async"
+                style={
+                  {
+                    "--photo-pos-desktop": slide.objectPositionDesktop,
+                    "--photo-pos-mobile": slide.objectPositionMobile,
+                  } as CSSProperties
+                }
+              />
+            </picture>
+          </motion.div>
+        </AnimatePresence>
+      </div>
+      <span className={styles.stageRail} />
+    </div>
+  );
+}
 
 export function LandingHero() {
   const reduceMotion = useReducedMotion();
@@ -22,23 +77,7 @@ export function LandingHero() {
       transition={{ duration: reduceMotion ? 0 : 0.28 }}
     >
       <section className={styles.hero}>
-        <div className={styles.stage} data-graphic-slot="" aria-hidden="true">
-          <div className={styles.stageBack} />
-          <div className={styles.stagePhoto}>
-            <picture>
-              <source media="(min-width: 960px)" srcSet="/IMG/horizontal.webp" />
-              <img
-                className={styles.stageImage}
-                src="/IMG/vertical.webp"
-                alt=""
-                width={1565}
-                height={2783}
-                decoding="async"
-              />
-            </picture>
-          </div>
-          <span className={styles.stageRail} />
-        </div>
+        <HeroStage />
         <div className={styles.heroInner}>
           <h1>
             <span>{it.brandShort}</span>{" "}

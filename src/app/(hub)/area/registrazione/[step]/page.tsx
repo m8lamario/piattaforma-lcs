@@ -157,7 +157,7 @@ export default async function WizardStepPage({ params }: Props) {
           registrationClosesAt: workspace.registration.registrationClosesAt,
         }}
       />
-      <WizardShell step={raw} steps={steps}>
+      <WizardShell step={raw} steps={steps} checklist={workspace.checklist}>
         {body}
       </WizardShell>
     </>

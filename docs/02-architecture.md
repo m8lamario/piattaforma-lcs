@@ -191,6 +191,7 @@ Principio cardine:
 | ADR-021 | Stripe webhook fonte di verità; stub confirm solo con `PAYMENT_DRIVER=stub` |
 | ADR-022 | Rate limit su Postgres (`RateLimitHit`), non Map in-process |
 | ADR-023 | Vista compagni senza stato medico; rosa rep con stato certificato |
+| ADR-024 | Gate wizard sequenziale solo su `PERSONAL_DATA` `todo`; gli altri passi visibili sono apribili; `APPROVED` resta proiezione di tutte le evidenze required |
 
 ## 12. Nota audit M0
 

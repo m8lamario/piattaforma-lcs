@@ -1,20 +1,19 @@
 :root {
-  /* PLACEHOLDER HEX — sostituire solo qui quando arrivano i colori ufficiali.
-     Default: tema scuro. Il tema chiaro vive in [data-theme="light"], applicato da prefers-color-scheme.
-     Direzione: blu istituzionale → azzurro → verde acqua. */
+  /* Palette ufficiale: blu #011674, azzurro #012BFD, verde acqua #00EDAF.
+     Default: tema scuro su carbone fresco (non nero puro). Il tema chiaro vive in [data-theme="light"]. */
 
-  --color-primary: #4a8fe0;
-  --color-primary-strong: #6aa6ea;
-  --color-primary-soft: #16385c;
+  --color-primary: #012bfd;
+  --color-primary-strong: #3d58ff;
+  --color-primary-soft: #141a2e;
   --color-on-primary: #f4f8fc;
-  --color-surface: #0b1a2e;
-  --color-surface-raised: #12253f;
-  --color-surface-inset: #081424;
-  --color-input: #0e2036;
-  --color-accent: #2ed9c4;
-  --color-accent-soft: #0e3f3c;
+  --color-surface: #0e1016;
+  --color-surface-raised: #181a22;
+  --color-surface-inset: #0a0c12;
+  --color-input: #161820;
+  --color-accent: #00edaf;
+  --color-accent-soft: #042e24;
   --color-on-accent: #042f2e;
-  --color-line: #2ed9c4;
+  --color-line: #00edaf;
   --color-danger: #f07171;
   --color-danger-soft: #3a1b22;
   --color-on-danger: #1a0508;
@@ -25,16 +24,16 @@
   --color-success-soft: #10382d;
   --color-on-success: #042218;
   --color-text: #f4f7fb;
-  --color-text-muted: #9bb0c6;
-  --color-border: #23405f;
-  --color-hairline: #1a304c;
-  --color-skeleton: #1a304c;
-  --color-skeleton-shine: #2a4a6e;
-  --color-focus: #8ec8ff;
-  --color-glow: rgba(74, 143, 224, 0.16);
+  --color-text-muted: #9aa3b0;
+  --color-border: #2a2e38;
+  --color-hairline: #1c1f28;
+  --color-skeleton: #1c1f28;
+  --color-skeleton-shine: #2e3340;
+  --color-focus: #7b91ff;
+  --color-glow: rgba(1, 43, 253, 0.18);
   --shadow-soft: 0 1px 0 var(--color-hairline);
 
-  --gradient-nav: linear-gradient(90deg, #123a66 0%, #1c6294 50%, #1a7a72 100%);
+  --gradient-nav: linear-gradient(90deg, #011674 0%, #012bfd 50%, #00edaf 100%);
   --color-on-nav: #f4f7fb;
   --color-on-nav-muted: color-mix(in srgb, var(--color-on-nav) 78%, transparent);
   --color-hero-bg: transparent;
@@ -97,7 +96,7 @@
   --wash-size: 22rem;
 
   /* Alias: keep both naming schemes valid across the slice. */
-  --color-primary-fill: #2e78c8;
+  --color-primary-fill: #012bfd;
   --color-surface-sunken: var(--color-surface-inset);
   --color-rail: var(--color-line);
   --control-height: var(--control-min);
@@ -107,18 +106,18 @@
 }
 
 html[data-theme="light"] {
-  --color-primary: #1a63c9;
-  --color-primary-strong: #154e9e;
-  --color-primary-soft: #e3f0fc;
+  --color-primary: #012bfd;
+  --color-primary-strong: #011674;
+  --color-primary-soft: #e8edff;
   --color-on-primary: #f8fbff;
-  --color-surface: #f3f7fb;
+  --color-surface: #f4f6fa;
   --color-surface-raised: #ffffff;
-  --color-surface-inset: #e6eef6;
+  --color-surface-inset: #e8ecf2;
   --color-input: #ffffff;
-  --color-accent: #0c8a82;
+  --color-accent: #007a62;
   --color-accent-soft: #d7f6f1;
   --color-on-accent: #f4fffd;
-  --color-line: #0c8a82;
+  --color-line: #00edaf;
   --color-danger: #b42318;
   --color-danger-soft: #fde8e6;
   --color-on-danger: #fff7f6;
@@ -134,19 +133,19 @@ html[data-theme="light"] {
   --color-hairline: #e4ebf3;
   --color-skeleton: #e4ebf3;
   --color-skeleton-shine: #ffffff;
-  --color-focus: #1a63c9;
-  --color-glow: rgba(26, 99, 201, 0.08);
+  --color-focus: #012bfd;
+  --color-glow: rgba(1, 43, 253, 0.08);
   --shadow-soft: 0 1px 0 var(--color-hairline);
-  --color-primary-fill: #1a63c9;
+  --color-primary-fill: #012bfd;
   --color-surface-sunken: var(--color-surface-inset);
   --color-rail: var(--color-line);
-  --gradient-nav: linear-gradient(90deg, #1a4e86 0%, #216c9c 50%, #1c8f86 100%);
+  --gradient-nav: linear-gradient(90deg, #011674 0%, #012bfd 50%, #00edaf 100%);
   --color-on-nav: #f4f7fb;
   --color-on-nav-muted: color-mix(in srgb, var(--color-on-nav) 82%, transparent);
-  --color-hero-bg: #1870b8;
+  --color-hero-bg: #012bfd;
   --color-hero-fg: #ffffff;
-  --color-hero-muted: color-mix(in srgb, #ffffff 82%, #1870b8);
+  --color-hero-muted: color-mix(in srgb, #ffffff 82%, #012bfd);
   --color-hero-cta-bg: #ffffff;
-  --color-hero-cta-fg: #1a4e86;
-  --color-hero-cta-bg-hover: #e8f3fc;
+  --color-hero-cta-fg: #011674;
+  --color-hero-cta-bg-hover: #e8edff;
 }

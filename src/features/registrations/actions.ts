@@ -62,6 +62,7 @@ export async function withdrawRegistrationAction(
     entityId: registration.id,
   });
   revalidatePath("/area");
+  revalidatePath("/area", "layout");
   revalidatePath("/squadra");
   revalidatePath("/admin/registrazioni");
   revalidatePath(`/admin/giocatori/${registration.playerProfileId}`);

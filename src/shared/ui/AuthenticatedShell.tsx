@@ -24,6 +24,7 @@ export async function AuthenticatedShell({ children }: Props) {
       showAdmin={shell.showAdmin}
       showPlayerTeam={shell.showPlayerTeam}
       unreadCount={shell.unreadCount}
+      withdrawRegistrationId={shell.withdrawRegistrationId}
     >
       {children}
     </AppShell>

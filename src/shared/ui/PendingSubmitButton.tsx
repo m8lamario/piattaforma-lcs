@@ -10,6 +10,7 @@ type Props = {
   variant?: ButtonVariant;
   icon?: IconName;
   iconPosition?: "left" | "right";
+  className?: string;
 };
 
 export function PendingSubmitButton({
@@ -18,6 +19,7 @@ export function PendingSubmitButton({
   variant = "primary",
   icon,
   iconPosition = "left",
+  className,
 }: Props) {
   const { pending } = useFormStatus();
   return (
@@ -26,6 +28,7 @@ export function PendingSubmitButton({
       variant={variant}
       icon={icon}
       iconPosition={iconPosition}
+      className={className}
       disabled={pending}
       aria-busy={pending}
     >

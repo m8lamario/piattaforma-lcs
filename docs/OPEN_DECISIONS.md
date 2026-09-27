@@ -39,7 +39,7 @@ Ogni voce: problema, opzioni, decisione necessaria, conseguenze, impatto sullo s
 - **Problema:** Validità, tipo visita, sport, scadenza, cosa rifiutare.
 - **Opzioni:** sola presenza file; scadenza obbligatoria; controlli manuali admin.
 - **Decisione necessaria:** organizzazione sanitaria/regolamenti.
-- **Impatto:** DocumentType flags. Workaround: metadata + review umana, expiry opzionale.
+- **Impatto:** DocumentType flags. Workaround: metadata + review umana, expiry opzionale. Verifica automatica/AI **non in v1**.
 
 ## OD-006 Provider pagamenti
 
@@ -99,6 +99,7 @@ Ogni voce: problema, opzioni, decisione necessaria, conseguenze, impatto sullo s
 
 - **Problema:** blu / chiaro / teal definitivi mancanti.
 - **Impatto:** un file token. Workaround: placeholder in guidelines.
+- **Decisione implementata:** palette ufficiale in `src/shared/ui/tokens.css`: blu `#011674`, azzurro `#012BFD`, verde acqua `#00EDAF`. Dark canvas carbone `#0E1016` (non nero puro, con un accenno di blu); in chiaro l’accento testuale è un acqua più scuro (`#007A62`) per AA, mentre sideline e gradiente usano `#00EDAF`.
 
 ## OD-015 Nome pubblico prodotto
 
@@ -370,7 +371,7 @@ Già coperti: no PWA in M0; scan OD-021.
 | M3-D3 | MIME dichiarato vuoto o `application/octet-stream`: si accetta il MIME rilevato dai magic bytes. Mismatch dichiarato vs magic = rifiuto. |
 | M3-D4 | Antivirus: `stubScan` sempre ok (OD-021). |
 | M3-D5 | Review solo da `PENDING_REVIEW`. Rifiuto senza motivo trim rifiutato. |
-| M3-D6 | Il gate del wizard blocca solo i passi precedenti `todo`. `attention` (in revisione / rifiutato) non impedisce privacy e passi successivi. |
+| M3-D6 | Il gate del wizard blocca solo i **dati personali** ancora `todo`. Certificato, tutore e passi successivi sono apribili; `APPROVED` resta vietato finché i required non sono completi. |
 | M3-D7 | Storage key opaca `documents/{registrationId}/{random}`. Replace marca il precedente `REPLACED` e non cancella il blob. |
 | M3-D8 | Audit `DOCUMENT_VIEW` sul GET del file, non sulla sola emissione del token. |
 | M3-D9 | Scadenza certificato non calcolata in v1 (OD-005). |
