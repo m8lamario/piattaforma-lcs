@@ -3,7 +3,15 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
-import type { WizardStepId } from "@/features/registrations/domain/wizard";
+import type { ChecklistItem } from "@/features/registrations/domain/requirements";
+import {
+  completedStepCount,
+  isSkippableStep,
+  isStepIncomplete,
+  nextIncompleteAfter,
+  statusForWizardStep,
+  type WizardStepId,
+} from "@/features/registrations/domain/wizard";
 import { it } from "@/shared/i18n/it";
 import { Icon, type IconName } from "@/shared/ui/Icon";
 import styles from "./WizardShell.module.css";
@@ -51,20 +59,34 @@ const STEP_ICONS: Record<WizardStepId, IconName> = {
 type Props = {
   step: WizardStepId;
   steps: WizardStepId[];
+  checklist: ChecklistItem[];
   children: ReactNode;
 };
 
-export function WizardShell({ step, steps, children }: Props) {
+function laterHrefFor(step: WizardStepId, checklist: ChecklistItem[]) {
+  if (!isSkippableStep(step) || !isStepIncomplete(step, checklist)) return null;
+  const next = nextIncompleteAfter(step, checklist);
+  if (next === "area") return "/area";
+  return `/area/registrazione/${next}`;
+}
+
+function statusCopy(status: ChecklistItem["status"], active: boolean) {
+  if (active) return it.wizardStepCurrent;
+  if (status === "complete") return it.wizardStepCompleted;
+  if (status === "attention") return it.wizardStepAttention;
+  return it.wizardStepUpcoming;
+}
+
+export function WizardShell({ step, steps, checklist, children }: Props) {
   const reduceMotion = useReducedMotion();
-  const current = Math.max(1, steps.indexOf(step) + 1);
   const previous = steps[steps.indexOf(step) - 1];
-  const progress = it.wizardProgress
-    .replace("{current}", String(current))
-    .replace("{total}", String(steps.length));
+  const { done, total } = completedStepCount(checklist);
+  const progress = it.wizardProgress.replace("{done}", String(done)).replace("{total}", String(total));
   const featured = step === "liberatorie";
   const solemn = step === "privacy";
-  const fill = `${Math.round((current / steps.length) * 100)}%`;
+  const fill = total === 0 ? "0%" : `${Math.round((done / total) * 100)}%`;
   const kicker = solemn ? it.wizardKickerPrivacy : featured ? it.wizardKickerMedia : null;
+  const laterHref = laterHrefFor(step, checklist);
 
   return (
     <div className={styles.canvas}>
@@ -74,8 +96,8 @@ export function WizardShell({ step, steps, children }: Props) {
           <p className={styles.progress}>
             <span className="srOnly">{progress}</span>
             <span aria-hidden="true">
-              {current}
-              <span className={styles.of}>/{steps.length}</span>
+              {done}
+              <span className={styles.of}>/{total}</span>
             </span>
           </p>
           <div className={styles.track} aria-hidden="true">
@@ -86,16 +108,17 @@ export function WizardShell({ step, steps, children }: Props) {
         <ol className={styles.steps} aria-label={progress}>
           {steps.map((id, index) => {
             const active = id === step;
-            const done = index < current - 1;
+            const status = statusForWizardStep(id, checklist);
+            const doneTick = status === "complete";
             return (
               <li key={id} className={styles.stepItem}>
                 <Link
                   href={`/area/registrazione/${id}`}
-                  className={`${styles.step} ${active ? styles.stepActive : ""} ${done ? styles.stepDone : ""}`}
+                  className={`${styles.step} ${active ? styles.stepActive : ""} ${doneTick ? styles.stepDone : ""}`}
                   aria-current={active ? "step" : undefined}
                 >
                   <span className={styles.tick} aria-hidden="true">
-                    {done ? <Icon name="check" size={12} /> : index + 1}
+                    {doneTick ? <Icon name="check" size={12} /> : index + 1}
                   </span>
                   <span className={`${styles.stepLabel} srOnly`}>{LABELS[id]}</span>
                 </Link>
@@ -133,6 +156,12 @@ export function WizardShell({ step, steps, children }: Props) {
             </div>
           </header>
 
+          {laterHref ? (
+            <p className={styles.later}>
+              <Link href={laterHref}>{it.completeLater}</Link>
+            </p>
+          ) : null}
+
           <motion.div
             key={step}
             className={styles.stageBody}
@@ -159,18 +188,17 @@ export function WizardShell({ step, steps, children }: Props) {
             <ol className={styles.journeyList} aria-label={it.wizardJourneyTitle}>
               {steps.map((id, index) => {
                 const active = id === step;
-                const done = index < current - 1;
-                const accessible = done || active;
-                const statusLabel = done
-                  ? it.wizardStepCompleted
-                  : active
-                    ? it.wizardStepCurrent
-                    : it.wizardStepUpcoming;
+                const status = statusForWizardStep(id, checklist);
+                const doneTick = status === "complete";
+                const attention = status === "attention";
+                const statusLabel = statusCopy(status, active);
 
                 const content = (
                   <>
-                    <span className={`${styles.journeyTick} ${done ? styles.journeyDone : ""} ${active ? styles.journeyActive : ""}`}>
-                      {done ? <Icon name="check" size={12} /> : index + 1}
+                    <span
+                      className={`${styles.journeyTick} ${doneTick ? styles.journeyDone : ""} ${active ? styles.journeyActive : ""} ${attention && !active ? styles.journeyAttention : ""}`}
+                    >
+                      {doneTick ? <Icon name="check" size={12} /> : index + 1}
                     </span>
                     <span className={styles.journeyInfo}>
                       <span className={styles.journeyLabel}>{LABELS[id]}</span>
@@ -181,13 +209,9 @@ export function WizardShell({ step, steps, children }: Props) {
 
                 return (
                   <li key={id} className={`${styles.journeyItem} ${active ? styles.journeyItemActive : ""}`}>
-                    {accessible ? (
-                      <Link href={`/area/registrazione/${id}`} className={styles.journeyLink} aria-current={active ? "step" : undefined}>
-                        {content}
-                      </Link>
-                    ) : (
-                      <div className={styles.journeyStatic}>{content}</div>
-                    )}
+                    <Link href={`/area/registrazione/${id}`} className={styles.journeyLink} aria-current={active ? "step" : undefined}>
+                      {content}
+                    </Link>
                   </li>
                 );
               })}
@@ -202,6 +226,11 @@ export function WizardShell({ step, steps, children }: Props) {
             </div>
 
             <div className={styles.railFooter}>
+              {laterHref ? (
+                <Link href={laterHref} className={styles.railLaterLink}>
+                  {it.completeLater}
+                </Link>
+              ) : null}
               <Link href="/area" className={styles.railBackLink}>
                 {it.backToArea}
               </Link>

@@ -4,7 +4,7 @@
 
 Moderno, sportivo-istituzionale, **mobile-first**. Area personale del giocatore, non back-office anni 2000 e non sito vetrina di una coppa.
 
-Identità di sistema: **registro di campo**. Una linea di sideline (teal/acqua) marca lockup, titoli di pagina e passi critici. Il blu resta il colore delle azioni; il verde acqua è accento e titolo hero in scuro. Nessuna card ovunque, icone solo se portano significato. L’unica eccezione al divieto di gradienti è la **navbar** (blu → azzurro → verde acqua).
+Identità di sistema: **registro di campo**. Una linea di sideline (teal/acqua) marca lockup, titoli di pagina e passi critici. Il blu resta il colore delle azioni; il verde acqua è accento e titolo hero in scuro. Nessuna card ovunque, icone solo se portano significato. L’unica eccezione al divieto di gradienti è la **navbar** (blu `#011674` → azzurro `#012BFD` → verde acqua `#00EDAF`).
 
 Il tema segue `prefers-color-scheme` del dispositivo. Nessun toggle in interfaccia, nessun cookie o `localStorage` di preferenza. Default scuro se il sistema non esprime una preferenza chiara. Nessun flash: uno script in `<head>` applica `data-theme` prima del paint e si aggiorna se cambia lo schema di colore.
 
@@ -12,39 +12,40 @@ Il tema segue `prefers-color-scheme` del dispositivo. Nessun toggle in interfacc
 
 Tutti i colori, spazi, raggi, type scale vivono in `src/shared/ui/tokens.css` come CSS custom properties. Vietato hardcodare HEX nei componenti.
 
-`:root` contiene i token del **tema scuro** (default). `html[data-theme="light"]` contiene il tema chiaro. Sostituire i HEX = modificare **un file**.
+`:root` contiene i token del **tema scuro** (default). `html[data-theme="light"]` contiene il tema chiaro. Sostituire i HEX = modificare **un file**. Palette ufficiale: blu `#011674`, azzurro `#012BFD`, verde acqua `#00EDAF`.
 
-Placeholder scuro (default):
+Scuro (default):
 
-| Token | Ruolo | Valore temporaneo |
+| Token | Ruolo | Valore |
 |---|---|---|
-| `--color-primary` | azzurro azione su scuro | `#4A8FE0` |
+| `--color-primary` | azzurro azione su scuro | `#012BFD` |
 | `--color-on-primary` | testo su primario | `#F4F8FC` |
-| `--color-surface` | sfondo blu istituzionale | `#0B1A2E` |
-| `--color-surface-raised` | pannelli rari | `#12253F` |
-| `--color-surface-inset` | inset / body documenti | `#081424` |
-| `--color-accent` / `--color-line` | teal/acqua, sideline e titoli hero | `#2ED9C4` |
+| `--color-surface` | sfondo carbone fresco | `#0E1016` |
+| `--color-surface-raised` | pannelli rari | `#181A22` |
+| `--color-surface-inset` | inset / body documenti | `#0A0C12` |
+| `--color-accent` / `--color-line` | verde acqua, sideline e titoli hero | `#00EDAF` |
 | `--color-on-accent` | testo su accent | `#042F2E` |
 | `--color-danger` | errori | `#F07171` |
 | `--color-warning` | attenzione | `#E6B23C` |
 | `--color-success` | ok | `#3DCE9A` |
 | `--color-text` | testo | `#F4F7FB` |
-| `--color-text-muted` | secondario | `#9BB0C6` |
-| `--color-hairline` | divisori | `#1A304C` |
-| `--color-border` | controlli | `#23405F` |
-| `--gradient-nav` | barra pubblica / mobile | `#123A66 → #1C6294 → #1A7A72` |
+| `--color-text-muted` | secondario | `#9AA3B0` |
+| `--color-hairline` | divisori | `#1C1F28` |
+| `--color-border` | controlli | `#2A2E38` |
+| `--gradient-nav` | barra pubblica / mobile | `#011674 → #012BFD → #00EDAF` |
 | `--color-hero-fg` | titolo hero | teal (`--color-accent`) |
 
-Placeholder chiaro (`data-theme="light"`):
+Chiaro (`data-theme="light"`):
 
-| Token | Ruolo | Valore temporaneo |
+| Token | Ruolo | Valore |
 |---|---|---|
-| `--color-primary` | azzurro istituzionale | `#1A63C9` |
+| `--color-primary` | azzurro istituzionale | `#012BFD` |
 | `--color-on-primary` | testo su primario | `#F8FBFF` |
-| `--color-surface` | sfondo | `#F3F7FB` |
+| `--color-surface` | sfondo | `#F4F6FA` |
 | `--color-surface-raised` | pannelli rari | `#FFFFFF` |
-| `--color-surface-inset` | inset | `#E6EEF6` |
-| `--color-accent` / `--color-line` | teal/acqua | `#0C8A82` |
+| `--color-surface-inset` | inset | `#E8ECF2` |
+| `--color-accent` | acqua testuale (AA su bianco) | `#007A62` |
+| `--color-line` | sideline/decoro | `#00EDAF` |
 | `--color-on-accent` | testo su accent | `#F4FFFD` |
 | `--color-danger` | errori | `#B42318` |
 | `--color-warning` | attenzione | `#9A6700` |
@@ -53,8 +54,8 @@ Placeholder chiaro (`data-theme="light"`):
 | `--color-text-muted` | secondario | `#3D4F66` |
 | `--color-hairline` | divisori | `#E4EBF3` |
 | `--color-border` | controlli | `#D5DEEA` |
-| `--gradient-nav` | barra pubblica / mobile | `#1A4E86 → #216C9C → #1C8F86` |
-| `--color-hero-bg` / `--color-hero-fg` | fascia hero | azzurro `#1870B8` / bianco |
+| `--gradient-nav` | barra pubblica / mobile | `#011674 → #012BFD → #00EDAF` |
+| `--color-hero-bg` / `--color-hero-fg` | fascia hero | azzurro `#012BFD` / bianco |
 
 Token di supporto (stessi nomi in entrambi i temi): `--color-input`, `--color-primary-soft`, `--color-danger-soft`, `--color-warning-soft`, `--color-success-soft`, `--color-focus`, `--color-glow`, `--color-skeleton`, `--color-skeleton-shine`, `--color-on-nav`, `--color-hero-muted`, `--color-hero-cta-bg`.
 
@@ -68,7 +69,7 @@ Typography: `--font-sans` (Geist) per UI; `--font-brand` (Barlow Condensed) solo
 - Tablet: contenuto max ~40–44rem nel percorso.
 - Desktop: shell con nav laterale nell’area autenticata (sideline sull’item attivo); il wizard resta stretto e guidato.
 - Pagine pubbliche (`/`, `/accedi`, `/invito`, `/privacy`, `/liberatorie`, informative collegate): topbar con marca LCS su gradiente; footer con Privacy, Liberatorie, Termini e Cookie.
-- Hero di presentazione (landing, pannello marca del login, riquadro stato in area): in scuro titolo teal su blu; in chiaro fascia azzurra con titolo bianco. Non applicare questo trattamento ai titoli di form e wizard.
+- Hero di presentazione (landing, pannello marca del login, riquadro stato in area): in scuro titolo teal su carbone `#0E1016`; in chiaro fascia azzurra con titolo bianco. Non applicare questo trattamento ai titoli di form e wizard.
 - Bottoni: **primary** azzurro/blu; **accent** verde acqua per CTA già marcate così; **secondary** fondo tenue + bordo; **ghost** trasparente; **danger** invariato nel ruolo. Hover, active, focus e disabled coerenti.
 - Gerarchia di pagina: kicker tracked + titolo `--text-xl` + lead, con sideline a sinistra. Liste e checklist sono righe divise da hairline, non card innestate.
 
@@ -76,7 +77,7 @@ Typography: `--font-sans` (Geist) per UI; `--font-brand` (Barlow Condensed) solo
 
 Vietato un’unica card con tutti i campi.
 
-- Indicatore di passo (`n/m`) in type brand + percorso cliccabile (fatto / corrente / da fare). I passi sono navigabili.
+- Indicatore di progresso (`completati n/m`) in type brand + percorso cliccabile (fatto / corrente / da fare / attenzione). I passi sono navigabili dopo i dati personali; si può saltare temporaneamente uno step (es. certificato) e tornarci dopo.
 - Titolo umano (“I tuoi dati”) + descrizione. Icona di passo solo se identifica il tema.
 - Indietro verso il passo precedente; Salva e continua; Salva ed esci.
 - Campi in fieldset (identità / contatti; chi è / come lo contattiamo).
@@ -103,7 +104,7 @@ Micro-interazioni: Framer Motion su transizioni di passo e ingresso landing. Dur
 
 ## 7. Accessibilità
 
-- Contrasto WCAG AA sui token placeholder (verificarli quando cambiano i HEX).
+- Contrasto WCAG AA sui token (reverificare se cambiano i HEX).
 - Focus visibile (`--color-focus`).
 - Label collegate agli input; non placeholder-as-label.
 - Errori annunciabili (`role="alert"` sulle summary).

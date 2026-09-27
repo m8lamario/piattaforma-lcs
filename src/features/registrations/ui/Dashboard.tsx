@@ -15,7 +15,6 @@ import { ButtonLink } from "@/shared/ui/Button";
 import { PageHeader } from "@/shared/ui/PageHeader";
 import { StatusChip, type StatusTone } from "@/shared/ui/StatusChip";
 import { IdentityConflictPanel } from "@/features/players/ui/IdentityConflictPanel";
-import { WithdrawForm } from "@/features/registrations/ui/WithdrawForm";
 import { WindowNotice } from "@/features/registrations/ui/WindowNotice";
 import type { EditionWindow } from "@/features/registrations/domain/window";
 import styles from "./Dashboard.module.css";
@@ -170,9 +169,7 @@ export function RegistrationDashboard({
           <div className={styles.checklistSection}>
             <div className={styles.checklistHeader}>
               <h2 className={styles.listTitle}>{it.checklistTitle}</h2>
-              <span className={styles.checklistCount}>
-                {doneCount}/{visible.length}
-              </span>
+              <span className={styles.checklistCount}>{it.checklistProgress.replace("{done}", String(doneCount)).replace("{total}", String(visible.length))}</span>
             </div>
 
             <ol className={styles.list}>
@@ -225,12 +222,6 @@ export function RegistrationDashboard({
             <div className={styles.noteBlock}>
               <p className={styles.note}>{it.guardianEmailNote}</p>
             </div>
-
-            {status !== "WITHDRAWN" && status !== "REMOVED" && !blocked ? (
-              <div className={styles.secondaryActions}>
-                <WithdrawForm registrationId={registrationId} />
-              </div>
-            ) : null}
           </div>
         </aside>
       </div>

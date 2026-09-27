@@ -1,0 +1,17 @@
+.quietForm {
+  width: 100%;
+}
+
+.quiet {
+  width: 100%;
+  justify-content: flex-start;
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  font-weight: 650;
+  min-height: var(--control-min);
+}
+
+.quietForm .quiet:hover:not(:disabled) {
+  color: var(--color-danger);
+  background: transparent;
+}

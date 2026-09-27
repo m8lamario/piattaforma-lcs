@@ -56,7 +56,7 @@ Solo `media-release`. Bottoni Accetto / Non accetto (il rifiuto è nascosto se l
 
 ### 3.3 Certificato (`/area/registrazione/certificato`)
 
-Nessun testo legale extra nel passo upload. L’informativa documenti è nel pacchetto privacy. Il rappresentante in `/squadra` vede solo lo **stato**, mai il file.
+Nessun nuovo atto legale sul passo upload: l’informativa documenti resta nel pacchetto privacy. Compare solo un **avviso operativo** prudente su eventuale verifica/consegna cartacea, senza vincolare le modalità dell’organizzazione. Il rappresentante in `/squadra` vede solo lo **stato**, mai il file.
 
 ### 3.4 Pagine pubbliche
 

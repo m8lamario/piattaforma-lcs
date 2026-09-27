@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { DEFAULT_EDITION_REQUIREMENTS, projectChecklist, type RegistrationEvidence } from "./requirements";
-import { gateWizardStep, nextHero, nextIncompleteStep, nextStepAfter, visibleWizardSteps } from "./wizard";
+import { gateWizardStep, nextHero, nextIncompleteAfter, nextIncompleteStep, nextStepAfter, visibleWizardSteps } from "./wizard";
 
 function evidence(overrides: Partial<RegistrationEvidence> = {}): RegistrationEvidence {
   return {
@@ -36,6 +36,23 @@ describe("wizard", () => {
     const checklist = projectChecklist(DEFAULT_EDITION_REQUIREMENTS, evidence());
     expect(gateWizardStep("certificato", checklist)).toBe("dati");
     expect(gateWizardStep("tutore", checklist)).toBe("dati");
+  });
+
+  it("dopo i dati consente di aprire privacy anche se il certificato è ancora da fare", () => {
+    const checklist = projectChecklist(
+      DEFAULT_EDITION_REQUIREMENTS,
+      evidence({ hasPersonalData: true }),
+    );
+    expect(gateWizardStep("privacy", checklist)).toBe("privacy");
+    expect(gateWizardStep("pagamento", checklist)).toBe("pagamento");
+  });
+
+  it("completa più tardi salta il certificato e va al passo successivo incompleto", () => {
+    const checklist = projectChecklist(
+      DEFAULT_EDITION_REQUIREMENTS,
+      evidence({ hasPersonalData: true }),
+    );
+    expect(nextIncompleteAfter("certificato", checklist)).toBe("privacy");
   });
 
   it("dopo i dati di un adulto va al certificato", () => {

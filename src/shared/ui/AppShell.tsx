@@ -11,10 +11,19 @@ type Props = {
   showAdmin?: boolean;
   showPlayerTeam?: boolean;
   unreadCount?: number;
+  withdrawRegistrationId?: string | null;
   children: ReactNode;
 };
 
-export function AppShell({ email, showTeam, showAdmin, showPlayerTeam, unreadCount, children }: Props) {
+export function AppShell({
+  email,
+  showTeam,
+  showAdmin,
+  showPlayerTeam,
+  unreadCount,
+  withdrawRegistrationId,
+  children,
+}: Props) {
   return (
     <div className={styles.shell}>
       <a href="#contenuto" className={styles.skip}>
@@ -28,6 +37,7 @@ export function AppShell({ email, showTeam, showAdmin, showPlayerTeam, unreadCou
           showAdmin={showAdmin}
           showPlayerTeam={showPlayerTeam}
           unreadCount={unreadCount}
+          withdrawRegistrationId={withdrawRegistrationId}
         />
       </header>
       <div id="contenuto" className={styles.content} tabIndex={-1}>

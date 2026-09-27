@@ -123,6 +123,12 @@
 .stagePhoto {
   position: absolute;
   inset: 0;
+  overflow: hidden;
+}
+
+.stageSlide {
+  position: absolute;
+  inset: 0;
 }
 
 .stage picture,
@@ -134,7 +140,7 @@
 
 .stageImage {
   object-fit: cover;
-  object-position: center;
+  object-position: var(--photo-pos-mobile, center);
 }
 
 .how {
@@ -230,7 +236,7 @@
   }
 
   .stage {
-    --photo-clip: polygon(2% 16%, 68% 0%, 99% 10%, 100% 78%, 34% 100%, 0% 84%);
+    --photo-clip: polygon(0% 8%, 64% 0%, 100% 6%, 100% 88%, 36% 100%, 0% 92%);
     position: relative;
     grid-area: photo;
     inset: auto;
@@ -257,6 +263,10 @@
   .stagePhoto {
     clip-path: var(--photo-clip);
     z-index: 1;
+  }
+
+  .stageImage {
+    object-position: var(--photo-pos-desktop, 46% 40%);
   }
 
   .stageRail {

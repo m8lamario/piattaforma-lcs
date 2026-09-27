@@ -56,14 +56,14 @@ Passi guidati, uno schermo alla volta, salvataggio per passo:
 6. Pagamento (se dovuto al giocatore)
 7. Riepilogo e “cosa succede ora”
 
-L’utente può uscire e riprendere. La dashboard mostra il prossimo passo **finché** restano voci da fare o in attenzione. Se lo stato è `APPROVED` o `WITHDRAWN`, o la checklist è completa, non c’è CTA “Continua” verso il wizard.
+L’utente può uscire, **aprire ogni passo dalla dashboard** e riprendere. Dopo i dati personali, i passi successivi (incluso il certificato ancora da caricare) sono navigabili: si può completarne uno, saltarne temporaneamente un altro e tornarci dopo. La dashboard mostra il progresso **N/M completati** e il prossimo passo **finché** restano voci da fare o in attenzione. Se lo stato è `APPROVED` o `WITHDRAWN`, o la checklist è completa, non c’è CTA “Continua” verso il wizard.
 
 Fuori dalla finestra `registrationOpensAt`/`registrationClosesAt`: il link di squadra non crea nuovi account, e scritture wizard e checkout sono bloccati.
 
 ## 4. Minore
 
 1. Data di nascita → `isMinor = age < 18` (assunzione, da validare).
-2. Se minore, il passo guardian è obbligatorio per avanzare.
+2. Se minore, il passo guardian è **obbligatorio per lo stato `APPROVED`**, ma non blocca l’apertura degli altri passi.
 3. Consensi con audience `GUARDIAN` / `MINOR` mostrati con copy dedicato (placeholder legale).
 4. Il login resta del minore. Se c’è `Guardian.email`, le comunicazioni di servizio (stesso `title` della notifica, niente body sanitario) possono partire anche al tutore. Non è una firma del genitore (OD-002/032).
 5. Non si afferma che il click digitale del minore o del genitore abbia valore legale: tracciamo acceptance; la validità è OPEN_DECISIONS.
@@ -79,6 +79,8 @@ Fuori dalla finestra `registrationOpensAt`/`registrationClosesAt`: il link di sq
 7. Replace: il documento precedente passa a `REPLACED`, non si perde la storia.
 
 Il rappresentante vede solo lo stato, mai l’URL.
+
+Sul passo upload compare un **avviso operativo** (non un atto legale): il caricamento in piattaforma non sostituisce automaticamente un’eventuale consegna o verifica cartacea in sede; le modalità restano dell’organizzazione. L’informativa sul trattamento resta nel pacchetto privacy (`document-processing`). La revisione del file è **umana** (accetta/rifiuta): nessuna verifica automatica o AI in v1.
 
 ## 6. Review organizzazione
 

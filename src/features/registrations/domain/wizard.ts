@@ -81,12 +81,52 @@ export function gateWizardStep(requested: WizardStepId, checklist: ChecklistItem
     return nextIncompleteStep(checklist);
   }
 
-  const requestedIndex = visible.indexOf(requested);
-  const firstBlockingImplemented = visible.find((id, index) => {
-    const step = stepDefinition(id);
-    return index < requestedIndex && step.implemented && isStepTodo(id, checklist);
-  });
-  return firstBlockingImplemented ?? requested;
+  if (requested !== "dati" && isStepTodo("dati", checklist)) {
+    return "dati";
+  }
+
+  return requested;
+}
+
+export function isSkippableStep(id: WizardStepId) {
+  return id !== "dati" && id !== "riepilogo";
+}
+
+export function nextIncompleteAfter(
+  current: WizardStepId,
+  checklist: ChecklistItem[],
+): WizardStepId | "area" {
+  const visible = visibleWizardSteps(checklist);
+  const index = visible.indexOf(current);
+  const rest = index >= 0 ? visible.slice(index + 1) : visible;
+  const following = rest.find((id) => id !== "riepilogo" && isStepIncomplete(id, checklist));
+  if (following) return following;
+  const wrap = visible.find((id) => id !== current && id !== "riepilogo" && isStepIncomplete(id, checklist));
+  if (wrap) return wrap;
+  if (visible.includes("riepilogo")) return "riepilogo";
+  return "area";
+}
+
+export function completedStepCount(checklist: ChecklistItem[]) {
+  const visible = checklist.filter((item) => item.status !== "not_applicable");
+  return {
+    done: visible.filter((item) => item.status === "complete").length,
+    total: visible.length,
+  };
+}
+
+export function statusForWizardStep(id: WizardStepId, checklist: ChecklistItem[]): ChecklistItem["status"] {
+  const step = stepDefinition(id);
+  const item = itemForStep(step, checklist);
+  if (!item) {
+    const remaining = checklist.some(
+      (entry) =>
+        entry.status !== "not_applicable" &&
+        (entry.required ? entry.status !== "complete" : entry.status === "attention"),
+    );
+    return remaining ? "todo" : "complete";
+  }
+  return item.status;
 }
 
 export function nextStepAfter(current: WizardStepId, checklist: ChecklistItem[]): WizardStepId | "area" {

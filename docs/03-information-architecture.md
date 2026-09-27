@@ -67,11 +67,12 @@ M10: `/area/account`, `/area/squadra`, `/recupera-password`.
 Priorità visiva:
 
 1. Stato iscrizione + CTA “cosa fare ora” (assente se in regola / ritirato)
-2. Checklist
+2. Checklist (ogni voce apre il passo; progresso N/M completati)
 3. Percorso registrazione
 4. Squadra (compagni)
 5. Comunicazioni (con badge non lette)
 6. Account
+7. Ritiro iscrizione (fondo del menu laterale, secondario)
 
 Le liberatorie foto/video **non** sono un link minore in footer. Hanno uno step nel percorso e una voce in consensi.
 
