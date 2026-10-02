@@ -1,4 +1,4 @@
-import { AGE_OF_MAJORITY } from "@/shared/config/app";
+import { AGE_OF_MAJORITY, AGE_OF_MEDIA_AGREEMENT } from "@/shared/config/app";
 
 export function ageOn(birthDate: Date, on: Date = new Date()): number {
   let age = on.getUTCFullYear() - birthDate.getUTCFullYear();
@@ -16,4 +16,14 @@ export function isMinor(
   ageOfMajority = AGE_OF_MAJORITY,
 ): boolean {
   return ageOn(birthDate, on) < ageOfMajority;
+}
+
+export function needsMediaAgreement(
+  birthDate: Date,
+  on: Date = new Date(),
+  ageOfMajority = AGE_OF_MAJORITY,
+  ageOfAgreement = AGE_OF_MEDIA_AGREEMENT,
+) {
+  if (!isMinor(birthDate, on, ageOfMajority)) return false;
+  return ageOn(birthDate, on) >= ageOfAgreement;
 }

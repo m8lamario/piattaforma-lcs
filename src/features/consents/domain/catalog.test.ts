@@ -15,10 +15,11 @@ describe("catalogo documenti legali", () => {
     }
   });
 
-  it("non mette termini o cookie nel passo privacy del wizard", () => {
-    expect(PRIVACY_PACK_SLUGS).not.toContain("terms");
+  it("mette i termini nel passo privacy come T1 e lascia i cookie fuori", () => {
+    expect(PRIVACY_PACK_SLUGS).toContain("terms");
     expect(PRIVACY_PACK_SLUGS).not.toContain("cookie-policy");
-    expect(privacySlugsFor(true)).not.toContain("terms");
+    expect(privacySlugsFor(true)).toContain("terms");
+    expect(privacySlugsFor(true)).not.toContain("cookie-policy");
     expect(privacyCatalogSlugs(true)).toEqual(privacySlugsFor(true));
     expect(MEDIA_RELEASE_SLUG).toBe("media-release");
   });

@@ -64,7 +64,8 @@ export const it = {
   stepDatiLead: "Nome, codice fiscale e come contattarti. L’email è quella dell’account.",
   stepTutoreLead: "Serve un contatto di un genitore o tutore. L’account resta il tuo.",
   stepCertificatoLead: "Carica il certificato agonistico. Il rappresentante vede solo lo stato, non il file.",
-  stepPrivacyLead: "Leggi l’informativa e conferma solo se l’hai presa visione. I testi sono ancora placeholder.",
+  stepPrivacyLead:
+    "Leggi ogni informativa e conferma solo se l’hai presa visione. I campi [INSERIRE …] (titolare, sede, email) restano da compilare.",
   stepLiberatorieLead:
     "Scelta su foto, video e social: distinta dalla privacy. Se non è obbligatoria, puoi rifiutare senza bloccare l’iscrizione.",
   stepPagamentoLead: "Quota di iscrizione, se l’edizione la chiede a te. Nessun dato della carta su questo sito.",
@@ -117,7 +118,7 @@ export const it = {
   placeholderMedical:
     "Qui caricherai il certificato medico agonistico (PDF, JPEG o PNG). Il file non sarà pubblico e il rappresentante vedrà solo lo stato.",
   placeholderPrivacy:
-    "Qui leggerai l’informativa privacy versionata. I testi restano placeholder finché l’organizzazione non fornisce quelli ufficiali.",
+    "Qui leggerai le informative versionate (moduli LCS 2026-27). I campi [INSERIRE …] organizzativi restano da compilare.",
   placeholderMedia:
     "Qui deciderai sulle liberatorie foto, video e social. Se non sono obbligatorie, potrai rifiutare senza bloccare l’iscrizione.",
   placeholderPayment:
@@ -207,17 +208,19 @@ export const it = {
   heroMedicalRejected: "Il certificato è stato rifiutato. Caricane uno nuovo.",
   statusAccountCreated: "Account creato. Completa l’iscrizione quando il percorso sarà disponibile.",
   consentPrivacyHelp:
-    "Leggi ogni informativa e conferma solo se l’hai presa visione. I testi sono placeholder: non costituiscono un parere legale.",
+    "Leggi ogni informativa e conferma solo se l’hai presa visione. I testi derivano dai moduli LCS 2026-27, adattati a questa piattaforma: non sono un parere legale e non sono firmati. Restano da compilare i campi [INSERIRE …].",
   consentMediaHelp:
-    "Questa è una scelta distinta dalla privacy. Serve per foto, video e canali social, con un testo ancora placeholder.",
+    "Questa è una scelta distinta dalla privacy. Serve per foto, video e canali social, uso per uso. Completare il passo senza spuntare gli usi è consentito.",
   consentMediaOptional: "Per questa edizione puoi non accettare: l’iscrizione non si blocca.",
-  consentMediaRequired: "Per questa edizione la liberatoria è obbligatoria.",
+  consentMediaRequired:
+    "Per questa edizione il passo va inviato. Gli usi foto e video restano facoltativi e non bloccano l’iscrizione.",
   consentMediaAccept: "Accetto e continuo",
   consentMediaRefuse: "Non accetto e continuo",
   consentMediaCurrentAccept: "Hai già accettato la versione corrente. Puoi cambiare scelta.",
   consentMediaCurrentRefuse: "Hai già scelto di non accettare. Puoi cambiare scelta.",
+  consentMediaSubmitted: "Hai già inviato questo passo. Puoi cambiare le caselle e salvare di nuovo.",
   mediaChoiceTitle: "La tua scelta",
-  mediaChoiceAcceptHelp: "Autorizzi foto, video e canali social secondo il testo placeholder.",
+  mediaChoiceAcceptHelp: "Autorizzi foto, video e canali social secondo la liberatoria che hai letto.",
   mediaChoiceRefuseHelp: "Non autorizzi. Se non è obbligatoria, l’iscrizione continua.",
   consentVersion: "Versione",
   consentAcceptLabel: "Confermo di aver letto la versione",
@@ -230,11 +233,11 @@ export const it = {
   consentReadLocked: "Leggi l’informativa prima di confermare.",
   legalIndexTitle: "Informative",
   legalIndexHelp:
-    "Elenco delle informative versionate. I testi sono placeholder: non costituiscono documenti ufficiali.",
+    "Elenco delle informative versionate. I testi derivano dai moduli LCS 2026-27 adattati a questa piattaforma; i campi [INSERIRE …] restano da compilare. Non sono testi firmati.",
   terms: "Condizioni",
   cookies: "Cookie",
   legalPlaceholderNotice:
-    "I testi seguenti sono placeholder. Non costituiscono una informativa legale valida.",
+    "I testi visibili derivano dai moduli LCS 2026-27 (1.0 del 1 ottobre 2026) e dal funzionamento di questa piattaforma. Non è un parere legale e non è un testo firmato. I campi [INSERIRE …] (titolare, sede, P.IVA, email privacy, partner, base giuridica della copia del certificato, regolamento di torneo) restano da compilare.",
   legalArchivedVersionNotice:
     "Questa pagina mostra la versione registrata al momento dell’accettazione, non necessariamente il testo corrente.",
   legalCurrentVersionLink: "Apri il testo corrente",
@@ -266,7 +269,7 @@ export const it = {
   paymentTeamTitle: "Pagamento squadra",
   paymentTeamCovered: "La squadra ha già un pagamento riuscito.",
   rosterTitle: "Rosa",
-  rosterHelp: "Vedi nome, stato iscrizione e stato del certificato. Il file medico non è disponibile qui.",
+  rosterHelp: "Vedi nome, stato iscrizione, stato del certificato e se il giocatore è pubblicabile. Il file medico non è disponibile qui.",
   rosterEmpty: "Nessun giocatore in rosa.",
   rosterMedicalNone: "Certificato mancante",
   rosterMedicalPending: "Certificato in revisione",
@@ -517,6 +520,14 @@ export const it = {
   errorCONSENT_MEDIA_REQUIRED: "Per questa edizione la liberatoria è obbligatoria.",
   errorCONSENT_VERSION_MISSING: "Versione informativa mancante. Ricarica la pagina.",
   errorCONSENT_RATE_LIMITED: "Troppe conferme in poco tempo. Riprova più tardi.",
+  errorCONSENT_BOX_REQUIRED: "Spunta le caselle obbligatorie e quella sul certificato medico. Le altre restano facoltative.",
+  errorCONSENT_REVOKE_FORBIDDEN: "Questa casella non si toglie da qui. Scrivi all’organizzazione.",
+  errorCONSENT_TOKEN_INVALID: "Questo link non è valido o è scaduto.",
+  errorCONSENT_TOKEN_USED: "Questo link è già stato usato.",
+  errorGUARDIAN_SAVE_FAILED: "Non è stato possibile salvare i dati del tutore.",
+  errorGUARDIAN_SECOND_EMAIL: "Inserisci l’email dell’altro genitore.",
+  errorGUARDIAN_SAME_EMAIL: "L’email dell’altro genitore deve essere diversa da quella del contatto principale.",
+  errorGUARDIAN_EMAIL_CORRECTION_USED: "L’email dell’altro genitore si può correggere una sola volta. Scrivi all’organizzazione.",
   errorPAYMENT_ALREADY_COMPLETED: "Il pagamento è già coperto. Non viene addebitato un secondo importo.",
   errorPAYMENT_IN_PROGRESS: "C’è già un pagamento in corso. Se hai chiuso la pagina esterna, puoi riprendere da qui: non si crea un secondo addebito.",
   errorPAYMENT_TEAM_PAYS: "Per questa edizione il pagamento è a carico della squadra.",
@@ -531,7 +542,6 @@ export const it = {
   errorTEAM_EDITION_CONFLICT: "Questo giocatore è già iscritto a un’altra competizione.",
   errorTEAM_BULK_RATE_LIMITED: "Troppi elenchi in poco tempo. Riprova più tardi.",
   errorEDITION_NOT_FOUND: "Edizione non trovata.",
-  errorGUARDIAN_SAVE_FAILED: "Non è stato possibile salvare i dati del tutore.",
   errorVALIDATION_INVALID_INPUT: "Controlla i dati inseriti.",
   errorVALIDATION_BIRTH_DATE_INVALID: "Inserisci una data di nascita valida.",
   errorRATE_LIMITED: "Troppe modifiche in poco tempo. Riprova più tardi.",
@@ -600,4 +610,92 @@ export const it = {
   lifecycleStatusActive: "Attivo",
   lifecycleStatusDeleted: "Chiuso",
   lifecycleStatusAnonymized: "Anonimizzato",
+  navConsents: "Consensi",
+  boxOptional: "Facoltativa",
+  boxRequired: "Obbligatoria",
+  boxPlay: "Necessaria per giocare",
+  boxOptOut: "Opt-out",
+  boxT1: "Accetto il regolamento e le condizioni di iscrizione.",
+  boxM1: "Dichiaro di avere compiuto 18 anni.",
+  boxM2: "Ho letto l’informativa privacy.",
+  boxM3:
+    "Certificato medico — Acconsento che ESL tratti la copia del mio certificato medico sportivo caricata in piattaforma e ne registri presentazione e scadenza (dato relativo alla salute). Il testo ufficiale della base giuridica è ancora un placeholder.",
+  boxM4:
+    "Marketing ESL — Acconsento a ricevere da ESL comunicazioni promozionali e di marketing su tornei, eventi, iniziative e offerte, tramite email, SMS, WhatsApp e telefono. Il consenso vale dopo il clic nell’email di conferma.",
+  boxM5:
+    "Partner — Acconsento che ESL comunichi il mio nome, email e cellulare alle società partner elencate al punto 10 dell’informativa, perché mi inviino loro comunicazioni promozionali tramite email, SMS, WhatsApp e telefono.",
+  boxM6: "Edizioni successive — Non voglio ricevere email sull’edizione successiva di questo torneo.",
+  boxM7: "Canali del torneo — sito, app e profili social ufficiali, comprese dirette e highlights.",
+  boxM8: "Promozione ESL — locandine, brochure, video promozionali e campagne, anche sponsorizzate online.",
+  boxM9: "Contenuti con sponsor — contenuti sul torneo realizzati insieme agli sponsor e ai partner.",
+  boxM10: "Stampa — invio a giornali, TV e siti di informazione per la cronaca del torneo.",
+  boxM11: "Interviste — interviste audio e video in cui compaio.",
+  boxG2: "Ho letto l’informativa privacy.",
+  boxG3: "Scelta sul secondo genitore",
+  boxG4:
+    "Certificato medico — Acconsento che ESL tratti la copia del certificato medico sportivo caricata in piattaforma e ne registri presentazione e scadenza (dato relativo alla salute). Il testo ufficiale della base giuridica è ancora un placeholder.",
+  boxG5:
+    "Cognome completo — Acconsento alla pubblicazione di nome e cognome completi in classifiche, tabellini e statistiche su sito, app e social del torneo. Senza questo consenso compariranno nome e iniziale del cognome.",
+  boxG6:
+    "Marketing ESL — Acconsento che ESL invii, ai recapiti del genitore/tutore indicato, comunicazioni promozionali sui tornei e gli eventi della Lega Calcio Studenti, tramite email, SMS, WhatsApp e telefono. Il consenso vale dopo il clic nell’email di conferma.",
+  boxG7:
+    "Partner — Acconsento che ESL comunichi nome, email e cellulare del genitore/tutore indicato alle società partner elencate al punto 10 dell’informativa, perché inviino loro comunicazioni promozionali tramite email, SMS, WhatsApp e telefono.",
+  boxG8: "Edizioni successive — Non voglio ricevere email sull’edizione successiva di questo torneo.",
+  boxG9: "Canali del torneo — sito, app e profili social ufficiali, comprese dirette e highlights.",
+  boxG10: "Promozione ESL — locandine, brochure, video promozionali e campagne, anche sponsorizzate online.",
+  boxG11: "Contenuti con sponsor — contenuti sul torneo realizzati insieme agli sponsor e ai partner.",
+  boxG12: "Stampa — invio a giornali, TV e siti di informazione per la cronaca del torneo.",
+  boxG13: "Interviste — interviste audio e video.",
+  boxG14:
+    "Accordo del minore — Ho letto la liberatoria, so come verranno usate le mie foto e i miei video e sono d’accordo. Senza questa casella, dai 14 anni, le autorizzazioni sopra non si attivano.",
+  boxC1: "Confermo le scelte privacy per questo minore.",
+  g3Legend: "Altro genitore",
+  g3Other: "Anche l’altro genitore esercita la responsabilità genitoriale: indico la sua email per la conferma delle scelte.",
+  g3Sole:
+    "Il contatto indicato è l’unico esercente la responsabilità genitoriale (es. tutore; altro genitore deceduto, decaduto o sospeso dalla responsabilità genitoriale ai sensi dell’art. 330 c.c.; figlio/a riconosciuto/a solo da lui/lei). L’affidamento esclusivo non basta: le decisioni di maggiore interesse restano di entrambi i genitori (art. 337-quater c.c.). Una dichiarazione non veritiera espone a responsabilità verso l’altro genitore e verso ESL.",
+  g3SecondEmail: "Email dell’altro genitore",
+  g3SecondName: "Nome dell’altro genitore",
+  g3SecondLastName: "Cognome dell’altro genitore",
+  consentBoxesHelp:
+    "I consensi facoltativi non incidono sulla partecipazione. Nessuna casella è preselezionata. Puoi revocarli dall’area consensi. Se non spunti «Edizioni successive», riceverai email sull’edizione successiva (art. 130, comma 4, Codice privacy), rifiutabili anche dopo con il link nel messaggio.",
+  consentMediaUsesHelp:
+    "Spunta solo gli usi che autorizzi. Puoi lasciare tutto vuoto e giocare lo stesso. Per i minorenni le autorizzazioni si attivano dopo la conferma dell’altro genitore e, dai 14 anni, con l’accordo qui sotto.",
+  consentMediaSave: "Salva le scelte e continua",
+  medicalCopyNotice:
+    "Questa piattaforma conserva una copia del file per la revisione dello staff. I moduli LCS 2026-27 chiedevano solo presentazione e scadenza: il legale deve autorizzare la copia. La casella sul trattamento è nel passo privacy.",
+  consentsTitle: "I tuoi consensi",
+  consentsHelp:
+    "Ogni casella facoltativa si toglie con un clic. Le obbligatorie e il certificato non si modificano da qui.",
+  consentsRevoke: "Revoca",
+  consentsRevoked: "Revocata",
+  consentsActive: "Attiva",
+  consentsInactive: "Non attiva",
+  consentsExportJson: "Scarica JSON",
+  consentsExportText: "Scarica testo",
+  consentsErasure: "Chiedi la cancellazione",
+  consentsErasureHelp:
+    "Registra una richiesta. L’organizzazione la gestisce; non cancella da sola account, certificati o audit.",
+  consentsErasureDone: "Richiesta registrata. L’organizzazione la vedrà nell’audit.",
+  publicationPublishable: "Pubblicabile",
+  publicationNotPublishable: "Non pubblicabile",
+  publicationPending: "In attesa dell’altro genitore",
+  publicationChannels: "Canali",
+  publicationPromotion: "Promozione",
+  publicationSponsor: "Sponsor",
+  publicationPress: "Stampa",
+  publicationInterviews: "Interviste",
+  publicationSurname: "Cognome completo",
+  confirmC1Title: "Conferma le scelte privacy",
+  confirmC1Help: "Se confermi, le foto, i video e il cognome completo scelti dal primo contatto possono attivarsi.",
+  confirmC1Submit: "Confermo le scelte",
+  confirmC1Done: "Conferma registrata. Grazie.",
+  confirmMarketingTitle: "Conferma le comunicazioni di ESL",
+  confirmMarketingHelp: "Senza questo clic il consenso marketing non è attivo.",
+  confirmMarketingSubmit: "Confermo",
+  confirmMarketingDone: "Consenso marketing confermato.",
+  emailC1Subject: "Conferma le scelte privacy per un minore iscritto",
+  emailC1ReminderSummary: "Promemoria: manca ancora la tua conferma.",
+  emailMarketingOptInSubject: "Conferma le comunicazioni di ESL",
+  boxFootnote:
+    "I consensi facoltativi non incidono sulla partecipazione. Puoi revocarli dall’area consensi. Se non spunti l’opt-out edizioni successive, potrà arrivare un’email sullo stesso torneo.",
 };

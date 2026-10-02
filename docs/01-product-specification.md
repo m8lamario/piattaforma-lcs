@@ -68,10 +68,10 @@ Campi **non** mostrati ai compagni di squadra: CF, email, telefono, data di nasc
 ## 9. Minori
 
 - Minorenne se età < 18 alla data di valutazione (assunzione IT, da validare).
-- Flusso guardian obbligatorio: nome, cognome, rapporto, email, telefono.
-- Informative/consensi con audience `MINOR` / `GUARDIAN`.
+- Flusso guardian obbligatorio: nome, cognome, rapporto, email, telefono; per i minorenni anche G3 (secondo genitore o unico esercente) e, se serve, conferma C1.
+- Informative/consensi con audience `MINOR` e caselle G* sull’account del minore.
 - Account del minore, non del genitore.
-- Validità legale del consenso digitale e dell’email del minore: **OPEN_DECISIONS**, non inventata.
+- Validità legale del consenso digitale e dell’email del minore: **OPEN_DECISIONS**, non inventata (OD-002, OD-046).
 
 ## 10. Certificato medico
 

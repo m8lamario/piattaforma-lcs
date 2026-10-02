@@ -6,12 +6,8 @@ import { auth } from "@/auth";
 import { parseDateOnly } from "@/features/players/domain/dates";
 import { guardianSchema } from "@/features/players/schemas/guardian";
 import { personalDataSchema } from "@/features/players/schemas/personal";
-import {
-  loadPlayerWorkspace,
-  persistRegistrationStatus,
-  saveGuardianProfile,
-  savePersonalProfile,
-} from "@/features/registrations/data/workspace";
+import { loadPlayerWorkspace, persistRegistrationStatus, saveGuardianProfile, savePersonalProfile } from "@/features/registrations/data/workspace";
+import { ensureC1Sent } from "@/features/consents/data/followup";
 import { nextStepAfter } from "@/features/registrations/domain/wizard";
 import { workspaceWriteCode } from "@/features/registrations/domain/writeGate";
 import { authorize } from "@/shared/authz/authorize";
@@ -147,6 +143,10 @@ export async function saveGuardianAction(
     relationship: formData.get("relationship"),
     email: formData.get("email"),
     phone: formData.get("phone"),
+    g3: formData.get("g3"),
+    secondFirstName: formData.get("secondFirstName"),
+    secondLastName: formData.get("secondLastName"),
+    secondEmail: formData.get("secondEmail"),
     intent: formData.get("intent") || "continue",
   });
   if (!parsed.success) {
@@ -158,23 +158,32 @@ export async function saveGuardianAction(
     return fail("RATE_LIMITED");
   }
 
+  const trace = await userAgentAndIp();
   const saved = await saveGuardianProfile(access.session.user!.id, {
     firstName: parsed.data.firstName,
     lastName: parsed.data.lastName,
     relationship: parsed.data.relationship,
     email: parsed.data.email,
     phone: parsed.data.phone,
+    g3: parsed.data.g3,
+    secondFirstName: parsed.data.secondFirstName,
+    secondLastName: parsed.data.secondLastName,
+    secondEmail: parsed.data.secondEmail,
+    ...trace,
   });
   if (!saved.ok) {
+    if (saved.reason === "second_email") return fail("GUARDIAN_SECOND_EMAIL");
+    if (saved.reason === "same_email") return fail("GUARDIAN_SAME_EMAIL");
+    if (saved.reason === "email_correction_used") return fail("GUARDIAN_EMAIL_CORRECTION_USED");
     return fail("GUARDIAN_SAVE_FAILED");
   }
 
   const updated = await loadPlayerWorkspace(access.session.user!.id);
   if (updated) {
     await persistRegistrationStatus(updated.registration.id, updated.projectedStatus);
+    await ensureC1Sent(updated.registration.id);
   }
 
-  const trace = await userAgentAndIp();
   await writeAuditLog({
     actorUserId: access.session.user!.id,
     action: "GUARDIAN_SAVE",

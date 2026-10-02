@@ -1,174 +1,119 @@
-# Informativa sui documenti caricati (certificato medico e file)
+**Fonte:** finalità H dei Moduli 1 e 2 LCS 2026-27 (testi 1.0 del 1 ottobre 2026), adattata a questa piattaforma. I moduli chiedevano solo presentazione e scadenza, **senza copia**. Qui si carica un file e ESL ne conserva una copia per la revisione dello staff. **Non è un parere legale e non è un testo firmato.**
 
-**Questo testo è un placeholder di piattaforma. Non è un’informativa legale valida. Non è un parere giuridico. Non dichiara conformità a norme.**
+**[INSERIRE NOME TORNEO]**, stagione 2026/2027, versione 1.0 del 1 ottobre 2026. Data di entrata in vigore su questa piattaforma: **[INSERIRE DATA DI ENTRATA IN VIGORE]**.
 
-**[INSERIRE INFORMATIVA DOCUMENTI CARICATI]**
-
-**[INSERIRE TESTO INFORMATIVA DOCUMENTI]**
-
-**[INSERIRE DATA DI ENTRATA IN VIGORE DELLA VERSIONE UFFICIALE]**
+ai sensi degli artt. 13 e 9 del Regolamento UE 2016/679 (GDPR). Integra l’[informativa privacy](/privacy) e, per i minori, l’[informativa per minori](/privacy/minori). Non riguarda foto e video: vedi [Liberatoria](/liberatorie).
 
 ---
 
-## 1. Perché si raccolgono i documenti
+## 1. Titolare
 
-**[INSERIRE FINALITÀ RACCOLTA CERTIFICATO MEDICO]**
+ESL **[INSERIRE RAGIONE SOCIALE E FORMA GIURIDICA]**, sede legale in **[INSERIRE SEDE LEGALE]**, P.IVA/C.F. **[INSERIRE P.IVA / CODICE FISCALE]**.
 
-Bozza operativa **non ufficiale** (da confermare o sostituire):
-
-- consentire all’organizzazione di verificare che esista un certificato medico agonistico associato all’iscrizione;
-- tracciare revisione umana (approvazione / rifiuto con motivazione);
-- conservare uno storico dei file sostituiti per audit interno.
-
-**[INSERIRE SE LA FINALITÀ INCLUDE ADEMPIMENTI FEDERALI, ASSICURATIVI, DI LEGGE SULLO SPORT, TUTELA SANITARIA]**
-
-Base giuridica: **[INSERIRE BASE GIURIDICA DATI SANITARI / CATEGORIE PARTICOLARI]**
-
-Eventuale consenso esplicito distinto da questa informativa: **[INSERIRE SÌ / NO / TESTO CONSENSO]** — in v1 la presa visione avviene nel passo privacy insieme alle altre informative del pacchetto, **senza** un checkbox sanitario separato. **[INSERIRE SE SERVE UN CONSENSO SPECIFICO AGGIUNTIVO]**
+Contatti privacy: **[INSERIRE EMAIL PRIVACY]** — PEC **[INSERIRE PEC]**. DPO: **[INSERIRE NOME E EMAIL DPO, OPPURE «non nominato»]**.
 
 ---
 
-## 2. Che cosa si carica oggi
+## 2. Perché si raccolgono i documenti
 
-Tipo documento in piattaforma: `MEDICAL_CERTIFICATE` («Certificato medico agonistico»).
+Per verificare che esista un certificato medico sportivo associato all’iscrizione, richiesto dal regolamento di torneo, e per tracciare la revisione umana (approvazione o rifiuto con motivazione visibile al giocatore).
 
-- Formati ammessi: PDF, JPEG, PNG.
-- Dimensione massima: configurabile (default 10 MB).
-- Scadenza del certificato: campo previsto; in v1 **non** è calcolata in automatico. **[INSERIRE REGOLE DI VALIDITÀ, TIPO VISITA, SPORT, SCADENZA]**
-- Antivirus: interfaccia prevista, implementazione stub. **[INSERIRE OBBLIGO DI SCAN PRIMA DEL LANCIO]**
-
-Altri tipi documentali futuri: **[INSERIRE: DOCUMENTO IDENTITÀ, AUTOCERTIFICAZIONI, NULLA OSTA SCUOLA, ECC.]**. Lo schema lo consente come nuovo `DocumentType`, senza cambiare l’architettura.
-
-Cosa **non** va nel certificato secondo l’organizzazione: **[INSERIRE ISTRUZIONI ALL’UTENTE: ES. NON INCLUDERE REFERTI NON RICHIESTI]**
+Adempimenti federali, assicurativi o di legge sullo sport oltre a questo: **[INSERIRE]**.
 
 ---
 
-## 3. Dati contenuti nel trattamento documentale
+## 3. Che cosa si tratta
 
-**[INSERIRE CATEGORIE DI DATI DEL FILE E DEI METADATI]**
+Tipo in piattaforma: certificato medico agonistico.
 
-Operativo, in database (il file binario **non** sta nel DB):
+- Formati: PDF, JPEG, PNG.
+- Dimensione massima: 10 MB (configurabile).
+- Si raccolgono: il file, la data di caricamento, l’eventuale scadenza indicata, lo stato di revisione, il motivo di rifiuto se c’è, e metadati tecnici (tipo MIME, dimensione, checksum, nome file originario sanitizzato).
+- Il contenuto del file può includere dati relativi alla salute e identificativi (nome, data visita, medico, struttura).
 
-- collegamento a iscrizione e profilo giocatore;
-- tipo documento;
-- chiave di storage opaca (non è un URL pubblico);
-- MIME, dimensione, checksum, nome file originario sanitizzato;
-- stato: caricato / in revisione / approvato / rifiutato / scaduto / sostituito;
-- date di upload e eventuale scadenza;
-- revisioni: revisore, decisione, motivo di rifiuto.
+Altri tipi di documento (identità, autocertificazioni, nulla osta scuola): **[INSERIRE: NON PREVISTI IN V1]**.
 
-Il contenuto del file può includere dati sanitari e identificativi (nome, data visita, medico, struttura). **[INSERIRE QUALIFICAZIONE LEGALE: CATEGORIA PARTICOLARE]**
+Istruzioni all’utente: caricare solo il certificato richiesto; **[INSERIRE: NON INCLUDERE REFERTI NON RICHIESTI]**.
 
 ---
 
-## 4. Chi può accedere al file (e chi no)
+## 4. Base giuridica
 
-**[INSERIRE SOGGETTI AUTORIZZATI ALL’ACCESSO AL FILE]**
+I Moduli 1 e 2 (testi 1.0 del 1 ottobre 2026) dicono, alla finalità H:
 
-Regole di prodotto **già implementate** (descrizione tecnica):
+> Verifica dell’idoneità sportiva: registrazione della presentazione e della scadenza del certificato medico richiesto dal regolamento (dato relativo alla salute). Base: consenso esplicito (art. 9.2.a GDPR). Obbligatorietà: necessaria per scendere in campo; **la copia del certificato non viene conservata**.
 
-| Soggetto | File (bytes) | Metadati / stato |
-|----------|----------------|------------------|
-| Giocatore titolare | sì, proprio file, via link temporaneo autenticato | sì |
+Casella originale: «Acconsento che ESL registri la presentazione e la data di scadenza del […] certificato medico sportivo (dato relativo alla salute, art. 9.2.a GDPR), senza conservarne copia.»
+
+Su questa piattaforma quella frase **non** descrive il trattamento reale: il file viene caricato e la copia resta per la revisione dello staff.
+
+**[INSERIRE BASE GIURIDICA DELLA COPIA — OD-035 / OD-046]**
+
+La casella obbligatoria per giocare è M3 (maggiorenni) o G4 (minorenni), nel passo privacy, distinta dalla presa visione di questa informativa. Il testo della casella in piattaforma parla della copia.
+
+---
+
+## 5. Chi può accedere al file (e chi no)
+
+| Soggetto | File | Metadati / stato |
+| --- | --- | --- |
+| Giocatore titolare | sì, proprio file, tramite link temporaneo autenticato | sì |
 | Compagni di squadra | no | no |
-| Rappresentante di squadra | **no** — mai `storageKey`, mai download | solo **stato** in rosa (mancante / in revisione / ok / da ricaricare / scaduto) |
-| Organization Admin / Super Admin | sì, con audit | sì, lista senza esporre la storage key |
-| Competition Organizer | ruolo in schema, nessuna UI v1 | **[INSERIRE QUANDO ATTIVATO]** |
-| Provider di storage | **[INSERIRE QUANDO SCELTO: ACCESSO TECNICO]** | chiavi oggetto |
+| Rappresentante di squadra | **no** — mai il file | solo lo **stato** (mancante / in revisione / ok / da ricaricare / scaduto) |
+| Amministratori dell’organizzazione | sì, con audit di ogni visualizzazione | sì |
+| Organizzatore di una coppa locale | ruolo previsto, nessuna interfaccia in v1 | **[INSERIRE QUANDO ATTIVATO]** |
+| Fornitore di storage | accesso tecnico agli oggetti | **[INSERIRE QUANDO SCELTO]** |
 | Scuole, federazioni, assicurazioni | non in v1 | **[INSERIRE SE SI ESPORTANO FILE O SOLO ESITI]** |
 
-Accesso tecnico:
+Accesso tecnico: niente percorso pubblico; token a tempo legato al documento e all’utente (default 60 secondi); ogni lettura è registrata.
 
-- niente path statico `/uploads` o bucket pubblico;
-- token HMAC legato a `documentId` + `userId` + scadenza (default 60 secondi);
-- ogni GET del file genera audit `DOCUMENT_VIEW`;
-- URL senza storage key.
-
-**[INSERIRE SE LO STAFF MEDICO ESTERNO DEVE ACCEDERE E CON QUALE CONTRATTO]**
+Staff medico esterno: **[INSERIRE SE DEVE ACCEDERE E CON QUALE CONTRATTO]**.
 
 ---
 
-## 5. Processo di revisione
+## 6. Processo di revisione
 
-**[INSERIRE PROCESSO ORGANIZZATIVO DI REVIEW]**
-
-Operativo:
-
-1. Upload solo con sessione, permesso di scrittura sulla propria iscrizione, email verificata.
-2. Stato verso revisione (`PENDING_REVIEW`).
+1. Caricamento solo con sessione, permesso sulla propria iscrizione, email verificata.
+2. Stato «in revisione».
 3. Lo staff approva oppure rifiuta. Il rifiuto richiede un motivo visibile al giocatore.
-4. Il motivo di rifiuto **non** viene copiato nelle notifiche email (niente dettaglio sanitario nel canale). Resta nell’area documenti del giocatore.
-5. Il giocatore può sostituire il file: il precedente passa a `REPLACED` e il blob non viene cancellato in automatico.
-6. Il wizard non blocca i passi successivi se il certificato è «in attenzione» (in revisione / rifiutato): si può completare privacy mentre lo staff revisiona.
+4. Il motivo di rifiuto **non** è copiato nelle email (niente dettaglio sanitario nel canale). Resta nell’area documenti.
+5. Il giocatore può sostituire il file: il precedente resta archiviato come sostituito; il blob non si cancella in automatico.
+6. L’iscrizione può proseguire mentre il certificato è in revisione o rifiutato: il passo privacy non aspetta l’approvazione.
 
-Criteri di approvazione/rifiuto (tipo visita, intestazione, data, sport): **[INSERIRE ISTRUZIONI STAFF — NON SONO NEL CODICE]**
+Criteri di approvazione (tipo visita, intestazione, data, sport): **[INSERIRE ISTRUZIONI STAFF]**.
 
----
-
-## 6. Conservazione, sostituzione, cancellazione
-
-**[INSERIRE PERIODO DI CONSERVAZIONE DOCUMENTI SANITARI]**
-
-**[INSERIRE PERIODO DI CONSERVAZIONE FILE SOSTITUITI (REPLACED)]**
-
-**[INSERIRE SE I BLOB SI ELIMINANO A FINE STAGIONE / A RITIRO ISCRIZIONE / SU RICHIESTA]**
-
-Punti aperti da non decidere in codice:
-
-- conservare solo l’ultimo approvato: **[INSERIRE SÌ/NO]**
-- obbligo di conservazione per controversie / assicurazione: **[INSERIRE]**
-- anonimizzazione vs cancellazione: **[INSERIRE]**
-- backup dei file: **[INSERIRE]**
-
-Il prodotto non offre al giocatore un pulsante «elimina definitivamente il certificato» indipendente dalla sostituzione.
+Antivirus: previsto, implementazione da confermare prima del lancio. **[INSERIRE]**.
 
 ---
 
-## 7. Sicurezza dei file
+## 7. Conservazione
 
-**[INSERIRE MISURE DI SICUREZZA DOCUMENTI]**
+Moduli LCS: presentazione e scadenza fino al termine della stagione.
 
-Operativo: storage privato, key opaca `documents/{registrationId}/{random}`, allowlist MIME, verifica magic bytes, size cap, audit accessi, deny-by-default.
+Copia del file in piattaforma: **[INSERIRE PERIODO DI CONSERVAZIONE DELLA COPIA E DEI FILE SOSTITUITI]**.
 
-Misure da definire prima del lancio:
+Cancellazione a fine stagione, a ritiro iscrizione o su richiesta: **[INSERIRE]**. Conservare solo l’ultimo approvato: **[INSERIRE SÌ/NO]**. Obbligo per controversie o assicurazione: **[INSERIRE]**. Backup: **[INSERIRE]**.
 
-- cifratura at rest: **[INSERIRE]**
-- cifratura in transito: **[INSERIRE]**
-- object storage production: **[INSERIRE FORNITORE]**
-- antivirus reale: **[INSERIRE]**
-- chi può emettere il token di lettura: solo dopo `authorize`
+Non c’è un pulsante «elimina definitivamente il certificato» indipendente dalla sostituzione.
 
 ---
 
-## 8. Destinatari e trasferimenti
+## 8. Sicurezza
 
-**[INSERIRE DESTINATARI DEI DOCUMENTI SANITARI]**
+Storage privato, chiave opaca, elenco tipi di file consentiti, verifica del contenuto, limite di dimensione, audit degli accessi.
 
-**[INSERIRE TRASFERIMENTI EXTRA SEE DELLO STORAGE]**
-
-Finché `STORAGE_DRIVER=local` è solo per non-produzione e in produzione lo storage resta stub, **non** si deve lanciare verso utenti reali. **[INSERIRE VINCOLO ORGANIZZATIVO AL GO-LIVE]**
+Cifratura a riposo: **[INSERIRE]**. Cifratura in transito: **[INSERIRE]**. Fornitore di storage in produzione: **[INSERIRE]**. Finché lo storage di produzione è stub, **non** si lancia verso interessati reali.
 
 ---
 
-## 9. Diritti dell’interessato sul documento
+## 9. Destinatari e trasferimenti extra-UE
 
-**[INSERIRE DIRITTI E MODALITÀ SPECIFICI PER DATI SANITARI]**
-
-- Accesso al proprio file: in area personale, con sessione.
-- Rettifica: sostituzione del file (nuovo ciclo di revisione).
-- Cancellazione: **[INSERIRE LIMITI]**
-- Chi esercita i diritti se l’interessato è minore: **[INSERIRE]**
+Come nell’[informativa privacy](/privacy). Destinatari specifici dei file sanitari: **[INSERIRE]**. Trasferimenti extra-SEE dello storage: **[INSERIRE]**.
 
 ---
 
-## 10. Rapporto con le altre informative
+## 10. Diritti
 
-Questa informativa integra `privacy-policy`. Per i minori, vale anche `minor-privacy`. Non sostituisce la liberatoria media (`media-release`), che non riguarda i file medici.
+Accesso al proprio file dall’area personale. Rettifica: sostituzione del file (nuovo ciclo di revisione). Cancellazione e limiti: **[INSERIRE]**. Se l’interessato è minore: genitori e minore possono scrivere a **[INSERIRE EMAIL PRIVACY]**; l’account resta del minore.
 
----
-
-## 11. Luogo e data
-
-- **[INSERIRE LUOGO]**
-- **[INSERIRE DATA]**
-- **[INSERIRE NOME E RUOLO DI CHI APPROVA IL TESTO UFFICIALE]**
+Reclamo: [Garante per la protezione dei dati personali](https://www.garanteprivacy.it).

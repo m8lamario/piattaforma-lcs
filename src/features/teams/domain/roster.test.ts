@@ -21,6 +21,7 @@ describe("team roster projection", () => {
       rosterRole: null,
       registrationStatus: "IN_PROGRESS",
       medicalStatus: "pending",
+      publication: null,
     });
     expect(Object.keys(row)).not.toContain("fiscalCode");
     expect(Object.keys(row)).not.toContain("storageKey");

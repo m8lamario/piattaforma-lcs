@@ -11,3 +11,6 @@
 | REGISTRATION_BLOCKED | REGISTRATION | Blocco identità persistito | metadata.identityConflict | Iscrizione in stallo | Account originale / org | dashboard |
 | REGISTRATION_DUPLICATE | REGISTRATION | Unique (profile, edition) | Race attach | Contatta l’organizzazione | Contatta org | Prisma P2002 registration |
 | GUARDIAN_SAVE_FAILED | REGISTRATION | Profilo assente | Dato inconsistente | Non è stato possibile salvare i dati del tutore | Riprova | `saveGuardianProfile` |
+| GUARDIAN_SECOND_EMAIL | REGISTRATION | G3 senza email | Altro genitore | Inserisci l’email dell’altro genitore | Correggi | `saveGuardianAction` |
+| GUARDIAN_SAME_EMAIL | REGISTRATION | Email duplicate | Stesso recapito | Email dell’altro genitore diversa | Correggi | `saveGuardianAction` |
+| GUARDIAN_EMAIL_CORRECTION_USED | REGISTRATION | Correzione già usata | Secondo tentativo | Si può correggere una sola volta | Contatta org | `saveGuardianProfile` |

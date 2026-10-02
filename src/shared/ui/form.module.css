@@ -86,6 +86,23 @@
   line-height: var(--leading-body);
 }
 
+.radio {
+  display: flex;
+  gap: var(--space-3);
+  align-items: flex-start;
+  min-height: var(--control-min);
+  padding: var(--space-3);
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  line-height: 1.45;
+}
+
+.radio input {
+  margin-top: 0.2rem;
+  flex-shrink: 0;
+}
+
 .secretPair {
   display: grid;
   gap: var(--space-4);

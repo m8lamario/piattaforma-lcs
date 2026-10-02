@@ -6,11 +6,11 @@ Ogni voce: problema, opzioni, decisione necessaria, conseguenze, impatto sullo s
 
 ## OD-001 Testi legali ufficiali
 
-- **Problema:** Mancano privacy policy, informative documenti, informative minori, liberatorie, termini.
+- **Problema:** Mancano i **dati organizzativi firmati** (titolare, sede, P.IVA, email privacy, DPO, elenco partner, base giuridica della copia del certificato, regolamento di torneo). I body in `content/legal/` sono già i moduli LCS 2026-27 adattati al hub.
 - **Opzioni:** (a) placeholder versionati in `content/legal`; (b) attendere i testi prima di ogni UI.
-- **Decisione necessaria:** testi firmati da organizzazione/legale, titolare, DPO, finalità, retention, basi giuridiche. La struttura da compilare è in `content/legal/` (mappa in `docs/08-privacy-and-consent.md`).
-- **Conseguenze:** senza testi il prodotto non è pubblicabile verso utenti reali.
-- **Impatto:** nessuno su schema/UI structure. Workaround: placeholder `[INSERIRE …]`.
+- **Decisione necessaria:** firma di organizzazione/legale sui campi `[INSERIRE …]` ancora aperti. Mappa in `docs/08-privacy-and-consent.md`.
+- **Conseguenze:** senza quei campi il prodotto non è pubblicabile verso utenti reali.
+- **Impatto:** nessuno su schema/UI structure. Workaround: `[INSERIRE …]` solo sui campi ancora vuoti.
 
 ## OD-002 Validità del consenso digitale del minore
 
@@ -18,7 +18,7 @@ Ogni voce: problema, opzioni, decisione necessaria, conseguenze, impatto sullo s
 - **Opzioni:** email genitore con conferma; SPID/CIE genitore; carta identità; solo tracciamento + processo offline.
 - **Decisione necessaria:** parere legale + processo organizzativo.
 - **Conseguenze:** può aggiungere entità `GuardianVerification`.
-- **Impatto:** M4 si blocca sulla **validità**, non sulla **registrazione tecnica** del consenso. Workaround: tracciare acceptance dell’account loggato; non dichiarare validità legale.
+- **Impatto:** M4 si blocca sulla **validità**, non sulla **registrazione tecnica** del consenso. Workaround prodotto (OD-046): tracciare le caselle dell’account loggato; C1 conferma le scelte di pubblicazione via email al secondo genitore; non dichiarare validità legale.
 
 ## OD-003 Email del minore come login
 
@@ -176,15 +176,14 @@ Già coperti: no PWA in M0; scan OD-021.
 - **Opzioni:** solo cookie tecnici senza banner; banner se si aggiungono analitici; niente terze parti.
 - **Decisione necessaria:** legale + prodotto, prima di introdurre analytics/pixel.
 - **Conseguenze:** un banner è lavoro UI; un nuovo consenso va come `LegalDocument` distinto, non come checkbox nascosta.
-- **Impatto:** nessuno finché non si aggiungono tracker. Workaround: pagina `/cookie` placeholder (`cookie-policy`).
+- **Impatto:** nessuno finché non si aggiungono tracker. Workaround: pagina `/cookie` con inventario operativo; banner ancora assente.
 
 ## OD-028 Condizioni di iscrizione (`terms`) nel wizard
 
-- **Problema:** Esiste la struttura `terms` e la pagina `/termini`, ma lo step privacy non la presenta.
+- **Problema:** Esiste la struttura `terms` e la pagina `/termini`, ma lo step privacy non la presentava.
 - **Opzioni:** (a) solo pagina pubblica; (b) aggiungerla al pacchetto privacy required; (c) step proprio.
-- **Decisione necessaria:** organizzazione + legale, dopo il testo ufficiale.
-- **Conseguenze:** se required, si aggiunge lo slug al catalogo `wizardStep: "privacy"` (o un nuovo step). Vietato un booleano `termsAccepted`.
-- **Impatto:** nullo finché resta fuori dal wizard. Workaround: documento versionato, nessuna acceptance finta.
+- **Decisione di prodotto (b, OD-046):** casella T1 nel passo privacy, documento `terms` versionato, nessuna colonna `termsAccepted`. In `terms` c’è il funzionamento della piattaforma; quota, rimborsi e disciplina di gara restano `[INSERIRE]` (compito del consulente, non sono nei quattro moduli).
+- **Impatto:** `wizardStep: "privacy"` su `terms`; `requiredByDefault: true`.
 
 ## OD-029 Processo esercizio diritti
 
@@ -193,7 +192,7 @@ Già coperti: no PWA in M0; scan OD-021.
 - **Decisione necessaria:** legale + organizzazione (tempi, verifica identità, limiti su certificati e log).
 - **Conseguenze:** può richiedere UI admin e policy di redazione.
 - **Impatto:** non blocca lo sviluppo del wizard. Workaround: canale `[INSERIRE EMAIL PRIVACY]`, niente delete-all in prodotto.
-- **Implementazione (sviluppo, non chiude OD-029):** Super Admin può chiudere o anonimizzare un account da `/admin/utenti`. Il rappresentante può solo rimuovere un giocatore dalla propria rosa. Purge file medici e cancellazione audit restano aperti (OD-022/030). Non è self-service.
+- **Implementazione (sviluppo, non chiude OD-029):** Super Admin può chiudere o anonimizzare un account da `/admin/utenti`. Il rappresentante può solo rimuovere un giocatore dalla propria rosa. Purge file medici e cancellazione audit restano aperti (OD-022/030). `/area/consensi` espone revoca delle caselle facoltative, export JSON/testo e una richiesta di cancellazione che scrive solo audit: non è l’esercizio completo del diritto.
 
 ## OD-030 Retention certificati e file sostituiti
 
@@ -205,11 +204,11 @@ Già coperti: no PWA in M0; scan OD-021.
 
 ## OD-031 Ritiro liberatoria media e materiale già pubblicato
 
-- **Problema:** Il hub registra accept/refuse in append, ma non rimuove contenuti da social, siti locali o stampa.
+- **Problema:** Il hub registra le caselle in append e ricalcola il flag pubblicabile, ma non rimuove contenuti da social, siti locali o stampa.
 - **Opzioni:** revoca = stop alle nuove uscite; tentativo di rimozione sui canali propri; nessuna rimozione dell’archivio.
 - **Decisione necessaria:** legale + comunicazione. Chi può revocare per un minore (OD-040).
 - **Conseguenze:** processo operativo (chi toglie cosa, in quanto tempo) più eventuale stato visibile al rep.
-- **Impatto:** il wizard già consente il rifiuto se `required=false`. Workaround: testo placeholder in `media-release` § 13.
+- **Impatto:** revoca uso-per-uso da `/area/consensi`; il flag in rosa/admin si aggiorna. Rimozione dai canali esterni resta organizzativa.
 
 ## OD-032 Comunicazioni al genitore/tutore
 
@@ -239,25 +238,24 @@ Già coperti: no PWA in M0; scan OD-021.
 
 - **Problema:** Il certificato è (o può essere) dato sanitario. Non è deciso se la base è obbligo di legge sportivo, contratto, consenso, o altro, né se lo *stato* in rosa è dato sanitario.
 - **Opzioni:** da far scrivere al legale; non copiare formule da altri siti.
-- **Decisione necessaria:** legale, con OD-005 e OD-030.
+- **Decisione necessaria:** legale, con OD-005 e OD-030. I moduli 2026-27 usano il consenso esplicito art. 9.2.a e vietano la copia; il hub conserva il file.
 - **Conseguenze:** testo in `document-processing` e visibilità stato al rappresentante.
-- **Impatto:** il prodotto già nasconde il file al rep. Workaround: `[INSERIRE BASE GIURIDICA PER DATI SANITARI / CERTIFICATO]`.
+- **Impatto:** casella salute M3/G4 nel passo privacy, distinta dalla presa visione. Workaround: copy operativa sulla copia in piattaforma; `[INSERIRE BASE GIURIDICA PER DATI SANITARI / CERTIFICATO]`.
 
 ## OD-036 Marketing e comunicazioni non di servizio
 
-- **Problema:** Oggi esistono solo comunicazioni di servizio (in-app; email stub). Non c’è newsletter né consenso marketing.
-- **Opzioni:** non introdurre marketing in v1; se si introduce, documento e consenso **separati**, mai obbligatori per l’iscrizione.
-- **Decisione necessaria:** organizzazione.
-- **Conseguenze:** nuovo slug `LegalDocument` + step o checkbox non pre-spuntata.
-- **Impatto:** nessuno ora. Workaround: finalità F8 in `privacy-policy` § 7, richiamo che in v1 non c’è consenso marketing.
+- **Problema:** Oggi esistono comunicazioni di servizio. I moduli chiedono marketing ESL, cessione ai partner nominati e opt-out edizioni successive, tutti distinti.
+- **Opzioni:** non introdurre marketing; se si introduce, documento e consenso **separati**, mai obbligatori per l’iscrizione.
+- **Decisione di prodotto (OD-046):** caselle M4/G6, M5/G7, M6/G8 nel passo privacy, mai pre-spuntate, non bloccano l’iscrizione. Marketing attivo solo dopo doppio opt-in. Partner nascosti se l’elenco nominativo è vuoto. Per i minori i recapiti del giocatore non vanno a marketing/partner.
+- **Decisione ancora dell’organizzazione:** se e quando si inviano davvero quelle comunicazioni; elenco partner; consultazione Registro opposizioni prima delle telefonate.
+- **Impatto:** caselle + token opt-in + registro scelte. I canali WhatsApp/SMS/telefono restano nel testo della casella: non attivarli finché non esistono.
 
 ## OD-037 Liberatoria obbligatoria per edizione
 
-- **Problema:** `MEDIA_RELEASE` è `required=false` nel seed demo. Un’edizione reale potrebbe obbligarla.
-- **Opzioni:** sempre facoltativa; obbligatoria per tutte le edizioni; per-edizione (già previsto da `EditionRequirement`).
-- **Decisione necessaria:** organizzazione + legale, soprattutto per i minori.
-- **Conseguenze:** se required, il rifiuto blocca il checklist (già implementato). Serve copy ufficiale e processo in campo per chi rifiuta se invece è facoltativa (OD-031).
-- **Impatto:** configurazione edizione, non schema. Workaround: demo non obbliga.
+- **Problema:** `MEDIA_RELEASE` poteva essere marcata required e allora il rifiuto bloccava l’iscrizione, in contrasto coi moduli (gli usi immagini non sono mai condizione per giocare).
+- **Opzioni:** sempre facoltativa; obbligatoria per tutte le edizioni; per-edizione.
+- **Decisione di prodotto (OD-046):** gli usi (canali, promozione, sponsor, stampa, interviste) sono sempre facoltativi. Completare il passo significa aver letto e registrato le caselle, anche tutte vuote. `MEDIA_RELEASE` required in edizione significa «il passo va inviato», non «devi autorizzare le foto».
+- **Impatto:** checklist e form liberatorie. Copie in campo per i non pubblicabili restano OD-031.
 
 ## OD-038 Pubblicazione nuove versioni informative
 
@@ -320,6 +318,19 @@ Già coperti: no PWA in M0; scan OD-021.
 - **Decisione implementata (c, provvisoria):** User resta il login; PlayerProfile 1:1; CF unique globale già in schema (no migration 0004). Classificazione dominio (`new_player` / `own_identity` / `foreign_identity` con duplicate account, duplicate registration, already on team). Fail utente sempre `IDENTITY_FISCAL_CODE_ASSOCIATED` senza PII dell’altro account. Recovery: correggere il CF, usare l’account originale, ritirare *questa* iscrizione, contattare l’org. Persistenza del blocco in `PlayerProfile.metadata.identityConflict` solo se il secondo profilo non ha ancora un CF.
 - **Decisione ancora dell’organizzazione:** merge dei due User, quale email è canonica, riuso del CF dopo ritiro / rimozione rosa / chiusura (`DELETED` tiene il CF). L’anonimizzazione azzera già il CF (unique libero). Non è self-service.
 - **Impatto:** nessuna unione account in v1; unique DB come rete di sicurezza.
+
+---
+
+## OD-046 Modello consenso hub vs moduli LCS 2026-27
+
+- **Problema:** I moduli in `Moduli_privacy_LCS_2026-27` (file 08) chiedono che per i minorenni compili un genitore, con conferma email del secondo genitore (C1), e vietano di conservare copia del certificato. La constitution §2.9 dice che l’account è del giocatore e il tutore è un contatto. Incollare i quattro testi nel wizard senza adattare il flusso attribuirebbe i click alla persona sbagliata.
+- **Opzioni:** (a) adeguare il hub al compilante-genitore (rompe la constitution); (b) far riscrivere i moduli sul modello account-del-minore; (c) tenere l’account del giocatore, usare le caselle del file 08 adattate a chi clicca, lasciare i body markdown come placeholder finché il consulente non li riscrive.
+- **Decisione di prodotto (c), da validare col consulente:** constitution vince su *chi* clicca. I moduli vincono su *quali* caselle esistono, sulla granularità immagini, sul marketing/partner distinti, sull’opt-out E2, su T1, sul consenso salute esplicito, su C1 e su G14 dai 14 anni. I testi lunghi restano `[INSERIRE …]`. G1 («dichiaro di essere genitore») non è una casella del giocatore: il passo tutore raccoglie il contatto. C1 è l’unico atto del secondo genitore (link email, `guardianId` valorizzato). Non si afferma che il click del minore o del tutore 1 abbia valore di firma genitoriale (OD-002 resta aperto).
+- **Certificato:** il hub continua a conservare il file per la revisione (OD-005/030/035). La casella salute descrive la copia. Il legale deve riscrivere finalità H: i moduli dicono «senza copia».
+- **Liberatoria:** i cinque usi sono caselle facoltative. Il passo va compilato (anche tutte vuote). `MEDIA_RELEASE` required in edizione non può obbligare l’accettazione degli usi.
+- **Partner:** casella visibile solo se `content/legal/partners.json` elenca società per nome.
+- **Conseguenze:** `ConsentChoice` append-only per codice casella; `ConsentToken` per C1 e doppio opt-in; `/area/consensi` per revoca, export, richiesta di cancellazione; flag pubblicabile calcolato, visibile a staff e rappresentante (non i recapiti).
+- **Impatto:** wizard privacy/liberatorie/tutore, schema, email C1/opt-in, rosa e scheda admin.
 
 ---
 

@@ -46,6 +46,7 @@ export function MedicalUploadForm({ document }: Props) {
         <p className={`${fields.banner} ${fields.bannerInfo}`}>{it.medicalNone}</p>
       )}
 
+      <p className={`${fields.banner} ${fields.bannerInfo}`}>{it.medicalCopyNotice}</p>
       <p className={`${fields.banner} ${fields.bannerInfo}`}>{it.medicalPaperNote}</p>
 
       {document?.status === "REJECTED" && document.rejectReason ? (

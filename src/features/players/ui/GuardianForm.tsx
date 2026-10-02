@@ -1,6 +1,6 @@
 "use client";
 
-import { startTransition, useActionState } from "react";
+import { startTransition, useActionState, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { saveGuardianAction } from "@/features/players/actions";
@@ -17,6 +17,10 @@ type Values = {
   relationship: GuardianRelationship;
   email: string;
   phone: string;
+  g3: "OTHER_PARENT" | "SOLE";
+  secondFirstName?: string;
+  secondLastName?: string;
+  secondEmail?: string;
   intent: "continue" | "exit";
 };
 
@@ -34,6 +38,10 @@ type Props = {
     relationship: string;
     email: string;
     phone: string;
+    g3: "OTHER_PARENT" | "SOLE" | null;
+    secondFirstName: string;
+    secondLastName: string;
+    secondEmail: string;
   };
 };
 
@@ -51,9 +59,15 @@ export function GuardianForm({ defaults }: Props) {
       relationship,
       email: defaults.email,
       phone: defaults.phone,
+      g3: defaults.g3 ?? "OTHER_PARENT",
+      secondFirstName: defaults.secondFirstName,
+      secondLastName: defaults.secondLastName,
+      secondEmail: defaults.secondEmail,
       intent: "continue",
     },
   });
+  const [g3Choice, setG3Choice] = useState<"OTHER_PARENT" | "SOLE">(defaults.g3 ?? "OTHER_PARENT");
+  const g3Register = form.register("g3");
 
   function submit(intent: "continue" | "exit") {
     void form.handleSubmit((values) => {
@@ -63,6 +77,10 @@ export function GuardianForm({ defaults }: Props) {
       data.set("relationship", values.relationship);
       data.set("email", values.email);
       data.set("phone", values.phone);
+      data.set("g3", values.g3);
+      data.set("secondFirstName", values.secondFirstName ?? "");
+      data.set("secondLastName", values.secondLastName ?? "");
+      data.set("secondEmail", values.secondEmail ?? "");
       data.set("intent", intent);
       startTransition(() => {
         action(data);
@@ -148,6 +166,64 @@ export function GuardianForm({ defaults }: Props) {
             />
           </div>
         </div>
+      </fieldset>
+
+      <fieldset className={fields.group}>
+        <legend className={fields.legend}>{it.g3Legend}</legend>
+        <label className={fields.radio} htmlFor="g3-other">
+          <input
+            id="g3-other"
+            type="radio"
+            value="OTHER_PARENT"
+            {...g3Register}
+            onChange={(event) => {
+              void g3Register.onChange(event);
+              setG3Choice("OTHER_PARENT");
+            }}
+          />
+          {it.g3Other}
+        </label>
+        <label className={fields.radio} htmlFor="g3-sole">
+          <input
+            id="g3-sole"
+            type="radio"
+            value="SOLE"
+            {...g3Register}
+            onChange={(event) => {
+              void g3Register.onChange(event);
+              setG3Choice("SOLE");
+            }}
+          />
+          {it.g3Sole}
+        </label>
+        {g3Choice === "OTHER_PARENT" ? (
+          <div className={fields.pair}>
+            <div className={fields.field}>
+              <label className={fields.label} htmlFor="second-first">
+                {it.g3SecondName}
+              </label>
+              <input id="second-first" className={fields.input} {...form.register("secondFirstName")} />
+            </div>
+            <div className={fields.field}>
+              <label className={fields.label} htmlFor="second-last">
+                {it.g3SecondLastName}
+              </label>
+              <input id="second-last" className={fields.input} {...form.register("secondLastName")} />
+            </div>
+            <div className={fields.field}>
+              <label className={fields.label} htmlFor="second-email">
+                {it.g3SecondEmail}
+              </label>
+              <input
+                id="second-email"
+                className={fields.input}
+                type="email"
+                aria-invalid={Boolean(form.formState.errors.secondEmail)}
+                {...form.register("secondEmail")}
+              />
+            </div>
+          </div>
+        ) : null}
       </fieldset>
 
       <div className={`${fields.actions} ${fields.sticky}`}>

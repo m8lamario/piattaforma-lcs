@@ -16,3 +16,9 @@ export {
   latestConsentSnapshots,
   legalVersionAbsoluteUrl,
 } from "./receipt";
+export {
+  CONSENT_BOXES,
+  mediaBoxesRecorded,
+  privacyBoxesComplete,
+  publicationFlags,
+} from "./boxes";

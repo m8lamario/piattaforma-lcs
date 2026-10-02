@@ -6,6 +6,7 @@ export type ActionState<T extends object = object> = {
   error?: string;
   code?: ErrorCode;
   retrySafe?: boolean;
+  done?: boolean;
 } & T;
 
 export type ActionFailure = ActionState;

@@ -1,6 +1,6 @@
 # 08 — Privacy and Consent Architecture
 
-**Questo file non è una privacy policy.** Non ha valore legale. I testi visibili all’utente sono placeholder da sostituire con documenti ufficiali dell’organizzazione e del professionista competente. Non si afferma che il prodotto o i testi siano «conformi».
+**Questo file non è una privacy policy.** Non ha valore legale. I testi visibili all’utente in `content/legal/` derivano dai moduli LCS 2026-27 (1.0 del 1 ottobre 2026), adattati al modello account-del-giocatore e alla copia del certificato. Restano `[INSERIRE …]` su titolare, sede, P.IVA, email, partner, base giuridica della copia, regolamento di torneo. Non si afferma che il prodotto o i testi siano «conformi» né firmati.
 
 Fonte dei testi utente: `content/legal/{slug}.md`, versionati come `LegalDocument` / `LegalDocumentVersion` (seed e `ensureLegalDocuments`). Catalogo unico: `src/features/consents/domain/catalog.ts`.
 
@@ -29,13 +29,13 @@ OD-001 resta aperto finché i testi non sono firmati. La **struttura** delle sez
 | `privacy-policy` | `content/legal/privacy-policy.md` | Informativa privacy | ALL | passo **privacy** (sempre) | `/privacy` | sì |
 | `document-processing` | `content/legal/document-processing.md` | Informativa documenti caricati | ALL | passo **privacy** (sempre) | `/privacy/documenti` | sì |
 | `minor-privacy` | `content/legal/minor-privacy.md` | Informativa per minori | MINOR | passo **privacy** **solo se** `isMinor` | `/privacy/minori` | sì (per i minori) |
-| `media-release` | `content/legal/media-release.md` | Liberatoria foto, video e social | ALL | passo **liberatorie** (decisione esplicita) | `/liberatorie` | no (seed edizione `required=false`) |
-| `terms` | `content/legal/terms.md` | Condizioni di iscrizione e uso | ALL | **non** nel wizard (OD-026) | `/termini` | no |
+| `media-release` | `content/legal/media-release.md` | Liberatoria foto, video e social | ALL | passo **liberatorie** (caselle uso per uso) | `/liberatorie` | presa visione del testo; gli usi restano facoltativi |
+| `terms` | `content/legal/terms.md` | Condizioni di iscrizione e uso | ALL | passo **privacy** (casella T1) | `/termini` | sì |
 | `cookie-policy` | `content/legal/cookie-policy.md` | Informativa cookie e tracciamenti | ALL | **non** nel wizard (OD-027) | `/cookie` | no |
 
 Nuove informative: aggiungere riga in `LEGAL_CATALOG` + file markdown + (se serve) `publicPath`. Se deve comparire nel wizard, impostare `wizardStep: "privacy" | "liberatorie"`; altrimenti `null`. Non aggiungere colonne su `User`.
 
-`terms` e `cookie-policy` sono versionati in DB come gli altri, così un futuro checkbox non richiede un nuovo modello. Oggi **non** si registra acceptance su di essi: non si finge il consenso.
+Le **caselle** (T1, M1–M11, G2–G14, C1) non sono slug di documento: vivono in `ConsentChoice` (append-only) con il codice del file 08. Catalogo: `src/features/consents/domain/boxes.ts`. Elenco partner: `content/legal/partners.json` (vuoto = casella partner nascosta).
 
 ---
 
@@ -45,18 +45,20 @@ Nuove informative: aggiungere riga in `LEGAL_CATALOG` + file markdown + (se serv
 
 Pacchetto `privacySlugsFor(isMinor)`:
 
-- maggiorenne: `privacy-policy` + `document-processing`
+- maggiorenne: `privacy-policy` + `document-processing` + `terms`
 - minorenne: quelli + `minor-privacy`
 
-Ogni documento: testo scrollabile, versione, avviso placeholder, checkbox **non** preselezionata. Tutte devono essere confermate. `ConsentRecord` in append su `legalDocumentVersionId` corrente (`consentType=REQUIRED`, `accepted=true`). `guardianId` resta `null` (non si finge firma del genitore). Versione non `isCurrent` rifiutata.
+Ogni documento: testo scrollabile, versione, avviso placeholder, checkbox **non** preselezionata. Tutte devono essere confermate. `ConsentRecord` in append su `legalDocumentVersionId` corrente (`consentType=REQUIRED`, `accepted=true`). Versione non `isCurrent` rifiutata.
+
+Caselle dello stesso passo (mai pre-spuntate): T1 (da `terms`), M1 se adulto, M3/G4 salute, marketing, partner (se elenco nominativo), opt-out edizioni successive, G5 cognome completo se minore. M2/G2 si registrano dalla presa visione dei documenti. G1 non è una casella del giocatore (OD-046).
 
 ### 3.2 Wizard — passo liberatorie (`/area/registrazione/liberatorie`)
 
-Solo `media-release`. Bottoni Accetto / Non accetto (il rifiuto è nascosto se l’edizione marca il requisito obbligatorio). Record `OPTIONAL` o `REQUIRED` a seconda dell’edizione. Rifiuto esplicito completa il requisito se `required=false`.
+`media-release` da leggere, poi una casella per uso: canali, promozione, sponsor, stampa, interviste (M7–M11 o G9–G13). Per i minori dai 14 anni, G14 in fondo: senza, gli usi e G5 restano inattivi. Completare il passo = registrare le caselle, anche tutte vuote. Gli usi non bloccano mai l’iscrizione.
 
 ### 3.3 Certificato (`/area/registrazione/certificato`)
 
-Nessun nuovo atto legale sul passo upload: l’informativa documenti resta nel pacchetto privacy. Compare solo un **avviso operativo** prudente su eventuale verifica/consegna cartacea, senza vincolare le modalità dell’organizzazione. Il rappresentante in `/squadra` vede solo lo **stato**, mai il file.
+Upload del file (il hub conserva la copia per la revisione). L’informativa documenti resta nel pacchetto privacy. La casella salute M3/G4 è nel passo privacy. Avviso operativo: i moduli 2026-27 chiedevano solo presentazione e scadenza; finché il legale non riscrive, la copy dice che esiste una copia in piattaforma. Il rappresentante in `/squadra` vede solo lo **stato**, mai il file.
 
 ### 3.4 Pagine pubbliche
 
@@ -66,7 +68,7 @@ Le pagine pubbliche (`/privacy`, `/termini`, …) leggono il **file** corrente. 
 
 ### 3.5 Area consensi / admin informative
 
-`/admin/informative` è sola lettura delle versioni `isCurrent` (OD-038: niente CMS). `/area/consensi` non è una route v1: i consensi si gestiscono nel wizard. I record restano interrogabili da `ConsentRecord` + versione.
+`/admin/informative` è sola lettura delle versioni `isCurrent` (OD-038: niente CMS). `/area/consensi` elenca le caselle, consente la revoca delle facoltative, export JSON/testo e una richiesta di cancellazione (audit). I record restano interrogabili da `ConsentRecord` + `ConsentChoice`.
 
 ---
 
@@ -90,7 +92,7 @@ Non è un elenco legale chiuso. Serve al compilatore dei testi. Dettaglio nelle 
 | Tema UI | `prefers-color-scheme`, nessun cookie | visitatori inclusi |
 | Media | **nessun album in DB**; solo la decisione di liberatoria | usi esterni da descrivere nel testo ufficiale |
 
-Categorie particolari (sanitarie): file certificato e possibile contenuto del PDF/immagine. Trattamento descritto in `document-processing.md` con placeholder sulla base giuridica.
+Categorie particolari (sanitarie): file certificato e possibile contenuto del PDF/immagine. Trattamento descritto in `document-processing.md` con placeholder sulla base giuridica. Casella esplicita M3/G4 nel passo privacy: necessaria per giocare, distinta dalla presa visione.
 
 ---
 
@@ -117,7 +119,7 @@ L’elenco nominativo va in `privacy-policy.md` sezione responsabili **prima** d
 
 `ConsentRecord` memorizza: userId, legalDocumentVersionId, datetime, consentType, accepted, ipAddress, userAgent, registrationId, guardianId (sempre null in v1).
 
-**Vietato** usare solo `privacyAccepted = true`.
+**Vietato** usare solo `privacyAccepted = true`. Le caselle granulari stanno in `ConsentChoice` (una riga per evento, mai sovrascritta).
 
 Re-consent: OD-024. IP/UA retention: OD-022.
 
@@ -131,18 +133,19 @@ La prima transizione della registration a `APPROVED` invia `REGISTRATION_APPROVE
 
 ## 7. Liberatorie foto / video / social
 
-Sezione prominente, passo proprio, testo strutturato in `media-release.md` (acquisizione, finalità, canali, durata, revoca, soggetti, minori, social come titolari autonomi). Tutti i contenuti sostanziali sono `[INSERIRE …]`.
+Sezione prominente, passo proprio, testo strutturato in `media-release.md`. Tutti i contenuti sostanziali del documento restano `[INSERIRE …]`. Le caselle uso-per-uso sono nel form (codici M7–M11 / G9–G13). Nessun pre-check, nessun «accetta tutto».
 
-Se `MEDIA_RELEASE` è `required=false`, iscrizione completabile senza accettare. Nessun pre-check, nessun «accetta tutto». Consensi granulari futuri (foto vs social): nuovi slug nel catalogo, stesso modello.
+Il flag **pubblicabile** è calcolato: per i maggiorenni vale l’uso «canali del torneo»; per i minorenni servono anche C1 (o unico esercente) e, dai 14 anni, G14. Gli altri usi sono sotto-flag. Il hub non pubblica album: il flag serve a rosa, admin e a chi pubblica fuori da questo repository.
 
 ---
 
 ## 8. Minori
 
 - Dati tutore = dati personali del tutore (sezione in `minor-privacy.md` e in `privacy-policy.md`).
-- Account del minore; tutore = contatto collegato (constitution §2.9).
-- Nessun parental gate legale finché OD-002 / OD-040 non lo richiedono.
-- `[INSERIRE REQUISITO CONSENSO GENITORE SE PREVISTO DALLA LEGGE / DAL LEGALE]`
+- Account del minore; tutore = contatto collegato (constitution §2.9, OD-046).
+- Passo tutore: contatto 1 + G3 (altro genitore con email, oppure dichiarazione di unico esercente). Se G3 = altro genitore, email C1 al secondo contatto (`guardianId` sul token e sulla conferma).
+- G14: il minore dai 14 anni spunta l’accordo sulle immagini. Sotto i 14 anni G14 non è richiesta per attivare gli usi dopo C1/unico.
+- `[INSERIRE REQUISITO CONSENSO GENITORE SE PREVISTO DALLA LEGGE / DAL LEGALE]` — OD-002 resta aperto.
 - Email del minore come login: OD-003.
 
 ---
@@ -155,7 +158,9 @@ Informative in `document-processing.md`: finalità, accesso staff vs stato-only 
 
 ## 10. Diritti e cancellazione
 
-Sezioni 14–15 di `privacy-policy.md`. Processo organizzativo: OD-029 (resta aperto: niente self-service export/cancellazione “totale”).
+Sezioni 14–15 di `privacy-policy.md`. Processo organizzativo: OD-029 (resta aperto: niente cancellazione “totale” da UI).
+
+`/area/consensi` offre export JSON/testo e revoca delle caselle facoltative. La richiesta di cancellazione scrive un audit: non sostituisce il processo della segreteria.
 
 Tool admin (non è l’esercizio del diritto dell’interessato, è un attrezzo di piattaforma):
 
@@ -187,4 +192,4 @@ Seed: se manca la versione corrente, crea `placeholder-1`. Non riscrive una curr
 
 ## 13. Cosa blocca un lancio reale
 
-Vedi OD-001 (testi firmati) e OD-026–OD-043: titolare/DPO, cookie, `terms` nel wizard, diritti, retention certificati, revoca media, email al tutore, contitolarità, fornitori/DPA, base giuridica sanitaria, marketing, obbligatorietà liberatoria, pubblicazione versioni, canali media, chi esercita i diritti del minore, informativa staff, media in-app. Più le decisioni già aperte su storage, pagamenti, validità del click del minore (OD-002), re-consent (OD-024). Senza quelli il prodotto resta in sviluppo con placeholder visibili; **non** è pubblicabile verso interessati reali.
+Vedi OD-001 (testi firmati) e OD-026–OD-046: titolare/DPO, cookie, testo ufficiale di `terms`, diritti, retention certificati, rimozione media già pubblicati, email al tutore, contitolarità, fornitori/DPA, base giuridica sanitaria della **copia** del certificato, elenco partner, validità del click del minore (OD-002), re-consent (OD-024), informativa staff. Senza testi firmati il prodotto resta in sviluppo con placeholder visibili; **non** è pubblicabile verso interessati reali.

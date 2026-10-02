@@ -1,4 +1,6 @@
 import { prisma } from "@/shared/lib/prisma";
+import { isMinor, needsMediaAgreement } from "@/features/players/domain/age";
+import { latestChoices, publicationFlags } from "@/features/consents/domain/boxes";
 import { toRosterRow, toTeammateRow } from "@/features/teams/domain/roster";
 
 export async function listTeamRoster(teamId: string) {
@@ -7,13 +9,14 @@ export async function listTeamRoster(teamId: string) {
       where: { teamId },
       orderBy: { createdAt: "asc" },
       include: {
-        playerProfile: { select: { firstName: true, lastName: true, userId: true } },
+        playerProfile: { select: { firstName: true, lastName: true, userId: true, birthDate: true } },
         documents: {
           where: { status: { not: "REPLACED" }, type: { code: "MEDICAL_CERTIFICATE" } },
           select: { status: true },
           take: 1,
           orderBy: { uploadedAt: "desc" },
         },
+        consentChoices: { select: { code: true, accepted: true, value: true, createdAt: true } },
       },
     }),
     prisma.teamMembership.findMany({ where: { teamId } }),
@@ -24,6 +27,16 @@ export async function listTeamRoster(teamId: string) {
   return registrations
     .map((registration) => {
       const membership = membershipByUser.get(registration.playerProfile.userId);
+      const birthDate = registration.playerProfile.birthDate;
+      const isMinorPlayer = birthDate ? isMinor(birthDate) : false;
+      const map = latestChoices(
+        registration.consentChoices.map((row) => ({
+          code: row.code,
+          accepted: row.accepted,
+          value: row.value,
+          createdAt: row.createdAt.getTime(),
+        })),
+      );
       return toRosterRow({
         registrationId: registration.id,
         userId: registration.playerProfile.userId,
@@ -35,6 +48,11 @@ export async function listTeamRoster(teamId: string) {
         rosterRole: membership?.rosterRole,
         registrationStatus: registration.status,
         medicalStatus: registration.documents[0]?.status,
+        publication: publicationFlags({
+          isMinor: isMinorPlayer,
+          needsAgreement: birthDate ? needsMediaAgreement(birthDate) : false,
+          map,
+        }),
       });
     })
     .filter((row) => Boolean(row.membershipId) && row.registrationStatus !== "REMOVED");

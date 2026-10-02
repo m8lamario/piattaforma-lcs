@@ -25,7 +25,7 @@ export const DEFAULT_EDITION_REQUIREMENTS: EditionRequirement[] = [
   { code: "GUARDIAN_IF_MINOR", required: true, appliesTo: "MINOR" },
   { code: "MEDICAL_CERT", required: true, appliesTo: "ALL" },
   { code: "PRIVACY", required: true, appliesTo: "ALL" },
-  { code: "MEDIA_RELEASE", required: false, appliesTo: "ALL" },
+  { code: "MEDIA_RELEASE", required: true, appliesTo: "ALL" },
   { code: "PAYMENT", required: true, appliesTo: "ALL" },
 ];
 

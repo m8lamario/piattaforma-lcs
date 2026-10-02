@@ -1,5 +1,5 @@
 import { Prisma } from "@generated/client";
-import { isMinor } from "@/features/players/domain/age";
+import { isMinor, needsMediaAgreement } from "@/features/players/domain/age";
 import { notifyRegistrationApproved } from "@/features/notifications/data/notifications";
 import {
   classifyFiscalIdentity,
@@ -12,7 +12,7 @@ import {
   writeIdentityConflict,
 } from "@/features/players/domain/identity";
 import { normalizeFiscalCode } from "@/features/players/domain/fiscalCode";
-import { hasCompleteGuardian, hasCompletePersonalData } from "@/features/players/domain/personal";
+import { hasCompletePersonalData, hasMinorGuardianRequirement } from "@/features/players/domain/personal";
 import {
   DEFAULT_EDITION_REQUIREMENTS,
   isTerminalRegistrationStatus,
@@ -28,6 +28,15 @@ import {
   mediaDecisionFrom,
   type CurrentConsent,
 } from "@/features/consents/domain/pack";
+import { isPartnerBoxVisible } from "@/features/consents/data/partners";
+import {
+  g3Value,
+  latestChoices,
+  marketingConfirmed,
+  mediaBoxesRecorded,
+  privacyBoxesComplete,
+  publicationFlags,
+} from "@/features/consents/domain/boxes";
 import { prisma } from "@/shared/lib/prisma";
 import { logger } from "@/shared/lib/logger";
 
@@ -53,7 +62,7 @@ export async function loadPlayerWorkspace(userId: string) {
     include: {
       playerProfile: {
         include: {
-          guardians: { orderBy: { createdAt: "asc" }, take: 1 },
+          guardians: { orderBy: { createdAt: "asc" } },
           registrations: {
             include: {
               team: {
@@ -74,6 +83,12 @@ export async function loadPlayerWorkspace(userId: string) {
               consentRecords: {
                 include: { legalDocumentVersion: { include: { legalDocument: true } } },
                 orderBy: { acceptedAt: "desc" },
+              },
+              consentChoices: { orderBy: { createdAt: "asc" } },
+              consentTokens: {
+                where: { purpose: "MARKETING", usedAt: { not: null } },
+                select: { usedAt: true },
+                take: 5,
               },
             },
             orderBy: { createdAt: "desc" },
@@ -106,15 +121,36 @@ export async function loadPlayerWorkspace(userId: string) {
     isCurrent: record.legalDocumentVersion.isCurrent,
     accepted: record.accepted,
   }));
+  const choiceMap = latestChoices(
+    registration.consentChoices.map((row) => ({
+      code: row.code,
+      accepted: row.accepted,
+      value: row.value,
+      createdAt: row.createdAt.getTime(),
+    })),
+  );
   const isMinorPlayer = profile.birthDate ? isMinor(profile.birthDate) : false;
-  const privacyAccepted = isPrivacyPackComplete(isMinorPlayer, consents);
-  const mediaDecision = mediaDecisionFrom(consents);
+  const needsAgreement = profile.birthDate ? needsMediaAgreement(profile.birthDate) : false;
+  const partnersPublished = await isPartnerBoxVisible();
+  const privacyAccepted =
+    isPrivacyPackComplete(isMinorPlayer, consents) &&
+    privacyBoxesComplete(isMinorPlayer, partnersPublished, choiceMap);
+  const mediaRecorded = mediaBoxesRecorded(isMinorPlayer, choiceMap);
+  const mediaDecision: "none" | "submitted" =
+    mediaRecorded || mediaDecisionFrom(consents) === "submitted" ? "submitted" : "none";
+  const primaryGuardian = profile.guardians.find((row) => row.kind !== "SECONDARY") ?? profile.guardians[0] ?? null;
+  const secondaryGuardian = profile.guardians.find((row) => row.kind === "SECONDARY") ?? null;
+  const g3 = g3Value(choiceMap);
 
   const evidence: RegistrationEvidence = {
     hasAccount: true,
     hasPersonalData: hasCompletePersonalData(profile),
     isMinor: isMinorPlayer,
-    hasGuardian: hasCompleteGuardian(profile.guardians[0] ?? null),
+    hasGuardian: hasMinorGuardianRequirement({
+      primary: primaryGuardian,
+      secondaryEmail: secondaryGuardian?.email,
+      g3,
+    }),
     medicalStatus: medicalFromStatus(medicalDoc?.status),
     privacyAccepted,
     mediaDecision,
@@ -145,15 +181,38 @@ export async function loadPlayerWorkspace(userId: string) {
       metadata: profile.metadata,
       registrationStatus: registration.status,
     }),
-    guardian: profile.guardians[0]
+    guardian: primaryGuardian
       ? {
-          firstName: profile.guardians[0].firstName,
-          lastName: profile.guardians[0].lastName,
-          relationship: profile.guardians[0].relationship,
-          email: profile.guardians[0].email,
-          phone: profile.guardians[0].phone,
+          firstName: primaryGuardian.firstName,
+          lastName: primaryGuardian.lastName,
+          relationship: primaryGuardian.relationship,
+          email: primaryGuardian.email,
+          phone: primaryGuardian.phone ?? "",
+          kind: primaryGuardian.kind,
+          soleResponsibility: primaryGuardian.soleResponsibility,
+          emailCorrectionUsed: primaryGuardian.emailCorrectionUsed,
         }
       : null,
+    secondGuardian: secondaryGuardian
+      ? {
+          firstName: secondaryGuardian.firstName,
+          lastName: secondaryGuardian.lastName,
+          email: secondaryGuardian.email,
+        }
+      : null,
+    g3,
+    needsMediaAgreement: needsAgreement,
+    choices: [...choiceMap.values()],
+    publication: publicationFlags({
+      isMinor: isMinorPlayer,
+      needsAgreement,
+      map: choiceMap,
+    }),
+    partnersPublished,
+    marketingOptIn: marketingConfirmed(
+      choiceMap,
+      registration.consentTokens.map((row) => ({ usedAt: row.usedAt?.getTime() ?? null })),
+    ),
     registration: {
       id: registration.id,
       status: registration.status,
@@ -360,27 +419,104 @@ export async function saveGuardianProfile(
     relationship: string;
     email: string;
     phone: string;
+    g3: "OTHER_PARENT" | "SOLE";
+    secondFirstName?: string;
+    secondLastName?: string;
+    secondEmail?: string;
+    ipAddress?: string | null;
+    userAgent?: string | null;
   },
 ) {
   const profile = await prisma.playerProfile.findUnique({
     where: { userId },
-    include: { guardians: { orderBy: { createdAt: "asc" }, take: 1 } },
+    include: {
+      guardians: { orderBy: { createdAt: "asc" } },
+      registrations: { orderBy: { createdAt: "desc" }, take: 1, select: { id: true } },
+    },
   });
   if (!profile) return { ok: false as const, reason: "missing_profile" as const };
+  const registrationId = profile.registrations[0]?.id;
+  if (!registrationId) return { ok: false as const, reason: "missing_profile" as const };
 
-  const existing = profile.guardians[0];
-  if (existing) {
-    await prisma.guardian.update({
-      where: { id: existing.id },
-      data: input,
-    });
+  if (input.g3 === "OTHER_PARENT") {
+    const second = input.secondEmail?.trim().toLowerCase();
+    if (!second) return { ok: false as const, reason: "second_email" as const };
+    if (second === input.email.trim().toLowerCase()) {
+      return { ok: false as const, reason: "same_email" as const };
+    }
+  }
+
+  const primary = profile.guardians.find((row) => row.kind !== "SECONDARY") ?? profile.guardians[0];
+  const secondary = profile.guardians.find((row) => row.kind === "SECONDARY");
+
+  const primaryData = {
+    firstName: input.firstName,
+    lastName: input.lastName,
+    relationship: input.relationship,
+    email: input.email,
+    phone: input.phone,
+    kind: "PRIMARY",
+    soleResponsibility: input.g3 === "SOLE",
+  };
+
+  let primaryId: string;
+  if (primary) {
+    await prisma.guardian.update({ where: { id: primary.id }, data: primaryData });
+    primaryId = primary.id;
   } else {
-    await prisma.guardian.create({
-      data: {
-        playerProfileId: profile.id,
-        ...input,
-      },
+    const created = await prisma.guardian.create({
+      data: { playerProfileId: profile.id, ...primaryData },
+    });
+    primaryId = created.id;
+  }
+
+  if (input.g3 === "OTHER_PARENT" && input.secondEmail) {
+    const secondData = {
+      firstName: input.secondFirstName?.trim() || "Genitore",
+      lastName: input.secondLastName?.trim() || "2",
+      relationship: "GENITORE",
+      email: input.secondEmail.trim().toLowerCase(),
+      kind: "SECONDARY",
+      soleResponsibility: false,
+    };
+    if (secondary) {
+      const emailChanged = secondary.email !== secondData.email;
+      if (emailChanged && secondary.emailCorrectionUsed) {
+        return { ok: false as const, reason: "email_correction_used" as const };
+      }
+      await prisma.guardian.update({
+        where: { id: secondary.id },
+        data: {
+          ...secondData,
+          emailCorrectionUsed: emailChanged ? true : secondary.emailCorrectionUsed,
+        },
+      });
+    } else {
+      await prisma.guardian.create({
+        data: { playerProfileId: profile.id, phone: null, ...secondData },
+      });
+    }
+  }
+
+  await prisma.consentChoice.create({
+    data: {
+      userId,
+      registrationId,
+      code: "G3",
+      accepted: true,
+      value: input.g3,
+      source: "WEB",
+      ipAddress: input.ipAddress ?? null,
+      userAgent: input.userAgent ?? null,
+    },
+  });
+
+  if (input.g3 === "SOLE") {
+    await prisma.consentToken.updateMany({
+      where: { registrationId, purpose: "C1", usedAt: null },
+      data: { usedAt: new Date() },
     });
   }
-  return { ok: true as const };
+
+  return { ok: true as const, primaryId };
 }

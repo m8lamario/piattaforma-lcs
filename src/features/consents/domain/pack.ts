@@ -37,18 +37,16 @@ export function isPrivacyPackComplete(
   );
 }
 
-export type MediaDecision = "none" | "accepted" | "refused";
+export type MediaDecision = "none" | "submitted";
 
 export function mediaDecisionFrom(consents: CurrentConsent[]): MediaDecision {
   const current = consents.find((consent) => consent.slug === MEDIA_RELEASE_SLUG && consent.isCurrent);
   if (!current) return "none";
-  return current.accepted ? "accepted" : "refused";
+  return "submitted";
 }
 
-export function isMediaComplete(required: boolean, decision: MediaDecision) {
-  if (decision === "accepted") return true;
-  if (decision === "refused") return !required;
-  return false;
+export function isMediaComplete(_required: boolean, decision: MediaDecision) {
+  return decision === "submitted";
 }
 
 export function isConsentReceiptReady(

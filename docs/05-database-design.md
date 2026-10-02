@@ -23,6 +23,8 @@ erDiagram
   Registration ||--o{ Payment : pays
   LegalDocument ||--o{ LegalDocumentVersion : versions
   LegalDocumentVersion ||--o{ ConsentRecord : accepted
+  Registration ||--o{ ConsentChoice : boxes
+  Registration ||--o{ ConsentToken : tokens
   Document ||--o{ DocumentReview : reviewed
 ```
 
@@ -59,6 +61,8 @@ Un rappresentante che è anche giocatore ha `TEAM_REPRESENTATIVE` + membership `
 **Guardian** (N:1 PlayerProfile)
 
 - firstName, lastName, relationship, email, phone
+- `kind` PRIMARY | SECONDARY
+- `soleResponsibility` sul contatto primario se G3 = unico esercente
 - `metadata Json`
 - Almeno un guardian required in applicazione se minore, non necessariamente constraint SQL (un profilo può essere salvato a metà). Unique `(playerProfileId, email)` per evitare duplicati.
 
@@ -138,7 +142,17 @@ Vincolo applicativo: `team.editionId === registration.editionId`.
 - accepted (boolean: un record di rifiuto esplicito è permesso per opzionali; i required esistono solo se accepted=true)
 - acceptedAt
 - ipAddress, userAgent (traccia tecnica; retention OPEN_DECISIONS)
-- guardianId nullable se accettazione per conto (non usato in v1 login-minore, riservato)
+- guardianId nullable: valorizzato sulla conferma C1 del secondo genitore, non sulle caselle del giocatore
+
+**ConsentChoice** — registro caselle (append-only)
+
+- userId, registrationId, code (`T1`, `M1`…`M11`, `G2`…`G14`, `C1`)
+- accepted, value opzionale (G3: `OTHER_PARENT` | `SOLE`)
+- source (`WEB` | `EMAIL_C1` | `EMAIL_OPTIN` | `REVOKE` | `AREA`)
+- legalDocumentVersionId nullable, guardianId nullable, ip, userAgent, createdAt
+- Nessun `updatedAt`: le revoche sono un nuovo evento
+
+**ConsentToken** — C1 e doppio opt-in marketing (hash del token, scadenza, usedAt, reminderSentAt)
 
 Mai un flag denormalizzato `privacyAccepted` sul User come unica prova.
 

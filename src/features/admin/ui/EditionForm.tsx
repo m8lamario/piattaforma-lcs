@@ -129,7 +129,7 @@ export function EditionForm({ mode, edition }: Props) {
         <legend className={styles.sectionTitle}>{it.adminRequirements}</legend>
         {REQUIREMENT_CODES.map((code) => (
           <label key={code} className={styles.check}>
-            <input type="checkbox" name={`req_${code}`} defaultChecked={edition ? required.has(code) : code !== "MEDIA_RELEASE"} />
+            <input type="checkbox" name={`req_${code}`} defaultChecked={edition ? required.has(code) : true} />
             {REQ_LABEL[code]}
           </label>
         ))}

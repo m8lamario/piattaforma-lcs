@@ -1,109 +1,77 @@
-# Condizioni di iscrizione e uso della piattaforma
+**Fonte operativa di questa piattaforma** (account, invito, checklist, documenti, pagamenti senza carta). La casella T1 dei moduli LCS 2026-27 è «Accetto il regolamento e le condizioni di iscrizione». Il **regolamento ufficiale di torneo** (quota, rimborsi, disciplina di gara) è a cura del consulente e **non** è nei quattro moduli privacy. **Non è un parere legale e non è un testo firmato.**
 
-**Questo testo è un placeholder di piattaforma. Non è un contratto valido. Non è un parere giuridico.**
-
-**[INSERIRE CONDIZIONI DI ISCRIZIONE E USO UFFICIALI]**
-
-**[INSERIRE TESTO TERMINI]**
-
-**[INSERIRE DATA DI ENTRATA IN VIGORE DELLA VERSIONE UFFICIALE]**
+**[INSERIRE NOME TORNEO]**, stagione 2026/2027, versione 1.0 del 1 ottobre 2026. Data di entrata in vigore su questa piattaforma: **[INSERIRE DATA DI ENTRATA IN VIGORE]**.
 
 ---
 
 ## 1. Che cosa regola questo documento
 
-**[INSERIRE OGGETTO DELLE CONDIZIONI]**
+L’uso dell’area personale di iscrizione (internamente ESL Player Hub; nome pubblico **[INSERIRE NOME PUBBLICO PRODOTTO]**) e il rapporto di iscrizione a un’edizione.
 
-Bozza di perimetro da confermare:
+**[INSERIRE REGOLAMENTO UFFICIALE DI TORNEO — QUOTA, RIMBORSI, DISCIPLINA DI GARA, GERARCHIA CON QUESTO TESTO]**
 
-- uso dell’area personale di registrazione giocatori;
-- rapporto organizzativo di iscrizione a un’edizione / coppa;
-- regole di account, invito, documenti, pagamenti, condotta.
+Privacy, documenti e foto/video sono regolati da:
 
-**[INSERIRE SE QUESTE CONDIZIONI SONO UN CONTRATTO CON IL GIOCATORE, UN REGOLAMENTO DI GARA, O ENTRAMBI]**
-
-Rapporto con `privacy-policy`, `media-release`, regolamenti sportivi federali e regolamenti di coppa locale: **[INSERIRE GERARCHIA]**
-
-In v1 questo documento è **pubblico** e versionato. **Non** è mostrato nel passo wizard privacy. L’eventuale checkbox di accettazione in iscrizione è una decisione aperta.
+- [Informativa privacy](/privacy)
+- [Informativa per minori](/privacy/minori)
+- [Informativa documenti](/privacy/documenti)
+- [Liberatoria](/liberatorie)
+- [Cookie](/cookie)
 
 ---
 
 ## 2. Soggetti
 
-- Organizzazione: **[INSERIRE NOME TITOLARE / ORGANIZZATORE]**
-- Piattaforma: nome interno ESL Player Hub; nome pubblico **[INSERIRE NOME PUBBLICO PRODOTTO]**
-- Utente giocatore, rappresentante, amministratore.
-- Minore: account proprio; tutore come contatto. **[INSERIRE CAPACITÀ DI AGIRE E RAPPRESENTANZA]**
+- Organizzazione: ESL **[INSERIRE RAGIONE SOCIALE]**, **[INSERIRE SEDE LEGALE]**, P.IVA/C.F. **[INSERIRE P.IVA / CODICE FISCALE]**.
+- Giocatore: titolare dell’account, anche se minore.
+- Genitore/tutore: contatto collegato, non titolare del login.
+- Rappresentante di squadra e amministratori: ruoli distinti, con permessi diversi.
+
+Capacità di agire e rappresentanza: **[INSERIRE]**.
 
 ---
 
 ## 3. Ingresso solo su invito
 
-Non esiste iscrizione pubblica da catalogo. Si entra con invito del rappresentante di squadra (o processo admin equivalente).
-
-**[INSERIRE REGOLE SU CESSIONE DELL’INVITO, EMAIL NON PROPRIA, ACCOUNT CONDIVISI]**
+Non esiste iscrizione pubblica da catalogo. Si entra con l’invito del rappresentante di squadra (o processo equivalente dello staff). **[INSERIRE REGOLE SU CESSIONE DELL’INVITO, EMAIL NON PROPRIA, ACCOUNT CONDIVISI]**.
 
 ---
 
 ## 4. Account
 
-**[INSERIRE OBBLIGHI SULL’ACCOUNT]**
-
-Operativo:
-
-- una persona, un account;
-- email + password + verifica email prima di upload e consensi vincolanti;
-- il giocatore è responsabile delle credenziali: **[INSERIRE TESTO UFFICIALE]**
-- divieto di impersonificazione: **[INSERIRE]**
-
-Recupero credenziali / cambio email: **[INSERIRE PROCESSO — IN V1 DA COMPLETARE A LIVELLO DI PRODOTTO]**
+Una persona, un account. Email e password; l’email va verificata prima di caricare il certificato e di confermare i consensi vincolanti. Sei responsabile delle credenziali. **[INSERIRE DIVIETO DI IMPERSONIFICAZIONE E PROCESSO DI RECUPERO / CAMBIO EMAIL]**.
 
 ---
 
-## 5. Iscrizione e requisiti di edizione
+## 5. Iscrizione e requisiti
 
-Ogni edizione definisce requisiti (anagrafica, tutore se minore, certificato, privacy, liberatoria, pagamento). Lo stato iscrizione è calcolato da checklist, non spuntato a mano dall’utente.
+Ogni edizione definisce i requisiti (anagrafica, tutore se minore, certificato, privacy, invio della liberatoria, pagamento se previsto). Lo stato iscrizione è una checklist, non una spunta libera.
 
-**[INSERIRE CONDIZIONI PER CONSIDERARE L’ISCRIZIONE EFFICACE (APPROVAZIONE STAFF, PAGAMENTO, ECC.)]**
+Condizioni per considerare l’iscrizione efficace (approvazione staff, pagamento, ecc.): **[INSERIRE]**.
 
-**[INSERIRE CONSEGUENZE SE I DATI SONO FALSI O IL CERTIFICATO NON IDONEO]**
+Conseguenze se i dati sono falsi o il certificato non idoneo: **[INSERIRE]**.
 
 ---
 
 ## 6. Certificato medico
 
-Chi si iscrive deve caricare il tipo di certificato richiesto dall’organizzazione, nei limiti del regolamento sportivo applicabile.
+Chi si iscrive carica il tipo di certificato richiesto, nei limiti del regolamento sportivo applicabile. **[INSERIRE OBBLIGO SPORTIVO / REGOLAMENTO DI RIFERIMENTO]**.
 
-**[INSERIRE OBBLIGO SPORTIVO / REGOLAMENTO DI RIFERIMENTO]**
-
-La piattaforma verifica presenza, formato e revisione umana; **non** sostituisce il giudizio sanitario. Vedi `document-processing`.
+La piattaforma verifica presenza, formato e revisione umana; **non** sostituisce il giudizio sanitario. Vedi [informativa documenti](/privacy/documenti).
 
 ---
 
 ## 7. Pagamenti
 
-**[INSERIRE CONDIZIONI ECONOMICHE]**
+Se l’edizione lo prevede, la quota si paga tramite il fornitore di checkout. Questa piattaforma **non** salva numero di carta, CVV o PIN. Gli importi nello strumento di sviluppo **non** sono quote ufficiali.
 
-Operativo:
-
-- importo e modalità (`PLAYER` / `TEAM` / `BOTH`) per edizione;
-- importi di sviluppo in seed non sono quote ufficiali;
-- nessun dato carta sul sito; checkout tramite provider (stub finché non scelto);
-- il primo pagamento `SUCCEEDED` utile copre; si evita il doppio addebito in prodotto, con rimborsi manuali se servono.
-
-**[INSERIRE RIMBORSI, RITIRO, MANCATA PARTECIPAZIONE, FATTURAZIONE, INTESTAZIONE]**
-
-Ricevuta: **[INSERIRE PDF INTERNO VS RICEVUTA PROVIDER]**
+**[INSERIRE IMPORTO UFFICIALE, RIMBORSI, RITIRO, MANCATA PARTECIPAZIONE, FATTURAZIONE, INTESTAZIONE, RICEVUTA]**
 
 ---
 
-## 8. Condotta e contenuti
+## 8. Condotta
 
-**[INSERIRE REGOLE DI CONDOTTA]**
-
-**[INSERIRE DIVIETO DI CARICARE FILE NON PERTINENTI O ILLECITI]**
-
-**[INSERIRE CONSEGUENZE DISCIPLINARI SPORTIVE VS SOSPENSIONE ACCOUNT]**
+**[INSERIRE REGOLE DI CONDOTTA, DIVIETO DI FILE NON PERTINENTI O ILLECITI, CONSEGUENZE DISCIPLINARI SPORTIVE VS SOSPENSIONE ACCOUNT]**
 
 ---
 
@@ -113,11 +81,9 @@ Ricevuta: **[INSERIRE PDF INTERNO VS RICEVUTA PROVIDER]**
 
 ---
 
-## 10. Proprietà intellettuale della piattaforma
+## 10. Proprietà intellettuale
 
-**[INSERIRE TITOLARITÀ DI SOFTWARE, MARCHI, TESTI UI]**
-
-I testi legali ufficiali restano dell’organizzazione. I placeholder in `content/legal/` non sono testi ufficiali.
+**[INSERIRE TITOLARITÀ DI SOFTWARE, MARCHI, TESTI DELL’INTERFACCIA]**. I testi in questa pagina restano dell’organizzazione.
 
 ---
 
@@ -127,17 +93,15 @@ I testi legali ufficiali restano dell’organizzazione. I placeholder in `conten
 
 ---
 
-## 12. Sospensione, ritiro, cancellazione account
+## 12. Sospensione, ritiro, cancellazione
 
-**[INSERIRE CASI E PROCEDURA]**
-
-Stato prodotto `WITHDRAWN`: previsto nello schema. **[INSERIRE PROCESSO UTENTE E ADMIN]**
+**[INSERIRE CASI E PROCEDURA]**. In piattaforma è previsto lo stato di ritiro dell’iscrizione. Chiusura o anonimizzazione dell’account: riservate allo staff secondo la policy.
 
 ---
 
-## 13. Modifiche alle condizioni
+## 13. Modifiche
 
-**[INSERIRE PROCESSO]** — versionamento analogo alle informative (`LegalDocumentVersion`).
+Queste condizioni possono essere aggiornate. La versione in vigore è su [/termini](/termini). Se il testo cambia, in iscrizione va riletta la versione corrente (casella T1).
 
 ---
 
@@ -147,19 +111,9 @@ Stato prodotto `WITHDRAWN`: previsto nello schema. **[INSERIRE PROCESSO UTENTE E
 
 **[INSERIRE FORO COMPETENTE / RISOLUZIONE ADR / CONSUMATORE SE APPLICABILE]**
 
-**[INSERIRE SE IL GIOCATORE MINORE / GENITORE È QUALIFICABILE COME CONSUMATORE]**
-
 ---
 
 ## 15. Contatti
 
-- **[INSERIRE EMAIL CONTRATTI / SEGRETERIA]**
+- Segreteria / contratti: **[INSERIRE EMAIL]**
 - Privacy: **[INSERIRE EMAIL PRIVACY]**
-
----
-
-## 16. Luogo e data
-
-- **[INSERIRE LUOGO]**
-- **[INSERIRE DATA]**
-- **[INSERIRE NOME E RUOLO DI CHI APPROVA IL TESTO UFFICIALE]**

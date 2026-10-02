@@ -53,6 +53,20 @@ export function renderEmailMessage(input: EmailMessage) {
       text: [it.emailDocumentRejectedText, areaUrl].filter(Boolean).join("\n\n"),
     };
   }
+  if (input.template === "CONSENT_C1") {
+    return {
+      subject: it.emailC1Subject,
+      text: [it.confirmC1Help, input.variables.playerName, input.variables.summary, input.variables.confirmUrl]
+        .filter(Boolean)
+        .join("\n\n"),
+    };
+  }
+  if (input.template === "CONSENT_MARKETING_OPTIN") {
+    return {
+      subject: it.emailMarketingOptInSubject,
+      text: [it.confirmMarketingHelp, input.variables.confirmUrl].filter(Boolean).join("\n\n"),
+    };
+  }
   return {
     subject: title,
     text: areaUrl ? `${title}\n\n${areaUrl}` : title,

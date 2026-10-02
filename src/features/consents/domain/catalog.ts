@@ -1,6 +1,7 @@
 /**
  * Inventario dei documenti legali versionati.
- * I testi in `content/legal/{slug}.md` sono placeholder: non sono informative valide.
+ * I testi in `content/legal/{slug}.md` derivano dai moduli LCS 2026-27 adattati al hub.
+ * Restano `[INSERIRE …]` sui campi organizzativi non compilati. Non sono testi firmati.
  *
  * Wizard: solo i documenti con `wizardStep`.
  * Pagine pubbliche: `publicPath` (stili esistenti di `/privacy`).
@@ -42,8 +43,8 @@ export const LEGAL_CATALOG = [
     slug: "terms",
     title: "Condizioni di iscrizione e uso",
     audience: "ALL" as const,
-    requiredByDefault: false,
-    wizardStep: null,
+    requiredByDefault: true,
+    wizardStep: "privacy" as const,
     publicPath: "/termini",
   },
   {

@@ -7,6 +7,8 @@ import {
   consentReceiptRows,
   type ConsentSnapshot,
 } from "@/features/consents/domain/receipt";
+import { latestChoices, choiceSummaryLines, type ConsentBoxCode } from "@/features/consents/domain/boxes";
+import { isPartnerBoxVisible } from "@/features/consents/data/partners";
 import { createNotification, hasConsentReceipt } from "@/features/notifications/data/notifications";
 import { appOrigin } from "@/shared/config/app";
 import { it } from "@/shared/i18n/it";
@@ -62,6 +64,21 @@ export async function dispatchConsentReceiptIfComplete(input: {
   }
 
   const documents = formatDocuments(consentReceiptRows(snapshots, appOrigin()));
+  const choices = await prisma.consentChoice.findMany({
+    where: { registrationId: input.registrationId },
+    orderBy: { createdAt: "asc" },
+  });
+  const map = latestChoices(
+    choices.map((row) => ({
+      code: row.code,
+      accepted: row.accepted,
+      value: row.value,
+      createdAt: row.createdAt.getTime(),
+    })),
+  );
+  const partnersPublished = await isPartnerBoxVisible();
+  const boxLines = choiceSummaryLines(input.isMinor, partnersPublished, map, (code: ConsentBoxCode) => it[`box${code}`]);
+  const body = [documents, boxLines.join("\n")].filter(Boolean).join("\n\n");
   try {
     await createNotification({
       userId: input.userId,
@@ -69,7 +86,7 @@ export async function dispatchConsentReceiptIfComplete(input: {
       title: it.notificationRegistrationReceivedTitle,
       body: it.notificationRegistrationReceivedBody,
       metadata: { fingerprint, registrationId: input.registrationId },
-      emailVariables: { documents },
+      emailVariables: { documents: body },
     });
   } catch {
     logger.error("notification.dispatch_failed", { type: "REGISTRATION_RECEIVED" });
