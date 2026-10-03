@@ -13,6 +13,8 @@ import {
 } from "@/features/registrations/domain/wizard";
 import { getCurrentLegalVersions } from "@/features/consents/data/legal";
 import { MEDIA_RELEASE_SLUG, privacySlugsFor } from "@/features/consents/domain/pack";
+import { mediaFormBoxes, privacyExtraBoxes } from "@/features/consents/domain/boxes";
+import { maybeSendC1Reminder } from "@/features/consents/data/tokens";
 import { MediaConsentForm } from "@/features/consents/ui/MediaConsentForm";
 import { PrivacyConsentForm } from "@/features/consents/ui/PrivacyConsentForm";
 import { MedicalUploadForm } from "@/features/documents/ui/MedicalUploadForm";
@@ -60,6 +62,8 @@ export default async function WizardStepPage({ params }: Props) {
     redirect(`/area/registrazione/${gated}`);
   }
 
+  void maybeSendC1Reminder(workspace.registration.id).catch(() => undefined);
+
   const steps = visibleWizardSteps(workspace.checklist);
   const privacySlugs = privacySlugsFor(workspace.evidence.isMinor);
   const legalVersions = await getCurrentLegalVersions([...privacySlugs, MEDIA_RELEASE_SLUG]);
@@ -96,6 +100,10 @@ export default async function WizardStepPage({ params }: Props) {
             relationship: workspace.guardian?.relationship ?? "GENITORE",
             email: workspace.guardian?.email ?? "",
             phone: workspace.guardian?.phone ?? "",
+            g3: workspace.g3,
+            secondFirstName: workspace.secondGuardian?.firstName ?? "",
+            secondLastName: workspace.secondGuardian?.lastName ?? "",
+            secondEmail: workspace.secondGuardian?.email ?? "",
           }}
         />
       );
@@ -107,9 +115,11 @@ export default async function WizardStepPage({ params }: Props) {
       const documents = privacySlugs
         .map(toView)
         .filter((item): item is NonNullable<ReturnType<typeof toView>> => item !== null);
+      const extraBoxes = privacyExtraBoxes(workspace.evidence.isMinor, workspace.partnersPublished);
+      const currentBoxes = Object.fromEntries(workspace.choices.map((row) => [row.code, row.accepted]));
       body =
         documents.length === privacySlugs.length ? (
-          <PrivacyConsentForm documents={documents} />
+          <PrivacyConsentForm documents={documents} extraBoxes={extraBoxes} currentBoxes={currentBoxes} />
         ) : (
           <PlaceholderStep title={it.stepPrivacy} body={it.placeholderPrivacy} />
         );
@@ -117,13 +127,14 @@ export default async function WizardStepPage({ params }: Props) {
     }
     case "liberatorie": {
       const media = toView(MEDIA_RELEASE_SLUG);
-      const mediaRequired =
-        workspace.checklist.find((item) => item.code === "MEDIA_RELEASE")?.required ?? false;
+      const uses = mediaFormBoxes(workspace.evidence.isMinor, workspace.needsMediaAgreement);
+      const currentUses = Object.fromEntries(workspace.choices.map((row) => [row.code, row.accepted]));
       body = media ? (
         <MediaConsentForm
           document={media}
-          required={mediaRequired}
-          currentDecision={workspace.evidence.mediaDecision}
+          uses={uses}
+          currentUses={currentUses}
+          submitted={workspace.evidence.mediaDecision === "submitted"}
         />
       ) : (
         <PlaceholderStep title={it.stepLiberatorie} body={it.placeholderMedia} />

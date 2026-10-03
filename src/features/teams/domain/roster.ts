@@ -1,3 +1,5 @@
+import type { PublicationFlags } from "@/features/consents/domain/boxes";
+
 export type RosterRow = {
   registrationId: string;
   userId?: string;
@@ -9,6 +11,7 @@ export type RosterRow = {
   rosterRole: string | null;
   registrationStatus: string;
   medicalStatus: "none" | "pending" | "approved" | "rejected" | "expired";
+  publication?: PublicationFlags | null;
 };
 
 export type RosterCounts = {
@@ -31,6 +34,7 @@ export function toRosterRow(input: {
   rosterRole?: string | null;
   registrationStatus: string;
   medicalStatus?: string | null;
+  publication?: PublicationFlags | null;
 }): RosterRow {
   const medical =
     input.medicalStatus === "APPROVED"
@@ -53,6 +57,7 @@ export function toRosterRow(input: {
     rosterRole: input.rosterRole ?? null,
     registrationStatus: input.registrationStatus,
     medicalStatus: medical,
+    publication: input.publication ?? null,
   };
 }
 

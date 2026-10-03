@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
+import { maybeSendC1Reminder } from "@/features/consents/data/tokens";
 import { loadPlayerWorkspace, persistRegistrationStatus } from "@/features/registrations/data/workspace";
 import { RegistrationDashboard } from "@/features/registrations/ui/Dashboard";
 import { ButtonLink } from "@/shared/ui/Button";
@@ -20,6 +21,9 @@ export default async function AreaPage() {
 
   if (workspace && workspace.projectedStatus !== workspace.registration.status) {
     await persistRegistrationStatus(workspace.registration.id, workspace.projectedStatus);
+  }
+  if (workspace) {
+    void maybeSendC1Reminder(workspace.registration.id).catch(() => undefined);
   }
 
   if (workspace) {

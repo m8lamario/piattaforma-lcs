@@ -21,8 +21,8 @@ Un utente può avere più ruoli (es. rappresentante che è anche giocatore). La 
 /invito                        incolla link/codice invito giocatore
 /invito/[token]                redeem invito giocatore
 /invito-staff/[token]          redeem invito rappresentante
-/privacy                       informative (placeholder versionati)
-/liberatorie                   indice informative media (placeholder)
+/privacy                       informative versionate (moduli LCS adattati; restano [INSERIRE …] organizzativi)
+/liberatorie                   liberatoria foto/video (stesso testo del passo wizard)
 
 /area                          dashboard giocatore (post-iscrizione senza CTA wizard)
 /area/registrazione            wizard
@@ -30,8 +30,12 @@ Un utente può avere più ruoli (es. rappresentante che è anche giocatore). La 
 /area/dati                     redirige al passo dati
 /area/squadra                  compagni: nome, maglia, ruolo (niente stato medico)
 /area/comunicazioni
+/area/consensi
+/area/consensi/export
 /area/account
 /area/pagamento/esito
+/conferma-genitore/[token]
+/conferma-marketing/[token]
 
 /squadra                       cruscotto rappresentante (conteggi, pagamento TEAM/BOTH)
 /squadra/inviti                inviti, reinvio, CSV
@@ -71,8 +75,9 @@ Priorità visiva:
 3. Percorso registrazione
 4. Squadra (compagni)
 5. Comunicazioni (con badge non lette)
-6. Account
-7. Ritiro iscrizione (fondo del menu laterale, secondario)
+6. Consensi (revoca, export)
+7. Account
+8. Ritiro iscrizione (fondo del menu laterale, secondario)
 
 Le liberatorie foto/video **non** sono un link minore in footer. Hanno uno step nel percorso e una voce in consensi.
 
@@ -88,7 +93,7 @@ Nessuna voce “apri certificato”.
 
 ## 5. Contenuti pubblici privacy
 
-Pagine pubbliche con il contenuto della **versione corrente** di `LegalDocument`. I testi sono placeholder. Il footer punta a Privacy; le accettazioni avvengono nel percorso autenticato con snapshot della versione.
+Pagine pubbliche con il contenuto della **versione corrente** del file in `content/legal/`. I campi `[INSERIRE …]` organizzativi restano visibili. Il footer punta a Privacy; le accettazioni avvengono nel percorso autenticato con snapshot della versione.
 
 ## 6. Dati in pagina squadra (giocatore)
 

@@ -33,5 +33,16 @@ export function hasCompleteGuardian(guardian: {
   );
 }
 
+export function hasMinorGuardianRequirement(input: {
+  primary: Parameters<typeof hasCompleteGuardian>[0];
+  secondaryEmail?: string | null;
+  g3: "OTHER_PARENT" | "SOLE" | null;
+}) {
+  if (!hasCompleteGuardian(input.primary)) return false;
+  if (input.g3 === "SOLE") return true;
+  if (input.g3 === "OTHER_PARENT") return Boolean(input.secondaryEmail?.trim());
+  return false;
+}
+
 export const GUARDIAN_RELATIONSHIPS = ["GENITORE", "TUTORE", "AFFIDATARIO", "ALTRO"] as const;
 export type GuardianRelationship = (typeof GUARDIAN_RELATIONSHIPS)[number];

@@ -6,33 +6,32 @@ import { Button, ButtonLink } from "@/shared/ui/Button";
 import { ActionError } from "@/shared/ui/ActionError";
 import { it } from "@/shared/i18n/it";
 import fields from "@/shared/ui/form.module.css";
+import type { ConsentBoxDef } from "@/features/consents/domain/boxes";
+import { ConsentBoxList } from "./ConsentBoxList";
 import { LegalReader } from "./LegalReader";
 import styles from "./ConsentForm.module.css";
 import type { ConsentDocumentView } from "./PrivacyConsentForm";
 
 type Props = {
   document: ConsentDocumentView;
-  required: boolean;
-  currentDecision: "none" | "accepted" | "refused";
+  uses: ConsentBoxDef[];
+  currentUses: Record<string, boolean>;
+  submitted: boolean;
 };
 
-export function MediaConsentForm({ document, required, currentDecision }: Props) {
+export function MediaConsentForm({ document, uses, currentUses, submitted }: Props) {
   const [state, action, pending] = useActionState(saveMediaConsentAction, undefined);
   const [read, setRead] = useState(false);
+  const [boxValues, setBoxValues] = useState<Record<string, boolean>>(currentUses);
   const markRead = useCallback(() => setRead(true), []);
-  const canDecide = read || currentDecision !== "none";
+  const canSubmit = read || submitted;
 
   return (
     <form className={fields.form} action={action} aria-busy={pending}>
-      {required ? <p className={fields.notice}>{it.consentMediaRequired}</p> : <p className={fields.notice}>{it.consentMediaOptional}</p>}
-      {currentDecision === "accepted" ? (
-        <p className={`${fields.banner} ${fields.bannerOk}`} role="status">
-          {it.consentMediaCurrentAccept}
-        </p>
-      ) : null}
-      {currentDecision === "refused" ? (
+      <p className={fields.notice}>{it.consentMediaUsesHelp}</p>
+      {submitted ? (
         <p className={`${fields.banner} ${fields.bannerInfo}`} role="status">
-          {it.consentMediaCurrentRefuse}
+          {it.consentMediaSubmitted}
         </p>
       ) : null}
       {state?.error ? <ActionError error={state.error} code={state.code} /> : null}
@@ -44,34 +43,25 @@ export function MediaConsentForm({ document, required, currentDecision }: Props)
       <input type="hidden" name="versionId" value={document.versionId} />
       <input type="hidden" name="intent" value="continue" />
 
-      <fieldset className={fields.group}>
-        <legend className={fields.legend}>{it.mediaChoiceTitle}</legend>
-        {canDecide ? null : <p className={fields.notice}>{it.consentReadLocked}</p>}
-        <div className={styles.choices}>
-          <div className={`${styles.choice} ${styles.choiceAccept} ${currentDecision === "accepted" ? styles.choiceCurrent : ""}`}>
-            <h3>{it.consentMediaAccept}</h3>
-            <p>{it.mediaChoiceAcceptHelp}</p>
-            <Button type="submit" name="decision" value="accept" disabled={pending || !canDecide} aria-busy={pending}>
-              {pending ? it.saving : it.consentMediaAccept}
-            </Button>
-          </div>
-          {required ? null : (
-            <div className={`${styles.choice} ${styles.choiceRefuse} ${currentDecision === "refused" ? styles.choiceCurrent : ""}`}>
-              <h3>{it.consentMediaRefuse}</h3>
-              <p>{it.mediaChoiceRefuseHelp}</p>
-              <Button type="submit" name="decision" value="refuse" variant="ghost" disabled={pending || !canDecide}>
-                {it.consentMediaRefuse}
-              </Button>
-            </div>
-          )}
-        </div>
-      </fieldset>
+      {canSubmit ? (
+        <ConsentBoxList
+          boxes={uses}
+          values={boxValues}
+          disabled={pending}
+          onToggle={(code, accepted) => setBoxValues((current) => ({ ...current, [code]: accepted }))}
+        />
+      ) : (
+        <p className={fields.notice}>{it.consentReadLocked}</p>
+      )}
 
-      <p>
+      <div className={`${fields.actions} ${fields.sticky}`}>
+        <Button type="submit" disabled={pending || !canSubmit} aria-busy={pending}>
+          {pending ? it.saving : it.consentMediaSave}
+        </Button>
         <ButtonLink href="/area" variant="ghost" icon="back">
           {it.backToArea}
         </ButtonLink>
-      </p>
+      </div>
     </form>
   );
 }

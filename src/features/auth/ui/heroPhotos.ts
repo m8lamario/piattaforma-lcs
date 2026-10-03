@@ -47,4 +47,4 @@ function zipHeroPhotos(desktop: HeroPhoto[], mobile: HeroPhoto[]): HeroPhotoSlid
 /** Una sola slide: niente rotazione. Liste di lunghezza diversa: il viewport più corto ripete in modo uniforme. */
 export const HERO_PHOTOS: HeroPhotoSlide[] = zipHeroPhotos(HERO_PHOTOS_DESKTOP, HERO_PHOTOS_MOBILE);
 
-export const HERO_PHOTO_INTERVAL_MS = 7000;
+export const HERO_PHOTO_INTERVAL_MS = 4000;

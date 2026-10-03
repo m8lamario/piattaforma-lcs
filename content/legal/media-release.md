@@ -1,286 +1,94 @@
-# Liberatoria foto, video e contenuti social
+Testi dei **Moduli 3 e 4** LCS 2026-27 (versione 1.0 del 1 ottobre 2026), in un solo documento perché in questa piattaforma c’è un passo unico. **Non è un parere legale e non è un testo firmato.**
 
-**Questo testo è un placeholder di piattaforma. Non è una liberatoria legale valida. Non è un parere giuridico. Non costituisce accettazione implicita.**
-
-Questa è una sezione **distinta** dall’informativa privacy. In iscrizione ha un passo proprio. Se l’edizione non la rende obbligatoria, si può scegliere «Non accetto» e completare comunque l’iscrizione. Nessuna casella è pre-selezionata.
-
-**[INSERIRE TESTO LIBERATORIA UFFICIALE]**
-
-**[INSERIRE OGGETTO LIBERATORIA]**
-
-**[INSERIRE DATA DI ENTRATA IN VIGORE DELLA VERSIONE UFFICIALE]**
-
-**[INSERIRE NUMERO / CODICE VERSIONE UFFICIALE]**
+**Come funziona su questa piattaforma.** L’account è del giocatore, anche se minore: le caselle le spunta lui. L’altro genitore conferma via email (C1). Dai 14 anni la casella G14 è l’accordo del minore (nel Modulo 4 originale la confermavano i genitori). Nessuna casella è pre-selezionata. Completare il passo senza spuntare gli usi è consentito e **non** blocca l’iscrizione. Questa piattaforma non archivia un album foto: registra le scelte. Revoca: [area consensi](/area/consensi).
 
 ---
 
-## 1. Cosa si sta decidendo
+## Maggiorenni — Modulo 3
 
-**[INSERIRE OGGETTO LIBERATORIA]**
+**LIBERATORIA PER L’UTILIZZO DI IMMAGINI E RIPRESE AUDIO-VIDEO E PER IL TRATTAMENTO DEI RELATIVI DATI PERSONALI**
 
-L’accettazione riguarda l’uso di materiali che ritraggono la persona (e, se minore, **[INSERIRE SE ANCHE IL GENITORE DEVE ESSERE PARTE DELLA DECISIONE]**), non il trattamento dell’anagrafica o del certificato medico.
+**ai sensi dell’art. 10 c.c., degli artt. 96 e 97 L. 633/1941 e degli artt. 6.1.a e 7 GDPR — [INSERIRE NOME TORNEO], stagione 2026/2027 — versione 1.0 del 1 ottobre 2026**
 
-In v1 la piattaforma **non** archivia un album foto del giocatore. La decisione viene registrata (versione, data/ora, accettato o rifiutato) e potrà essere opposta a usi *esterni* all’app secondo le regole che l’organizzazione scriverà qui.
+ESL **[INSERIRE RAGIONE SOCIALE]**, con sede in **[INSERIRE SEDE LEGALE]** («ESL»), organizza il torneo **[INSERIRE NOME TORNEO]** della Lega Calcio Studenti, comprese le eventuali fasi finali tra le città. Durante partite, premiazioni, conferenze ed eventi collegati, ESL — direttamente o tramite fotografi, videomaker e media partner incaricati — realizza foto, video, interviste e dirette streaming in cui i partecipanti possono comparire («Immagini»). Con le caselle in fondo scegli, uso per uso, se autorizzarne la pubblicazione.
 
-**[INSERIRE SE LA LIBERATORIA COPRE ANCHE MATERIALI GIÀ ESISTENTI O SOLO FUTURI]**
+**1. Oggetto.** Per ogni uso che spunti, autorizzi ESL a riprendere, registrare, pubblicare e diffondere le Immagini, la tua voce e il tuo nome. Gli usi non spuntati non sono autorizzati.
 
----
+**2. Modalità d’uso.** Le Immagini possono essere montate, tagliate e adattate ai formati dei diversi canali, senza alterarne il significato. Sono visibili senza limiti territoriali, perché i canali online sono accessibili da tutto il mondo. ESL non tagga profili social personali senza richiesta.
 
-## 2. Tipi di materiale
+**3. Limiti.** È vietato ogni uso che pregiudichi dignità, onore, reputazione o decoro della persona ritratta (art. 10 c.c.; art. 97, comma 2, L. 633/1941). Le Immagini non sono cedute a terzi per usi diversi da quelli autorizzati e non sono usate per presentarti come testimonial di prodotti senza un accordo specifico.
 
-**[INSERIRE TIPOLOGIE DI MATERIALE AUTORIZZATE]**
+**4. Gratuità.** L’autorizzazione è gratuita: per gli usi autorizzati non è dovuto alcun compenso.
 
-Da confermare una per una (sì / no / con limiti):
+**5. Durata e revoca.** L’autorizzazione vale fino a revoca, che puoi dare in qualsiasi momento dall’[area consensi](/area/consensi) o scrivendo a **[INSERIRE EMAIL PRIVACY]**, anche per un solo uso, e comunque per non oltre 10 anni dalla fine della stagione. Dopo la revoca o la scadenza ESL non pubblica nuovi contenuti con le tue Immagini e rimuove entro 30 giorni quelli sui propri canali, quando tecnicamente possibile. Non possono essere ritirati il materiale già stampato o consegnato a terzi prima della revoca, gli articoli delle testate giornalistiche e le condivisioni fatte da terzi. Dopo la revoca ESL cancella le Immagini anche dai propri archivi entro 30 giorni, salvo quanto serve per la difesa di un diritto (finalità G dell’informativa).
 
-| Tipo | Incluso? | Limiti |
-|------|----------|--------|
-| Fotografie | **[INSERIRE SÌ/NO FOTO]** | **[INSERIRE: PRIMO PIANO / DI GRUPPO / SOLO CAMPO]** |
-| Video | **[INSERIRE SÌ/NO VIDEO]** | **[INSERIRE DURATA, MONTAGGIO, AUDIO]** |
-| Audio / interviste | **[INSERIRE SÌ/NO AUDIO]** | **[INSERIRE]** |
-| Dirette / streaming | **[INSERIRE SÌ/NO LIVE]** | **[INSERIRE PIATTAFORME]** |
-| Screenshot da dirette | **[INSERIRE]** | **[INSERIRE]** |
-| Immagini da dispositivi di terzi (genitori, tifosi) riprese in evento | **[INSERIRE SE RICADONO IN QUESTA LIBERATORIA]** | **[INSERIRE]** |
-| Materiale caricato dal giocatore in piattaforma | non previsto in v1 | **[INSERIRE SE ARRIVERÀ]** |
-| Logo / foto profilo account | campo schema immagine non usato come upload giocatore in v1 | **[INSERIRE]** |
-| Minori: volto riconoscibile | **[INSERIRE SÌ/NO/CONDIZIONI]** | **[INSERIRE]** |
-| Minori: nome e cognome accanto all’immagine | **[INSERIRE SÌ/NO/SOLO NOME DI BATTESIMO/SOLO SQUADRA]** | **[INSERIRE]** |
+**6. Immagini d’insieme.** Anche senza consenso, ESL può pubblicare immagini d’insieme (tribune, panoramiche del campo) in cui la persona non è il soggetto principale e non è facilmente riconoscibile. Su richiesta, ESL rende la persona non riconoscibile anche in queste immagini.
 
-**[INSERIRE ESCLUSIONI: SPOGLIATOI, INFORTUNI, CONTESTI SANITARI, SITUAZIONI DENIGRANTI, DATI SENSIBILI VISIBILI]**
+**7. Dati personali.** Le Immagini sono dati personali trattati da ESL, titolare del trattamento, sulla base del tuo consenso (art. 6.1.a GDPR) e secondo l’[informativa privacy](/privacy) del torneo (Modulo 1). Puoi esercitare i diritti degli artt. 15–22 GDPR scrivendo a **[INSERIRE EMAIL PRIVACY]** e proporre reclamo al [Garante per la protezione dei dati personali](https://www.garanteprivacy.it). I contenuti pubblicati sui social sono trattati anche dalle piattaforme secondo le loro condizioni; se qualcuno scarica o ripubblica abusivamente le tue Immagini, ESL su tua richiesta lo segnala alla piattaforma e ne chiede la rimozione.
 
----
+**8. Facoltatività.** Dare o negare questi consensi non incide sulla partecipazione al torneo.
 
-## 3. Contesti di acquisizione
+### Caselle del form — Modulo 3 (tutte facoltative)
 
-**[INSERIRE CONTESTI DI RIPRESA]**
+Autorizzo ESL a pubblicare foto e video in cui compaio, con il mio nome, per:
 
-Da confermare:
+- **Canali del torneo** — sito, app e profili social ufficiali del torneo e della Lega (es. Instagram, TikTok, Facebook, YouTube), comprese dirette streaming e highlights.
+- **Promozione ESL** — locandine, brochure, video promozionali e campagne pubblicitarie di ESL, anche sponsorizzate online.
+- **Contenuti con sponsor** — contenuti sul torneo realizzati insieme agli sponsor e ai partner (es. post co-firmati, premiazioni).
+- **Stampa** — invio a giornali, TV e siti di informazione per la cronaca del torneo.
+- **Interviste** — interviste audio e video in cui compaio.
 
-- allenamenti e raduni: **[INSERIRE SÌ/NO ALLENAMENTI]**
-- gare e coppe: **[INSERIRE SÌ/NO GARE]**
-- premiazioni, cerimonie, conferenze stampa: **[INSERIRE]**
-- trasferte, pullman, palestre, istituti scolastici: **[INSERIRE]**
-- eventi collaterali (stand, hospitality): **[INSERIRE]**
-- backstage / mixed zone: **[INSERIRE]**
-- uso di fotografi incaricati vs volontari vs media indipendenti: vedi sezione 7
+Spuntando una casella confermi di aver letto la liberatoria completa. Puoi revocare ogni autorizzazione in qualsiasi momento dall’[area consensi](/area/consensi) o scrivendo a **[INSERIRE EMAIL PRIVACY]**.
 
-**[INSERIRE SE SERVONO AVVISI IN LOCO (CARTELLI «ZONA RIPRESE») OLTRE A QUESTA LIBERATORIA]**
+Handle/URL dei canali: **[INSERIRE]**. Accordo contitolarità social: **[INSERIRE LINK ACCORDO PIATTAFORMA, ES. META PAGE INSIGHTS CONTROLLER ADDENDUM]**.
 
 ---
 
-## 4. Finalità
+## Minorenni — Modulo 4
 
-**[INSERIRE FINALITÀ MEDIA]**
+**LIBERATORIA PER L’UTILIZZO DI IMMAGINI E RIPRESE AUDIO-VIDEO DI MINORE E PER IL TRATTAMENTO DEI RELATIVI DATI PERSONALI**
 
-Elenco da includere o escludere esplicitamente:
+**ai sensi dell’art. 10 c.c., degli artt. 96 e 97 L. 633/1941, degli artt. 2, 316 e 320 c.c. e degli artt. 6.1.a e 7 GDPR — [INSERIRE NOME TORNEO], stagione 2026/2027 — versione 1.0 del 1 ottobre 2026**
 
-1. Documentazione dell’evento e archivio storico dell’organizzazione: **[INSERIRE SÌ/NO ARCHIVIO]**
-2. Cronaca / notiziario sul sito dell’organizzazione: **[INSERIRE URL SITO]**
-3. Comunicazione sulle pagine social dell’organizzazione: **[INSERIRE]**
-4. Promozione delle edizioni successive e della pratica sportiva studentesca: **[INSERIRE SÌ/NO PROMO]**
-5. Materiali per partner / sponsor: **[INSERIRE SÌ/NO SPONSOR]**
-6. Materiali per coppe locali (es. siti distinti dalla piattaforma di iscrizione): **[INSERIRE SÌ/NO SITI LOCALI]**
-7. Stampa, TV, web di terzi: **[INSERIRE]**
-8. Uso interno staff / didattica / formazione giudici e allenatori: **[INSERIRE]**
-9. Finalità commerciali ulteriori: **[INSERIRE SÌ/NO COMMERCIALE E QUALI]**
-10. Addestramento di sistemi di riconoscimento facciale o modelli di intelligenza artificiale: **[INSERIRE ESPLICITAMENTE SÌ O NO]**
+ESL **[INSERIRE RAGIONE SOCIALE]**, con sede in **[INSERIRE SEDE LEGALE]** («ESL»), organizza il torneo **[INSERIRE NOME TORNEO]** della Lega Calcio Studenti, comprese le eventuali fasi finali tra le città. Durante partite, premiazioni, conferenze ed eventi collegati, ESL — direttamente o tramite fotografi, videomaker e media partner incaricati — realizza foto, video, interviste e dirette streaming in cui i partecipanti possono comparire («Immagini»). Con le caselle in fondo si sceglie, uso per uso, se autorizzarne la pubblicazione.
 
-Base giuridica: **[INSERIRE BASE GIURIDICA MEDIA — DI NORMA CONSENSO SE QUESTO È IL DOCUMENTO DI CONSENSO]**
+**1. Oggetto e consenso di entrambi i genitori.** Per ogni uso spuntato, i genitori autorizzano ESL a riprendere, registrare, pubblicare e diffondere le Immagini, la voce e il nome del minore. Pubblicare online le immagini di un minore richiede il consenso di entrambi i genitori: l’autorizzazione diventa attiva solo quando anche l’altro genitore la conferma, salvo che chi è indicato come contatto sia l’unico esercente la responsabilità genitoriale. Dai 14 anni serve anche l’accordo del minore (casella G14, spuntata dall’account del minore). Finché manca la conferma, ESL non pubblica Immagini in cui il minore è riconoscibile. Senza conferma il minore **partecipa comunque** al torneo.
 
-Rapporto con l’informativa privacy: **[INSERIRE RINVIO]**
+**2. Modalità d’uso.** Le Immagini possono essere montate, tagliate e adattate ai formati dei diversi canali, senza alterarne il significato. Sono visibili senza limiti territoriali, perché i canali online sono accessibili da tutto il mondo. Nelle didascalie il minore è indicato con nome e iniziale del cognome, salvo consenso al cognome completo ([informativa per minori](/privacy/minori), Modulo 2), oltre a squadra e istituto. ESL non tagga profili social del minore, non pubblica recapiti, residenza o altri dati che ne permettano la localizzazione e non usa le Immagini per profilazione.
 
----
+**3. Tutela del minore.** È vietato ogni uso che pregiudichi dignità, onore, reputazione o decoro del minore (art. 10 c.c.; art. 97, comma 2, L. 633/1941) o che sia contrario al suo interesse. Non sono pubblicate Immagini del minore in situazioni di disagio, dopo un infortunio, negli spogliatoi o in atteggiamenti che possano esporlo a derisione. Le Immagini non sono cedute a terzi per usi diversi da quelli autorizzati e il minore non è mai presentato come testimonial di prodotti. Non sono pubblicate Immagini in cui sia riconoscibile un minore senza autorizzazione attiva; se necessario il minore viene oscurato.
 
-## 5. Canali di pubblicazione
+**4. Gratuità.** L’autorizzazione è gratuita: per gli usi autorizzati non è dovuto alcun compenso.
 
-**[INSERIRE CANALI: SITO, SOCIAL, STAMPA, …]**
+**5. Durata e revoca.** L’autorizzazione vale fino a revoca, che basta sia data da uno solo dei genitori o, dopo i 18 anni, dal/dalla partecipante: dall’[area consensi](/area/consensi) o scrivendo a **[INSERIRE EMAIL PRIVACY]**, anche per un solo uso. Vale comunque per non oltre 10 anni dalla fine della stagione. Dopo la revoca o la scadenza ESL non pubblica nuovi contenuti con le Immagini del minore e rimuove entro 30 giorni quelli sui propri canali, quando tecnicamente possibile. Non possono essere ritirati il materiale già stampato o consegnato a terzi prima della revoca, gli articoli delle testate giornalistiche e le condivisioni fatte da terzi. Dopo la revoca ESL cancella le Immagini anche dai propri archivi entro 30 giorni, salvo quanto serve per la difesa di un diritto (finalità G dell’informativa).
 
-Compilare ogni canale. Se un canale non è usato, scriverlo.
+**6. Dati personali.** Le Immagini sono dati personali trattati da ESL, titolare del trattamento, sulla base del consenso dei genitori, rappresentanti legali del minore (art. 6.1.a GDPR; artt. 2 e 320 c.c.) e secondo l’[informativa per minori](/privacy/minori) (Modulo 2). I genitori e il minore possono esercitare i diritti degli artt. 15–22 GDPR scrivendo a **[INSERIRE EMAIL PRIVACY]** e proporre reclamo al [Garante per la protezione dei dati personali](https://www.garanteprivacy.it). I contenuti pubblicati sui social sono trattati anche dalle piattaforme secondo le loro condizioni; se qualcuno scarica o ripubblica abusivamente le Immagini, ESL su richiesta lo segnala alla piattaforma e ne chiede la rimozione.
 
-| Canale | Attivo? | Handle / URL | Note |
-|--------|---------|--------------|------|
-| Sito ESL / LCS | **[INSERIRE]** | **[INSERIRE URL]** | **[INSERIRE]** |
-| Sito coppa locale | **[INSERIRE]** | **[INSERIRE URL]** | i siti locali **non** sono questo repository |
-| App / questa piattaforma | v1 non pubblica gallery | **[INSERIRE SE IN FUTURO]** | |
-| Facebook | **[INSERIRE SÌ/NO FACEBOOK]** | **[INSERIRE PAGINA]** | la piattaforma social è **[INSERIRE: TITOLARE AUTONOMO / ALTRO]** |
-| Instagram | **[INSERIRE SÌ/NO INSTAGRAM]** | **[INSERIRE]** | **[INSERIRE]** |
-| YouTube | **[INSERIRE SÌ/NO YOUTUBE]** | **[INSERIRE]** | **[INSERIRE]** |
-| TikTok | **[INSERIRE SÌ/NO TIKTOK]** | **[INSERIRE]** | **[INSERIRE]** |
-| X / altro | **[INSERIRE]** | **[INSERIRE]** | **[INSERIRE]** |
-| Newsletter | **[INSERIRE]** | — | distinta da F7 comunicazioni di servizio |
-| Stampa cartacea / locandine | **[INSERIRE]** | **[INSERIRE]** | **[INSERIRE]** |
-| TV / streaming partner | **[INSERIRE]** | **[INSERIRE]** | **[INSERIRE]** |
-| Canali sponsor | **[INSERIRE]** | **[INSERIRE]** | **[INSERIRE]** |
-| Canali istituto scolastico | **[INSERIRE]** | **[INSERIRE]** | **[INSERIRE]** |
+**7. Facoltatività.** Dare o negare questi consensi non incide sulla partecipazione del minore al torneo.
 
-**[INSERIRE SE I CANALI POSSONO CAMBIARE SENZA NUOVO CONSENSO O SE SERVE RE-CONSENT]**
+### Caselle del form — Modulo 4 (tutte facoltative)
+
+Autorizzo ESL a pubblicare foto e video in cui compare il/la partecipante, con il suo nome, per:
+
+- **Canali del torneo** — sito, app e profili social ufficiali del torneo e della Lega (es. Instagram, TikTok, Facebook, YouTube), comprese dirette streaming e highlights.
+- **Promozione ESL** — locandine, brochure, video promozionali e campagne pubblicitarie di ESL, anche sponsorizzate online.
+- **Contenuti con sponsor** — contenuti sul torneo realizzati insieme agli sponsor e ai partner (es. post co-firmati, premiazioni).
+- **Stampa** — invio a giornali, TV e siti di informazione per la cronaca del torneo.
+- **Interviste** — interviste audio e video.
+- *(obbligatoria dai 14 anni per attivare le autorizzazioni)* **Accordo del minore** — Ho letto la liberatoria, so come verranno usate le mie foto e i miei video e sono d’accordo. Senza questa casella le autorizzazioni sopra non si attivano.
+
+Spuntando una casella confermate di aver letto la liberatoria completa. Le autorizzazioni diventano attive dopo la conferma dell’altro genitore. Potete revocarle in qualsiasi momento dall’[area consensi](/area/consensi) o scrivendo a **[INSERIRE EMAIL PRIVACY]**.
 
 ---
 
-## 6. Durata
+## Email al secondo genitore
 
-**[INSERIRE DURATA]**
+Oggetto: Conferma le scelte privacy per l’iscrizione di [nome del minore] a [INSERIRE NOME TORNEO]
 
-**[INSERIRE: FINO A REVOCA / FINO A DATA CERTA / PER N EDIZIONI / PER ARCHIVIO ILLIMITATO]**
+> Gentile genitore, [nome e cognome del contatto principale] ha iscritto [nome del minore] a [INSERIRE NOME TORNEO] e ha fatto queste scelte su foto, video e dati: [riepilogo delle caselle, con sì/no per ciascuna]. Puoi leggere l’informativa e la liberatoria complete. Informativa per te (art. 14 GDPR): titolare del trattamento è ESL **[INSERIRE RAGIONE SOCIALE]**, **[INSERIRE EMAIL PRIVACY]**. Il tuo nome e la tua email ci sono stati forniti da [nome del contatto principale]; li usiamo per questa conferma e per le comunicazioni di servizio sul torneo (art. 6.1.b GDPR), per 24 mesi dalla fine della stagione. Puoi esercitare i diritti degli artt. 15–22 GDPR scrivendo a **[INSERIRE EMAIL PRIVACY]**; l’informativa completa è al link sopra. Per rendere attive le autorizzazioni serve anche la tua conferma: se non confermi, [nome del minore] partecipa comunque al torneo, ma non verrà pubblicato in foto e video né con il cognome completo.
+>
+> Confermo le scelte sopra indicate. [Pulsante: Conferma]
+>
+> Se non sei d’accordo con una o più scelte, non confermare e scrivi a **[INSERIRE EMAIL PRIVACY]**: le modificheremo.
 
-**[INSERIRE COSA SUCCEDE A FINE DURATA: RIMOZIONE PROATTIVA, SOLO STOP A NUOVI USI, ARCHIVIO CHIUSO]**
-
-Scadenza tecnica in prodotto: la decisione è legata alla *versione corrente* del documento e all’iscrizione. Non c’è un timer di scadenza della liberatoria. **[INSERIRE SE SERVE UNA DATA DI FINE NEL RECORD]**
-
----
-
-## 7. Soggetti autorizzati a usare e a riprendere
-
-**[INSERIRE SOGGETTI AUTORIZZATI]**
-
-Da nominare o escludere:
-
-- Titolare del trattamento indicato in `privacy-policy`: **[INSERIRE NOME TITOLARE DEL TRATTAMENTO]**
-- Staff interno (comunicazione, organizzazione gara): **[INSERIRE RUOLI]**
-- Organizzatore della coppa locale: **[INSERIRE]**
-- Fotografi / videomaker incaricati con contratto: **[INSERIRE SE SONO RESPONSABILI O TITOLARI AUTONOMI]**
-- Agenzia di comunicazione: **[INSERIRE]**
-- Media partner e testate: **[INSERIRE]**
-- Sponsor: **[INSERIRE LIMITI DI LOGO E DI CESSIONE FILE]**
-- Istituti scolastici delle squadre: **[INSERIRE]**
-- Altri giocatori / famiglie (foto amatoriali): **[INSERIRE SE FUORI DALLA LIBERATORIA]**
-- Sub-concessionari e piattaforme social: **[INSERIRE]**
-
-**[INSERIRE DIVIETO DI CESSIONE A TERZI NON ELENCATI]**
-
-**[INSERIRE SE È CONSENTITA LA SUBLICENZA]**
-
----
-
-## 8. Ambito geografico e trasferimenti
-
-**[INSERIRE AMBITO TERRITORIALE: ITALIA / UE / MONDO]**
-
-I social e i siti pubblici sono di regola consultabili da ovunque. **[INSERIRE AVVERTENZA UFFICIALE SUI TRASFERIMENTI VERSO PIATTAFORME EXTRA-SEE]**
-
-**[INSERIRE SE L’ORGANIZZAZIONE PUBBLICA SOLO SU SERVER UE]**
-
----
-
-## 9. Modifiche al materiale (editing)
-
-**[INSERIRE CONDIZIONI]**
-
-- Ritaglio, colore, montaggio, musica, sovraimpressioni di nome/squadra: **[INSERIRE]**
-- Uso in collage o grafiche promo: **[INSERIRE]**
-- Alterazioni che ridicolizzano o ledono la dignità: **[INSERIRE DIVIETO]**
-- Associare l’immagine a messaggi politici, sanitari o commerciali di terzi: **[INSERIRE]**
-
----
-
-## 10. Compenso
-
-**[INSERIRE SE L’USO È A TITOLO GRATUITO O PREVEDE COMPENSO]**
-
-**[INSERIRE RINUNCIA A COMPENSI SE RICHIESTA DAL LEGALE — SOLO TESTO UFFICIALE, NON INVENTARE]**
-
----
-
-## 11. Limitazioni e impegni dell’organizzazione
-
-**[INSERIRE LIMITAZIONI]**
-
-Bozza di voci da accettare o cancellare:
-
-- non pubblicare materiali di contesto sanitario o infortunio riconoscibile: **[INSERIRE]**
-- non pubblicare documenti d’identità o certificati: (in prodotto i certificati non sono pubblici)
-- moderazione dei commenti sui canali propri: **[INSERIRE]**
-- tag / geolocalizzazione: **[INSERIRE]**
-- orari e luoghi in cui è vietato riprendere: **[INSERIRE]**
-
----
-
-## 12. Minori
-
-**[INSERIRE REGOLE MEDIA PER MINORI]**
-
-Punti da decidere, **senza** fingere che il prodotto li abbia risolti:
-
-- il rifiuto della liberatoria da parte dell’account minore è sufficiente: **[INSERIRE]**
-- serve consenso del genitore/tutore, con quale verifica: **[INSERIRE REQUISITO CONSENSO GENITORE SE PREVISTO DALLA LEGGE / DAL LEGALE]**
-- divieto di primo piano: **[INSERIRE]**
-- divieto di indicare istituto scolastico + nome: **[INSERIRE]**
-- durata più breve rispetto ai maggiorenni: **[INSERIRE]**
-- canali social vietati per minori: **[INSERIRE]**
-
-In v1 il passo è lo stesso per tutti; `guardianId` non firma la liberatoria.
-
----
-
-## 13. Revoca e «non accetto»
-
-**[INSERIRE MODALITÀ DI REVOCA LIBERATORIA]**
-
-Operativo:
-
-- Se la voce edizione `MEDIA_RELEASE` è `required=false` (default nello seed di sviluppo), il bottone **Non accetto e continuo** registra `accepted=false` e il requisito risulta comunque completo.
-- Se in un’edizione reale la voce è obbligatoria, il rifiuto è bloccato dal prodotto. **[INSERIRE SE UN’EDIZIONE UFFICIALE PUÒ RENDERE LA LIBERATORIA OBBLIGATORIA — DECISIONE ORGANIZZATIVA/LEGALE]**
-- Si può cambiare scelta sulla versione *corrente* (nuovo record in append).
-- Non si pre-spunta l’accettazione.
-
-Effetti della revoca o del rifiuto su quanto già pubblicato:
-
-- **[INSERIRE: RIMOZIONE DAI CANALI PROPRI ENTRO QUANTO]**
-- **[INSERIRE: IMPOSSIBILITÀ DI RITIRARE COPIE GIÀ DIFFUSE SU SOCIAL / STAMPA / TERZI]**
-- **[INSERIRE: CACHE, SHARE, SCREENSHOT DI TERZI]**
-- **[INSERIRE: MATERIALE DI GRUPPO DOVE LA PERSONA NON È IL SOGGETTO PRINCIPALE]**
-
-Canale di revoca dopo l’iscrizione: **[INSERIRE EMAIL PRIVACY / EMAIL COMUNICAZIONE]** — **[INSERIRE TEMPI]**
-
-Il rifiuto della liberatoria **non** è un rifiuto dell’informativa privacy né del certificato.
-
----
-
-## 14. Rapporti con le piattaforme social (titolarità)
-
-**[INSERIRE QUALIFICAZIONE: L’ORGANIZZAZIONE VS IL GESTORE DEL SOCIAL]**
-
-**[INSERIRE LINK ALLE PRIVACY POLICY DEI SOCIAL USATI]**
-
-**[INSERIRE SE L’ORGANIZZAZIONE FA ADVERTISING CON LOOKALIKE / PIXEL — OGGI NON PRESENTE IN APP]**
-
----
-
-## 15. Fotografi e riprese di gara
-
-**[INSERIRE REGOLAMENTO RIPRESE IN LOCO]**
-
-**[INSERIRE SE ESISTE ACCREDITO STAMPA SEPARATO DA QUESTA LIBERATORIA]**
-
-**[INSERIRE COSA PUÒ FARE UN GENITORE CON IL PROPRIO TELEFONO DURANTE LA GARA]**
-
----
-
-## 16. Conservazione della prova della decisione
-
-Si conserva un `ConsentRecord` (utente, versione del testo, accepted sì/no, timestamp, iscrizione, IP e user agent secondo policy). **[INSERIRE PERIODO DI CONSERVAZIONE PROVA LIBERATORIA]**
-
-Il testo accettato resta nella versione storica: non si sovrascrive il body di una versione già accettata; si pubblica una nuova versione.
-
----
-
-## 17. Altre condizioni
-
-**[INSERIRE CONDIZIONI]**
-
-**[INSERIRE CLAUSOLE SU LEGGE APPLICABILE, NULLITÀ PARZIALE, ECC. SOLO A CURA DEL LEGALE]**
-
----
-
-## 18. Contatti per questa liberatoria
-
-- Titolare: **[INSERIRE NOME TITOLARE DEL TRATTAMENTO]**
-- Email: **[INSERIRE EMAIL PRIVACY]** e/o **[INSERIRE EMAIL COMUNICAZIONE / UFFICIO STAMPA]**
-- Per diritti privacy generali: vedi `privacy-policy`
-
----
-
-## 19. Luogo e data
-
-- **[INSERIRE LUOGO]**
-- **[INSERIRE DATA]**
-- **[INSERIRE NOME E RUOLO DI CHI APPROVA IL TESTO UFFICIALE]**
+Se la conferma non arriva entro 14 giorni, il sito invia un solo promemoria; poi le autorizzazioni restano non attive. Su questa piattaforma il token è valido 60 giorni.

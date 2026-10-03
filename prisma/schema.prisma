@@ -124,6 +124,7 @@ model User {
   documentReviews        DocumentReview[]
   notifications          Notification[]
   consentRecords         ConsentRecord[]
+  consentChoices         ConsentChoice[]
   auditLogs              AuditLog[]
   payments               Payment[]           @relation("PaymentPayer")
   representativeTeams    Team[]              @relation("TeamRepresentativeUser")
@@ -215,19 +216,24 @@ model PlayerProfile {
 }
 
 model Guardian {
-  id              String   @id @default(cuid())
-  playerProfileId String
-  firstName       String
-  lastName        String
-  relationship    String
-  email           String
-  phone           String?
-  metadata        Json?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id                   String   @id @default(cuid())
+  playerProfileId      String
+  firstName            String
+  lastName             String
+  relationship         String
+  email                String
+  phone                String?
+  kind                 String   @default("PRIMARY")
+  soleResponsibility   Boolean  @default(false)
+  emailCorrectionUsed  Boolean  @default(false)
+  metadata             Json?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
 
-  playerProfile  PlayerProfile   @relation(fields: [playerProfileId], references: [id], onDelete: Cascade)
+  playerProfile  PlayerProfile    @relation(fields: [playerProfileId], references: [id], onDelete: Cascade)
   consentRecords ConsentRecord[]
+  consentChoices ConsentChoice[]
+  consentTokens  ConsentToken[]
 
   @@unique([playerProfileId, email])
   @@index([playerProfileId])
@@ -414,6 +420,8 @@ model Registration {
   edition        Edition         @relation(fields: [editionId], references: [id], onDelete: Restrict)
   documents      Document[]
   consentRecords ConsentRecord[]
+  consentChoices ConsentChoice[]
+  consentTokens  ConsentToken[]
   payments       Payment[]
 
   @@unique([playerProfileId, editionId])
@@ -503,6 +511,7 @@ model LegalDocumentVersion {
 
   legalDocument LegalDocument   @relation(fields: [legalDocumentId], references: [id], onDelete: Cascade)
   consents      ConsentRecord[]
+  choices       ConsentChoice[]
 
   @@unique([legalDocumentId, version])
   @@index([legalDocumentId, isCurrent])
@@ -529,6 +538,49 @@ model ConsentRecord {
 
   @@index([userId, legalDocumentVersionId])
   @@index([registrationId])
+}
+
+model ConsentChoice {
+  id                     String   @id @default(cuid())
+  userId                 String
+  registrationId         String
+  code                   String
+  accepted               Boolean
+  value                  String?
+  source                 String   @default("WEB")
+  legalDocumentVersionId String?
+  guardianId             String?
+  ipAddress              String?
+  userAgent              String?
+  createdAt              DateTime @default(now())
+
+  user                 User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  registration         Registration          @relation(fields: [registrationId], references: [id], onDelete: Cascade)
+  legalDocumentVersion LegalDocumentVersion? @relation(fields: [legalDocumentVersionId], references: [id], onDelete: SetNull)
+  guardian             Guardian?             @relation(fields: [guardianId], references: [id], onDelete: SetNull)
+
+  @@index([registrationId, code, createdAt])
+  @@index([userId, code])
+}
+
+model ConsentToken {
+  id             String    @id @default(cuid())
+  registrationId String
+  purpose        String
+  tokenHash      String    @unique
+  email          String
+  guardianId     String?
+  expiresAt      DateTime
+  usedAt         DateTime?
+  reminderSentAt DateTime?
+  ipAddress      String?
+  userAgent      String?
+  createdAt      DateTime  @default(now())
+
+  registration Registration @relation(fields: [registrationId], references: [id], onDelete: Cascade)
+  guardian     Guardian?    @relation(fields: [guardianId], references: [id], onDelete: SetNull)
+
+  @@index([registrationId, purpose])
 }
 
 model Payment {

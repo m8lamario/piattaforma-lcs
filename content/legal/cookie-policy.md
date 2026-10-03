@@ -1,106 +1,73 @@
-# Informativa cookie e tracciamenti
+**Fonte operativa:** cookie e storage effettivamente usati da questa piattaforma di iscrizione. I moduli LCS 2026-27 (checklist) chiedono un banner con rifiuto in prima schermata e nessun tracciamento prima del consenso. **In v1 il banner non è implementato** e nel codice applicativo **non** risultano analytics, pixel pubblicitari o plugin social. **Non è un parere legale e non è un testo firmato.**
 
-**Questo testo è un placeholder di piattaforma. Non è un’informativa cookie valida. Non è un parere giuridico. Non dichiara che il banner sia o non sia dovuto.**
+**[INSERIRE NOME TORNEO]**, versione 1.0 del 1 ottobre 2026. Data di entrata in vigore su questa piattaforma: **[INSERIRE DATA DI ENTRATA IN VIGORE]**.
 
-**[INSERIRE INFORMATIVA COOKIE UFFICIALE]**
-
-**[INSERIRE TESTO INFORMATIVA COOKIE]**
-
-**[INSERIRE DATA DI ENTRATA IN VIGORE DELLA VERSIONE UFFICIALE]**
+Questo documento **non** è un passo del wizard e **non** viene registrato come consenso versionato. Eventuale consenso cookie, se dovuto, è una decisione aperta (OD-027). Non copre i cookie dei siti delle coppe locali.
 
 ---
 
-## 1. Che cosa regola questo documento
+## 1. Titolare
 
-**[INSERIRE OGGETTO: COOKIE, STORAGE LOCALE, PIXEL, SDK]**
+ESL **[INSERIRE RAGIONE SOCIALE]**, sede **[INSERIRE SEDE LEGALE]**, P.IVA/C.F. **[INSERIRE P.IVA / CODICE FISCALE]**.
 
-Pagine pubbliche e area autenticata della piattaforma di iscrizione. Non copre i cookie dei siti delle coppe locali (repository distinti).
-
-In v1 **non** è implementato un banner cookie e **non** risultano analytics, advertising pixel o SDK di social plugin nel codice applicativo. **[INSERIRE SE INTRODURRE BANNER, E CON QUALI CATEGORIE]**
-
-Questo documento **non** è un passo del wizard e **non** viene registrato come `ConsentRecord`. Eventuale consenso cookie (se il legale lo riterrà necessario) è una decisione aperta di prodotto.
+Email: **[INSERIRE EMAIL PRIVACY]**. DPO: **[INSERIRE NOME E EMAIL DPO, OPPURE «non nominato»]**.
 
 ---
 
-## 2. Titolare e contatti
+## 2. Cookie e storage usati oggi
 
-- Titolare: **[INSERIRE NOME TITOLARE DEL TRATTAMENTO]**
-- Email: **[INSERIRE EMAIL PRIVACY]**
-- DPO: **[INSERIRE DPO / CONTATTO PRIVACY SE PRESENTE]**
+I nomi Auth.js possono avere il prefisso `__Secure-` in produzione HTTPS. Durata sessione Auth.js (JWT): default di libreria 30 giorni, salvo configurazione diversa. **[INSERIRE DURATA SESSIONE IN PRODUZIONE]**.
 
----
+| Nome / chiave | Dove | Finalità | Durata | Parte | Qualificazione |
+| --- | --- | --- | --- | --- | --- |
+| Cookie di sessione Auth.js (tipico `authjs.session-token`) | cookie httpOnly | mantenere l’accesso all’area personale | **[INSERIRE]** | prima parte | **[INSERIRE: TECNICO / ALTRO]** |
+| Cookie CSRF Auth.js (tipico `authjs.csrf-token`) | cookie | protezione del flusso di accesso | **[INSERIRE]** | prima parte | **[INSERIRE]** |
+| `authjs.callback-url` (tipico) | cookie | ritorno dopo il login | **[INSERIRE]** | prima parte | **[INSERIRE]** |
+| Cookie del checkout (dominio del fornitore, dopo il redirect) | terza parte, solo se i pagamenti sono attivi | pagamento della quota | secondo l’informativa del fornitore | terza parte | **[INSERIRE]** |
+| `eph-team` | cookie prima parte | ricordare la squadra selezionata dal rappresentante | sessione / persistenza di interfaccia | prima parte | **[INSERIRE SE STRETTAMENTE NECESSARIO]** |
 
-## 3. Cookie e storage oggi usati dal prodotto
+Tema grafico: segue `prefers-color-scheme` del dispositivo; l’app **non** imposta un cookie di preferenza.
 
-Elenco **operativo** da far qualificare al legale (tecnico / non tecnico, durata, terza parte). I nomi Auth.js possono avere prefisso `__Secure-` in produzione HTTPS.
+Non risultano in v1 (da confermare a ogni rilascio): Google Analytics / Matomo; pixel Meta / TikTok / LinkedIn; widget social embed; captcha di terze parti; video embed YouTube nelle pagine pubbliche.
 
-| Nome / chiave | Dove | Finalità operativa | Durata operativa | Prima / terza parte | **[INSERIRE QUALIFICAZIONE LEGALE]** |
-|---------------|------|--------------------|------------------|---------------------|--------------------------------------|
-| Cookie di sessione Auth.js (nome tipico `authjs.session-token`) | cookie httpOnly | mantenere l’accesso all’area | **[INSERIRE DURATA SESSIONE AUTH.JS IN PROD]** | prima parte | **[INSERIRE]** |
-| Cookie CSRF Auth.js (nome tipico `authjs.csrf-token`) | cookie | protezione CSRF del flusso auth | **[INSERIRE]** | prima parte | **[INSERIRE]** |
-| `authjs.callback-url` (nome tipico) | cookie | ritorno post-login | **[INSERIRE]** | prima parte | **[INSERIRE]** |
-| Cookie Stripe Checkout (dominio stripe.com, dopo redirect) | terza parte | pagamento quota se `PAYMENT_DRIVER=stripe` | **[INSERIRE DURATA / INFORMATIVA STRIPE]** | terza parte | **[INSERIRE QUALIFICAZIONE]** |
-| `eph-team` | cookie prima parte | ricordare la squadra selezionata dal rappresentante | sessione / persistenza UI | prima parte | **[INSERIRE SE STRETTAMENTE NECESSARIO]** |
-
-**[INSERIRE TABELLA UFFICIALE CON NOMI ESATTI RILEVATI IN PRODUZIONE]**
-
-Non risultano in v1 (da confermare a ogni rilascio):
-
-- Google Analytics / Matomo / analoghi: **[INSERIRE: ASSENTI / DA INTRODURRE]**
-- pixel Meta / TikTok / LinkedIn: **[INSERIRE]**
-- widget social embed: **[INSERIRE]**
-- captcha di terze parti: **[INSERIRE]**
-- video embed YouTube in pagine pubbliche: **[INSERIRE]**
-
-Permissions-Policy del prodotto svuota camera, microfono, geolocalizzazione e payment nel browser dell’app. **[INSERIRE SE RILEVANTE PER QUESTA INFORMATIVA]**
+L’app chiede al browser di non usare fotocamera, microfono, geolocalizzazione e Payment Request API.
 
 ---
 
-## 4. Base giuridica e consenso
+## 3. Base giuridica e banner
 
-**[INSERIRE BASE GIURIDICA COOKIE TECNICI]**
+**[INSERIRE BASE GIURIDICA DEI COOKIE TECNICI]**
 
-**[INSERIRE BASE GIURIDICA EVENTUALI COOKIE NON TECNICI]**
+**[INSERIRE BASE GIURIDICA DI EVENTUALI COOKIE NON TECNICI]**
 
-**[INSERIRE SE È DOVUTO UN BANNER CON ACCETTA/RIFIUTA E PREFERENZE GRANULARI]**
+I moduli LCS (checklist file 08) chiedono: banner con rifiuto in prima schermata, nessun tracciamento prima del consenso, cookie tecnici liberi (Linee guida Garante 10 giugno 2021). **[INSERIRE SE È DOVUTO UN BANNER CON ACCETTA/RIFIUTA E PREFERENZE]**
 
-Finché esistono solo cookie di autenticazione, **[INSERIRE VALUTAZIONE DEL LEGALE]**. Non si afferma che «i cookie tecnici non richiedono consenso».
-
----
-
-## 5. Come gestire cookie e storage
-
-**[INSERIRE ISTRUZIONI BROWSER]**
-
-- Tema: segue `prefers-color-scheme` del dispositivo; l’app non imposta un cookie di preferenza. **[INSERIRE SE DEVE ESISTERE UN PULSANTE «CANCELLA PREFERENZA»]**
-- Sessione: il logout invalida la sessione lato applicazione secondo Auth.js.
-- Browser: **[INSERIRE LINK DI ISTRUZIONI PER I PRINCIPALI BROWSER]**
-- Non tracciamo un identificativo pubblicitario proprio.
+Finché esistono solo cookie di autenticazione e di interfaccia, **[INSERIRE VALUTAZIONE DEL LEGALE]**. Questa pagina non afferma che «i cookie tecnici non richiedono consenso».
 
 ---
 
-## 6. Trasferimenti e terze parti
+## 4. Come gestirli
 
-**[INSERIRE TRASFERIMENTI LEGATI A COOKIE DI TERZE PARTI]**
-
-Checkout e webhook: con Stripe Checkout i cookie e i dati sul dominio del provider seguono l’informativa Stripe. **[INSERIRE LINK INFORMATIVA STRIPE UFFICIALE]** Resend e R2 non impostano cookie di tracciamento in questa app. **[INSERIRE CONFERMA]**.
-
----
-
-## 7. Aggiornamenti
-
-Ogni nuovo SDK, analytics o pixel **deve** aggiornare questo documento (nuova versione) **prima** del rilascio. **[INSERIRE PROCESSO INTERNO]**
+- Logout: invalida la sessione lato applicazione.
+- Browser: elimina o blocca i cookie dalle impostazioni del browser. **[INSERIRE LINK DI ISTRUZIONI PER I PRINCIPALI BROWSER]**.
+- Non usiamo un identificativo pubblicitario proprio.
 
 ---
 
-## 8. Rapporto con le altre informative
+## 5. Terze parti e trasferimenti
 
-Integra `privacy-policy`. Non sostituisce `media-release` (pubblicazione di immagini) né `terms`.
+Checkout: se attivo, cookie e dati sul dominio del fornitore seguono la sua informativa. **[INSERIRE LINK]**.
+
+Email e storage file, se attivi, non impostano cookie di tracciamento in questa app. **[INSERIRE CONFERMA]**. Trasferimenti extra-UE: vedi [informativa privacy](/privacy).
 
 ---
 
-## 9. Luogo e data
+## 6. Aggiornamenti
 
-- **[INSERIRE LUOGO]**
-- **[INSERIRE DATA]**
-- **[INSERIRE NOME E RUOLO DI CHI APPROVA IL TESTO UFFICIALE]**
+Ogni nuovo SDK, analytics o pixel deve aggiornare questo documento (nuova versione) **prima** del rilascio. La versione in vigore è su [/cookie](/cookie).
+
+---
+
+## 7. Altri documenti
+
+Integra l’[informativa privacy](/privacy). Non sostituisce la [Liberatoria](/liberatorie) né le [condizioni](/termini).

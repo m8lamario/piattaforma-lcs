@@ -1,389 +1,130 @@
-# Informativa sul trattamento dei dati personali
+**INFORMATIVA SUL TRATTAMENTO DEI DATI PERSONALI**
 
-**Questo testo è un placeholder di piattaforma. Non è un’informativa legale valida. Non è un parere giuridico. Non dichiara conformità a norme.**
+**ai sensi dell’art. 13 del Regolamento UE 2016/679 (GDPR) — [INSERIRE NOME TORNEO], stagione 2026/2027 — versione 1.0 del 1 ottobre 2026.**
 
-**[INSERIRE PRIVACY POLICY UFFICIALE]**
-
-**[INSERIRE TESTO INFORMATIVA]**
-
-**[INSERIRE DATA DI ENTRATA IN VIGORE DELLA VERSIONE UFFICIALE]**
-
-**[INSERIRE NUMERO / CODICE VERSIONE UFFICIALE]**
+Testo del **Modulo 1** LCS 2026-27. **Non è un parere legale e non è un testo firmato.** I campi **[INSERIRE …]** (titolare, sede, P.IVA, email, PEC, DPO, partner, accordo social) restano da compilare.
 
 ---
 
-## 1. Premessa e natura del documento
+## Come funziona su questa piattaforma
 
-- Natura: **[INSERIRE NATURA DEL DOCUMENTO: INFORMATIVA EX ARTT. 13/14 O ALTRA QUALIFICAZIONE SCELTA DAL LEGALE]**
-- Lingua ufficiale: **[INSERIRE LINGUA / TRADUZIONI]**
-- Ambito: piattaforma di registrazione giocatori denominata internamente «ESL Player Hub»; nome pubblico: **[INSERIRE NOME PUBBLICO PRODOTTO]**
-- Relazione con altri documenti: informative documenti caricati, minori, cookie, condizioni di iscrizione, liberatoria media. **[INSERIRE GERARCHIA TRA DOCUMENTI]**
+L’account è del giocatore. Questa piattaforma si chiama internamente ESL Player Hub (nome pubblico: **[INSERIRE NOME PUBBLICO PRODOTTO]**). Oltre ai dati del Modulo 1 tratta anche: hash della password, verifica email, cookie di sessione, ruoli, audit, inviti di squadra (il token in chiaro non è conservato), caselle di consenso una per una.
 
-Nota di piattaforma (non ha valore legale): l’utente in iscrizione conferma di aver preso visione della *versione* mostrata (identificata nel database). La UI non afferma che il click abbia valore legale.
+**Certificato medico.** Il Modulo 1 dice che ESL registra solo presentazione e scadenza, senza copia. Qui si carica un file (PDF, JPEG o PNG) e se ne conserva una **copia** per la revisione dello staff. **[INSERIRE BASE GIURIDICA DELLA COPIA — OD-035]**. Dettaglio: [informativa documenti](/privacy/documenti).
 
----
-
-## 2. Titolare del trattamento
-
-- Denominazione: **[INSERIRE NOME TITOLARE DEL TRATTAMENTO]**
-- Forma giuridica: **[INSERIRE FORMA GIURIDICA]**
-- Sede legale: **[INSERIRE SEDE LEGALE]**
-- C.F. / P.IVA: **[INSERIRE CODICE FISCALE / PARTITA IVA TITOLARE]**
-- Recapito PEC: **[INSERIRE PEC TITOLARE]**
-- Recapito ordinario: **[INSERIRE INDIRIZZO POSTALE TITOLARE]**
-
-Eventuale contitolarità (es. ESL/LCS nazionale e organizzatore di coppa locale):
-
-- Soggetti: **[INSERIRE EVENTUALI CONTITOLARI]**
-- Accordo di contitolarità: **[INSERIRE SINTESI ACCORDO O RINVIO]**
-- Chi risponde all’interessato: **[INSERIRE PUNTO DI CONTATTO UNICO O RIPARTIZIONE]**
+Questa piattaforma **non** salva numero di carta, CVV o PIN. Non si chiedono residenza, luogo di nascita, documento d’identità, foto profilo né profili social. Revoca e export: [area consensi](/area/consensi).
 
 ---
 
-## 3. Responsabile della protezione dei dati (DPO) e contatti privacy
+## 1. Titolare del trattamento
 
-- DPO nominato: **[INSERIRE SÌ / NO / DA DECIDERE]**
-- Nome DPO: **[INSERIRE NOME DPO SE PRESENTE]**
-- Email DPO: **[INSERIRE EMAIL DPO]**
-- Contatto privacy operativo: **[INSERIRE EMAIL PRIVACY]**
-- Telefono privacy: **[INSERIRE TELEFONO PRIVACY SE PREVISTO]**
-- Modulo / canale per l’esercizio dei diritti: **[INSERIRE CANALE ESERCIZIO DIRITTI]**
-- Orari / SLA di risposta: **[INSERIRE TEMPI DI RISPOSTA]**
+ESL **[INSERIRE RAGIONE SOCIALE E FORMA GIURIDICA]**, sede legale in **[INSERIRE SEDE LEGALE]**, P.IVA/C.F. **[INSERIRE P.IVA / CODICE FISCALE]**, organizzatrice dei tornei della Lega Calcio Studenti («ESL»). Contatti privacy: **[INSERIRE EMAIL PRIVACY]** — PEC **[INSERIRE PEC]**. Responsabile della protezione dei dati: **[INSERIRE NOME E EMAIL DPO, OPPURE «non nominato»]**.
 
 ---
 
-## 4. Categorie di interessati
+## 2. Dati trattati
 
-**[INSERIRE ELENCO UFFICIALE INTERESSATI]**
+Nome, cognome, data di nascita, codice fiscale; email e cellulare; istituto, classe, ruolo e numero di maglia; dati sportivi (presenze, gol, cartellini, statistiche); dati di pagamento della quota, gestiti dal fornitore del servizio di pagamento; foto e video degli eventi, solo con il consenso della [Liberatoria](/liberatorie); dati tecnici della registrazione (data, ora, indirizzo IP) come prova dei consensi.
 
-Elenco operativo della piattaforma (da validare):
-
-1. Giocatori maggiorenni con account proprio.
-2. Giocatori minorenni con account proprio (il genitore/tutore non è titolare del login).
-3. Genitori / tutori / affidatari come *contatto collegato* al profilo del minore.
-4. Rappresentanti di squadra.
-5. Amministratori di organizzazione e super amministratori.
-6. Referenti di squadra indicati come contatto (nome/email) anche se non hanno account.
-7. Visitatori delle pagine pubbliche (cookie tecnici di tema; eventuale sessione se accedono).
-
-**[INSERIRE SE CI SONO ALTRE CATEGORIE: FOTOGRAFI, VOLONTARI, MEDICI SOCIALI, ECC.]**
+Certificato medico sportivo: vedi la nota in cima e l’[informativa documenti](/privacy/documenti).
 
 ---
 
-## 5. Categorie di dati trattati
+## 3. Finalità e basi giuridiche
 
-**[INSERIRE CATEGORIE DI DATI UFFICIALI]**
+| Finalità | Base giuridica | Obbligatorietà |
+| --- | --- | --- |
+| A. Iscrizione e gestione del torneo: calendari, classifiche, comunicazioni di servizio | Esecuzione del contratto di iscrizione (art. 6.1.b GDPR) | Necessaria per partecipare |
+| B. Adempimenti amministrativi, fiscali, assicurativi e di sicurezza degli eventi | Obbligo di legge (art. 6.1.c GDPR) | Necessaria |
+| C. Pubblicazione di nome, squadra, istituto, statistiche e squalifiche (solo come numero di giornate, senza motivazione) su sito, app e social del torneo | Legittimo interesse di ESL a documentare la competizione (art. 6.1.f GDPR) | Puoi opporti in qualsiasi momento |
+| D. Foto e video degli eventi per cronaca, documentazione e promozione del torneo | Consenso (art. 6.1.a GDPR; artt. 96–97 L. 633/1941) | Facoltativa: vedi [Liberatoria](/liberatorie) |
+| E. Comunicazioni promozionali e di marketing di ESL via email, SMS, WhatsApp e telefono | Consenso (art. 6.1.a GDPR; art. 130, commi 1, 2 e 3, Codice privacy) | Facoltativa |
+| E2. Email sulle edizioni successive dello stesso torneo, inviate a chi è già iscritto | Art. 130, comma 4, Codice privacy: uso dell’email fornita per l’iscrizione, per servizi analoghi; legittimo interesse (art. 6.1.f GDPR) | Puoi rifiutare subito (casella in fondo) o con il link presente in ogni email |
+| F. Comunicazione di nome, email e cellulare ai partner elencati al punto 10, per loro comunicazioni promozionali | Consenso specifico e distinto da E (art. 6.1.a GDPR; art. 130 Codice privacy; Linee guida Garante 4/07/2013) | Facoltativa. Se l’elenco al punto 10 è vuoto, la casella non compare |
+| G. Prova dei consensi e difesa di un diritto in giudizio | Obbligo di legge (art. 6.1.c GDPR, in relazione all’art. 7.1) e legittimo interesse (art. 6.1.f GDPR) | — |
+| H. Verifica dell’idoneità sportiva: registrazione della presentazione e della scadenza del certificato medico richiesto dal regolamento (dato relativo alla salute) | Consenso esplicito (art. 9.2.a GDPR). **[INSERIRE BASE GIURIDICA DELLA COPIA CARICATA IN PIATTAFORMA]** | Necessaria per scendere in campo |
 
-Mappatura operativa (campi oggi previsti dal prodotto; non è un elenco legale chiuso):
-
-### 5.1 Account e autenticazione
-
-- Email, hash della password, data verifica email, nome visualizzato, eventuale immagine profilo (campo schema, non usato in v1 come upload).
-- Dati di sessione (cookie Auth.js / JWT).
-- Token di verifica e reset secondo il provider di autenticazione.
-- Ruoli e ambiti (squadra, competizione).
-
-### 5.2 Anagrafica giocatore
-
-- Nome, cognome, data di nascita, codice fiscale, telefono.
-- Campo `metadata` JSON per estensioni future: **[INSERIRE SE E QUANDO POTRÀ CONTENERE ULTERIORI DATI]**
-
-### 5.3 Genitore / tutore (se minore)
-
-- Nome, cognome, rapporto (`GENITORE` / `TUTORE` / `AFFIDATARIO` / `ALTRO`), email, telefono.
-- **[INSERIRE SE SERVONO DOCUMENTI DI IDENTITÀ O PROVE DI POTESTÀ — OGGI NON RACCOLTI]**
-
-### 5.4 Iscrizione, squadra, istituto
-
-- Squadra, edizione, competizione, istituto scolastico (nome, città), stato iscrizione, numero maglia / ruolo in rosa se compilati.
-- Invito: email destinatario, nome/cognome opzionali precompilati dal rappresentante, stato invito, scadenza. Il token in chiaro non è conservato: in archivio resta l’hash.
-
-### 5.5 Documenti caricati (categorie particolari se sanitari)
-
-- Certificato medico agonistico (file + metadati). Dettaglio: documento `document-processing`.
-- Motivo di rifiuto della revisione (testo inserito dallo staff).
-
-### 5.6 Consensi
-
-- Documento legale, versione, data/ora, accettato/rifiutato, tipo required/optional, collegamento all’iscrizione.
-- Traccia tecnica: indirizzo IP, user agent. **[INSERIRE SE CONSERVARE IP/USER AGENT — VEDI ANCHE OD-022]**
-- Campo `guardianId` previsto ma **non usato in v1** come firma del genitore.
-
-### 5.7 Pagamenti
-
-- Importo, valuta, stato, identificativi del provider, sessione di checkout, eventuale URL ricevuta, chi ha pagato (giocatore o rappresentante).
-- **Non** sono raccolti PAN, CVV o altri dati carta sul sito. **[INSERIRE COSA TRATTA IL PROVIDER DI PAGAMENTO SCELTO]**
-
-### 5.8 Comunicazioni
-
-- Notifiche in-app: tipo, titolo, corpo. Le email (quando il provider sarà scelto) usano template e, in v1, variabili limitate (es. titolo), senza motivo medico nel canale email.
-
-### 5.9 Log, audit, sicurezza
-
-- Azioni di audit (es. visualizzazione documento, consensi, inviti, pagamenti): attore, tipo entità, identificativo, metadati redatti, IP e user agent. **[INSERIRE RETENTION AUDIT]**
-- Log applicativi con redazione di password, token, codice fiscale, storage key, cookie.
-
-### 5.10 Contenuti media
-
-- La piattaforma v1 **non** ospita un archivio foto/video del giocatore. La liberatoria riguarda usi *fuori* dal database (eventi, social, sito). Dettaglio: documento `media-release`.
-- Logo squadra: eventuale storage key. **[INSERIRE SE IL LOGO PUÒ RITRARRE PERSONE]**
-
-### 5.11 Dati non trattati oggi (riservati a decisioni future)
-
-- **[INSERIRE: SPID/CIE, OAUTH, PROFILAZIONE, GEOLOCALIZZAZIONE, MICROFONO/CAMERA IN-APP, ANALYTICS]** — in v1 non risultano attivi.
+Negare i consensi facoltativi non impedisce di partecipare al torneo.
 
 ---
 
-## 6. Fonte dei dati
+## 4. Modalità del trattamento
 
-**[INSERIRE FONTI UFFICIALI]**
+Strumenti elettronici e cartacei, personale autorizzato e istruito, misure di sicurezza adeguate (art. 32 GDPR). Non facciamo profilazione e non prendiamo decisioni basate unicamente su trattamenti automatizzati.
 
-Operativo:
-
-- Interessato (form wizard, upload, consensi, pagamento).
-- Rappresentante di squadra (invito: email e nome/cognome opzionali; **non** il codice fiscale).
-- Staff organizzazione (revisione documenti, ruoli, configurazione edizioni).
-- Provider tecnici (esito pagamento, eventualmente email bounce): **[INSERIRE QUANDO LIVE]**
-- **[INSERIRE SE ESISTONO FONTI ULTERIORI: FEDERAZIONE, SCUOLA, GESTIONALI ESTERNI]**
+Su questa piattaforma: accesso per ruoli, file medici su storage privato con link a tempo e audit, password con hash, verifica email prima di upload e consensi vincolanti. Luogo dei server e backup: **[INSERIRE REGIONE HOSTING / DATABASE / POLITICA BACKUP]**.
 
 ---
 
-## 7. Finalità e basi giuridiche
+## 5. Destinatari
 
-**[INSERIRE FINALITÀ DEL TRATTAMENTO]**
+Organizzatori locali dei tornei, fotografi e videomaker incaricati, fornitori della piattaforma di iscrizione, dei servizi email e di pagamento e dei servizi IT, tutti nominati responsabili del trattamento (art. 28 GDPR); istituti scolastici partecipanti, per la sola gestione delle squadre; compagnie assicurative; arbitri e personale di campo; consulenti fiscali e legali; autorità pubbliche quando richiesto dalla legge. Con il consenso F, i tuoi dati di contatto vanno ai partner del punto 10, che li tratteranno come titolari autonomi e ti daranno la propria informativa. I dati sono diffusi solo come indicato ai punti 3.C e 3.D. Per le pagine social del torneo, ESL e la piattaforma sono contitolari del trattamento delle statistiche della pagina (art. 26 GDPR; contenuto essenziale dell’accordo disponibile su **[INSERIRE LINK ACCORDO PIATTAFORMA, ES. META PAGE INSIGHTS CONTROLLER ADDENDUM]**).
 
-**[INSERIRE BASI GIURIDICHE]**
+Nella piattaforma: il giocatore vede i propri dati e il proprio certificato; i compagni vedono nome, cognome, maglia e ruolo; il rappresentante di squadra vede nome, stato iscrizione, stato del certificato (mai il file) e il flag pubblicabile; gli amministratori vedono iscrizioni, file medici con audit, consensi e pagamenti senza carta.
 
-Tabella da compilare (una riga per finalità). Le «note di piattaforma» non sono basi giuridiche.
-
-| ID | Finalità (da redigere) | Dati coinvolti (operativo) | Base giuridica | Natura (obbligo / facoltativo) | Conservazione |
-|----|------------------------|----------------------------|----------------|----------------------------------|---------------|
-| F1 | **[INSERIRE: CREAZIONE ACCOUNT E AUTENTICAZIONE]** | email, password hash, sessione | **[INSERIRE BASE GIURIDICA F1]** | **[INSERIRE]** | **[INSERIRE PERIODO DI CONSERVAZIONE F1]** |
-| F2 | **[INSERIRE: GESTIONE ISCRIZIONE E PARTECIPAZIONE]** | anagrafica, squadra, edizione, checklist | **[INSERIRE BASE GIURIDICA F2]** | **[INSERIRE]** | **[INSERIRE PERIODO DI CONSERVAZIONE F2]** |
-| F3 | **[INSERIRE: CONTATTO GENITORE/TUTORE PER MINORE]** | dati Guardian | **[INSERIRE BASE GIURIDICA F3]** | obbligatorio in prodotto se minore; **[INSERIRE QUALIFICAZIONE LEGALE]** | **[INSERIRE PERIODO DI CONSERVAZIONE F3]** |
-| F4 | **[INSERIRE: IDONEITÀ DOCUMENTALE / CERTIFICATO MEDICO]** | file e metadati sanitari | **[INSERIRE BASE GIURIDICA F4 — DATO PARTICOLARE]** | richiesto dal prodotto se l’edizione lo marca; **[INSERIRE OBBLIGO SPORTIVO]** | **[INSERIRE PERIODO DI CONSERVAZIONE F4]** |
-| F5 | **[INSERIRE: REVISIONE ORGANIZZATIVA E AUDIT ACCESSI SANITARI]** | DocumentReview, AuditLog | **[INSERIRE BASE GIURIDICA F5]** | **[INSERIRE]** | **[INSERIRE PERIODO DI CONSERVAZIONE F5]** |
-| F6 | **[INSERIRE: ADEMPIMENTI AMMINISTRATIVI E QUOTA DI ISCRIZIONE]** | Payment senza dati carta | **[INSERIRE BASE GIURIDICA F6]** | dipende da `paymentMode` edizione | **[INSERIRE PERIODO DI CONSERVAZIONE F6]** |
-| F7 | **[INSERIRE: COMUNICAZIONI DI SERVIZIO SULL’ISCRIZIONE]** | email, telefono, notifiche in-app | **[INSERIRE BASE GIURIDICA F7]** | **[INSERIRE]** | **[INSERIRE PERIODO DI CONSERVAZIONE F7]** |
-| F8 | **[INSERIRE: COMUNICAZIONI NON DI SERVIZIO / PROMOZIONALI]** | **[INSERIRE DATI]** | **[INSERIRE BASE GIURIDICA F8 — O «NON SVOLTE»]** | in v1 **non** c’è un consenso marketing distinto | **[INSERIRE PERIODO DI CONSERVAZIONE F8]** |
-| F9 | **[INSERIRE: FOTO, VIDEO, SOCIAL]** | non in DB; liberatoria separata | **[INSERIRE BASE GIURIDICA F9]** | in seed edizione: **non** obbligatoria (`required=false`) | vedi `media-release` |
-| F10 | **[INSERIRE: SICUREZZA, PREVENZIONE ABUSI, LOG]** | IP, UA, audit | **[INSERIRE BASE GIURIDICA F10]** | **[INSERIRE]** | **[INSERIRE PERIODO DI CONSERVAZIONE F10]** |
-| F11 | **[INSERIRE: GESTIONE SQUADRA DA PARTE DEL RAPPRESENTANTE]** | nome, stato iscrizione, **stato** certificato | **[INSERIRE BASE GIURIDICA F11]** | **[INSERIRE]** | **[INSERIRE PERIODO DI CONSERVAZIONE F11]** |
-| F12 | **[INSERIRE: ADEMPIMENTI DI LEGGE / ASSICURATIVI / FEDERALI]** | **[INSERIRE]** | **[INSERIRE BASE GIURIDICA F12]** | **[INSERIRE]** | **[INSERIRE PERIODO DI CONSERVAZIONE F12]** |
-| F13 | **[INSERIRE: COOKIE DI SESSIONE]** | cookie di sessione Auth.js | **[INSERIRE BASE GIURIDICA F13]** | vedi `cookie-policy` | **[INSERIRE PERIODO DI CONSERVAZIONE F13]** |
-
-Profilazione e decisioni automatizzate che producano effetti giuridici: **[INSERIRE: NON EFFETTUATE / EFFETTUATE COME SEGUE]**. Operativo v1: lo stato iscrizione è una *proiezione di checklist* (documenti, consensi, pagamento), non un sistema di credit scoring.
+Fornitori da nominare prima del go-live: **[INSERIRE HOSTING]**, database **[INSERIRE]**, storage file **[INSERIRE]**, email **[INSERIRE]**, pagamenti **[INSERIRE]**. Extra-SEE e DPA: **[INSERIRE]**.
 
 ---
 
-## 8. Natura del conferimento e conseguenze del mancato conferimento
+## 6. Trasferimenti extra-UE
 
-**[INSERIRE TESTO SU CONFERIMENTO OBBLIGATORIO / FACOLTATIVO]**
-
-Operativo (non è una qualificazione legale):
-
-- Senza invito valido non si crea l’account.
-- Senza anagrafica, tutore (se minore), certificato (se richiesto), pacchetto privacy e pagamento (se dovuto) l’iscrizione non risulta completa.
-- La liberatoria media, se l’edizione la marca `required=false`, può essere rifiutata esplicitamente senza bloccare l’iscrizione.
-- I consensi non necessari non sono pre-selezionati e non esiste «accetta tutto».
+Alcuni fornitori (piattaforme social, servizi cloud ed email) possono trattare dati fuori dall’Unione Europea, sulla base di una decisione di adeguatezza della Commissione Europea (incluso l’EU-U.S. Data Privacy Framework) o di clausole contrattuali standard (art. 46 GDPR). **[INSERIRE ELENCO PAESI E STRUMENTI QUANDO I DRIVER SONO LIVE]**.
 
 ---
 
-## 9. Modalità del trattamento
+## 7. Conservazione
 
-**[INSERIRE MODALITÀ DEL TRATTAMENTO]**
-
-Operativo:
-
-- Trattamento elettronico su applicazione web e database relazionale.
-- Accesso basato su ruoli, deny-by-default, lato server.
-- File medici su storage privato, non in cartelle pubbliche; lettura tramite token a tempo e audit.
-- Backup: **[INSERIRE POLITICA BACKUP E DOVE RISIEDONO]**
-- Luogo dei server: **[INSERIRE REGIONE / PAESE DEL HOSTING E DEL DATABASE]**
-
----
-
-## 10. Destinatari
-
-**[INSERIRE DESTINATARI DEI DATI]**
-
-Categorie da confermare:
-
-| Categoria | Cosa può vedere (operativo) | **[INSERIRE BASE / CONTRATTO]** |
-|-----------|-----------------------------|----------------------------------|
-| Giocatore | propri dati, proprio file, propri consensi | — |
-| Compagni di squadra | nome, cognome, eventuale maglia/ruolo | **[INSERIRE]** |
-| Rappresentante di squadra | nome, cognome, stato iscrizione, **stato** certificato (mai il file), email degli inviti che ha creato; non CF, telefono, data di nascita, dettagli tutore, corpo consensi, storage key | **[INSERIRE]** |
-| Organization Admin / Super Admin | gestione iscrizioni, file medici con audit, consensi (versione/timestamp), pagamenti senza carta | **[INSERIRE]** |
-| Organizzatore di coppa locale | ruolo previsto in schema, UI non in v1 | **[INSERIRE SE E QUANDO]** |
-| Istituto scolastico | **[INSERIRE SE LA SCUOLA RICEVE ELENCHI]** | **[INSERIRE]** |
-| Federazione / ente sportivo | **[INSERIRE]** | **[INSERIRE]** |
-| Assicurazione / medico sociale | **[INSERIRE]** | **[INSERIRE]** |
-| Sponsor / media partner | **[INSERIRE — DI NORMA SOLO SE LIBERATORIA]** | **[INSERIRE]** |
-| Autorità pubbliche | **[INSERIRE SE RICHIESTO PER LEGGE]** | **[INSERIRE]** |
+| Dati | Durata |
+| --- | --- |
+| Iscrizione e gestione del torneo (A) | 24 mesi dal termine della stagione |
+| Documenti amministrativi e fiscali (B) | 10 anni (art. 2220 c.c.) |
+| Risultati e statistiche pubblicati (C) | Archivio storico del torneo, salvo opposizione |
+| Foto e video (D) | Fino alla revoca e comunque non oltre 10 anni dalla fine della stagione; dopo la revoca, cancellazione anche dagli archivi entro 30 giorni, salvo quanto serve per la difesa di un diritto (G); il materiale già stampato o consegnato a terzi (es. testate) prima della revoca non può essere ritirato |
+| Certificato medico (H) | Presentazione e scadenza: fino al termine della stagione. Copia del file: **[INSERIRE RETENTION DELLA COPIA]** |
+| Marketing ESL e partner (E, F) | 24 mesi dal consenso o dall’ultima interazione, salvo revoca |
+| Email sulle edizioni successive (E2) | Fino al rifiuto e comunque 24 mesi dall’ultima iscrizione |
+| Registro dei consensi (G) | 10 anni dalla fine del trattamento o dalla revoca (art. 2946 c.c.) |
 
 ---
 
-## 11. Responsabili e sub-responsabili (fornitori tecnici)
+## 8. I tuoi diritti
 
-**[INSERIRE ELENCO RESPONSABILI EX ART. 28 E SUB-RESPONSABILI]**
+Puoi chiedere accesso, rettifica, cancellazione, limitazione e portabilità dei dati (artt. 15–22 GDPR) scrivendo a **[INSERIRE EMAIL PRIVACY]**. Puoi revocare ogni consenso in qualsiasi momento dall’[area consensi](/area/consensi), scrivendo a **[INSERIRE EMAIL PRIVACY]** o con il link di disiscrizione presente in ogni comunicazione; la revoca non rende illecito il trattamento precedente (art. 7.3 GDPR). Rispondiamo entro un mese dalla richiesta, prorogabile di due mesi nei casi complessi, avvisandoti (art. 12.3 GDPR). Puoi proporre reclamo al [Garante per la protezione dei dati personali](https://www.garanteprivacy.it) o rivolgerti all’autorità giudiziaria (art. 79 GDPR; art. 152 Codice privacy).
 
-Stato prodotto: adapter live opzionali (driver env). **[INSERIRE CONFERMA ORGANIZZAZIONE / DPA PRIMA DEL GO-LIVE CON DATI REALI]**.
-
-| Funzione | Stato attuale | Fornitore live | Extra-SEE | Clausole |
-|----------|---------------|----------------|-----------|----------|
-| Hosting applicazione | **[INSERIRE HOSTING — OGGI NON DECISIO]** | **[INSERIRE NOME FORNITORE HOSTING]** | **[INSERIRE SÌ/NO E GARANZIE]** | **[INSERIRE DPA]** |
-| Database PostgreSQL | URL generico; provider non deciso | **[INSERIRE NOME FORNITORE DB]** | **[INSERIRE]** | **[INSERIRE DPA]** |
-| Autenticazione | Auth.js nel perimetro app | **[INSERIRE SE SI AGGIUNGONO IDP ESTERNI]** | **[INSERIRE]** | **[INSERIRE]** |
-| Storage file privati | `local` in dev; `r2` se `STORAGE_DRIVER=r2` (Cloudflare R2, bucket privato) | **[INSERIRE CONFERMA R2 / ACCOUNT]** | **[INSERIRE SÌ/NO E GARANZIE]** | **[INSERIRE DPA]** |
-| Email transazionale | stub di default; `resend` se `EMAIL_DRIVER=resend` | **[INSERIRE CONFERMA RESEND / MITTENTE]** | **[INSERIRE]** | **[INSERIRE DPA]** |
-| Pagamenti | stub di default; Stripe Checkout hosted se `PAYMENT_DRIVER=stripe`; nessun dato carta in piattaforma | **[INSERIRE CONFERMA STRIPE / ACCOUNT]** | **[INSERIRE]** | **[INSERIRE DPA / TITOLARE AUTONOMO]** |
-| Monitoring / error tracking | stub console | **[INSERIRE NOME MONITORING]** | **[INSERIRE]** | **[INSERIRE DPA]** |
-| Antivirus upload | stub che non analizza davvero | **[INSERIRE NOME SCAN]** | **[INSERIRE]** | **[INSERIRE]** |
-| CDN / DNS / captcha | **[INSERIRE SE PRESENTI]** | **[INSERIRE]** | **[INSERIRE]** | **[INSERIRE]** |
-
-I testi ufficiali andranno aggiornati **prima** del passaggio live di ciascun adapter. **[INSERIRE PROCESSO DI AGGIORNAMENTO ELENCO FORNITORI]**
+**DIRITTO DI OPPOSIZIONE (art. 21 GDPR).** Puoi opporti in qualsiasi momento alla pubblicazione di nome e statistiche (finalità C), per motivi legati alla tua situazione particolare, e senza alcuna motivazione al marketing (finalità E, E2 e F). Basta scrivere a **[INSERIRE EMAIL PRIVACY]**. Per i partner che hanno già ricevuto i tuoi dati inoltriamo la revoca; puoi anche scrivere direttamente a loro.
 
 ---
 
-## 12. Trasferimenti verso paesi terzi
+## 9. Aggiornamenti
 
-**[INSERIRE TRASFERIMENTI EXTRA SEE]**
-
-- Paesi: **[INSERIRE PAESI]**
-- Strumento: **[INSERIRE: DECISIONE DI ADEGUATEZZA / SCC / ALTRO]**
-- Valutazione impatto trasferimenti: **[INSERIRE RINVIO O SINTESI]**
-
-Finché i driver restano stub/local, **non** si dichiara un trasferimento. Con Resend/R2/Stripe attivi restano da compilare DPA, extra-SEE e SCC: **[INSERIRE VALUTAZIONE UFFICIALE]**.
+Questa informativa può essere aggiornata; la versione in vigore è sempre su [/privacy](/privacy). Ogni versione precedente resta al permalink `/documenti-legali/privacy-policy/{versione}`.
 
 ---
 
-## 13. Periodi di conservazione
+## 10. Società partner
 
-**[INSERIRE PERIODO DI CONSERVAZIONE]**
+Con il consenso F i tuoi dati di contatto possono essere comunicati solo a queste società, ciascuna titolare autonoma del trattamento. Se l’elenco è vuoto, la casella partner non compare nel form.
 
-**[INSERIRE CRITERI DI DETERMINAZIONE DELLA RETENTION]**
+| Società (ragione sociale) | Sede | Settore | Informativa privacy |
+| --- | --- | --- | --- |
+| **[INSERIRE PARTNER 1 — OGGI `content/legal/partners.json` È VUOTO]** | **[INSERIRE CITTÀ]** | **[INSERIRE, ES. merchandising e abbigliamento]** | **[INSERIRE LINK]** |
+| **[INSERIRE PARTNER 2]** | **[INSERIRE CITTÀ]** | **[INSERIRE, ES. annuari scolastici]** | **[INSERIRE LINK]** |
 
-| Categoria | Criterio operativo attuale | Periodo ufficiale |
-|-----------|----------------------------|-------------------|
-| Account e profilo | persistono finché l’account esiste; nessun purge automatico | **[INSERIRE PERIODO DI CONSERVAZIONE ACCOUNT]** |
-| Iscrizione / rosa | persistono con lo storico edizioni | **[INSERIRE PERIODO DI CONSERVAZIONE ISCRIZIONI]** |
-| Inviti | TTL configurabile (default 14 giorni se pending); restano in DB con stato | **[INSERIRE]** |
-| Certificato corrente | file privato; sostituzione marca il precedente `REPLACED` **senza** cancellare il blob | **[INSERIRE PERIODO DI CONSERVAZIONE CERTIFICATI]** |
-| Certificati sostituiti | conservati per tracciabilità tecnica | **[INSERIRE SE ELIMINARE BLOB REPLACED]** |
-| Consensi | record in append; versioni storiche non sovrascritte | **[INSERIRE PERIODO DI CONSERVAZIONE CONSENSI]** |
-| IP / user agent nei consensi e audit | campi presenti, nessun purge automatico | **[INSERIRE — VEDI OD-022]** |
-| Pagamenti | stati e id provider; no carta | **[INSERIRE PERIODO OBBLIGHI CONTABILI]** |
-| Notifiche | elenco recente in UI (ultime 50 in lettura) | **[INSERIRE]** |
-| Log applicativi | **[INSERIRE]** | **[INSERIRE]** |
-| Backup | **[INSERIRE]** | **[INSERIRE PERIODO DI CONSERVAZIONE BACKUP]** |
-
-Cancellazione su richiesta: **[INSERIRE COME SI CONCILIA CON OBBLIGHI SPORTIVI, ASSICURATIVI, CONTABILI, DIFESA IN GIUDIZIO]**. Il prodotto **non** consente all’utente di cancellare da UI i log di audit.
+Vale l’elenco in vigore quando dai il consenso: i dati non vanno a partner aggiunti in seguito senza un tuo nuovo consenso. I partner non possono cedere i dati ad altri.
 
 ---
 
-## 14. Diritti dell’interessato
+## Caselle del form — Modulo 1
 
-**[INSERIRE DIRITTI DELL’INTERESSATO]**
+Le caselle si compilano nel passo privacy dell’iscrizione. Nessuna è pre-selezionata.
 
-Struttura da completare (elenco classico da confermare/escludere per ogni trattamento):
+- *(obbligatoria)* Dichiaro di avere compiuto 18 anni.
+- *(obbligatoria)* Ho letto l’informativa privacy.
+- *(necessaria per giocare)* **Certificato medico** — Acconsento che ESL tratti la copia del mio certificato medico sportivo caricata in piattaforma e ne registri presentazione e scadenza (dato relativo alla salute, art. 9.2.a GDPR). Il Modulo 1 originale diceva «senza conservarne copia». **[INSERIRE BASE GIURIDICA DELLA COPIA]**.
+- *(facoltativa)* **Marketing ESL** — Acconsento a ricevere da ESL comunicazioni promozionali e di marketing su tornei, eventi, iniziative e offerte, tramite email, SMS, WhatsApp e telefono. Su questa piattaforma il consenso vale dopo il clic nell’email di conferma.
+- *(facoltativa)* **Partner** — Acconsento che ESL comunichi il mio nome, email e cellulare alle società partner elencate al punto 10 dell’informativa, perché mi inviino loro comunicazioni promozionali tramite email, SMS, WhatsApp e telefono.
+- *(facoltativa)* **Edizioni successive** — Non voglio ricevere email sull’edizione successiva di questo torneo.
 
-- Accesso: **[INSERIRE DIRITTO DI ACCESSO — MODALITÀ]**
-- Rettifica: **[INSERIRE]** — in prodotto il giocatore può aggiornare anagrafica e sostituire il certificato; l’email account non si cambia nel passo anagrafica.
-- Cancellazione: **[INSERIRE]**
-- Limitazione: **[INSERIRE]**
-- Portabilità: **[INSERIRE]**
-- Opposizione: **[INSERIRE]**
-- Revoca del consenso (ove la base sia il consenso): **[INSERIRE]** — per i media, decisione esplicita nel passo liberatorie; effetti su materiali già pubblicati: vedi `media-release`.
-- Reclamo all’autorità: **[INSERIRE DIRITTO DI RECLAMO AL GARANTE E RECAPITI]**
+I consensi sono facoltativi e non incidono sulla partecipazione al torneo. Puoi revocarli in qualsiasi momento dall’[area consensi](/area/consensi) o scrivendo a **[INSERIRE EMAIL PRIVACY]**. Se non spunti l’ultima casella, riceverai via email le informazioni sull’edizione successiva di questo torneo (art. 130, comma 4, Codice privacy): potrai rifiutarle anche dopo, con il link presente in ogni messaggio.
 
-Non è previsto un pulsante «esporta tutti i dati» o «elimina account» in v1. **[INSERIRE SE E QUANDO SARÀ MESSO A DISPOSIZIONE UN TOOL ADMIN]**
-
----
-
-## 15. Come esercitare i diritti
-
-**[INSERIRE DIRITTI E MODALITÀ]**
-
-- Canale: **[INSERIRE EMAIL PRIVACY]** / **[INSERIRE MODULO / PEC / POSTA]**
-- Informazioni da allegare: **[INSERIRE: IDENTITÀ, ACCOUNT, COSA SI CHIEDE]**
-- Verifica identità: **[INSERIRE PROCEDURA, SOPRATTUTTO PER MINORI]**
-- Chi può agire per il minore: **[INSERIRE: GENITORE / TUTORE / INTERESSATO — DECISIONE LEGALE]**
-- Tempi: **[INSERIRE TEMPI DI RISPOSTA]**
-- Registro delle richieste: **[INSERIRE SE ESISTE PROCESSO INTERNO]**
-
----
-
-## 16. Minori
-
-Rinvio al documento `minor-privacy`. Punti fermi di prodotto (non sono un parere):
-
-- Maggiore età operativa: 18 anni (`AGE_OF_MAJORITY`), da validare.
-- L’account appartiene al minore; il genitore/tutore è un contatto collegato.
-- In v1 il click di presa visione è dell’account loggato (il minore). Non si finge la firma del genitore (`guardianId` resta vuoto).
-- **[INSERIRE REQUISITO CONSENSO GENITORE SE PREVISTO DALLA LEGGE / DAL LEGALE]**
-- **[INSERIRE EVENTUALE VERIFICA IDENTITÀ DEL GENITORE]**
-
----
-
-## 17. Dati sanitari e documenti caricati
-
-Rinvio al documento `document-processing`.
-
-Il rappresentante di squadra vede solo lo **stato** del certificato (mancante / in revisione / approvato / da ricaricare / scaduto), mai il file né i metadati di storage.
-
----
-
-## 18. Foto, video e social
-
-Rinvio al documento `media-release`. Trattamento distinto, passo wizard proprio, rifiutabile se non obbligatorio per edizione.
-
----
-
-## 19. Cookie e tracciamenti
-
-Rinvio al documento `cookie-policy`.
-
----
-
-## 20. Sicurezza (misure organizzative e tecniche)
-
-**[INSERIRE MISURE DI SICUREZZA — SENZA DICHIARARE CONFORMITÀ]**
-
-Misure oggi presenti in prodotto (descrizione tecnica, non certificazione):
-
-- Autorizzazione server-side, deny-by-default.
-- Password con hash; sessione cookie httpOnly (config Auth.js).
-- Verifica email prima di upload e consensi vincolanti.
-- Rate limit su login, inviti, upload, consensi, profilo (store in-process, non distribuito).
-- Upload: allowlist MIME, magic bytes, size cap, filename sanitizzato, storage key opaca.
-- File medici non in URL pubblica; token HMAC a breve TTL; audit `DOCUMENT_VIEW`.
-- Nessun campo carta nel DOM.
-- Log con redazione di segreti e codice fiscale.
-- Header di sicurezza di base (CSP incrementale, altro). **[INSERIRE VALUTAZIONE DEL LEGALE / DPO SULLE MISURE ADEGUATE]**
-
-Antivirus reale, object storage cloud, monitoring live: non in produzione finché non scelti. **[INSERIRE MISURE OBBLIGATORIE PRIMA DEL LANCIO]**
-
----
-
-## 21. Modifiche all’informativa
-
-**[INSERIRE PROCESSO DI AGGIORNAMENTO]**
-
-Operativo: nuova `LegalDocumentVersion` con `isCurrent`; le acceptance precedenti restano storiche. Se l’edizione richiede la versione corrente e l’iscrizione non è ancora approvata, il requisito privacy torna incompleto. Per iscrizioni già approvate: **[INSERIRE POLICY DI RE-CONSENT — VEDI OD-024]**
-
----
-
-## 22. Legge applicabile e autorità di controllo
-
-- Giurisdizione di lavoro del prodotto: Italia (assunzione operativa, non parere).
-- Autorità: **[INSERIRE GARANTE PER LA PROTEZIONE DEI DATI PERSONALI O ALTRA]**
-- Foro / legge applicabile: **[INSERIRE SOLO SE IL LEGALE VUOLE INDICARLI IN QUESTA INFORMATIVA]**
-
----
-
-## 23. Luogo e data
-
-- Luogo: **[INSERIRE LUOGO]**
-- Data: **[INSERIRE DATA]**
-- Firma / approvazione organizzazione: **[INSERIRE NOME E RUOLO DI CHI APPROVA IL TESTO UFFICIALE]**
+Altri documenti: [informativa per minori](/privacy/minori), [documenti caricati](/privacy/documenti), [liberatoria](/liberatorie), [condizioni](/termini), [cookie](/cookie).

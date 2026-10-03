@@ -46,4 +46,28 @@ describe("template Resend di servizio", () => {
     expect(message.subject).toBe("Iscrizione approvata");
     expect(message.text).toContain("https://hub.test/area");
   });
+
+  it("invia il link C1 e il doppio opt-in marketing", () => {
+    const c1 = renderEmailMessage({
+      to: "genitore@example.test",
+      template: "CONSENT_C1",
+      variables: {
+        title: "Conferma",
+        playerName: "Luca Bianchi",
+        confirmUrl: "https://hub.test/conferma-genitore/token",
+        summary: "Promemoria",
+      },
+    });
+    const marketing = renderEmailMessage({
+      to: "player@example.test",
+      template: "CONSENT_MARKETING_OPTIN",
+      variables: {
+        title: "Marketing",
+        confirmUrl: "https://hub.test/conferma-marketing/token",
+      },
+    });
+    expect(c1.subject).toMatch(/privacy/i);
+    expect(c1.text).toContain("https://hub.test/conferma-genitore/token");
+    expect(marketing.text).toContain("https://hub.test/conferma-marketing/token");
+  });
 });

@@ -103,7 +103,7 @@ async function main() {
       { editionId: edition.id, code: "GUARDIAN_IF_MINOR", required: true, appliesTo: "MINOR" },
       { editionId: edition.id, code: "MEDICAL_CERT", required: true, appliesTo: "ALL" },
       { editionId: edition.id, code: "PRIVACY", required: true, appliesTo: "ALL" },
-      { editionId: edition.id, code: "MEDIA_RELEASE", required: false, appliesTo: "ALL" },
+      { editionId: edition.id, code: "MEDIA_RELEASE", required: true, appliesTo: "ALL" },
       { editionId: edition.id, code: "PAYMENT", required: true, appliesTo: "ALL" },
     ],
     skipDuplicates: true,

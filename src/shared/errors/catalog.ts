@@ -177,6 +177,12 @@ export const ERROR_CATALOG: Record<ErrorCode, ErrorDefinition> = {
   CONSENT_MEDIA_REQUIRED: def("CONSENTS", "Refuse su MEDIA_RELEASE required=true.", 400, "correct_input"),
   CONSENT_VERSION_MISSING: def("CONSENTS", "versionId assente nel form.", 400, "retry", { retrySafe: true }),
   CONSENT_RATE_LIMITED: def("CONSENTS", "Rate limit consensi.", 429, "wait", { severity: "warning" }),
+  CONSENT_BOX_REQUIRED: def("CONSENTS", "Casella obbligatoria o salute non spuntata.", 400, "correct_input", {
+    retrySafe: true,
+  }),
+  CONSENT_REVOKE_FORBIDDEN: def("CONSENTS", "Casella obbligatoria non revocabile da area consensi.", 400, "none"),
+  CONSENT_TOKEN_INVALID: def("CONSENTS", "Token C1 o opt-in assente, scaduto o malformato.", 400, "none"),
+  CONSENT_TOKEN_USED: def("CONSENTS", "Token C1 o opt-in già usato.", 409, "none", { severity: "info" }),
 
   PAYMENT_ALREADY_COMPLETED: def("PAYMENTS", "Già SUCCEEDED utile (player o team). Secondo checkout bloccato.", 409, "none"),
   PAYMENT_IN_PROGRESS: def("PAYMENTS", "Esiste PENDING: si riusa, non si crea un secondo intent.", 409, "retry", {
@@ -200,6 +206,13 @@ export const ERROR_CATALOG: Record<ErrorCode, ErrorDefinition> = {
 
   EDITION_NOT_FOUND: def("SYSTEM", "Edition id admin inesistente.", 404, "none"),
   GUARDIAN_SAVE_FAILED: def("REGISTRATION", "PlayerProfile assente in saveGuardian.", 500, "retry", { retrySafe: true }),
+  GUARDIAN_SECOND_EMAIL: def("REGISTRATION", "G3 altro genitore senza email valida.", 400, "correct_input", {
+    retrySafe: true,
+  }),
+  GUARDIAN_SAME_EMAIL: def("REGISTRATION", "Email del secondo genitore uguale al primo.", 400, "correct_input", {
+    retrySafe: true,
+  }),
+  GUARDIAN_EMAIL_CORRECTION_USED: def("REGISTRATION", "Email del secondo genitore già corretta una volta.", 400, "contact_org"),
 
   VALIDATION_INVALID_INPUT: def("VALIDATION", "Zod safeParse fallito.", 400, "correct_input", {
     severity: "info",

@@ -1,177 +1,141 @@
-# Informativa specifica per minori e contatto genitore/tutore
+**INFORMATIVA SUL TRATTAMENTO DEI DATI PERSONALI DEL MINORE E DEI GENITORI**
 
-**Questo testo è un placeholder di piattaforma. Non è un’informativa legale valida. Non è un parere giuridico. Non dichiara conformità a norme.**
+**ai sensi dell’art. 13 del Regolamento UE 2016/679 (GDPR) — [INSERIRE NOME TORNEO], stagione 2026/2027 — versione 1.0 del 1 ottobre 2026.**
 
-**[INSERIRE INFORMATIVA MINORI]**
+Testo del **Modulo 2** LCS 2026-27. **Non è un parere legale e non è un testo firmato.** I campi **[INSERIRE …]** restano da compilare.
 
-**[INSERIRE TESTO INFORMATIVA MINORI]**
-
-**[INSERIRE DATA DI ENTRATA IN VIGORE DELLA VERSIONE UFFICIALE]**
+Gentili genitori, i dati dei ragazzi minorenni meritano una protezione specifica (considerando 38 GDPR). Vi chiediamo di leggere questa informativa insieme a vostro/a figlio/a.
 
 ---
 
-## 1. Principio di prodotto (non è un parere legale)
+## Come funziona su questa piattaforma
 
-- L’**account appartiene al minore**.
-- Il genitore, tutore o affidatario è un **contatto collegato** al profilo, **non** il titolare del login.
-- In v1 esiste un solo contatto tutore per profilo (upsert del primo).
-- Soglia operativa di età: 18 anni in Italia (`AGE_OF_MAJORITY`). **[INSERIRE CONFERMA DELLA SOGLIA E DELLA GIURISDIZIONE]**
+**L’account è del minore.** Il genitore o tutore è un contatto, non il titolare del login. Le caselle del form le spunta l’account loggato (il minore), tranne C1: quella la conferma il secondo genitore dal link in email. G1 dei moduli («dichiaro di essere genitore») **non** è una casella del giocatore: il contatto e la scelta G3 si registrano nel passo tutore.
 
-Queste regole guidano il software. **[INSERIRE QUALIFICAZIONE GIURIDICA DEL RAPPORTO MINORE / GENITORE / ORGANIZZAZIONE]**
+**Certificato medico.** Il Modulo 2 dice che ESL registra solo presentazione e scadenza, senza copia. Qui si carica un file e se ne conserva una **copia** per la revisione dello staff. **[INSERIRE BASE GIURIDICA DELLA COPIA]**. Dettaglio: [informativa documenti](/privacy/documenti).
 
----
-
-## 2. Dati del minore
-
-**[INSERIRE CATEGORIE DI DATI DEL MINORE]**
-
-Operativo: gli stessi dell’informativa generale (account, anagrafica, codice fiscale, telefono, iscrizione, certificato, consensi, pagamenti, comunicazioni), con l’aggiunta obbligatoria del contatto tutore per completare il percorso.
-
-**[INSERIRE SE ALCUNI DATI NON VANNO RACCOLTI SOTTO UNA CERTA ETÀ]**
-
-**[INSERIRE SE IL CODICE FISCALE DEL MINORE HA UNA BASE SPECIFICA]**
+Revoca e export: [area consensi](/area/consensi).
 
 ---
 
-## 3. Dati del genitore / tutore / affidatario
+## Per te che giochi (in parole semplici, art. 2-quinquies Codice privacy)
 
-Il tutore è a sua volta interessato.
-
-**[INSERIRE CATEGORIE DI DATI DEL GENITORE/TUTORE]**
-
-Operativo oggi:
-
-- nome, cognome;
-- rapporto: Genitore / Tutore / Affidatario / Altro;
-- email, telefono;
-- eventuale `metadata` JSON futuro.
-
-Non raccolti oggi:
-
-- documento d’identità;
-- SPID/CIE;
-- firma olografa o digitale;
-- prova della responsabilità genitoriale.
-
-**[INSERIRE SE QUESTI ELEMENTI DIVENTANO OBBLIGATORI]**
-
-Finalità del contatto tutore: **[INSERIRE FINALITÀ: RINTRACCIABILITÀ, COMUNICAZIONI DI SERVIZIO, URGENZE, CONSENSI, FATTURAZIONE]**
-
-Base giuridica sui dati del tutore: **[INSERIRE BASE GIURIDICA DATI TUTORE]**
-
-Il rappresentante di squadra **non** vede i dati del tutore (solo, al più, se il passo risulta completo o meno). **[INSERIRE SE IL REP DEVE POTER CONTATTARE IL GENITORE]**
+Per iscriverti al torneo usiamo il tuo nome, la tua data di nascita, la tua scuola e i tuoi risultati in campo. I tuoi genitori decidono se possiamo pubblicare le tue foto e i tuoi video sui nostri canali e se nelle classifiche compare il tuo cognome per intero. Non usiamo i tuoi contatti per la pubblicità e non li diamo a nessuna azienda. Se una foto o un video non ti piace, puoi chiederci di toglierlo anche da solo/a, dall’[area consensi](/area/consensi), scrivendo a **[INSERIRE EMAIL PRIVACY]** o dicendolo ai tuoi genitori. Se hai almeno 14 anni, le tue foto e i tuoi video si pubblicano solo se anche tu sei d’accordo: lo confermi tu con una casella nella [liberatoria](/liberatorie) (G14). Se c’è un altro genitore, serve anche la sua conferma via email (C1).
 
 ---
 
-## 4. Come si raccolgono i consensi in v1
+## 1. Titolare del trattamento
 
-**[INSERIRE DESCRIZIONE UFFICIALE DELLA RACCOLTA CONSENSI MINORI]**
-
-Fatto di piattaforma (tracciamento tecnico, non validità):
-
-1. Il minore accede con l’email dell’invito (email obbligatoria sull’account — decisione aperta se molti under-18 non ne hanno una stabile).
-2. Nel passo «Privacy» vede, se risulta minorenne, il pacchetto: informativa privacy + informativa documenti + **questa** informativa.
-3. Deve spuntare ogni testo (nessuna spunta pre-selezionata) e confermare la presa visione della versione mostrata.
-4. Si crea un `ConsentRecord` collegato all’utente minore, alla versione, all’iscrizione, con data/ora e traccia IP/user agent.
-5. Il campo `guardianId` **non** viene valorizzato: **non si finge** che il genitore abbia firmato.
-
-**[INSERIRE REQUISITO CONSENSO GENITORE SE PREVISTO DALLA LEGGE / DAL LEGALE]**
-
-**[INSERIRE SE IL CLICK DEL MINORE È SUFFICIENTE, INSUFFICIENTE, O SUFFICIENTE SOLO SOPRA UNA CERTA ETÀ]**
+ESL **[INSERIRE RAGIONE SOCIALE E FORMA GIURIDICA]**, sede legale in **[INSERIRE SEDE LEGALE]**, P.IVA/C.F. **[INSERIRE P.IVA / CODICE FISCALE]**, organizzatrice dei tornei della Lega Calcio Studenti («ESL»). Contatti privacy: **[INSERIRE EMAIL PRIVACY]** — PEC **[INSERIRE PEC]**. Responsabile della protezione dei dati: **[INSERIRE NOME E EMAIL DPO, OPPURE «non nominato»]**.
 
 ---
 
-## 5. Possibili modalità di verifica del genitore/tutore
+## 2. Dati trattati
 
-**Non implementate.** Da scegliere con organizzazione e legale; il prodotto può estendersi senza stravolgere lo schema (es. futura entità di verifica).
+Del minore: nome, cognome, data di nascita, codice fiscale; email e cellulare, se forniti (su questa piattaforma l’email è quella dell’account, usata per entrare e per messaggi di servizio, mai per marketing e mai comunicata ai partner); istituto, classe, ruolo e numero di maglia; dati sportivi (presenze, gol, cartellini, statistiche); foto e video degli eventi, solo con il consenso della Liberatoria.
 
-Opzioni da valutare (nessuna è adottata):
+Del genitore/tutore indicato come contatto: nome, cognome, rapporto (Genitore / Tutore / Affidatario / Altro), email, cellulare; del secondo genitore: nome ed email, forniti dal contatto principale (art. 14 GDPR: l’email di conferma contiene la sua informativa); dati di pagamento della quota, gestiti dal fornitore del servizio di pagamento. Di tutti: dati tecnici della registrazione e della conferma (data, ora, indirizzo IP) come prova dei consensi.
 
-1. **[INSERIRE: EMAIL AL GENITORE CON LINK DI CONFERMA]**
-2. **[INSERIRE: SPID / CIE DEL GENITORE]**
-3. **[INSERIRE: UPLOAD DOCUMENTO D’IDENTITÀ DEL GENITORE]**
-4. **[INSERIRE: DICHIARAZIONE IN PRESENZA / PROCESSO OFFLINE CON CARICAMENTO ESITO]**
-5. **[INSERIRE: SOLO TRACCIAMENTO DEL CLICK DEL MINORE + CONSERVAZIONE CONTATTO]**
-
-**[INSERIRE DECISIONE E DATA]**
-
-Finché manca la decisione, la UI dice che si è presa visione della versione X in data Y, **senza** affermare validità legale.
+Certificato medico sportivo: vedi la nota in cima e l’[informativa documenti](/privacy/documenti).
 
 ---
 
-## 6. Comunicazioni verso il minore e verso il tutore
+## 3. Finalità e basi giuridiche
 
-**[INSERIRE CANALI E DESTINATARI DELLE COMUNICAZIONI]**
+| Finalità | Base giuridica | Obbligatorietà |
+| --- | --- | --- |
+| A. Iscrizione e gestione del torneo: calendari, classifiche, comunicazioni di servizio al minore e ai genitori | Esecuzione del contratto di iscrizione concluso dai genitori in nome e per conto del minore (art. 320 c.c.; art. 6.1.b GDPR). **[INSERIRE QUALIFICAZIONE: IN QUESTA APP CLICCA L’ACCOUNT DEL MINORE, NON IL GENITORE COME COMPILANTE]** | Necessaria per partecipare |
+| B. Adempimenti amministrativi, fiscali, assicurativi e di sicurezza degli eventi | Obbligo di legge (art. 6.1.c GDPR) | Necessaria |
+| C1. Pubblicazione di nome, iniziale del cognome, squadra, istituto, statistiche e squalifiche (solo come numero di giornate, senza motivazione) su sito, app e social del torneo | Legittimo interesse di ESL a documentare la competizione (art. 6.1.f GDPR), bilanciato con la tutela del minore | Potete opporvi in qualsiasi momento |
+| C2. Pubblicazione del cognome completo | Consenso di entrambi i genitori (art. 6.1.a GDPR), attivo dopo C1 (o unico esercente) e, dai 14 anni, G14 | Facoltativa |
+| D. Foto e video degli eventi per cronaca, documentazione e promozione del torneo | Consenso di entrambi i genitori, quali rappresentanti legali del minore, con l’accordo del minore dai 14 anni (art. 6.1.a e considerando 38 GDPR; artt. 2, 316 e 320 c.c.; art. 10 c.c.; artt. 96–97 L. 633/1941) | Facoltativa: vedi [Liberatoria](/liberatorie) |
+| E. Comunicazioni promozionali di ESL sui propri tornei ed eventi, inviate ai soli recapiti del genitore/tutore indicato via email, SMS, WhatsApp e telefono | Consenso (art. 6.1.a GDPR; art. 130, commi 1, 2 e 3, Codice privacy) | Facoltativa |
+| E2. Email al genitore/tutore indicato, sulle edizioni successive dello stesso torneo | Art. 130, comma 4, Codice privacy: uso dell’email fornita per l’iscrizione, per servizi analoghi; legittimo interesse (art. 6.1.f GDPR) | Potete rifiutare subito (casella in fondo) o con il link presente in ogni email |
+| F. Comunicazione di nome, email e cellulare del genitore ai partner elencati al punto 10, per loro comunicazioni promozionali | Consenso specifico e distinto da E (art. 6.1.a GDPR; art. 130 Codice privacy; Linee guida Garante 4/07/2013) | Facoltativa. Mai dati del minore |
+| G. Prova dei consensi e difesa di un diritto in giudizio | Obbligo di legge (art. 6.1.c GDPR, in relazione all’art. 7.1) e legittimo interesse (art. 6.1.f GDPR) | — |
+| H. Verifica dell’idoneità sportiva del minore: registrazione della presentazione e della scadenza del certificato medico richiesto dal regolamento (dato relativo alla salute) | Consenso esplicito (art. 9.2.a GDPR). **[INSERIRE BASE GIURIDICA DELLA COPIA CARICATA IN PIATTAFORMA]** | Necessaria per scendere in campo |
 
-Operativo:
-
-- login e area personale: del minore;
-- email di servizio (quando il provider sarà live): oggi partono verso l’email dell’**account** (minore);
-- l’email del tutore è conservata ma **non** è usata in v1 come destinatario automatico. **[INSERIRE SE IL GENITORE DEVE RICEVERE COPIA DI INVITO, RIFIUTO CERTIFICATO, PAGAMENTO, APPROVAZIONE]**
-- notifiche in-app: sull’account minore; i rifiuti certificato non includono il dettaglio sanitario nell’email.
-
-**[INSERIRE SE È VIETATO CONTATTARE DIRETTAMENTE IL MINORE PER CERTI CONTENUTI]**
-
----
-
-## 7. Certificato medico del minore
-
-Vale `document-processing`. **[INSERIRE SE SERVONO REGOLE EXTRA PER MINORI: TIPO VISITA, CONSENSO ALLA VISITA, CHI PUÒ CARICARE IL FILE]**
-
-In v1 carica il file chi è loggato (l’account del minore). **[INSERIRE SE IL GENITORE DEVE POTER CARICARE SENZA LOGIN DEL MINORE — OGGI NON PREVISTO]**
+Negare i consensi facoltativi non impedisce la partecipazione del minore. I recapiti del minore sono usati solo per comunicazioni di servizio sul torneo: mai per marketing, mai comunicati ai partner.
 
 ---
 
-## 8. Foto, video e social del minore
+## 4. Modalità del trattamento
 
-Vale `media-release`. **[INSERIRE LIMITAZIONI AGGIUNTIVE PER MINORI: DIVIETO VOLTO, DIVIETO NOME, SOLO CANALI INTERNI, DURATA RIDOTTA, CONSENSO GENITORE OBBLIGATORIO]**
-
-In v1 la decisione accept/refuse è dell’account loggato (il minore), sullo stesso passo di tutti. **[INSERIRE SE PER I MINORI LA LIBERATORIA DEVE ESSERE NEGATA IN ASSENZA DI VERIFICA GENITORE]**
+Strumenti elettronici e cartacei, personale autorizzato e istruito, misure di sicurezza adeguate (art. 32 GDPR). Non facciamo profilazione e non prendiamo decisioni basate unicamente su trattamenti automatizzati.
 
 ---
 
-## 9. Chi esercita i diritti privacy
+## 5. Destinatari
 
-**[INSERIRE CHI PUÒ ESERCITARE I DIRITTI: MINORE, GENITORE, ENTRAMBI, IN CHE ETÀ]**
-
-**[INSERIRE COME SI VERIFICA CHE CHI SCRIVE ALL’EMAIL PRIVACY SIA IL GENITORE O IL MINORE]**
-
-**[INSERIRE COSA SUCCEDE IN CASO DI CONFLITTO TRA GENITORI]**
-
-Canale: **[INSERIRE EMAIL PRIVACY]** — **[INSERIRE ISTRUZIONI SPECIFICHE MINORI]**
+Organizzatori locali dei tornei, fotografi e videomaker incaricati, fornitori della piattaforma di iscrizione, dei servizi email e di pagamento e dei servizi IT, tutti nominati responsabili del trattamento (art. 28 GDPR); istituti scolastici partecipanti, per la sola gestione delle squadre; compagnie assicurative; arbitri e personale di campo; consulenti fiscali e legali; autorità pubbliche quando richiesto dalla legge. Con il consenso F, i partner del punto 10 ricevono solo i dati del genitore che ha dato il consenso, li trattano come titolari autonomi e vi daranno la propria informativa. I dati sono diffusi solo come indicato ai punti 3.C1, 3.C2 e 3.D. Per le pagine social del torneo, ESL e la piattaforma sono contitolari del trattamento delle statistiche della pagina (art. 26 GDPR; contenuto essenziale dell’accordo disponibile su **[INSERIRE LINK ACCORDO PIATTAFORMA, ES. META PAGE INSIGHTS CONTROLLER ADDENDUM]**).
 
 ---
 
-## 10. Conservazione
+## 6. Trasferimenti extra-UE
 
-**[INSERIRE PERIODO DI CONSERVAZIONE DATI MINORE]**
-
-**[INSERIRE PERIODO DI CONSERVAZIONE DATI TUTORE DOPO LA MAGGIORE ETÀ O IL RITIRO]**
-
-**[INSERIRE SE ALLA MAGGIORE ETÀ IL CONTATTO TUTORE SI CANCELLA O SI MANTIENE]**
-
-Operativo: `isMinor` si ricalcola dalla data di nascita a ogni lettura; non è uno stato congelato. Un giocatore che compie 18 anni durante l’edizione: **[INSERIRE REGOLA]**
+Alcuni fornitori (piattaforme social, servizi cloud ed email) possono trattare dati fuori dall’Unione Europea, sulla base di una decisione di adeguatezza della Commissione Europea (incluso l’EU-U.S. Data Privacy Framework) o di clausole contrattuali standard (art. 46 GDPR). **[INSERIRE ELENCO PAESI E STRUMENTI QUANDO I DRIVER SONO LIVE]**.
 
 ---
 
-## 11. Destinatari specifici
+## 7. Conservazione
 
-Oltre a quanto in `privacy-policy`:
-
-- **[INSERIRE SE LA SCUOLA RICEVE DATI DEL MINORE]**
-- **[INSERIRE SE ALTRI GENITORI DELLA SQUADRA VEDONO QUALCOSA — IN V1 NO]**
-- Rappresentante: stato, non dossier familiare.
+| Dati | Durata |
+| --- | --- |
+| Iscrizione e gestione del torneo (A) | 24 mesi dal termine della stagione |
+| Documenti amministrativi e fiscali (B) | 10 anni (art. 2220 c.c.) |
+| Risultati e statistiche pubblicati (C1, C2) | Online per 10 anni dalla fine della stagione, salvo opposizione o revoca; oltre, solo risultati di squadra senza nomi |
+| Foto e video (D) | Fino alla revoca e comunque non oltre 10 anni dalla fine della stagione; dopo la revoca, cancellazione anche dagli archivi entro 30 giorni, salvo quanto serve per la difesa di un diritto (G); il materiale già stampato o consegnato a terzi (es. testate) prima della revoca non può essere ritirato |
+| Certificato medico (H) | Presentazione e scadenza: fino al termine della stagione. Copia del file: **[INSERIRE RETENTION DELLA COPIA]** |
+| Marketing ESL e partner (E, F) | 24 mesi dal consenso o dall’ultima interazione, salvo revoca |
+| Email sulle edizioni successive (E2) | Fino al rifiuto e comunque 24 mesi dall’ultima iscrizione |
+| Registro dei consensi (G) | 10 anni dalla fine del trattamento o dalla revoca (art. 2946 c.c.) |
 
 ---
 
-## 12. Rapporto con le altre informative
+## 8. Diritti
 
-Questa informativa si aggiunge a `privacy-policy` e `document-processing` nel passo privacy **solo se** il giocatore risulta minorenne. Non sostituisce `media-release` né `terms` né `cookie-policy`.
+I genitori, e il minore stesso, possono chiedere accesso, rettifica, cancellazione, limitazione e portabilità dei dati (artt. 15–22 GDPR) scrivendo a **[INSERIRE EMAIL PRIVACY]**. Ogni consenso si revoca in qualsiasi momento dall’[area consensi](/area/consensi), scrivendo a **[INSERIRE EMAIL PRIVACY]** o con il link di disiscrizione; basta la revoca di uno solo dei genitori; la revoca non rende illecito il trattamento precedente (art. 7.3 GDPR). Al compimento dei 18 anni il/la partecipante può confermare o revocare personalmente i consensi dati. Rispondiamo entro un mese dalla richiesta, prorogabile di due mesi nei casi complessi, avvisandovi (art. 12.3 GDPR). È possibile proporre reclamo al [Garante per la protezione dei dati personali](https://www.garanteprivacy.it) o rivolgersi all’autorità giudiziaria (art. 79 GDPR; art. 152 Codice privacy).
+
+**DIRITTO DI OPPOSIZIONE (art. 21 GDPR).** Potete opporvi in qualsiasi momento alla pubblicazione di nome e statistiche del minore (finalità C1), per motivi legati alla sua situazione particolare, e senza alcuna motivazione al marketing (finalità E, E2 e F). Basta scrivere a **[INSERIRE EMAIL PRIVACY]**. Per i partner che hanno già ricevuto i vostri dati inoltriamo la revoca; potete anche scrivere direttamente a loro.
 
 ---
 
-## 13. Luogo e data
+## 9. Aggiornamenti
 
-- **[INSERIRE LUOGO]**
-- **[INSERIRE DATA]**
-- **[INSERIRE NOME E RUOLO DI CHI APPROVA IL TESTO UFFICIALE]**
+Questa informativa può essere aggiornata; la versione in vigore è sempre su [/privacy/minori](/privacy/minori). Integra l’[informativa generale](/privacy).
+
+---
+
+## 10. Società partner
+
+Con il consenso F i dati di contatto del genitore possono essere comunicati solo a queste società, ciascuna titolare autonoma del trattamento. Se l’elenco è vuoto, la casella partner non compare nel form.
+
+| Società (ragione sociale) | Sede | Settore | Informativa privacy |
+| --- | --- | --- | --- |
+| **[INSERIRE PARTNER 1 — OGGI `content/legal/partners.json` È VUOTO]** | **[INSERIRE CITTÀ]** | **[INSERIRE, ES. merchandising e abbigliamento]** | **[INSERIRE LINK]** |
+| **[INSERIRE PARTNER 2]** | **[INSERIRE CITTÀ]** | **[INSERIRE, ES. annuari scolastici]** | **[INSERIRE LINK]** |
+
+Vale l’elenco in vigore quando date il consenso: i dati non vanno a partner aggiunti in seguito senza un nuovo consenso. I partner non possono cedere i dati ad altri. I dati del minore non sono mai comunicati ai partner.
+
+---
+
+## Caselle del form — Modulo 2
+
+Nel Modulo 2 originale compilava il genitore. Su questa piattaforma le spunta l’account del minore, tranne C1.
+
+- G1 («dichiaro di essere genitore o tutore…») **non** è una casella del giocatore: il contatto è nel passo tutore.
+- *(obbligatoria)* Ho letto l’informativa privacy.
+- *(necessaria per giocare)* **Certificato medico** — Acconsento che ESL tratti la copia del certificato medico sportivo caricata in piattaforma e ne registri presentazione e scadenza (dato relativo alla salute, art. 9.2.a GDPR). Il Modulo 2 originale diceva «senza conservarne copia». **[INSERIRE BASE GIURIDICA DELLA COPIA]**.
+- *(obbligatoria, una sola scelta — passo tutore)* Anche l’altro genitore esercita la responsabilità genitoriale: indico la sua email per la conferma delle scelte. **Oppure:** sono l’unico esercente la responsabilità genitoriale (es. tutore; altro genitore deceduto, decaduto o sospeso dalla responsabilità genitoriale ai sensi dell’art. 330 c.c.; figlio/a riconosciuto/a solo da me). L’affidamento esclusivo non basta: le decisioni di maggiore interesse restano di entrambi i genitori (art. 337-quater c.c.). So che una dichiarazione non veritiera mi espone a responsabilità verso l’altro genitore e verso ESL.
+- *(facoltativa)* **Cognome completo** — Acconsento alla pubblicazione di nome e cognome completi in classifiche, tabellini e statistiche su sito, app e social del torneo. Senza questo consenso compariranno nome e iniziale del cognome.
+- *(facoltativa)* **Marketing ESL** — Acconsento a ricevere da ESL, ai recapiti del genitore/tutore indicato, comunicazioni promozionali sui tornei e gli eventi della Lega Calcio Studenti, tramite email, SMS, WhatsApp e telefono. Su questa piattaforma il consenso vale dopo il clic nell’email di conferma.
+- *(facoltativa)* **Partner** — Acconsento che ESL comunichi nome, email e cellulare del genitore/tutore indicato alle società partner elencate al punto 10 dell’informativa, perché inviino loro comunicazioni promozionali tramite email, SMS, WhatsApp e telefono.
+- *(facoltativa)* **Edizioni successive** — Non voglio ricevere email sull’edizione successiva di questo torneo.
+
+I consensi sono facoltativi e non incidono sulla partecipazione. Il consenso al cognome completo diventa attivo solo dopo la conferma dell’altro genitore e, dai 14 anni, con l’accordo del minore (casella nella liberatoria). Potete revocarli in qualsiasi momento dall’[area consensi](/area/consensi) o scrivendo a **[INSERIRE EMAIL PRIVACY]**. Se non spuntate l’ultima casella, riceverete via email le informazioni sull’edizione successiva di questo torneo (art. 130, comma 4, Codice privacy): potrete rifiutarle anche dopo, con il link presente in ogni messaggio.
+
+---
+
+## Email al secondo genitore (C1)
+
+Se G3 indica un altro genitore, dopo i passi privacy e liberatoria partono un’email con token valido 60 giorni e un solo promemoria a 14 giorni. Informativa per il destinatario (art. 14 GDPR): titolare ESL **[INSERIRE RAGIONE SOCIALE]**, **[INSERIRE EMAIL PRIVACY]**. Nome ed email ci sono stati forniti dal contatto principale; li usiamo per questa conferma e per le comunicazioni di servizio sul torneo (art. 6.1.b GDPR), per 24 mesi dalla fine della stagione. Senza conferma il minore partecipa comunque, ma non verrà pubblicato in foto e video né con il cognome completo.

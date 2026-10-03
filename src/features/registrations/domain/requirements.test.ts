@@ -40,7 +40,7 @@ describe("projectChecklist", () => {
     expect(minor.find((item) => item.code === "GUARDIAN_IF_MINOR")?.status).toBe("todo");
   });
 
-  it("non blocca l'iscrizione se la liberatoria media è opzionale e non accettata", () => {
+  it("non approva finché il passo liberatorie non è stato inviato", () => {
     const data = evidence({
       medicalStatus: "approved",
       payment: { mode: "PLAYER", playerSucceeded: true, teamSucceeded: false },
@@ -48,18 +48,19 @@ describe("projectChecklist", () => {
     });
     const checklist = projectChecklist(defaultRequirements, data);
     const media = checklist.find((item) => item.code === "MEDIA_RELEASE");
-    expect(media?.required).toBe(false);
+    expect(media?.required).toBe(true);
     expect(media?.status).toBe("todo");
-    expect(projectRegistrationStatus(data, checklist)).toBe("APPROVED");
+    expect(projectRegistrationStatus(data, checklist)).toBe("IN_PROGRESS");
   });
 
-  it("completa la liberatoria opzionale se il giocatore rifiuta in modo esplicito", () => {
+  it("completa la liberatoria quando il passo è stato inviato, anche senza usi spuntati", () => {
     const data = evidence({
       payment: { mode: "PLAYER", playerSucceeded: true, teamSucceeded: false },
-      mediaDecision: "refused",
+      mediaDecision: "submitted",
     });
     const checklist = projectChecklist(defaultRequirements, data);
     expect(checklist.find((item) => item.code === "MEDIA_RELEASE")?.status).toBe("complete");
+    expect(projectRegistrationStatus(data, checklist)).toBe("APPROVED");
   });
 
   it("segna il certificato in attenzione se è in revisione o rifiutato", () => {
@@ -75,6 +76,7 @@ describe("projectChecklist", () => {
   it("considera coperto il pagamento giocatore se la squadra ha già pagato", () => {
     const data = evidence({
       payment: { mode: "BOTH", playerSucceeded: false, teamSucceeded: true },
+      mediaDecision: "submitted",
     });
     const checklist = projectChecklist(defaultRequirements, data);
     expect(checklist.find((item) => item.code === "PAYMENT")?.status).toBe("complete");

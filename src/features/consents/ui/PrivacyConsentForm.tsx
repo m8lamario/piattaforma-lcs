@@ -6,6 +6,8 @@ import { Button } from "@/shared/ui/Button";
 import { ActionError } from "@/shared/ui/ActionError";
 import { it } from "@/shared/i18n/it";
 import fields from "@/shared/ui/form.module.css";
+import type { ConsentBoxDef } from "@/features/consents/domain/boxes";
+import { ConsentBoxList } from "./ConsentBoxList";
 import { LegalReader } from "./LegalReader";
 import styles from "./ConsentForm.module.css";
 
@@ -19,20 +21,26 @@ export type ConsentDocumentView = {
 
 type Props = {
   documents: ConsentDocumentView[];
+  extraBoxes: ConsentBoxDef[];
+  currentBoxes: Record<string, boolean>;
 };
 
-export function PrivacyConsentForm({ documents }: Props) {
+export function PrivacyConsentForm({ documents, extraBoxes, currentBoxes }: Props) {
   const [state, action, pending] = useActionState(savePrivacyConsentsAction, undefined);
   const [readSlugs, setReadSlugs] = useState<Record<string, boolean>>({});
   const [checkedSlugs, setCheckedSlugs] = useState<Record<string, boolean>>({});
+  const [boxValues, setBoxValues] = useState<Record<string, boolean>>(currentBoxes);
 
   const markRead = useCallback((slug: string) => {
     setReadSlugs((current) => (current[slug] ? current : { ...current, [slug]: true }));
   }, []);
 
+  const requiredExtra = extraBoxes.filter((box) => box.kind === "required" || box.kind === "play");
   const allReady = useMemo(
-    () => documents.every((document) => readSlugs[document.slug] && checkedSlugs[document.slug]),
-    [documents, readSlugs, checkedSlugs],
+    () =>
+      documents.every((document) => readSlugs[document.slug] && checkedSlugs[document.slug]) &&
+      requiredExtra.every((box) => boxValues[box.code]),
+    [documents, readSlugs, checkedSlugs, requiredExtra, boxValues],
   );
 
   return (
@@ -73,6 +81,13 @@ export function PrivacyConsentForm({ documents }: Props) {
           </article>
         );
       })}
+
+      <ConsentBoxList
+        boxes={extraBoxes}
+        values={boxValues}
+        disabled={pending}
+        onToggle={(code, accepted) => setBoxValues((current) => ({ ...current, [code]: accepted }))}
+      />
 
       <div className={`${fields.actions} ${fields.sticky}`}>
         <Button

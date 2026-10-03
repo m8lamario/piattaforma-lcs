@@ -57,6 +57,7 @@ export function AppNav({
 
   const links: { href: string; label: string; icon: IconName; badge?: number }[] = [
     { href: "/area", label: it.navArea, icon: "area" },
+    { href: "/area/consensi", label: it.navConsents, icon: "privacy" },
     ...(showTeam ? [{ href: "/squadra", label: it.navTeam, icon: "team" as const }] : []),
     ...(showPlayerTeam ? [{ href: "/area/squadra", label: it.navPlayerTeam, icon: "users" as const }] : []),
     ...(showAdmin ? [{ href: "/admin", label: it.navAdmin, icon: "org" as const }] : []),

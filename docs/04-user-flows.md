@@ -49,10 +49,10 @@ Regole:
 Passi guidati, uno schermo alla volta, salvataggio per passo:
 
 1. Dati personali
-2. Genitore/tutore **solo se minore** (inserito automaticamente in base alla data di nascita)
-3. Certificato medico
-4. Privacy / informative trattamento
-5. Liberatorie foto/video/social (step evidenziato)
+2. Genitore/tutore **solo se minore** (contatto 1 + G3: altro genitore o unico esercente)
+3. Certificato medico (upload della copia)
+4. Privacy / informative + T1, casella salute, marketing/partner/opt-out
+5. Liberatorie foto/video/social (una casella per uso; G14 dai 14 anni)
 6. Pagamento (se dovuto al giocatore)
 7. Riepilogo e “cosa succede ora”
 
@@ -64,9 +64,9 @@ Fuori dalla finestra `registrationOpensAt`/`registrationClosesAt`: il link di sq
 
 1. Data di nascita → `isMinor = age < 18` (assunzione, da validare).
 2. Se minore, il passo guardian è **obbligatorio per lo stato `APPROVED`**, ma non blocca l’apertura degli altri passi.
-3. Consensi con audience `GUARDIAN` / `MINOR` mostrati con copy dedicato (placeholder legale).
+3. Consensi con audience `MINOR` e caselle G* dell’account minore; C1 è l’email al secondo genitore (OD-046).
 4. Il login resta del minore. Se c’è `Guardian.email`, le comunicazioni di servizio (stesso `title` della notifica, niente body sanitario) possono partire anche al tutore. Non è una firma del genitore (OD-002/032).
-5. Non si afferma che il click digitale del minore o del genitore abbia valore legale: tracciamo acceptance; la validità è OPEN_DECISIONS.
+5. Non si afferma che il click digitale del minore o del genitore abbia valore legale: tracciamo le caselle; la validità è OPEN_DECISIONS.
 
 ## 5. Documento medico
 
@@ -80,7 +80,7 @@ Fuori dalla finestra `registrationOpensAt`/`registrationClosesAt`: il link di sq
 
 Il rappresentante vede solo lo stato, mai l’URL.
 
-Sul passo upload compare un **avviso operativo** (non un atto legale): il caricamento in piattaforma non sostituisce automaticamente un’eventuale consegna o verifica cartacea in sede; le modalità restano dell’organizzazione. L’informativa sul trattamento resta nel pacchetto privacy (`document-processing`). La revisione del file è **umana** (accetta/rifiuta): nessuna verifica automatica o AI in v1.
+Sul passo upload compare un **avviso operativo**: la piattaforma conserva una copia per la revisione; i moduli 2026-27 chiedevano solo presentazione e scadenza. L’informativa resta in `document-processing`; la casella salute M3/G4 è nel passo privacy. La revisione del file è **umana** (accetta/rifiuta): nessuna verifica automatica o AI in v1.
 
 ## 6. Review organizzazione
 

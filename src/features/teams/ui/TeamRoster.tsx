@@ -1,3 +1,4 @@
+import { PublicationChips } from "@/features/consents/ui/PublicationChips";
 import { it } from "@/shared/i18n/it";
 import type { RosterRow } from "@/features/teams/domain/roster";
 import { nudgeRegistrationAction, updateRosterRowAction } from "@/features/teams/actions";
@@ -61,6 +62,7 @@ export function TeamRoster({ teamId, rows, canEditRoster = true }: Props) {
                 <span className={styles.chips}>
                   <StatusChip tone="neutral">{REG_COPY[row.registrationStatus] ?? row.registrationStatus}</StatusChip>
                   <StatusChip tone={MEDICAL_TONE[row.medicalStatus]}>{MEDICAL[row.medicalStatus]}</StatusChip>
+                  {row.publication ? <PublicationChips flags={row.publication} compact /> : null}
                 </span>
               </div>
               <div className={styles.itemRight}>

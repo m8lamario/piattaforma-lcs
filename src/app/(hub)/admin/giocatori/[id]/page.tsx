@@ -5,6 +5,7 @@ import { loadPlayerWorkspace } from "@/features/registrations/data/workspace";
 import { AdminFrame } from "@/features/admin/ui/AdminFrame";
 import { AccountLifecycleForm } from "@/features/admin/ui/AccountLifecycleForm";
 import { OpenDocumentButton } from "@/features/documents/ui/OpenDocumentButton";
+import { PublicationChips } from "@/features/consents/ui/PublicationChips";
 import { PageHeader } from "@/shared/ui/PageHeader";
 import { StatusChip } from "@/shared/ui/StatusChip";
 import { WithdrawForm } from "@/features/registrations/ui/WithdrawForm";
@@ -75,6 +76,25 @@ export default async function AdminPlayerPage({ params }: Props) {
               </p>
             ) : null}
           </div>
+
+          {workspace ? (
+            <div className={styles.sideCard}>
+              <h2 className={styles.sectionTitle}>{it.navConsents}</h2>
+              <p className={styles.meta} style={{ display: "flex", flexWrap: "wrap", gap: "var(--space-2)" }}>
+                <PublicationChips flags={workspace.publication} />
+              </p>
+              <ul className={styles.list}>
+                {workspace.choices.map((row) => (
+                  <li key={`${row.code}-${row.createdAt}`} className={styles.item}>
+                    <strong>{row.code}</strong>
+                    <StatusChip tone={row.accepted ? "complete" : "neutral"}>
+                      {row.accepted ? it.consentsActive : it.consentsInactive}
+                    </StatusChip>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
 
           {workspace ? (
             <div>
