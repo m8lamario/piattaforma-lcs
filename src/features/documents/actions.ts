@@ -10,6 +10,7 @@ import {
   storeMedicalCertificate,
 } from "@/features/documents/data/documents";
 import { createDocumentAccessToken } from "@/features/documents/domain/signedUrl";
+import { parseDateOnly } from "@/features/players/domain/dates";
 import {
   loadPlayerWorkspace,
   persistRegistrationStatus,
@@ -156,6 +157,7 @@ export async function reviewDocumentAction(formData: FormData) {
   const documentId = String(formData.get("documentId") ?? "");
   const decision = String(formData.get("decision") ?? "");
   const reason = String(formData.get("reason") ?? "");
+  const expiresAt = parseDateOnly(String(formData.get("expiresAt") ?? ""));
   const document = await getDocumentById(documentId);
   if (!document) return;
 
@@ -174,9 +176,13 @@ export async function reviewDocumentAction(formData: FormData) {
     reviewerId: session.user.id,
     decision,
     reason,
+    expiresAt,
   });
   if (!result.ok && result.reason === "reason_required") {
     redirect(`/admin/documenti/${documentId}?error=reason`);
+  }
+  if (!result.ok && result.reason === "expiry_required") {
+    redirect(`/admin/documenti/${documentId}?error=expiry`);
   }
   if (!result.ok) return;
 

@@ -81,6 +81,37 @@ describe("authorize deny-by-default", () => {
     expect(authorize(otherRep, "team:invite", { teamId: "team-1" }).allow).toBe(false);
   });
 
+  it("nega al rappresentante l'accesso a una squadra di un'altra competition anche se indica la propria", () => {
+    expect(
+      authorize(rep, "team:read", { teamId: "team-2", competitionId: "competition-a" }).allow,
+    ).toBe(false);
+    expect(
+      authorize(rep, "team:invite", { teamId: "team-2", competitionId: "competition-a" }).allow,
+    ).toBe(false);
+  });
+
+  it("isola il competition organizer sulla propria coppa e non gli apre la console", () => {
+    const organizerA: Actor = {
+      userId: "organizer-a",
+      roles: [{ role: "COMPETITION_ORGANIZER", competitionId: "competition-a" }],
+      membershipTeamIds: [],
+    };
+    expect(
+      authorize(organizerA, "team:read", { teamId: "team-a", competitionId: "competition-a" }).allow,
+    ).toBe(true);
+    expect(
+      authorize(organizerA, "team:read", { teamId: "team-b", competitionId: "competition-b" }).allow,
+    ).toBe(false);
+    expect(authorize(organizerA, "team:read", { teamId: "team-a" }).allow).toBe(false);
+    expect(authorize(organizerA, "team:invite", { teamId: "team-a", competitionId: "competition-a" }).allow).toBe(
+      false,
+    );
+    expect(authorize(organizerA, "admin:manage").allow).toBe(false);
+    expect(authorize(organizerA, "document:read_file", { ownerUserId: "player-1", competitionId: "competition-a" }).allow).toBe(
+      false,
+    );
+  });
+
   it("consente al super admin ogni azione", () => {
     expect(authorize(superAdmin, "platform:admin").allow).toBe(true);
     expect(authorize(superAdmin, "document:read_file", ownDoc).allow).toBe(true);
@@ -127,5 +158,21 @@ describe("authorize deny-by-default", () => {
     expect(authorize(rep, "audit:delete").allow).toBe(false);
     expect(authorize(orgAdmin, "audit:delete").allow).toBe(false);
     expect(authorize(superAdmin, "audit:delete").allow).toBe(false);
+    expect(authorize(player, "email:read").allow).toBe(false);
+    expect(authorize(rep, "email:send").allow).toBe(false);
+    expect(authorize(orgAdmin, "email:read").allow).toBe(true);
+    expect(authorize(orgAdmin, "email:send").allow).toBe(true);
+    expect(authorize(orgAdmin, "email:compose").allow).toBe(false);
+    expect(authorize(superAdmin, "email:compose").allow).toBe(true);
+  });
+
+  it("riserva la gestione email allo staff e il corpo libero al super admin", () => {
+    expect(authorize(player, "email:read").allow).toBe(false);
+    expect(authorize(rep, "email:send").allow).toBe(false);
+    expect(authorize(orgAdmin, "email:read").allow).toBe(true);
+    expect(authorize(orgAdmin, "email:send").allow).toBe(true);
+    expect(authorize(orgAdmin, "email:compose").allow).toBe(false);
+    expect(authorize(superAdmin, "email:compose").allow).toBe(true);
+    expect(authorize(superAdmin, "email:send").allow).toBe(true);
   });
 });

@@ -6,9 +6,9 @@ Ogni voce: problema, opzioni, decisione necessaria, conseguenze, impatto sullo s
 
 ## OD-001 Testi legali ufficiali
 
-- **Problema:** Mancano i **dati organizzativi firmati** (titolare, sede, P.IVA, email privacy, DPO, elenco partner, base giuridica della copia del certificato, regolamento di torneo). I body in `content/legal/` sono già i moduli LCS 2026-27 adattati al hub.
+- **Problema:** I dati di `docs/pack-dati-da-compilare.md` (5 ottobre 2026, Pietro Filippo Turolla) sono stati copiati nei testi. Restano aperti: foro (D15), base giuridica dei cookie tecnici (G9), strumento di trasferimento di Neon e Cloudflare, contratto del medico esterno. La cancellazione automatica della copia a 90 giorni non è ancora un job.
 - **Opzioni:** (a) placeholder versionati in `content/legal`; (b) attendere i testi prima di ogni UI.
-- **Decisione necessaria:** firma di organizzazione/legale sui campi `[INSERIRE …]` ancora aperti. Mappa in `docs/08-privacy-and-consent.md`.
+- **Decisione necessaria:** firma di organizzazione/legale sui campi `[INSERIRE …]` ancora aperti. Compilare [`docs/pack-dati-da-compilare.md`](pack-dati-da-compilare.md); mappa in `docs/08-privacy-and-consent.md`.
 - **Conseguenze:** senza quei campi il prodotto non è pubblicabile verso utenti reali.
 - **Impatto:** nessuno su schema/UI structure. Workaround: `[INSERIRE …]` solo sui campi ancora vuoti.
 
@@ -62,7 +62,7 @@ Ogni voce: problema, opzioni, decisione necessaria, conseguenze, impatto sullo s
 - **Problema:** Resend, SES, Mailgun, altro.
 - **Opzioni:** adapter.
 - **Decisione necessaria:** ops + DPA. **Scelta implementativa M11:** Resend (`EMAIL_DRIVER=resend`).
-- **Conseguenze:** template con `title` / URL; mai CF o motivo medico. Default stub.
+- **Conseguenze:** template con `title` / URL; mai CF o motivo medico. Default stub. Lo storico `EmailMessage` è dato personale: DPA/informativa fornitori restano al legale. Tracking aperture (pixel) non si attiva (G12).
 - **Impatto:** adapter `live/resend.ts`.
 
 ## OD-007 Modalità BOTH (doppio canale)
@@ -132,6 +132,7 @@ Ogni voce: problema, opzioni, decisione necessaria, conseguenze, impatto sullo s
 - **Problema:** Competition = coppa locale (Leonessa Cup) o campionato nazionale con sotto-eventi?
 - **Opzioni:** Competition piatta; albero parentId; Organization extra.
 - **Workaround:** Competition piatta + Edition. `parentId` nullable riservato se serve dopo.
+- **Confermato nel modello:** `parentId` è un sotto-torneo, non l’edizione. L’annata è `Edition`.
 
 ## OD-020 Validazione codice fiscale
 
@@ -146,7 +147,7 @@ Ogni voce: problema, opzioni, decisione necessaria, conseguenze, impatto sullo s
 ## OD-022 Retention audit e IP nei consensi
 
 - **Problema:** Quanto conservare IP/user agent.
-- **Workaround:** campi presenti, policy di purge non automatica.
+- **Workaround:** campi presenti, policy di purge non automatica. Stesso spirito per lo storico email: nessun job di cancellazione; all’anonimizzazione si redigono destinatario, oggetto e corpo. Lo storico `EmailMessage` segue la stessa logica: niente cancellazione automatica; all’anonimizzazione account si redigono destinatario, oggetto e corpo.
 
 ## OD-023 Magic link / OAuth / SPID
 
@@ -156,7 +157,7 @@ Ogni voce: problema, opzioni, decisione necessaria, conseguenze, impatto sullo s
 ## OD-024 Re-consent su nuova versione informativa
 
 - **Problema:** Forzare nuova accettazione a iscrizione già approvata?
-- **Workaround:** re-consent solo se edition requirement punta a `isCurrent` e registration non approvata; approvati = processo admin.
+- **Workaround:** re-consent solo se edition requirement punta a `isCurrent` e registration non approvata; approvati = processo admin. Un cambio file in `content/legal/` (`ensureLegalDocuments`) non invia email. L’avviso `LEGAL_VERSION_NOTICE` è un’azione staff confermata (parola AVVISA) verso chi ha accettato una versione non più corrente.
 
 ## OD-025 Scan virus e PWA
 
@@ -172,11 +173,12 @@ Già coperti: no PWA in M0; scan OD-021.
 
 ## OD-027 Cookie banner, analytics e tracciamenti
 
-- **Problema:** Oggi esistono cookie di sessione Auth.js. Non c’è banner né analytics. Il tema UI segue `prefers-color-scheme` e non usa cookie.
+- **Problema:** Esistono cookie tecnici Auth.js e `eph-team`. Nel codice non ci sono analytics né pixel. Il tema UI segue `prefers-color-scheme` e non usa cookie. Adobe Fonts è caricato su ogni pagina (font dell’interfaccia; le risposte verificate non impostano `Set-Cookie`).
 - **Opzioni:** solo cookie tecnici senza banner; banner se si aggiungono analitici; niente terze parti.
-- **Decisione necessaria:** legale + prodotto, prima di introdurre analytics/pixel.
-- **Conseguenze:** un banner è lavoro UI; un nuovo consenso va come `LegalDocument` distinto, non come checkbox nascosta.
-- **Impatto:** nessuno finché non si aggiungono tracker. Workaround: pagina `/cookie` con inventario operativo; banner ancora assente.
+- **Decisione tecnica (codice):** niente analytics/pixel. Durata sessione fissata a 30 giorni. `eph-team` Secure su HTTPS e cancellato al logout. Il banner Accetta / Rifiuta / Preferenze esiste ma non viene mostrato finché l’elenco degli strumenti non necessari è vuoto. Quegli strumenti restano spenti senza una scelta registrata. Il cookie di scelta non viene scritto finché l’elenco è vuoto.
+- **Decisione necessaria:** legale, su G8/G9/G10 del pack (banner dovuto o no; base giuridica). Prima di introdurre analytics/pixel: aggiornare `cookie-policy` e l’inventario.
+- **Conseguenze:** un nuovo consenso cookie non è un `ConsentRecord` del wizard.
+- **Impatto:** pagina `/cookie` con inventario e pannello di gestione. Valutazione giuridica ancora aperta.
 
 ## OD-028 Condizioni di iscrizione (`terms`) nel wizard
 
@@ -325,8 +327,8 @@ Già coperti: no PWA in M0; scan OD-021.
 
 - **Problema:** I moduli in `Moduli_privacy_LCS_2026-27` (file 08) chiedono che per i minorenni compili un genitore, con conferma email del secondo genitore (C1), e vietano di conservare copia del certificato. La constitution §2.9 dice che l’account è del giocatore e il tutore è un contatto. Incollare i quattro testi nel wizard senza adattare il flusso attribuirebbe i click alla persona sbagliata.
 - **Opzioni:** (a) adeguare il hub al compilante-genitore (rompe la constitution); (b) far riscrivere i moduli sul modello account-del-minore; (c) tenere l’account del giocatore, usare le caselle del file 08 adattate a chi clicca, lasciare i body markdown come placeholder finché il consulente non li riscrive.
-- **Decisione di prodotto (c), da validare col consulente:** constitution vince su *chi* clicca. I moduli vincono su *quali* caselle esistono, sulla granularità immagini, sul marketing/partner distinti, sull’opt-out E2, su T1, sul consenso salute esplicito, su C1 e su G14 dai 14 anni. I testi lunghi restano `[INSERIRE …]`. G1 («dichiaro di essere genitore») non è una casella del giocatore: il passo tutore raccoglie il contatto. C1 è l’unico atto del secondo genitore (link email, `guardianId` valorizzato). Non si afferma che il click del minore o del tutore 1 abbia valore di firma genitoriale (OD-002 resta aperto).
-- **Certificato:** il hub continua a conservare il file per la revisione (OD-005/030/035). La casella salute descrive la copia. Il legale deve riscrivere finalità H: i moduli dicono «senza copia».
+- **Decisione di prodotto (c), aggiornata col pacchetto del 5 ottobre 2026:** constitution vince su *chi* clicca. G1 è una dichiarazione obbligatoria nel passo tutore (H6). Nome e cognome del secondo genitore sono obbligatori se G3 = altro genitore (H3). Iscrizione dai 14 anni compiuti (H7). Il codice fiscale deve coincidere con la data di nascita (H8). Nessuna classe (H1). Nessuna esenzione CF (H2). Email e telefono del minore restano obbligatori (H9). Ruolo e maglia restano al rappresentante (H10). C1 è l’unico atto del secondo genitore. Non si afferma che il click abbia valore di firma genitoriale (OD-002 resta aperto).
+- **Certificato:** il pacchetto sezione E (approvato per la pubblicazione) tiene la copia 90 giorni dopo il torneo locale e chiede allo staff la data di scadenza in approvazione. La casella H4 «senza copia» non è applicata, perché contraddice E. Il modulo cartaceo (H5) è deciso e non è ancora una schermata.
 - **Liberatoria:** i cinque usi sono caselle facoltative. Il passo va compilato (anche tutte vuote). `MEDIA_RELEASE` required in edizione non può obbligare l’accettazione degli usi.
 - **Partner:** casella visibile solo se `content/legal/partners.json` elenca società per nome.
 - **Conseguenze:** `ConsentChoice` append-only per codice casella; `ConsentToken` per C1 e doppio opt-in; `/area/consensi` per revoca, export, richiesta di cancellazione; flag pubblicabile calcolato, visibile a staff e rappresentante (non i recapiti).

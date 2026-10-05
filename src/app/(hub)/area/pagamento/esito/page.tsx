@@ -3,6 +3,8 @@ import { auth } from "@/auth";
 import { completeStubPayment } from "@/features/payments/data/complete";
 import { getPaymentById } from "@/features/payments/data/payments";
 import { PaymentStatusView } from "@/features/payments/ui/PaymentStatusView";
+import { loadPlayerWorkspace } from "@/features/registrations/data/workspace";
+import { nextHero } from "@/features/registrations/domain/wizard";
 import { shouldCompletePaymentOnReturn } from "@/shared/config/drivers";
 import { authorize } from "@/shared/authz/authorize";
 import { loadAppShell } from "@/shared/ui/loadAppShell";
@@ -27,7 +29,6 @@ export default async function PaymentResultPage({ searchParams }: Props) {
       if (result.reason === "auth") redirect(`/accedi?next=/area/pagamento/esito?paymentId=${paymentId}`);
       redirect("/area");
     }
-    redirect(result.next);
   }
 
   const [payment, shell] = await Promise.all([getPaymentById(paymentId), loadAppShell(session.user.id)]);
@@ -45,14 +46,20 @@ export default async function PaymentResultPage({ searchParams }: Props) {
   );
   if (!playerOk && !teamOk) redirect("/area");
 
-  if (payment.status === "SUCCEEDED") {
-    redirect(payment.teamId && !payment.registrationId ? "/squadra" : "/area");
+  const teamPayment = Boolean(payment.teamId && !payment.registrationId);
+  let nextHref = teamPayment ? "/squadra" : "/area";
+  let nextLabel = teamPayment ? it.navTeam : it.backToArea;
+  if (payment.status === "SUCCEEDED" && !teamPayment) {
+    const workspace = await loadPlayerWorkspace(session.user.id);
+    const remaining = workspace ? nextHero(workspace.checklist).code !== "DONE" : false;
+    nextHref = remaining ? "/area/registrazione" : "/area";
+    nextLabel = remaining ? it.ctaContinue : it.backToArea;
   }
 
   return (
     <main>
       <PageHeader title={it.stepPagamento} />
-      <PaymentStatusView status={payment.status} teamPayment={Boolean(payment.teamId && !payment.registrationId)} />
+      <PaymentStatusView status={payment.status} teamPayment={teamPayment} nextHref={nextHref} nextLabel={nextLabel} />
     </main>
   );
 }

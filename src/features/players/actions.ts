@@ -147,6 +147,7 @@ export async function saveGuardianAction(
     secondFirstName: formData.get("secondFirstName"),
     secondLastName: formData.get("secondLastName"),
     secondEmail: formData.get("secondEmail"),
+    g1: formData.get("g1") === "on",
     intent: formData.get("intent") || "continue",
   });
   if (!parsed.success) {

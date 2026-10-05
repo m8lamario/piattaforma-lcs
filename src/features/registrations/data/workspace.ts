@@ -68,7 +68,10 @@ export async function loadPlayerWorkspace(userId: string) {
               team: {
                 include: {
                   edition: { include: { competition: true, requirements: true } },
-                  payments: { where: { status: "SUCCEEDED" }, select: { id: true } },
+                  payments: {
+                    where: { status: "SUCCEEDED", registrationId: null },
+                    select: { id: true },
+                  },
                 },
               },
               documents: {
@@ -472,8 +475,8 @@ export async function saveGuardianProfile(
 
   if (input.g3 === "OTHER_PARENT" && input.secondEmail) {
     const secondData = {
-      firstName: input.secondFirstName?.trim() || "Genitore",
-      lastName: input.secondLastName?.trim() || "2",
+      firstName: input.secondFirstName?.trim() || "",
+      lastName: input.secondLastName?.trim() || "",
       relationship: "GENITORE",
       email: input.secondEmail.trim().toLowerCase(),
       kind: "SECONDARY",
@@ -502,10 +505,24 @@ export async function saveGuardianProfile(
     data: {
       userId,
       registrationId,
+      code: "G1",
+      accepted: true,
+      source: "WEB",
+      guardianId: primaryId,
+      ipAddress: input.ipAddress ?? null,
+      userAgent: input.userAgent ?? null,
+    },
+  });
+
+  await prisma.consentChoice.create({
+    data: {
+      userId,
+      registrationId,
       code: "G3",
       accepted: true,
       value: input.g3,
       source: "WEB",
+      guardianId: primaryId,
       ipAddress: input.ipAddress ?? null,
       userAgent: input.userAgent ?? null,
     },

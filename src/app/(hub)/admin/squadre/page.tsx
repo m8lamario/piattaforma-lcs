@@ -21,7 +21,7 @@ export default async function AdminTeamsPage() {
                   <span>
                     <strong>{team.name}</strong>
                     <span className={styles.meta}>
-                      {team.edition.competition.name} · {team.school.name}
+                      {team.edition.competition.name} · {team.edition.name} · {team.school.name}
                     </span>
                   </span>
                 </Link>

@@ -82,7 +82,11 @@ export default async function AdminDocumentDetailPage({ params, searchParams }: 
         {pending ? (
           <aside className={styles.sideCol}>
             <div className={styles.reviewCard}>
-              <ReviewForm documentId={document.id} reasonRequired={query.error === "reason"} />
+              <ReviewForm
+                documentId={document.id}
+                reasonRequired={query.error === "reason"}
+                expiryRequired={query.error === "expiry"}
+              />
             </div>
           </aside>
         ) : null}

@@ -56,7 +56,9 @@ export async function startPlayerCheckoutAction(): Promise<ActionFailure | void>
     amount,
     currency: workspace.registration.currency,
   });
-  if (!claimed.ok) return fail("PAYMENT_ALREADY_COMPLETED");
+  if (!claimed.ok) {
+    return fail(claimed.reason === "scope" ? "PAYMENT_SCOPE_MISMATCH" : "PAYMENT_ALREADY_COMPLETED");
+  }
 
   const checkout = await paymentAdapter.createCheckout({
     amount: Math.round(amount * 100),
@@ -90,11 +92,19 @@ export async function startTeamCheckoutAction(teamId: string): Promise<ActionFai
   const actor = await getActorByUserId(session.user.id);
   if (!actor) redirect("/accedi");
 
-  const allowed = authorize(actor, "payment:create_team", { teamId });
-  if (!allowed.allow) return fail("FORBIDDEN_PAYMENT_TEAM");
-
+  if (!authorize(actor, "payment:create_team", { teamId }).allow) {
+    return fail("FORBIDDEN_PAYMENT_TEAM");
+  }
   const team = await getTeamForActor(teamId);
   if (!team) return fail("TEAM_NOT_FOUND");
+  if (
+    !authorize(actor, "payment:create_team", {
+      teamId: team.id,
+      competitionId: team.edition.competitionId,
+    }).allow
+  ) {
+    return fail("FORBIDDEN_PAYMENT_TEAM");
+  }
   if (
     !isRegistrationWindowOpen({
       isActive: team.edition.isActive,
@@ -110,7 +120,7 @@ export async function startTeamCheckoutAction(teamId: string): Promise<ActionFai
     teamFeeAmount: team.edition.teamFeeAmount,
   });
   const already = await prisma.payment.findFirst({
-    where: { teamId, status: "SUCCEEDED" },
+    where: { teamId: team.id, registrationId: null, status: "SUCCEEDED" },
   });
   const blocked = teamCheckoutBlocker({ covered: Boolean(already), amount });
   if (blocked) return fail(blocked);
@@ -123,7 +133,9 @@ export async function startTeamCheckoutAction(teamId: string): Promise<ActionFai
     amount,
     currency: team.edition.currency,
   });
-  if (!claimed.ok) return fail("PAYMENT_ALREADY_COMPLETED");
+  if (!claimed.ok) {
+    return fail(claimed.reason === "scope" ? "PAYMENT_SCOPE_MISMATCH" : "PAYMENT_ALREADY_COMPLETED");
+  }
 
   const checkout = await paymentAdapter.createCheckout({
     amount: Math.round(amount * 100),

@@ -1,6 +1,6 @@
-**Fonte:** finalità H dei Moduli 1 e 2 LCS 2026-27 (testi 1.0 del 1 ottobre 2026), adattata a questa piattaforma. I moduli chiedevano solo presentazione e scadenza, **senza copia**. Qui si carica un file e ESL ne conserva una copia per la revisione dello staff. **Non è un parere legale e non è un testo firmato.**
+**Fonte:** finalità H dei Moduli 1 e 2 LCS 2026-27, adattata alla copia del certificato decisa da European Students League S.r.l. il 5 ottobre 2026.
 
-**[INSERIRE NOME TORNEO]**, stagione 2026/2027, versione 1.0 del 1 ottobre 2026. Data di entrata in vigore su questa piattaforma: **[INSERIRE DATA DI ENTRATA IN VIGORE]**.
+**Mole Cup, Leonessa Cup, Colosseo Cup, Ferrea Cup, Olympius e Turas Cup**, stagione 2026/2027, versione 1.0 del 5 ottobre 2026. Data di entrata in vigore su questa piattaforma: **5 ottobre 2026**.
 
 ai sensi degli artt. 13 e 9 del Regolamento UE 2016/679 (GDPR). Integra l’[informativa privacy](/privacy) e, per i minori, l’[informativa per minori](/privacy/minori). Non riguarda foto e video: vedi [Liberatoria](/liberatorie).
 
@@ -8,32 +8,32 @@ ai sensi degli artt. 13 e 9 del Regolamento UE 2016/679 (GDPR). Integra l’[inf
 
 ## 1. Titolare
 
-ESL **[INSERIRE RAGIONE SOCIALE E FORMA GIURIDICA]**, sede legale in **[INSERIRE SEDE LEGALE]**, P.IVA/C.F. **[INSERIRE P.IVA / CODICE FISCALE]**.
+ESL **European Students League S.r.l.**, sede legale in **Corso Vinzaglio 24, 10121 Torino**, P.IVA/C.F. **IT12974200011 / 12974200011**.
 
-Contatti privacy: **[INSERIRE EMAIL PRIVACY]** — PEC **[INSERIRE PEC]**. DPO: **[INSERIRE NOME E EMAIL DPO, OPPURE «non nominato»]**.
+Contatti privacy: **privacy@legacalciostudenti.it** — PEC **europeanstudentsleague@legalmail.it**. DPO: **non nominato**.
 
 ---
 
 ## 2. Perché si raccolgono i documenti
 
-Per verificare che esista un certificato medico sportivo associato all’iscrizione, richiesto dal regolamento di torneo, e per tracciare la revisione umana (approvazione o rifiuto con motivazione visibile al giocatore).
+Per verificare il certificato medico di idoneità sportiva agonistica per il calcio e per tracciare la revisione umana (approvazione o rifiuto con motivazione visibile al giocatore).
 
-Adempimenti federali, assicurativi o di legge sullo sport oltre a questo: **[INSERIRE]**.
+Nella versione 1 non ci sono altri obblighi federali o assicurativi oltre questa verifica. In caso di infortunio, e solo su richiesta della pratica assicurativa, il certificato può essere trasmesso al soggetto assicurativo o a chi è legittimato a chiederlo, limitatamente a quanto serve a quella pratica.
 
 ---
 
 ## 3. Che cosa si tratta
 
-Tipo in piattaforma: certificato medico agonistico.
+Tipo in piattaforma: certificato medico di idoneità sportiva agonistica per il calcio.
 
 - Formati: PDF, JPEG, PNG.
 - Dimensione massima: 10 MB (configurabile).
 - Si raccolgono: il file, la data di caricamento, l’eventuale scadenza indicata, lo stato di revisione, il motivo di rifiuto se c’è, e metadati tecnici (tipo MIME, dimensione, checksum, nome file originario sanitizzato).
 - Il contenuto del file può includere dati relativi alla salute e identificativi (nome, data visita, medico, struttura).
 
-Altri tipi di documento (identità, autocertificazioni, nulla osta scuola): **[INSERIRE: NON PREVISTI IN V1]**.
+Altri tipi di documento (identità, autocertificazioni, nulla osta scuola): non previsti in v1.
 
-Istruzioni all’utente: caricare solo il certificato richiesto; **[INSERIRE: NON INCLUDERE REFERTI NON RICHIESTI]**.
+Istruzioni all’utente: caricare esclusivamente il certificato medico sportivo agonistico. Non caricare referti, cartelle cliniche, risultati di esami, prescrizioni o altra documentazione sanitaria non richiesta.
 
 ---
 
@@ -45,9 +45,7 @@ I Moduli 1 e 2 (testi 1.0 del 1 ottobre 2026) dicono, alla finalità H:
 
 Casella originale: «Acconsento che ESL registri la presentazione e la data di scadenza del […] certificato medico sportivo (dato relativo alla salute, art. 9.2.a GDPR), senza conservarne copia.»
 
-Su questa piattaforma quella frase **non** descrive il trattamento reale: il file viene caricato e la copia resta per la revisione dello staff.
-
-**[INSERIRE BASE GIURIDICA DELLA COPIA — OD-035 / OD-046]**
+Su questa piattaforma il file viene caricato. La copia è acquisita e conservata per verificare l’idoneità e la scadenza. L’accesso al documento integrale è limitato agli utenti autorizzati. Base del dato sanitario: consenso esplicito (art. 9.2.a GDPR), caselle M3 e G4.
 
 La casella obbligatoria per giocare è M3 (maggiorenni) o G4 (minorenni), nel passo privacy, distinta dalla presa visione di questa informativa. Il testo della casella in piattaforma parla della copia.
 
@@ -61,13 +59,14 @@ La casella obbligatoria per giocare è M3 (maggiorenni) o G4 (minorenni), nel pa
 | Compagni di squadra | no | no |
 | Rappresentante di squadra | **no** — mai il file | solo lo **stato** (mancante / in revisione / ok / da ricaricare / scaduto) |
 | Amministratori dell’organizzazione | sì, con audit di ogni visualizzazione | sì |
-| Organizzatore di una coppa locale | ruolo previsto, nessuna interfaccia in v1 | **[INSERIRE QUANDO ATTIVATO]** |
-| Fornitore di storage | accesso tecnico agli oggetti | **[INSERIRE QUANDO SCELTO]** |
-| Scuole, federazioni, assicurazioni | non in v1 | **[INSERIRE SE SI ESPORTANO FILE O SOLO ESITI]** |
+| Organizzatore di una coppa locale | interfaccia di gestione della competizione, se autorizzato | lo stato; il file solo con il permesso di revisione documenti, con audit |
+| Fornitore di storage | Cloudflare R2, accesso tecnico agli oggetti | sì |
+| Scuole e federazioni | no, in via ordinaria | no |
+| Assicurazione | solo in caso di infortunio e di richiesta della pratica | il file necessario a quella pratica |
 
 Accesso tecnico: niente percorso pubblico; token a tempo legato al documento e all’utente (default 60 secondi); ogni lettura è registrata.
 
-Staff medico esterno: **[INSERIRE SE DEVE ACCEDERE E CON QUALE CONTRATTO]**.
+Un medico esterno può accedere al certificato di un partecipante solo se ESL lo autorizza per una verifica di idoneità, limitatamente a quel documento. Il contratto di quell’incarico è **[INSERIRE CONTRATTO DEL MEDICO ESTERNO]**.
 
 ---
 
@@ -77,22 +76,21 @@ Staff medico esterno: **[INSERIRE SE DEVE ACCEDERE E CON QUALE CONTRATTO]**.
 2. Stato «in revisione».
 3. Lo staff approva oppure rifiuta. Il rifiuto richiede un motivo visibile al giocatore.
 4. Il motivo di rifiuto **non** è copiato nelle email (niente dettaglio sanitario nel canale). Resta nell’area documenti.
-5. Il giocatore può sostituire il file: il precedente resta archiviato come sostituito; il blob non si cancella in automatico.
+5. Il giocatore può sostituire il file. La regola è conservare solo l’ultimo approvato; la cancellazione del file precedente non è ancora automatica.
 6. L’iscrizione può proseguire mentre il certificato è in revisione o rifiutato: il passo privacy non aspetta l’approvazione.
+7. In approvazione lo staff registra la data di scadenza letta sul certificato.
 
-Criteri di approvazione (tipo visita, intestazione, data, sport): **[INSERIRE ISTRUZIONI STAFF]**.
+Lo staff approva solo se verifica: nome e cognome del partecipante; indicazione di certificato medico sportivo agonistico; riferimento al calcio; data di emissione; data di scadenza; idoneità alla pratica agonistica; timbro, firma o altro elemento del medico o della struttura; leggibilità e completezza.
 
-Antivirus: previsto, implementazione da confermare prima del lancio. **[INSERIRE]**.
+I file caricati sono sottoposti a scansione antivirus tramite Cloudflare Malicious Uploads Detection.
 
 ---
 
 ## 7. Conservazione
 
-Moduli LCS: presentazione e scadenza fino al termine della stagione.
+La copia resta fino a 90 giorni dopo la conclusione del torneo locale (`endsAt` dell’edizione), poi va cancellata. Va cancellata prima in caso di ritiro. Su richiesta dell’interessato va cancellata se non c’è un motivo che ne imponga la conservazione. Si conserva solo l’ultimo file approvato. Non c’è un obbligo di tenuta ulteriore per controversie o assicurazione. L’esito della verifica può restare separato dal file. Backup del database: Neon Point-in-Time Restore, fino a 30 giorni.
 
-Copia del file in piattaforma: **[INSERIRE PERIODO DI CONSERVAZIONE DELLA COPIA E DEI FILE SOSTITUITI]**.
-
-Cancellazione a fine stagione, a ritiro iscrizione o su richiesta: **[INSERIRE]**. Conservare solo l’ultimo approvato: **[INSERIRE SÌ/NO]**. Obbligo per controversie o assicurazione: **[INSERIRE]**. Backup: **[INSERIRE]**.
+La cancellazione automatica a 90 giorni non è ancora un processo schedulato: fino a quel collegamento la copia resta nello storage privato.
 
 Non c’è un pulsante «elimina definitivamente il certificato» indipendente dalla sostituzione.
 
@@ -102,18 +100,18 @@ Non c’è un pulsante «elimina definitivamente il certificato» indipendente d
 
 Storage privato, chiave opaca, elenco tipi di file consentiti, verifica del contenuto, limite di dimensione, audit degli accessi.
 
-Cifratura a riposo: **[INSERIRE]**. Cifratura in transito: **[INSERIRE]**. Fornitore di storage in produzione: **[INSERIRE]**. Finché lo storage di produzione è stub, **non** si lancia verso interessati reali.
+Cifratura a riposo: sì. Cifratura in transito: sì. Storage di produzione: Cloudflare R2.
 
 ---
 
 ## 9. Destinatari e trasferimenti extra-UE
 
-Come nell’[informativa privacy](/privacy). Destinatari specifici dei file sanitari: **[INSERIRE]**. Trasferimenti extra-SEE dello storage: **[INSERIRE]**.
+Come nell’[informativa privacy](/privacy). Il file non è trasmesso in via ordinaria a scuole o federazioni. Lo strumento di trasferimento extra-SEE di Cloudflare R2 è **[INSERIRE STRUMENTO CLOUDFLARE]**.
 
 ---
 
 ## 10. Diritti
 
-Accesso al proprio file dall’area personale. Rettifica: sostituzione del file (nuovo ciclo di revisione). Cancellazione e limiti: **[INSERIRE]**. Se l’interessato è minore: genitori e minore possono scrivere a **[INSERIRE EMAIL PRIVACY]**; l’account resta del minore.
+Accesso al proprio file dall’area personale. Rettifica: sostituzione del file (nuovo ciclo di revisione). Cancellazione: entro 90 giorni dalla fine del torneo locale, prima in caso di ritiro, e su richiesta se non c’è un motivo di conservazione. Se l’interessato è minore: genitori e minore possono scrivere a **privacy@legacalciostudenti.it**; l’account resta del minore.
 
 Reclamo: [Garante per la protezione dei dati personali](https://www.garanteprivacy.it).

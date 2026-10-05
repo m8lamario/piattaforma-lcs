@@ -100,3 +100,54 @@ export function isValidFiscalCode(raw: string) {
   if (code.length !== 16 || !FORMAT.test(code)) return false;
   return fiscalCodeControlChar(code.slice(0, 15)) === code[15];
 }
+
+const OMOCODIA_DIGIT: Record<string, string> = {
+  L: "0",
+  M: "1",
+  N: "2",
+  P: "3",
+  Q: "4",
+  R: "5",
+  S: "6",
+  T: "7",
+  U: "8",
+  V: "9",
+};
+
+const FISCAL_MONTH: Record<string, number> = {
+  A: 1,
+  B: 2,
+  C: 3,
+  D: 4,
+  E: 5,
+  H: 6,
+  L: 7,
+  M: 8,
+  P: 9,
+  R: 10,
+  S: 11,
+  T: 12,
+};
+
+function fiscalDigit(char: string) {
+  if (char >= "0" && char <= "9") return char;
+  return OMOCODIA_DIGIT[char] ?? null;
+}
+
+/** True when the date encoded in an Italian fiscal code matches the birth date (month, day, year mod 100). */
+export function fiscalCodeMatchesBirthDate(raw: string, birthDate: Date) {
+  const code = normalizeFiscalCode(raw);
+  if (!isValidFiscalCode(code)) return false;
+  const yearDigits = `${fiscalDigit(code[6] ?? "") ?? ""}${fiscalDigit(code[7] ?? "") ?? ""}`;
+  const dayDigits = `${fiscalDigit(code[9] ?? "") ?? ""}${fiscalDigit(code[10] ?? "") ?? ""}`;
+  const month = FISCAL_MONTH[code[8] ?? ""];
+  if (yearDigits.length !== 2 || dayDigits.length !== 2 || !month) return false;
+  let day = Number(dayDigits);
+  if (day > 40) day -= 40;
+  if (day < 1 || day > 31) return false;
+  return (
+    birthDate.getUTCMonth() + 1 === month &&
+    birthDate.getUTCDate() === day &&
+    birthDate.getUTCFullYear() % 100 === Number(yearDigits)
+  );
+}

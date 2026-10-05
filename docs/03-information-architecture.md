@@ -48,7 +48,11 @@ Un utente può avere più ruoli (es. rappresentante che è anche giocatore). La 
 /admin/squadre/[id]
 /admin/edizioni
 /admin/edizioni/[id]
-/admin/informative             sola lettura versioni correnti
+/admin/informative             versioni correnti; avviso a chi ha una versione superata (azione confermata)
+/admin/comunicazioni           storico invii, filtri, retry
+/admin/comunicazioni/nuova     invio manuale a un User esistente
+/admin/comunicazioni/template  lettura staff; modifica Super Admin
+/admin/comunicazioni/[id]      dettaglio, eventi, corpo redatto
 /admin/pagamenti
 /admin/utenti                  Super Admin: chiusura / anonimizzazione account
 /admin/utenti/[id]
@@ -65,6 +69,8 @@ M6: `/squadra` rosa PII minima; `/area/comunicazioni`.
 M8: `/admin` hub e CRUD; `/invito-staff/[token]`.
 M9: `/squadra/inviti`; selettore squadra.
 M10: `/area/account`, `/area/squadra`, `/recupera-password`.
+Gestione invii: `/admin/comunicazioni`; webhook `/api/webhooks/resend` (fuori da `/admin`: autenticazione = firma).
+`POST /api/webhooks/resend` è pubblico: autentica la firma, non la sessione.
 
 ## 3. Navigazione giocatore
 

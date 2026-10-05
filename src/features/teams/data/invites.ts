@@ -29,7 +29,7 @@ export async function findInviteByPlainToken(token: string) {
   const tokenHash = hashInviteToken(token);
   const invite = await prisma.playerInvite.findUnique({
     where: { tokenHash },
-    include: { team: true },
+    include: { team: { include: { edition: { include: { competition: true } } } } },
   });
   if (!invite) return null;
 
@@ -330,7 +330,7 @@ export async function attachExistingUserToInvite(input: {
 export async function findTeamByRegistrationToken(token: string) {
   return prisma.team.findUnique({
     where: { registrationToken: token },
-    include: { edition: true },
+    include: { edition: { include: { competition: true } } },
   });
 }
 

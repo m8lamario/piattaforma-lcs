@@ -21,10 +21,13 @@ type Props = {
   document: DocumentState | null;
 };
 
-function statusBanner(status: string) {
-  if (status === "APPROVED") return { copy: it.medicalApproved, className: fields.bannerOk };
-  if (status === "REJECTED") return { copy: it.medicalRejected, className: fields.bannerDanger };
-  if (status === "EXPIRED") return { copy: it.medicalExpired, className: fields.bannerDanger };
+function statusBanner(document: DocumentState) {
+  if (document.status === "APPROVED") return { copy: it.medicalApproved, className: fields.bannerOk };
+  if (document.status === "REJECTED") {
+    const reason = document.rejectReason ? ` ${it.medicalRejectReason}: ${document.rejectReason}` : "";
+    return { copy: `${it.medicalRejected}${reason}`, className: fields.bannerDanger };
+  }
+  if (document.status === "EXPIRED") return { copy: it.medicalExpired, className: fields.bannerDanger };
   return { copy: it.medicalPending, className: fields.bannerWarn };
 }
 
@@ -32,28 +35,20 @@ export function MedicalUploadForm({ document }: Props) {
   const [state, action, pending] = useActionState(uploadMedicalCertificateAction, undefined);
   const mustUpload = !document || document.status === "REJECTED" || document.status === "EXPIRED";
   const maxMb = Math.round(MAX_UPLOAD_BYTES / (1024 * 1024));
-  const banner = document ? statusBanner(document.status) : null;
+  const banner = document ? statusBanner(document) : { copy: it.medicalNone, className: fields.bannerInfo };
 
   return (
     <form className={fields.form} action={action} aria-busy={pending}>
       {state?.error ? <ActionError error={state.error} code={state.code} /> : null}
 
-      {banner ? (
-        <p className={`${fields.banner} ${banner.className}`} role="status">
-          {banner.copy}
-        </p>
-      ) : (
-        <p className={`${fields.banner} ${fields.bannerInfo}`}>{it.medicalNone}</p>
-      )}
+      <p className={`${fields.banner} ${banner.className}`} role="status">
+        {banner.copy}
+      </p>
 
-      <p className={`${fields.banner} ${fields.bannerInfo}`}>{it.medicalCopyNotice}</p>
-      <p className={`${fields.banner} ${fields.bannerInfo}`}>{it.medicalPaperNote}</p>
-
-      {document?.status === "REJECTED" && document.rejectReason ? (
-        <p className={`${fields.banner} ${fields.bannerDanger}`} role="status">
-          {it.medicalRejectReason}: {document.rejectReason}
-        </p>
-      ) : null}
+      <div className={fields.bannerStack}>
+        <p>{it.medicalCopyNotice}</p>
+        <p>{it.medicalPaperNote}</p>
+      </div>
 
       <FileDropzone
         id="file"

@@ -12,7 +12,8 @@ export type ErrorCategory =
   | "TEAMS"
   | "SYSTEM"
   | "VALIDATION"
-  | "LIFECYCLE";
+  | "LIFECYCLE"
+  | "EMAILS";
 
 export type ErrorSeverity = "info" | "warning" | "error" | "critical";
 
@@ -198,6 +199,12 @@ export const ERROR_CATALOG: Record<ErrorCode, ErrorDefinition> = {
   }),
   PAYMENT_WEBHOOK_CONFLICT: def("PAYMENTS", "updateMany 0 e stato corrente ≠ incoming.", 409, "none", { severity: "warning" }),
   PAYMENT_NOT_FOUND: def("PAYMENTS", "paymentId assente.", 404, "none"),
+  PAYMENT_SCOPE_MISMATCH: def(
+    "PAYMENTS",
+    "Payment teamId/registrationId non appartengono alla editionId indicata.",
+    409,
+    "none",
+  ),
 
   TEAM_NOT_FOUND: def("TEAMS", "Team id inesistente dopo authz.", 404, "none"),
   TEAM_PLAYER_ALREADY_ON_TEAM: def("TEAMS", "inviteCreateBlocker already_on_team.", 409, "none", { severity: "info" }),
@@ -248,6 +255,19 @@ export const ERROR_CATALOG: Record<ErrorCode, ErrorDefinition> = {
   LIFECYCLE_USER_NOT_FOUND: def("LIFECYCLE", "User id inesistente dopo authz super admin.", 404, "none"),
   LIFECYCLE_TARGET_NOT_ACTIVE: def("LIFECYCLE", "Remove-from-team su account non ACTIVE.", 409, "none"),
   LIFECYCLE_REGISTRATION_REMOVED: def("LIFECYCLE", "Registration.status = REMOVED: scritture wizard bloccate.", 409, "none"),
+
+  EMAIL_WEBHOOK_INVALID: def("EMAILS", "Firma o payload webhook Resend invalidi.", 400, "none"),
+  EMAIL_NOT_FOUND: def("EMAILS", "EmailMessage id assente dopo authz staff.", 404, "none"),
+  EMAIL_RETRY_NOT_ALLOWED: def("EMAILS", "Retry solo se FAILED senza providerMessageId.", 409, "none"),
+  EMAIL_CONFIRM_REQUIRED: def("EMAILS", "Invio manuale senza conferma esplicita.", 400, "correct_input", {
+    retrySafe: true,
+  }),
+  EMAIL_TEMPLATE_INVALID: def("EMAILS", "Override template con variabili fuori allowlist.", 400, "correct_input", {
+    retrySafe: true,
+  }),
+  EMAIL_RECIPIENT_REQUIRED: def("EMAILS", "Destinatario non è un User ACTIVE della piattaforma.", 400, "correct_input", {
+    retrySafe: true,
+  }),
 };
 
 export const ERROR_CODE_LIST = Object.values(ERROR_CODES);

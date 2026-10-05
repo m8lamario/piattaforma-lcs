@@ -97,6 +97,7 @@ export default async function InviteRedeemPage({ params }: Props) {
       <Frame>
         <section className={styles.sheet}>
           <h1>{it.inviteCreateAccount}</h1>
+          <p>{`${found.invite.team.edition.competition.name} · ${found.invite.team.edition.name} · ${inspection.teamName}`}</p>
           <RedeemForm
             token={token}
             email={inspection.email}
@@ -114,6 +115,7 @@ export default async function InviteRedeemPage({ params }: Props) {
       <Frame>
         <section className={styles.sheet}>
           <h1>{it.inviteTitle}</h1>
+          <p>{`${found.invite.team.edition.competition.name} · ${found.invite.team.edition.name} · ${inspection.teamName}`}</p>
           <p>
             {it.inviteLoginExisting
               .replace("{email}", inspection.email)
@@ -130,6 +132,7 @@ export default async function InviteRedeemPage({ params }: Props) {
       <Frame>
         <section className={styles.sheet}>
           <h1>{it.inviteTitle}</h1>
+          <p>{`${found.invite.team.edition.competition.name} · ${found.invite.team.edition.name} · ${inspection.teamName}`}</p>
           <AttachInviteForm token={token} teamName={inspection.teamName} />
         </section>
       </Frame>

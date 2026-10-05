@@ -7,16 +7,26 @@ import styles from "./ReviewForm.module.css";
 type Props = {
   documentId: string;
   reasonRequired?: boolean;
+  expiryRequired?: boolean;
 };
 
-export function ReviewForm({ documentId, reasonRequired }: Props) {
+export function ReviewForm({ documentId, reasonRequired, expiryRequired }: Props) {
   return (
     <div className={styles.stack}>
       <OpenDocumentButton documentId={documentId} />
 
-      <form action={reviewDocumentAction} className={styles.row}>
+      <form action={reviewDocumentAction} className={styles.stack}>
         <input type="hidden" name="documentId" value={documentId} />
         <input type="hidden" name="decision" value="APPROVED" />
+        {expiryRequired ? (
+          <p className={styles.error} role="alert">
+            {it.adminExpiryRequired}
+          </p>
+        ) : null}
+        <label className={styles.label} htmlFor="expiresAt">
+          {it.adminExpiry}
+        </label>
+        <input id="expiresAt" name="expiresAt" type="date" className={styles.date} required />
         <PendingSubmitButton
           idle={it.adminApprove}
           pendingLabel={it.loadingApprove}

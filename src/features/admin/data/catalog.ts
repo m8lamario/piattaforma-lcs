@@ -313,7 +313,14 @@ export async function filterOptions() {
       orderBy: [{ year: "desc" }, { name: "asc" }],
       select: { id: true, name: true, year: true, competition: { select: { name: true } } },
     }),
-    prisma.team.findMany({ orderBy: { name: "asc" }, select: { id: true, name: true } }),
+    prisma.team.findMany({
+      orderBy: { name: "asc" },
+      select: {
+        id: true,
+        name: true,
+        edition: { select: { name: true, competition: { select: { name: true } } } },
+      },
+    }),
   ]);
   return { editions, teams };
 }

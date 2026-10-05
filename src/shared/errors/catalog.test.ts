@@ -25,6 +25,7 @@ const CATEGORIES: ErrorCategory[] = [
   "SYSTEM",
   "VALIDATION",
   "LIFECYCLE",
+  "EMAILS",
 ];
 
 describe("error catalog", () => {

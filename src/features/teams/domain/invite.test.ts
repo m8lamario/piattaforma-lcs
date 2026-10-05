@@ -125,6 +125,16 @@ describe("decideRedeemPath", () => {
     ).toBe("already_on_team");
   });
 
+  it("non usa l'invito della squadra A per entrare nella squadra B della stessa edizione", () => {
+    const decision = decideRedeemPath({
+      inspection,
+      existingUser: { id: "user-1", email: "giocatore@esempio.it" },
+      session: { userId: "user-1", email: "giocatore@esempio.it" },
+      existingRegistrations: [{ editionId: "edition-1", teamId: "team-b", status: "IN_PROGRESS" }],
+    });
+    expect(decision).toEqual({ path: "edition_conflict", editionId: "edition-1" });
+  });
+
   it("blocca una seconda edizione attiva (OD-017)", () => {
     const decision = decideRedeemPath({
       inspection,

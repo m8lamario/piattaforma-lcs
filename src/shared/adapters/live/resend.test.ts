@@ -1,73 +1,50 @@
+import { createHmac } from "node:crypto";
 import { describe, expect, it } from "vitest";
-import { renderEmailMessage } from "./resend";
+import { InvalidEmailWebhookSignatureError } from "../types";
+import { mapResendWebhookPayload, verifyResendWebhookSignature } from "./resend";
 
-describe("template Resend di servizio", () => {
-  it("elenca le versioni accettate con link, senza allegati", () => {
-    const message = renderEmailMessage({
-      to: "player@example.test",
-      template: "REGISTRATION_RECEIVED",
-      variables: {
-        title: "Conferma",
-        documents:
-          "Informativa privacy (Versione placeholder-1): accettata\nhttps://hub.test/documenti-legali/privacy-policy/placeholder-1",
-        areaUrl: "https://hub.test/area",
-      },
-    });
-    expect(message.subject).toContain("documenti");
-    expect(message.text).toContain("placeholder-1");
-    expect(message.text).toContain("https://hub.test/documenti-legali/privacy-policy/placeholder-1");
-    expect(message.text).toContain("https://hub.test/area");
-    expect(message.text.toLowerCase()).not.toContain("allegat");
+function sign(secret: string, id: string, timestamp: string, body: string) {
+  const key = Buffer.from(secret.replace(/^whsec_/, ""), "base64");
+  const signature = createHmac("sha256", key).update(`${id}.${timestamp}.${body}`).digest("base64");
+  return `v1,${signature}`;
+}
+
+describe("webhook Resend", () => {
+  const secret = `whsec_${Buffer.from("test-secret").toString("base64")}`;
+  const body = JSON.stringify({
+    type: "email.delivered",
+    created_at: "2026-01-01T00:00:00.000Z",
+    data: { email_id: "re_123", bounce: { type: "Permanent", message: "user unknown" } },
   });
 
-  it("per il certificato indica solo l’area, senza motivo sanitario", () => {
-    const approved = renderEmailMessage({
-      to: "player@example.test",
-      template: "DOCUMENT_APPROVED",
-      variables: { title: "Certificato approvato", areaUrl: "https://hub.test/area" },
+  it("accetta una firma Svix valida", () => {
+    const timestamp = String(Math.floor(Date.now() / 1000));
+    const id = "msg_1";
+    const headers = new Headers({
+      "svix-id": id,
+      "svix-timestamp": timestamp,
+      "svix-signature": sign(secret, id, timestamp, body),
     });
-    const rejected = renderEmailMessage({
-      to: "player@example.test",
-      template: "DOCUMENT_REJECTED",
-      variables: { title: "Certificato da aggiornare", areaUrl: "https://hub.test/area" },
-    });
-    expect(approved.text).toContain("https://hub.test/area");
-    expect(rejected.text).toContain("https://hub.test/area");
-    expect(rejected.text.toLowerCase()).not.toContain("diagnosi");
-    expect(rejected.text.toLowerCase()).not.toContain("motivo");
+    expect(() => verifyResendWebhookSignature({ rawBody: body, headers, secret })).not.toThrow();
   });
 
-  it("conferma l’iscrizione approvata con link all’area", () => {
-    const message = renderEmailMessage({
-      to: "player@example.test",
-      template: "REGISTRATION_APPROVED",
-      variables: { title: "Iscrizione approvata", areaUrl: "https://hub.test/area" },
+  it("rifiuta una firma invalida", () => {
+    const timestamp = String(Math.floor(Date.now() / 1000));
+    const headers = new Headers({
+      "svix-id": "msg_1",
+      "svix-timestamp": timestamp,
+      "svix-signature": "v1,aaaa",
     });
-    expect(message.subject).toBe("Iscrizione approvata");
-    expect(message.text).toContain("https://hub.test/area");
+    expect(() => verifyResendWebhookSignature({ rawBody: body, headers, secret })).toThrow(
+      InvalidEmailWebhookSignatureError,
+    );
   });
 
-  it("invia il link C1 e il doppio opt-in marketing", () => {
-    const c1 = renderEmailMessage({
-      to: "genitore@example.test",
-      template: "CONSENT_C1",
-      variables: {
-        title: "Conferma",
-        playerName: "Luca Bianchi",
-        confirmUrl: "https://hub.test/conferma-genitore/token",
-        summary: "Promemoria",
-      },
-    });
-    const marketing = renderEmailMessage({
-      to: "player@example.test",
-      template: "CONSENT_MARKETING_OPTIN",
-      variables: {
-        title: "Marketing",
-        confirmUrl: "https://hub.test/conferma-marketing/token",
-      },
-    });
-    expect(c1.subject).toMatch(/privacy/i);
-    expect(c1.text).toContain("https://hub.test/conferma-genitore/token");
-    expect(marketing.text).toContain("https://hub.test/conferma-marketing/token");
+  it("estrae id messaggio e bounce senza salvare il payload intero", () => {
+    const event = mapResendWebhookPayload(JSON.parse(body), "evt_1");
+    expect(event.providerMessageId).toBe("re_123");
+    expect(event.type).toBe("email.delivered");
+    expect(event.bounceType).toBe("Permanent");
+    expect(event.summary).toBe("user unknown");
   });
 });

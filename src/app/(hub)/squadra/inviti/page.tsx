@@ -28,11 +28,13 @@ export default async function TeamInvitesPage() {
   const teamId = resolveSelectedTeamId(teamIds, jar.get(TEAM_COOKIE)?.value);
   if (!teamId) redirect("/area");
 
-  const allowed = authorize(actor, "team:invite", { teamId });
-  if (!allowed.allow) redirect("/area");
-
   const [team, teams] = await Promise.all([getTeamForActor(teamId), listTeamsByIds(teamIds)]);
   if (!team) redirect("/area");
+  const allowed = authorize(actor, "team:invite", {
+    teamId: team.id,
+    competitionId: team.edition.competitionId,
+  });
+  if (!allowed.allow) redirect("/area");
   const editionWindow = {
     isActive: team.edition.isActive,
     registrationOpensAt: team.edition.registrationOpensAt,
@@ -44,7 +46,11 @@ export default async function TeamInvitesPage() {
 
   return (
     <main className={styles.main}>
-      <PageHeader kicker={team.name} title={it.invitesNav} />
+      <PageHeader
+        kicker={`${team.edition.competition.name} · ${team.edition.name}`}
+        title={it.invitesNav}
+        description={team.name}
+      />
       <TeamSubnav current="invites" />
       <TeamSwitcher teams={teams} selectedId={teamId} />
       <WindowNotice edition={editionWindow} />

@@ -101,6 +101,10 @@ export async function listTeamsByIds(teamIds: string[]) {
   return prisma.team.findMany({
     where: { id: { in: teamIds } },
     orderBy: { name: "asc" },
-    select: { id: true, name: true },
+    select: {
+      id: true,
+      name: true,
+      edition: { select: { name: true, competition: { select: { name: true } } } },
+    },
   });
 }

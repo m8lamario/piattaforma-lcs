@@ -1,6 +1,6 @@
 "use server";
 
-import { headers } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { AuthError } from "next-auth";
 import { auth, signIn, signOut } from "@/auth";
@@ -14,10 +14,12 @@ import {
   createPasswordResetToken,
   findPasswordResetByToken,
 } from "@/features/auth/data/passwordReset";
-import { emailAdapter } from "@/shared/adapters";
+import { dispatchOutboundEmail } from "@/features/emails/data/dispatch";
 import { prisma } from "@/shared/lib/prisma";
 import { writeAuditLog } from "@/shared/lib/audit";
 import { RATE_LIMITS, clientKey, consumeRateLimit } from "@/shared/lib/request-guard";
+import { TEAM_COOKIE } from "@/shared/config/app";
+import { clearTeamCookieOptions, shouldUseSecureCookie } from "@/shared/cookies/options";
 
 function originFromHeaders(headerList: Headers) {
   const host = headerList.get("x-forwarded-host") ?? headerList.get("host");
@@ -62,6 +64,9 @@ export async function loginAction(_prev: ActionFailure | undefined, formData: Fo
 export async function logoutAction(formData?: FormData) {
   const next = String(formData?.get("next") ?? "/");
   const redirectTo = next.startsWith("/") && !next.startsWith("//") ? next : "/";
+  const headerList = await headers();
+  const jar = await cookies();
+  jar.set(TEAM_COOKIE, "", clearTeamCookieOptions(shouldUseSecureCookie(headerList.get("x-forwarded-proto"))));
   await signOut({ redirectTo });
 }
 
@@ -116,10 +121,17 @@ export async function requestPasswordResetAction(
     await createPasswordResetToken(parsed.data.email, token);
     const headerList = await headers();
     const resetUrl = `${originFromHeaders(headerList)}/recupera-password/${token}`;
-    await emailAdapter.send({
+    const nonce = createInviteToken();
+    await dispatchOutboundEmail({
+      idempotencyKey: `password-reset:${user.id}:${nonce}`,
+      purpose: "password-reset",
+      templateKey: "password-reset",
       to: parsed.data.email,
-      template: "password-reset",
+      userId: user.id,
+      recipientKind: "USER",
       variables: { resetUrl, title: "Reimposta la password" },
+      sourceEntityType: "User",
+      sourceEntityId: user.id,
     });
   }
   return generic;

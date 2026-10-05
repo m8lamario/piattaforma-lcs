@@ -27,6 +27,9 @@ export const ACTIONS = [
   "user:delete",
   "user:anonymize",
   "audit:delete",
+  "email:read",
+  "email:send",
+  "email:compose",
 ] as const;
 
 export type Action = (typeof ACTIONS)[number];

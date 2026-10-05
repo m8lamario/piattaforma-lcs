@@ -23,7 +23,15 @@ export default async function PlayerTeamPage() {
 
   return (
     <main className={styles.main}>
-      <PageHeader title={it.navPlayerTeam} description={it.teammatesHelp} />
+      <PageHeader
+        kicker={
+          workspace
+            ? `${workspace.registration.competitionName} · ${workspace.registration.editionName}`
+            : undefined
+        }
+        title={workspace?.registration.teamName ?? it.navPlayerTeam}
+        description={it.teammatesHelp}
+      />
       <TeammatesList rows={rows} />
     </main>
   );

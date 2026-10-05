@@ -9,6 +9,13 @@ const REDACT_KEYS = new Set([
   "fiscalCode",
   "storageKey",
   "redeemUrl",
+  "resetUrl",
+  "confirmUrl",
+  "to",
+  "toAddress",
+  "text",
+  "textBody",
+  "apiKey",
 ]);
 
 function redact(fields?: LogFields): LogFields | undefined {

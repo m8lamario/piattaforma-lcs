@@ -1,11 +1,38 @@
-export type EmailMessage = {
+export type EmailSendInput = {
   to: string;
-  template: string;
-  variables: Record<string, string>;
+  subject: string;
+  text: string;
+  from?: string;
+  replyTo?: string | null;
+  idempotencyKey?: string;
+  tags?: Record<string, string>;
 };
 
+export type EmailSendResult = {
+  providerMessageId: string | null;
+};
+
+export type EmailWebhookEvent = {
+  provider: string;
+  providerEventId: string;
+  type: string;
+  providerMessageId: string | null;
+  occurredAt: Date;
+  bounceType?: string | null;
+  summary?: string | null;
+};
+
+export class InvalidEmailWebhookSignatureError extends Error {
+  constructor() {
+    super("Firma webhook email non valida");
+    this.name = "InvalidEmailWebhookSignatureError";
+  }
+}
+
 export interface EmailAdapter {
-  send(input: EmailMessage): Promise<void>;
+  readonly provider: string;
+  send(input: EmailSendInput): Promise<EmailSendResult>;
+  parseWebhook(input: { headers: Headers; rawBody: string }): Promise<EmailWebhookEvent>;
 }
 
 export type StoredObject = {

@@ -1,5 +1,6 @@
 import type { Prisma } from "@generated/client";
 import { prisma } from "@/shared/lib/prisma";
+import { redactUserEmailHistory } from "@/features/emails/data/catalog";
 import type { ErrorCode } from "@/shared/errors/codes";
 import {
   decideAnonymizeAccount,
@@ -264,6 +265,7 @@ export async function deleteUserAccount(input: {
 
   await prisma.$transaction(async (tx) => {
     await applyAccessRevocation(tx, decision.plan, current.email);
+    await redactUserEmailHistory(decision.plan.userId, current.email, tx, decision.plan.tombstoneEmail);
     await markRegistrationsRemoved(tx, decision.plan.markRegistrationIds);
     await tx.user.update({
       where: { id: decision.plan.userId },
@@ -381,6 +383,7 @@ export async function anonymizeUserAccount(input: {
       where: { acceptedByUserId: decision.plan.userId },
       data: { email: decision.plan.tombstoneEmail },
     });
+    await redactUserEmailHistory(decision.plan.userId, current.email, tx, decision.plan.tombstoneEmail);
     await tx.auditLog.create({
       data: {
         actorUserId: input.actorUserId,

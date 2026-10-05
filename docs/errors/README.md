@@ -31,6 +31,8 @@ Le categorie sono file separati: si può aggiungere un file nuovo (es. `LIFECYCL
 | [SYSTEM.md](SYSTEM.md) | Rate limit, 404, boundary UI |
 | [VALIDATION.md](VALIDATION.md) | Zod e date |
 | [LIFECYCLE.md](LIFECYCLE.md) | Rimozione rosa, chiusura e anonimizzazione account |
+| [EMAILS.md](EMAILS.md) | Invio, storico, webhook Resend |
+
 
 ## Principi
 

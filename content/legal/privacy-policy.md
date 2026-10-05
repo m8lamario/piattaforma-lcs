@@ -1,16 +1,16 @@
 **INFORMATIVA SUL TRATTAMENTO DEI DATI PERSONALI**
 
-**ai sensi dell’art. 13 del Regolamento UE 2016/679 (GDPR) — [INSERIRE NOME TORNEO], stagione 2026/2027 — versione 1.0 del 1 ottobre 2026.**
+**ai sensi dell’art. 13 del Regolamento UE 2016/679 (GDPR) — Mole Cup, Leonessa Cup, Colosseo Cup, Ferrea Cup, Olympius e Turas Cup, stagione 2026/2027 — versione 1.0 del 5 ottobre 2026.**
 
-Testo del **Modulo 1** LCS 2026-27. **Non è un parere legale e non è un testo firmato.** I campi **[INSERIRE …]** (titolare, sede, P.IVA, email, PEC, DPO, partner, accordo social) restano da compilare.
+Testo del **Modulo 1** LCS 2026-27, compilato con i dati forniti da European Students League S.r.l. il 5 ottobre 2026. Resta aperto lo strumento di trasferimento di Neon e Cloudflare: **[INSERIRE STRUMENTO NEON E CLOUDFLARE]**.
 
 ---
 
 ## Come funziona su questa piattaforma
 
-L’account è del giocatore. Questa piattaforma si chiama internamente ESL Player Hub (nome pubblico: **[INSERIRE NOME PUBBLICO PRODOTTO]**). Oltre ai dati del Modulo 1 tratta anche: hash della password, verifica email, cookie di sessione, ruoli, audit, inviti di squadra (il token in chiaro non è conservato), caselle di consenso una per una.
+L’account è del giocatore. Il nome pubblico della piattaforma è **ESL Player Hub**. L’iscrizione è ammessa dai 14 anni compiuti. Oltre ai dati del Modulo 1 tratta anche: hash della password, verifica email, cookie di sessione, ruoli, audit, inviti di squadra (il token in chiaro non è conservato), caselle di consenso una per una.
 
-**Certificato medico.** Il Modulo 1 dice che ESL registra solo presentazione e scadenza, senza copia. Qui si carica un file (PDF, JPEG o PNG) e se ne conserva una **copia** per la revisione dello staff. **[INSERIRE BASE GIURIDICA DELLA COPIA — OD-035]**. Dettaglio: [informativa documenti](/privacy/documenti).
+**Certificato medico.** Si carica un file (PDF, JPEG o PNG): certificato di idoneità sportiva agonistica per il calcio. European Students League S.r.l. ne conserva la copia per verificare l’idoneità e la scadenza, con accesso limitato al personale autorizzato, fino a 90 giorni dopo la conclusione del torneo locale. Dettaglio: [informativa documenti](/privacy/documenti).
 
 Questa piattaforma **non** salva numero di carta, CVV o PIN. Non si chiedono residenza, luogo di nascita, documento d’identità, foto profilo né profili social. Revoca e export: [area consensi](/area/consensi).
 
@@ -18,13 +18,13 @@ Questa piattaforma **non** salva numero di carta, CVV o PIN. Non si chiedono res
 
 ## 1. Titolare del trattamento
 
-ESL **[INSERIRE RAGIONE SOCIALE E FORMA GIURIDICA]**, sede legale in **[INSERIRE SEDE LEGALE]**, P.IVA/C.F. **[INSERIRE P.IVA / CODICE FISCALE]**, organizzatrice dei tornei della Lega Calcio Studenti («ESL»). Contatti privacy: **[INSERIRE EMAIL PRIVACY]** — PEC **[INSERIRE PEC]**. Responsabile della protezione dei dati: **[INSERIRE NOME E EMAIL DPO, OPPURE «non nominato»]**.
+ESL **European Students League S.r.l.**, sede legale in **Corso Vinzaglio 24, 10121 Torino**, P.IVA/C.F. **IT12974200011 / 12974200011**, organizzatrice dei tornei della Lega Calcio Studenti («ESL»). Contatti privacy: **privacy@legacalciostudenti.it** — PEC **europeanstudentsleague@legalmail.it**. Responsabile della protezione dei dati: **non nominato**.
 
 ---
 
 ## 2. Dati trattati
 
-Nome, cognome, data di nascita, codice fiscale; email e cellulare; istituto, classe, ruolo e numero di maglia; dati sportivi (presenze, gol, cartellini, statistiche); dati di pagamento della quota, gestiti dal fornitore del servizio di pagamento; foto e video degli eventi, solo con il consenso della [Liberatoria](/liberatorie); dati tecnici della registrazione (data, ora, indirizzo IP) come prova dei consensi.
+Nome, cognome, data di nascita, codice fiscale (obbligatorio, coerente con la data di nascita); email e cellulare; istituto della squadra (non si chiede la classe); ruolo e numero di maglia indicati dal rappresentante; dati sportivi (presenze, gol, cartellini, statistiche); dati di pagamento della quota, gestiti da Stripe; foto e video degli eventi, solo con il consenso della [Liberatoria](/liberatorie); dati tecnici della registrazione (data, ora, indirizzo IP) come prova dei consensi.
 
 Certificato medico sportivo: vedi la nota in cima e l’[informativa documenti](/privacy/documenti).
 
@@ -42,7 +42,7 @@ Certificato medico sportivo: vedi la nota in cima e l’[informativa documenti](
 | E2. Email sulle edizioni successive dello stesso torneo, inviate a chi è già iscritto | Art. 130, comma 4, Codice privacy: uso dell’email fornita per l’iscrizione, per servizi analoghi; legittimo interesse (art. 6.1.f GDPR) | Puoi rifiutare subito (casella in fondo) o con il link presente in ogni email |
 | F. Comunicazione di nome, email e cellulare ai partner elencati al punto 10, per loro comunicazioni promozionali | Consenso specifico e distinto da E (art. 6.1.a GDPR; art. 130 Codice privacy; Linee guida Garante 4/07/2013) | Facoltativa. Se l’elenco al punto 10 è vuoto, la casella non compare |
 | G. Prova dei consensi e difesa di un diritto in giudizio | Obbligo di legge (art. 6.1.c GDPR, in relazione all’art. 7.1) e legittimo interesse (art. 6.1.f GDPR) | — |
-| H. Verifica dell’idoneità sportiva: registrazione della presentazione e della scadenza del certificato medico richiesto dal regolamento (dato relativo alla salute) | Consenso esplicito (art. 9.2.a GDPR). **[INSERIRE BASE GIURIDICA DELLA COPIA CARICATA IN PIATTAFORMA]** | Necessaria per scendere in campo |
+| H. Verifica dell’idoneità sportiva: copia del certificato medico agonistico per il calcio, presentazione e scadenza (dato relativo alla salute) | Consenso esplicito (art. 9.2.a GDPR). La copia serve a verificare l’idoneità e la scadenza ed è accessibile solo al personale autorizzato | Necessaria per scendere in campo |
 
 Negare i consensi facoltativi non impedisce di partecipare al torneo.
 
@@ -52,23 +52,23 @@ Negare i consensi facoltativi non impedisce di partecipare al torneo.
 
 Strumenti elettronici e cartacei, personale autorizzato e istruito, misure di sicurezza adeguate (art. 32 GDPR). Non facciamo profilazione e non prendiamo decisioni basate unicamente su trattamenti automatizzati.
 
-Su questa piattaforma: accesso per ruoli, file medici su storage privato con link a tempo e audit, password con hash, verifica email prima di upload e consensi vincolanti. Luogo dei server e backup: **[INSERIRE REGIONE HOSTING / DATABASE / POLITICA BACKUP]**.
+Su questa piattaforma: accesso per ruoli, file medici su storage privato con link a tempo e audit, password con hash, verifica email prima di upload e consensi vincolanti. Hosting Vercel in regione UE, database Neon PostgreSQL in regione UE, file su Cloudflare R2, email Resend, pagamenti Stripe. Cifratura a riposo e in transito. Backup del database: Neon Point-in-Time Restore, retention fino a 30 giorni. I file caricati sono sottoposti a scansione antivirus (Cloudflare Malicious Uploads Detection). Contratti di responsabile del trattamento (art. 28) sugli account ESL di Vercel, Neon, Cloudflare, Resend e Stripe.
 
 ---
 
 ## 5. Destinatari
 
-Organizzatori locali dei tornei, fotografi e videomaker incaricati, fornitori della piattaforma di iscrizione, dei servizi email e di pagamento e dei servizi IT, tutti nominati responsabili del trattamento (art. 28 GDPR); istituti scolastici partecipanti, per la sola gestione delle squadre; compagnie assicurative; arbitri e personale di campo; consulenti fiscali e legali; autorità pubbliche quando richiesto dalla legge. Con il consenso F, i tuoi dati di contatto vanno ai partner del punto 10, che li tratteranno come titolari autonomi e ti daranno la propria informativa. I dati sono diffusi solo come indicato ai punti 3.C e 3.D. Per le pagine social del torneo, ESL e la piattaforma sono contitolari del trattamento delle statistiche della pagina (art. 26 GDPR; contenuto essenziale dell’accordo disponibile su **[INSERIRE LINK ACCORDO PIATTAFORMA, ES. META PAGE INSIGHTS CONTROLLER ADDENDUM]**).
+Organizzatori locali dei tornei, fotografi e videomaker incaricati, fornitori della piattaforma di iscrizione, dei servizi email e di pagamento e dei servizi IT, tutti nominati responsabili del trattamento (art. 28 GDPR); istituti scolastici partecipanti, per la sola gestione delle squadre; compagnie assicurative; arbitri e personale di campo; consulenti fiscali e legali; autorità pubbliche quando richiesto dalla legge. Con il consenso F, i tuoi dati di contatto vanno ai partner del punto 10, che li tratteranno come titolari autonomi e ti daranno la propria informativa. I dati sono diffusi solo come indicato ai punti 3.C e 3.D. Per le pagine social del torneo non è pubblicato un accordo di contitolarità specifico. Canali social indicati: Instagram [Mole Cup](https://www.instagram.com/molecuprealemutua/), [Turas Cup](https://www.instagram.com/turascup/), [Leonessa Cup](https://www.instagram.com/leonessacup/), [Colosseo Cup](https://www.instagram.com/colosseo.cup/), [Olympius Cup](https://www.instagram.com/olympiuscup/), [Ferrea Cup](https://www.instagram.com/ferreacup/), [LCS Reale Mutua](https://www.instagram.com/lcsrealemutua/); Facebook [Mole Cup](https://www.facebook.com/p/Mole-Cup-100053946433255/?locale=it_IT); TikTok [Mole Cup](https://www.tiktok.com/@bricksbymolecup), [Leonessa Cup](https://www.tiktok.com/@leonessacup), [Colosseo Cup](https://www.tiktok.com/@colosseo.cup), [Turas Cup](https://www.tiktok.com/@turas.cup), [Olympius Cup](https://www.tiktok.com/@olympiuscup). L’elenco completo è nella [liberatoria](/liberatorie).
 
 Nella piattaforma: il giocatore vede i propri dati e il proprio certificato; i compagni vedono nome, cognome, maglia e ruolo; il rappresentante di squadra vede nome, stato iscrizione, stato del certificato (mai il file) e il flag pubblicabile; gli amministratori vedono iscrizioni, file medici con audit, consensi e pagamenti senza carta.
 
-Fornitori da nominare prima del go-live: **[INSERIRE HOSTING]**, database **[INSERIRE]**, storage file **[INSERIRE]**, email **[INSERIRE]**, pagamenti **[INSERIRE]**. Extra-SEE e DPA: **[INSERIRE]**.
+Fornitori: hosting Vercel (UE), database Neon PostgreSQL (UE), storage Cloudflare R2, email Resend, pagamenti Stripe. DPA art. 28 sugli account ESL di questi fornitori.
 
 ---
 
 ## 6. Trasferimenti extra-UE
 
-Alcuni fornitori (piattaforme social, servizi cloud ed email) possono trattare dati fuori dall’Unione Europea, sulla base di una decisione di adeguatezza della Commissione Europea (incluso l’EU-U.S. Data Privacy Framework) o di clausole contrattuali standard (art. 46 GDPR). **[INSERIRE ELENCO PAESI E STRUMENTI QUANDO I DRIVER SONO LIVE]**.
+Vercel, Resend e Stripe possono comportare trasferimenti verso gli Stati Uniti, con clausole contrattuali standard e/o EU-U.S. Data Privacy Framework, secondo i rispettivi strumenti. Lo strumento di trasferimento di Neon e Cloudflare è **[INSERIRE STRUMENTO NEON E CLOUDFLARE]**.
 
 ---
 
@@ -80,7 +80,7 @@ Alcuni fornitori (piattaforme social, servizi cloud ed email) possono trattare d
 | Documenti amministrativi e fiscali (B) | 10 anni (art. 2220 c.c.) |
 | Risultati e statistiche pubblicati (C) | Archivio storico del torneo, salvo opposizione |
 | Foto e video (D) | Fino alla revoca e comunque non oltre 10 anni dalla fine della stagione; dopo la revoca, cancellazione anche dagli archivi entro 30 giorni, salvo quanto serve per la difesa di un diritto (G); il materiale già stampato o consegnato a terzi (es. testate) prima della revoca non può essere ritirato |
-| Certificato medico (H) | Presentazione e scadenza: fino al termine della stagione. Copia del file: **[INSERIRE RETENTION DELLA COPIA]** |
+| Certificato medico (H) | Copia fino a 90 giorni dopo la conclusione del torneo locale, poi cancellazione. Solo l’ultimo file approvato. Cancellazione anticipata in caso di ritiro. Su richiesta, se non c’è un motivo che ne imponga la conservazione. Non è tenuta per controversie o assicurazione oltre quel termine. L’esito della verifica può restare separato dal file |
 | Marketing ESL e partner (E, F) | 24 mesi dal consenso o dall’ultima interazione, salvo revoca |
 | Email sulle edizioni successive (E2) | Fino al rifiuto e comunque 24 mesi dall’ultima iscrizione |
 | Registro dei consensi (G) | 10 anni dalla fine del trattamento o dalla revoca (art. 2946 c.c.) |
@@ -89,9 +89,9 @@ Alcuni fornitori (piattaforme social, servizi cloud ed email) possono trattare d
 
 ## 8. I tuoi diritti
 
-Puoi chiedere accesso, rettifica, cancellazione, limitazione e portabilità dei dati (artt. 15–22 GDPR) scrivendo a **[INSERIRE EMAIL PRIVACY]**. Puoi revocare ogni consenso in qualsiasi momento dall’[area consensi](/area/consensi), scrivendo a **[INSERIRE EMAIL PRIVACY]** o con il link di disiscrizione presente in ogni comunicazione; la revoca non rende illecito il trattamento precedente (art. 7.3 GDPR). Rispondiamo entro un mese dalla richiesta, prorogabile di due mesi nei casi complessi, avvisandoti (art. 12.3 GDPR). Puoi proporre reclamo al [Garante per la protezione dei dati personali](https://www.garanteprivacy.it) o rivolgerti all’autorità giudiziaria (art. 79 GDPR; art. 152 Codice privacy).
+Puoi chiedere accesso, rettifica, cancellazione, limitazione e portabilità dei dati (artt. 15–22 GDPR) scrivendo a **privacy@legacalciostudenti.it**. Puoi revocare ogni consenso in qualsiasi momento dall’[area consensi](/area/consensi), scrivendo a **privacy@legacalciostudenti.it** o con il link di disiscrizione presente in ogni comunicazione; la revoca non rende illecito il trattamento precedente (art. 7.3 GDPR). Rispondiamo entro un mese dalla richiesta, prorogabile di due mesi nei casi complessi, avvisandoti (art. 12.3 GDPR). Puoi proporre reclamo al [Garante per la protezione dei dati personali](https://www.garanteprivacy.it) o rivolgerti all’autorità giudiziaria (art. 79 GDPR; art. 152 Codice privacy).
 
-**DIRITTO DI OPPOSIZIONE (art. 21 GDPR).** Puoi opporti in qualsiasi momento alla pubblicazione di nome e statistiche (finalità C), per motivi legati alla tua situazione particolare, e senza alcuna motivazione al marketing (finalità E, E2 e F). Basta scrivere a **[INSERIRE EMAIL PRIVACY]**. Per i partner che hanno già ricevuto i tuoi dati inoltriamo la revoca; puoi anche scrivere direttamente a loro.
+**DIRITTO DI OPPOSIZIONE (art. 21 GDPR).** Puoi opporti in qualsiasi momento alla pubblicazione di nome e statistiche (finalità C), per motivi legati alla tua situazione particolare, e senza alcuna motivazione al marketing (finalità E, E2 e F). Basta scrivere a **privacy@legacalciostudenti.it**. Per i partner che hanno già ricevuto i tuoi dati inoltriamo la revoca; puoi anche scrivere direttamente a loro.
 
 ---
 
@@ -103,14 +103,7 @@ Questa informativa può essere aggiornata; la versione in vigore è sempre su [/
 
 ## 10. Società partner
 
-Con il consenso F i tuoi dati di contatto possono essere comunicati solo a queste società, ciascuna titolare autonoma del trattamento. Se l’elenco è vuoto, la casella partner non compare nel form.
-
-| Società (ragione sociale) | Sede | Settore | Informativa privacy |
-| --- | --- | --- | --- |
-| **[INSERIRE PARTNER 1 — OGGI `content/legal/partners.json` È VUOTO]** | **[INSERIRE CITTÀ]** | **[INSERIRE, ES. merchandising e abbigliamento]** | **[INSERIRE LINK]** |
-| **[INSERIRE PARTNER 2]** | **[INSERIRE CITTÀ]** | **[INSERIRE, ES. annuari scolastici]** | **[INSERIRE LINK]** |
-
-Vale l’elenco in vigore quando dai il consenso: i dati non vanno a partner aggiunti in seguito senza un tuo nuovo consenso. I partner non possono cedere i dati ad altri.
+Al go-live non ci sono partner elencati per nome. La casella di comunicazione ai partner non compare. Se in seguito verranno indicati ragione sociale, sede, settore e informativa, servirà un nuovo consenso: il silenzio non vale come sì. I partner non possono cedere i dati ad altri.
 
 ---
 
@@ -120,11 +113,11 @@ Le caselle si compilano nel passo privacy dell’iscrizione. Nessuna è pre-sele
 
 - *(obbligatoria)* Dichiaro di avere compiuto 18 anni.
 - *(obbligatoria)* Ho letto l’informativa privacy.
-- *(necessaria per giocare)* **Certificato medico** — Acconsento che ESL tratti la copia del mio certificato medico sportivo caricata in piattaforma e ne registri presentazione e scadenza (dato relativo alla salute, art. 9.2.a GDPR). Il Modulo 1 originale diceva «senza conservarne copia». **[INSERIRE BASE GIURIDICA DELLA COPIA]**.
+- *(necessaria per giocare)* **Certificato medico** — Acconsento che ESL acquisisca e conservi la copia del mio certificato medico di idoneità sportiva agonistica per il calcio, per verificarne l’idoneità e la scadenza (dato relativo alla salute, art. 9.2.a GDPR). La copia resta fino a 90 giorni dopo la conclusione del torneo locale.
 - *(facoltativa)* **Marketing ESL** — Acconsento a ricevere da ESL comunicazioni promozionali e di marketing su tornei, eventi, iniziative e offerte, tramite email, SMS, WhatsApp e telefono. Su questa piattaforma il consenso vale dopo il clic nell’email di conferma.
 - *(facoltativa)* **Partner** — Acconsento che ESL comunichi il mio nome, email e cellulare alle società partner elencate al punto 10 dell’informativa, perché mi inviino loro comunicazioni promozionali tramite email, SMS, WhatsApp e telefono.
 - *(facoltativa)* **Edizioni successive** — Non voglio ricevere email sull’edizione successiva di questo torneo.
 
-I consensi sono facoltativi e non incidono sulla partecipazione al torneo. Puoi revocarli in qualsiasi momento dall’[area consensi](/area/consensi) o scrivendo a **[INSERIRE EMAIL PRIVACY]**. Se non spunti l’ultima casella, riceverai via email le informazioni sull’edizione successiva di questo torneo (art. 130, comma 4, Codice privacy): potrai rifiutarle anche dopo, con il link presente in ogni messaggio.
+I consensi sono facoltativi e non incidono sulla partecipazione al torneo. Puoi revocarli in qualsiasi momento dall’[area consensi](/area/consensi) o scrivendo a **privacy@legacalciostudenti.it**. Se non spunti l’ultima casella, riceverai via email le informazioni sull’edizione successiva di questo torneo (art. 130, comma 4, Codice privacy): potrai rifiutarle anche dopo, con il link presente in ogni messaggio.
 
 Altri documenti: [informativa per minori](/privacy/minori), [documenti caricati](/privacy/documenti), [liberatoria](/liberatorie), [condizioni](/termini), [cookie](/cookie).

@@ -5,7 +5,7 @@ import { it } from "@/shared/i18n/it";
 import fields from "@/shared/ui/form.module.css";
 
 type Props = {
-  teams: { id: string; name: string }[];
+  teams: { id: string; name: string; edition: { name: string; competition: { name: string } } }[];
   selectedId: string;
 };
 
@@ -25,7 +25,7 @@ export function TeamSwitcher({ teams, selectedId }: Props) {
       >
         {teams.map((team) => (
           <option key={team.id} value={team.id}>
-            {team.name}
+            {`${team.edition.competition.name} · ${team.edition.name} · ${team.name}`}
           </option>
         ))}
       </select>

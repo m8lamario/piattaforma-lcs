@@ -9,8 +9,9 @@ import { authorize } from "@/shared/authz/authorize";
 import { getActorByUserId, representativeTeamIds } from "@/shared/authz/getActor";
 import { writeAuditLog } from "@/shared/lib/audit";
 import { logger } from "@/shared/lib/logger";
-import { emailAdapter } from "@/shared/adapters";
+import { dispatchOutboundEmail } from "@/features/emails/data/dispatch";
 import { BULK_INVITE_MAX, TEAM_COOKIE } from "@/shared/config/app";
+import { shouldUseSecureCookie, teamCookieOptions } from "@/shared/cookies/options";
 import {
   RATE_LIMITS,
   clientKey,
@@ -89,6 +90,14 @@ export async function createInviteAction(
     return fail("TEAM_NOT_FOUND");
   }
   if (
+    !authorize(actor, "team:invite", {
+      teamId: team.id,
+      competitionId: team.edition.competitionId,
+    }).allow
+  ) {
+    return fail("FORBIDDEN_TEAM_INVITE");
+  }
+  if (
     !isRegistrationWindowOpen({
       isActive: team.edition.isActive,
       registrationOpensAt: team.edition.registrationOpensAt,
@@ -120,13 +129,20 @@ export async function createInviteAction(
     origin: originFromHeaders(headerList),
   });
 
-  await emailAdapter.send({
+  await dispatchOutboundEmail({
+    idempotencyKey: `invite:${invite.id}:create`,
+    purpose: "player-invite",
+    templateKey: "player-invite",
     to: parsed.data.email,
-    template: "player-invite",
+    recipientKind: "USER",
     variables: {
       teamName: invite.team.name,
+      nome_squadra: invite.team.name,
       redeemUrl,
     },
+    sourceEntityType: "PlayerInvite",
+    sourceEntityId: invite.id,
+    actorUserId: session.user.id,
   });
 
   const trace = await userAgentAndIp();
@@ -159,7 +175,12 @@ export async function revokeInviteAction(formData: FormData) {
   const decision = authorize(actor, "team:invite", { teamId });
   if (!decision.allow) return;
 
-  const revoked = await revokePlayerInvite(inviteId, teamId);
+  const team = await getTeamForActor(teamId);
+  if (!team || !authorize(actor, "team:invite", { teamId: team.id, competitionId: team.edition.competitionId }).allow) {
+    return;
+  }
+
+  const revoked = await revokePlayerInvite(inviteId, team.id);
   if (revoked) {
     const trace = await userAgentAndIp();
     await writeAuditLog({
@@ -464,6 +485,16 @@ async function requireTeamAction(
   if (!authorize(actor, action, { teamId }).allow) {
     return fail("FORBIDDEN_TEAM_MANAGE");
   }
+  const team = await getTeamForActor(teamId);
+  if (!team) return fail("TEAM_NOT_FOUND");
+  if (
+    !authorize(actor, action, {
+      teamId: team.id,
+      competitionId: team.edition.competitionId,
+    }).allow
+  ) {
+    return fail("FORBIDDEN_TEAM_MANAGE");
+  }
   return { session, actor };
 }
 
@@ -490,7 +521,8 @@ export async function selectTeamAction(formData: FormData) {
   const access = await requireTeamAction(teamId, "team:read");
   if (isDenied(access)) return;
   const jar = await cookies();
-  jar.set(TEAM_COOKIE, teamId, { path: "/", sameSite: "lax", maxAge: 60 * 60 * 24 * 365, httpOnly: true });
+  const headerList = await headers();
+  jar.set(TEAM_COOKIE, teamId, teamCookieOptions(shouldUseSecureCookie(headerList.get("x-forwarded-proto"))));
   revalidatePath("/squadra");
   revalidatePath("/squadra/inviti");
 }
@@ -529,10 +561,16 @@ export async function resendInviteAction(
     invitedByUserId: access.session!.user!.id,
     origin: originFromHeaders(headerList),
   });
-  await emailAdapter.send({
+  await dispatchOutboundEmail({
+    idempotencyKey: `invite:${invite.id}:create`,
+    purpose: "player-invite",
+    templateKey: "player-invite",
     to: existing.email,
-    template: "player-invite",
-    variables: { teamName: invite.team.name, redeemUrl },
+    recipientKind: "USER",
+    variables: { teamName: invite.team.name, nome_squadra: invite.team.name, redeemUrl },
+    sourceEntityType: "PlayerInvite",
+    sourceEntityId: invite.id,
+    actorUserId: access.session!.user!.id,
   });
   await writeAuditLog({
     actorUserId: access.session!.user!.id,
@@ -592,10 +630,16 @@ export async function bulkInviteAction(
       invitedByUserId: access.session!.user!.id,
       origin,
     });
-    await emailAdapter.send({
+    await dispatchOutboundEmail({
+      idempotencyKey: `invite:${invite.id}:create`,
+      purpose: "player-invite",
+      templateKey: "player-invite",
       to: row.email,
-      template: "player-invite",
-      variables: { teamName: invite.team.name, redeemUrl },
+      recipientKind: "USER",
+      variables: { teamName: invite.team.name, nome_squadra: invite.team.name, redeemUrl },
+      sourceEntityType: "PlayerInvite",
+      sourceEntityId: invite.id,
+      actorUserId: access.session!.user!.id,
     });
     created += 1;
   }

@@ -23,7 +23,7 @@ import {
 } from "@/features/admin/schemas/org";
 import { authorize } from "@/shared/authz/authorize";
 import { getActorByUserId } from "@/shared/authz/getActor";
-import { emailAdapter } from "@/shared/adapters";
+import { dispatchOutboundEmail } from "@/features/emails/data/dispatch";
 import { writeAuditLog } from "@/shared/lib/audit";
 import { RATE_LIMITS, clientKey, consumeRateLimit, userAgentAndIp } from "@/shared/lib/request-guard";
 import { isWellFormedInviteToken } from "@/features/teams/domain/token";
@@ -191,10 +191,16 @@ export async function createStaffInviteAction(
     invitedByUserId: session.user.id,
     origin: originFromHeaders(headerList),
   });
-  await emailAdapter.send({
+  await dispatchOutboundEmail({
+    idempotencyKey: `staff-invite:${invite.id}:create`,
+    purpose: "staff-invite",
+    templateKey: "staff-invite",
     to: parsed.data.email,
-    template: "staff-invite",
-    variables: { teamName: invite.team.name, redeemUrl },
+    recipientKind: "USER",
+    variables: { teamName: invite.team.name, nome_squadra: invite.team.name, redeemUrl },
+    sourceEntityType: "StaffInvite",
+    sourceEntityId: invite.id,
+    actorUserId: session.user.id,
   });
   const trace = await userAgentAndIp();
   await writeAuditLog({

@@ -46,6 +46,8 @@ Tabelle `User`, `Account`, `Session`, `VerificationToken` secondo Auth.js Prisma
 | SUPER_ADMIN | null | null |
 | COMPETITION_ORGANIZER | null | required |
 
+Lo scope del rappresentante è la squadra: edizione e competition si leggono da `Team`, senza un `editionId` sul ruolo. L’organizer copre tutte le edizioni della propria competition. `ORGANIZATION_ADMIN` e `SUPER_ADMIN` restano di piattaforma (ESL/LCS), non di una singola coppa.
+
 Un rappresentante che è anche giocatore ha `TEAM_REPRESENTATIVE` + membership `PLAYER` (e profilo).
 
 **TeamMembership** — presenza nel roster: `PLAYER` | `REPRESENTATIVE`. È il fatto anagrafico di squadra; `UserRole` è l’autorizzazione.
@@ -85,12 +87,12 @@ Un rappresentante che è anche giocatore ha `TEAM_REPRESENTATIVE` + membership `
 
 **School** — istituto, riusabile tra edizioni. name, city, extras.
 
-**Team** — edition + school.
+**Team** — edition + school. Una squadra senza edition non esiste. `@@unique([id, editionId])` è il bersaglio delle foreign key composte.
 
 - name, logoStorageKey nullable, inviteCode unique (codice interno), registrationToken unique (link pubblico `/iscrizione/[token]`, uno per squadra, non per giocatore)
 - contactName / contactEmail placeholder referente
 
-**PlayerInvite**
+**PlayerInvite** e **StaffInvite** — scope TEAM. Non hanno `editionId`: l’edizione è `team.editionId` e la competition è `team.edition.competitionId`. Il redeem usa solo il token; il client non sceglie la squadra.
 
 - teamId, email, token hash, status PENDING|ACCEPTED|EXPIRED|REVOKED
 - optional firstName, lastName precompilati
@@ -107,10 +109,11 @@ Il token in chiaro sta solo nell’URL/email; in DB si salva **hash**.
 
 - playerProfileId, teamId, editionId
 - `status` proiezione persistita per query (ricalcolata dal motore, non editata dal giocatore)
-- unique `(playerProfileId, editionId)` — v1 una squadra/edizione alla volta
+- unique `(playerProfileId, editionId)` — v1 una squadra/edizione alla volta. Resta corretto: la persona non ha due partecipazioni nella stessa edizione.
+- unique `(id, editionId)` — bersaglio della foreign key composta dei pagamenti
 - submittedAt, reviewedAt nullable
 
-Vincolo applicativo: `team.editionId === registration.editionId`.
+Vincolo di database, non solo applicativo: `Registration (teamId, editionId)` → `Team (id, editionId)`. Una registrazione non può citare la squadra di un’altra edizione. `onUpdate: Restrict` impedisce di spostare la squadra di edizione lasciando le iscrizioni indietro.
 
 ## 7. Documenti
 
@@ -167,11 +170,26 @@ Mai un flag denormalizzato `privacyAccepted` sul User come unica prova.
 - paidAt, failureCode, receiptUrl nullable
 - raw webhook **non** si salva intero se contiene PII; si salva event id + tipo
 
-Check applicativo: almeno uno tra registrationId e teamId.
+`editionId` resta sulla riga perché lista e copertura si filtrano per edizione. Non è una seconda fonte libera:
+
+- quota giocatore: `registrationId` valorizzato, `teamId` nullo. FK `(registrationId, editionId)` → `Registration (id, editionId)`. In PostgreSQL, se `registrationId` è nullo il controllo non scatta.
+- quota squadra: `teamId` valorizzato, `registrationId` nullo. FK `(teamId, editionId)` → `Team (id, editionId)`.
+- check `registrationId IS NOT NULL OR teamId IS NOT NULL`.
+- se entrambi sono valorizzati, il trigger `payment_scope_guard` esige che la registrazione appartenga a quella squadra e a quella edizione.
+
+Documenti, consensi e token di consenso restano sulla Registration: edition e competition si raggiungono da lì, senza duplicare le FK. Notification è per utente. AuditLog è append-only (`entityType` + `entityId`), senza scope duplicato. School resta globale e riusabile tra edizioni. `Competition.parentId` è un sotto-torneo opzionale, non un’edizione.
 
 ## 10. Notifiche e audit
 
 **Notification** — userId, type, title, body, readAt, metadata Json (senza dati sanitari).
+
+**EmailMessage** — un destinatario per riga. `idempotencyKey` unique; purpose/templateKey; status (`QUEUED`/`SENT`/`DELIVERED`/`DELIVERY_DELAYED`/`BOUNCED`/`COMPLAINED`/`FAILED`); `userId` opzionale `onDelete: SetNull`; `recipientKind` USER/GUARDIAN; snapshot `toAddress`/`fromAddress`/`replyTo`/`subject`/`textBody` (URL con token già redatti); provider + `providerMessageId`; errore breve; origine (`sourceEntityType`/`sourceEntityId`); `notificationId` e `actorUserId` opzionali; `queuedAt`/`sentAt`/`lastEventAt`.
+
+**EmailEvent** — unique `(provider, providerEventId)`; type grezzo (`email.delivered`, `local.queued`, …); `occurredAt`; sommario bounce. Non si salva il JSON del webhook.
+
+**EmailTemplateOverride** — `key` unique, subject, textBody, `updatedById`. Se manca la riga vale il template in i18n/codice.
+
+Indici: `EmailMessage` status+queuedAt, purpose+queuedAt, userId, actorUserId, provider+providerMessageId, lastEventAt, notificationId.
 
 **AuditLog**
 
@@ -197,13 +215,15 @@ Indici: `actorUserId`, `entityType+entityId`, `createdAt`.
 - Team.inviteCode unique
 - ConsentRecord (userId, legalDocumentVersionId)
 - User.lifecycleStatus
+- EmailMessage.idempotencyKey unique; (status, queuedAt); (purpose, queuedAt); (provider, providerMessageId)
+- EmailEvent (provider, providerEventId) unique
 
 ## 12. Cosa non sta nel DB
 
 - File certificati
 - PAN/CVV
 - Password in chiaro (solo hash)
-- Token invito / reset password in chiaro
+- Token invito / reset password / C1 in chiaro (nello storico email restano `[link omesso]`)
 - Privacy policy come unico booleano
 
 ## 13. Ciclo di vita account (non `DELETE FROM users`)
@@ -222,7 +242,7 @@ Tre operazioni distinte. Il ritiro (`WITHDRAWN`) resta un quarto stato, già esi
 | Operazione | Chi | Cosa si toglie | Cosa si tiene |
 |---|---|---|---|
 | `REMOVE_FROM_TEAM` | Rep del team (e staff) | `TeamMembership` PLAYER, inviti pending, visibilità rosa | Account, PII, documenti, pagamenti, consensi, audit; registration → `REMOVED` |
-| `DELETE_ACCOUNT` | Super Admin | Login (password, sessioni, Account OAuth, ruoli, membership, notifiche); email tombstone; iscrizioni non terminali → `REMOVED` | Riga User, PII profilo incluso CF (fino ad anonymize), Document+blob, Payment, ConsentRecord, AuditLog |
-| `ANONYMIZE_ACCOUNT` | Super Admin | PII (nome, email, CF, tutore, filename, IP/UA consensi); iscrizioni non terminali → `REMOVED` | Id, stati, pagamenti, blob medici (niente purge OD-030), audit |
+| `DELETE_ACCOUNT` | Super Admin | Login (password, sessioni, Account OAuth, ruoli, membership, notifiche); redazione storico email; email tombstone; iscrizioni non terminali → `REMOVED` | Riga User, PII profilo incluso CF (fino ad anonymize), Document+blob, Payment, ConsentRecord, AuditLog |
+| `ANONYMIZE_ACCOUNT` | Super Admin | PII (nome, email, CF, tutore, filename, IP/UA consensi); destinatario/oggetto/corpo dello storico email; iscrizioni non terminali → `REMOVED` | Id, stati, pagamenti, blob medici (niente purge OD-030), audit |
 
 Audit: `PLAYER_REMOVE`, `ACCOUNT_DELETE`, `ACCOUNT_ANONYMIZE`. Metadata senza CF, storageKey, motivi medici. L’audit non è cancellabile dalla UI.
