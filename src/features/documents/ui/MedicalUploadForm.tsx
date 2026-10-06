@@ -7,6 +7,7 @@ import { MAX_UPLOAD_BYTES } from "@/shared/config/app";
 import { Button } from "@/shared/ui/Button";
 import { FileDropzone } from "@/shared/ui/FileDropzone";
 import { ActionError } from "@/shared/ui/ActionError";
+import { WizardLaterButton } from "@/features/registrations/ui/WizardShell";
 import { it } from "@/shared/i18n/it";
 import fields from "@/shared/ui/form.module.css";
 
@@ -70,6 +71,7 @@ export function MedicalUploadForm({ document }: Props) {
         <Button type="submit" name="intent" value="exit" variant="ghost" disabled={pending}>
           {it.saveExit}
         </Button>
+        <WizardLaterButton />
       </div>
     </form>
   );

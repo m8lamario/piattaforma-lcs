@@ -2,6 +2,9 @@ import { it } from "@/shared/i18n/it";
 import type { ConsentBoxDef } from "@/features/consents/domain/boxes";
 import { LegalReader } from "./LegalReader";
 import type { ConsentDocumentView } from "./PrivacyConsentForm";
+import { StatusChip, type StatusTone } from "@/shared/ui/StatusChip";
+import { ButtonLink } from "@/shared/ui/Button";
+import { WizardLaterButton } from "@/features/registrations/ui/WizardShell";
 import styles from "./ConsentForm.module.css";
 import fields from "@/shared/ui/form.module.css";
 
@@ -19,6 +22,13 @@ function labelFor(code: string, current: Record<string, boolean>, status: Props[
   return it.guardianBoxWaiting;
 }
 
+function toneFor(code: string, current: Record<string, boolean>, status: Props["status"]): StatusTone {
+  if (status === "refused") return "danger";
+  if (code in current) return current[code] ? "complete" : "danger";
+  if (status === "authorized") return "complete";
+  return "attention";
+}
+
 export function GuardianWaitingView({ status, documents, boxes, currentBoxes }: Props) {
   return (
     <div className={fields.form}>
@@ -31,14 +41,23 @@ export function GuardianWaitingView({ status, documents, boxes, currentBoxes }: 
           <LegalReader document={document} read />
         </article>
       ))}
-      <div>
+      <div className={styles.choiceList}>
         {boxes.map((box) => (
-          <p key={box.code} className={styles.check}>
+          <div key={box.code} className={styles.check}>
             <span className={styles.boxCode}>{box.code}</span>
-            <span>{it[box.labelKey]}</span>
-            <span className={styles.version}>{labelFor(box.code, currentBoxes, status)}</span>
-          </p>
+            <span style={{ flex: 1 }}>{it[box.labelKey]}</span>
+            <StatusChip tone={toneFor(box.code, currentBoxes, status)}>
+              {labelFor(box.code, currentBoxes, status)}
+            </StatusChip>
+          </div>
         ))}
+      </div>
+
+      <div className={`${fields.actions} ${fields.sticky}`}>
+        <WizardLaterButton />
+        <ButtonLink href="/area" variant="ghost">
+          {it.backToArea}
+        </ButtonLink>
       </div>
     </div>
   );

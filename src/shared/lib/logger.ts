@@ -15,6 +15,8 @@ const REDACT_KEYS = new Set([
   "toAddress",
   "text",
   "textBody",
+  "html",
+  "htmlBody",
   "apiKey",
 ]);
 

@@ -10,6 +10,7 @@ import fields from "@/shared/ui/form.module.css";
 import type { ConsentBoxDef } from "@/features/consents/domain/boxes";
 import { ConsentBoxList } from "./ConsentBoxList";
 import { LegalReader } from "./LegalReader";
+import { WizardLaterButton } from "@/features/registrations/ui/WizardShell";
 import {
   readPrivacyDraft,
   reconcilePrivacyDraft,
@@ -169,6 +170,7 @@ export function PrivacyConsentForm({ documents, extraBoxes, currentBoxes, regist
         <Button type="submit" name="intent" value="exit" variant="ghost" disabled={pending || !allReady}>
           {it.saveExit}
         </Button>
+        <WizardLaterButton />
         {!allReady ? (
           <ul className={styles.blockedList}>
             {missingDocs.map((document) => (

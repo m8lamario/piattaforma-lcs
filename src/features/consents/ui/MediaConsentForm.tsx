@@ -9,6 +9,7 @@ import fields from "@/shared/ui/form.module.css";
 import type { ConsentBoxDef } from "@/features/consents/domain/boxes";
 import { ConsentBoxList } from "./ConsentBoxList";
 import { LegalReader } from "./LegalReader";
+import { WizardLaterButton } from "@/features/registrations/ui/WizardShell";
 import styles from "./ConsentForm.module.css";
 import type { ConsentDocumentView } from "./PrivacyConsentForm";
 
@@ -76,6 +77,7 @@ export function MediaConsentForm({ document, uses, currentUses, submitted }: Pro
         <Button type="submit" name="intent" value="exit" variant="ghost" disabled={pending || !canSubmit}>
           {it.saveExit}
         </Button>
+        <WizardLaterButton />
       </div>
     </form>
   );

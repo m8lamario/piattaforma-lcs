@@ -284,6 +284,14 @@
   border: 1px solid var(--color-hairline);
 }
 
+.previewFrame {
+  display: block;
+  width: 100%;
+  min-height: 32rem;
+  border: 1px solid var(--color-hairline);
+  background: var(--color-surface-inset);
+}
+
 .toolbar {
   display: flex;
   flex-wrap: wrap;

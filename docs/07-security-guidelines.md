@@ -153,7 +153,7 @@ Non loggare: password, token, CF completo (mascherare), body documenti, Authoriz
 - `StaffInvite` hashato; redeem senza Registration.
 - Withdraw senza delete; reset password anti-enumerazione.
 - Stripe webhook firmato; R2 bucket privato; HMAC file invariato.
-- Email Resend: testo, variabili allowlist, mai CF o motivo medico. Permalink `/documenti-legali/{slug}/{version}` invece di allegati.
+- Email Resend: HTML di presentazione + testo, variabili allowlist, mai CF o motivo medico. Permalink `/documenti-legali/{slug}/{version}` invece di allegati.
 - Webhook Resend firmato (`svix-id` / `svix-timestamp` / `svix-signature`). Evento duplicato: HTTP 200. Messaggio sconosciuto: HTTP 200. Firma invalida: 400.
 - Snapshot `EmailMessage.textBody` senza URL di reset/invito/C1; i log non riportano destinatario né corpo.
 - `/admin/comunicazioni` solo staff (`email:read` / `email:send`); corpo libero e override template solo Super Admin (`email:compose`).

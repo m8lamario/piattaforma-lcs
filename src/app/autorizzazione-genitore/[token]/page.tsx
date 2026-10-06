@@ -10,7 +10,7 @@ import { MEDIA_RELEASE_SLUG, privacySlugsFor } from "@/features/consents/domain/
 import { isWellFormedInviteToken } from "@/features/teams/domain/token";
 import { it } from "@/shared/i18n/it";
 import { PublicShell } from "@/shared/ui/PublicShell";
-import styles from "../../accedi/page.module.css";
+import styles from "./page.module.css";
 
 type Props = { params: Promise<{ token: string }> };
 
@@ -26,9 +26,9 @@ export default async function GuardianAuthorizePage({ params }: Props) {
     return (
       <PublicShell>
         <main className={styles.main}>
-          <section className={styles.auth}>
-            <h1>{it.guardianLinkTitle}</h1>
-            <p>{it.guardianLinkDone}</p>
+          <section className={styles.statusCard}>
+            <h1 className={styles.title}>{it.guardianLinkTitle}</h1>
+            <p className={styles.lead}>{it.guardianLinkDone}</p>
           </section>
         </main>
       </PublicShell>
@@ -38,9 +38,9 @@ export default async function GuardianAuthorizePage({ params }: Props) {
     return (
       <PublicShell>
         <main className={styles.main}>
-          <section className={styles.auth}>
-            <h1>{it.guardianLinkTitle}</h1>
-            <p>{it.errorCONSENT_TOKEN_INVALID}</p>
+          <section className={styles.statusCard}>
+            <h1 className={styles.title}>{it.guardianLinkTitle}</h1>
+            <p className={styles.lead}>{it.errorCONSENT_TOKEN_INVALID}</p>
           </section>
         </main>
       </PublicShell>
@@ -67,7 +67,7 @@ export default async function GuardianAuthorizePage({ params }: Props) {
   return (
     <PublicShell>
       <main className={styles.main}>
-        <section className={styles.auth}>
+        <div className={styles.container}>
           <GuardianAuthorizeForm
             token={token}
             purpose={purpose}
@@ -76,7 +76,7 @@ export default async function GuardianAuthorizePage({ params }: Props) {
             documents={documents}
             boxes={boxes}
           />
-        </section>
+        </div>
       </main>
     </PublicShell>
   );

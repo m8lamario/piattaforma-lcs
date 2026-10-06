@@ -35,8 +35,9 @@
 }
 
 .button:disabled {
-  opacity: 0.55;
+  opacity: 0.6;
   cursor: not-allowed;
+  filter: grayscale(20%);
 }
 
 .primary {
@@ -54,29 +55,32 @@
 }
 
 .accent:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--color-accent) 88%, var(--color-text));
+  background: color-mix(in srgb, var(--color-accent) 85%, #000);
 }
 
 .secondary {
   background: var(--color-primary-soft);
   color: var(--color-text);
-  box-shadow: inset 0 0 0 1px var(--color-border);
+  box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--color-primary) 35%, var(--color-border));
   font-weight: 650;
 }
 
 .secondary:hover:not(:disabled) {
   background: color-mix(in srgb, var(--color-primary-soft) 72%, var(--color-primary));
+  box-shadow: inset 0 0 0 1.5px var(--color-primary);
 }
 
 .ghost {
-  background: transparent;
+  background: color-mix(in srgb, var(--color-surface-raised) 70%, transparent);
   color: var(--color-text);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-text) 18%, transparent);
+  box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--color-text) 35%, transparent);
   font-weight: 650;
 }
 
 .ghost:hover:not(:disabled) {
   background: var(--color-primary-soft);
+  color: var(--color-text);
+  box-shadow: inset 0 0 0 1.5px var(--color-primary);
 }
 
 .danger {

@@ -140,10 +140,19 @@ export function ManualSendForm({
           {preview?.error ? <ActionError error={preview.error} code={preview.code} /> : null}
           {preview?.subject ? (
             <section>
-              <h2 className={styles.sectionTitle}>{it.adminEmailPreview}</h2>
+              <h2 className={styles.sectionTitle}>{it.adminEmailHtmlPreview}</h2>
               <p>
                 <strong>{preview.subject}</strong>
               </p>
+              {preview.html ? (
+                <iframe
+                  className={styles.previewFrame}
+                  title={it.adminEmailHtmlPreview}
+                  sandbox=""
+                  srcDoc={preview.html}
+                />
+              ) : null}
+              <h3 className={styles.sectionTitle}>{it.adminEmailTextFallback}</h3>
               <pre className={styles.pre}>{preview.text}</pre>
             </section>
           ) : null}

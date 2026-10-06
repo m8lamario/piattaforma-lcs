@@ -132,3 +132,7 @@ L’area admin è più densa ma usa gli stessi token. Elenco a righe con chip di
 ## 11. Iconografia
 
 Un solo set in `src/shared/ui/Icon.tsx`: 24×24, stroke 1.75, cap square. Nav, passi wizard, empty state. Niente icone decorative.
+
+## 12. Email transazionali
+
+Tutte le email della piattaforma usano un layout HTML comune (`src/features/emails/domain/layout.ts`), con fallback testuale. Header con logo `public/logoLCSw.png`, lockup LCS / Player Hub, barra ai colori della navbar, contenuto con sideline, CTA a bottone e footer con informative. I client di posta non supportano le custom properties: i HEX del layout vivono in `src/features/emails/domain/theme.ts` e restano allineati a questo file (nav scura + contenuto del tema chiaro, per leggibilità). Niente pixel di tracking, niente Adobe Fonts nelle email (Helvetica/Arial). I testi restano in i18n; gli override admin vengono avvolti nello stesso chrome.

@@ -168,6 +168,7 @@ export async function dispatchOutboundEmail(input: DispatchEmailInput): Promise<
       to,
       subject: rendered.subject,
       text: rendered.text,
+      html: rendered.html,
       from: fromAddress,
       replyTo,
       idempotencyKey: row.id,
