@@ -11,6 +11,7 @@ enum Role {
   PLAYER
   TEAM_REPRESENTATIVE
   ORGANIZATION_ADMIN
+  MEDICAL_REVIEWER
   SUPER_ADMIN
   COMPETITION_ORGANIZER
 }
@@ -90,6 +91,27 @@ enum LegalAudience {
 enum ConsentType {
   REQUIRED
   OPTIONAL
+}
+
+enum ActorKind {
+  USER
+  GUARDIAN_LINK
+  SYSTEM
+}
+
+enum GuardianAuthorizationStatus {
+  PENDING
+  OPENED
+  AUTHORIZED
+  REFUSED
+  EXPIRED
+  SUPERSEDED
+  REVOKED
+}
+
+enum GuardianAuthorizationType {
+  ENROLLMENT
+  PUBLICATION
 }
 
 enum InviteStatus {
@@ -229,10 +251,12 @@ model PlayerProfile {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
-  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  guardians     Guardian[]
-  registrations Registration[]
-  documents     Document[]
+  user             User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  guardians        Guardian[]
+  registrations    Registration[]
+  documents        Document[]
+  authorizations   GuardianAuthorization[]
+  guardianTokens   GuardianLinkToken[]
 
   @@index([lastName, firstName])
 }
@@ -252,10 +276,13 @@ model Guardian {
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
 
-  playerProfile  PlayerProfile    @relation(fields: [playerProfileId], references: [id], onDelete: Cascade)
+  playerProfile  PlayerProfile             @relation(fields: [playerProfileId], references: [id], onDelete: Cascade)
   consentRecords ConsentRecord[]
   consentChoices ConsentChoice[]
   consentTokens  ConsentToken[]
+  authorizations GuardianAuthorization[]
+  linkTokens     GuardianLinkToken[]
+  auditLogs      AuditLog[]
 
   @@unique([playerProfileId, email])
   @@index([playerProfileId])
@@ -446,6 +473,8 @@ model Registration {
   consentRecords ConsentRecord[]
   consentChoices ConsentChoice[]
   consentTokens  ConsentToken[]
+  authorizations GuardianAuthorization[]
+  guardianTokens GuardianLinkToken[]
   payments       Payment[]
 
   @@unique([playerProfileId, editionId])
@@ -481,6 +510,7 @@ model Document {
   uploadedAt       DateTime       @default(now())
   expiresAt        DateTime?
   replacedById     String?        @unique
+  blobPurgedAt     DateTime?
   createdAt        DateTime       @default(now())
   updatedAt        DateTime       @updatedAt
 
@@ -534,9 +564,12 @@ model LegalDocumentVersion {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
-  legalDocument LegalDocument   @relation(fields: [legalDocumentId], references: [id], onDelete: Cascade)
-  consents      ConsentRecord[]
-  choices       ConsentChoice[]
+  legalDocument   LegalDocument              @relation(fields: [legalDocumentId], references: [id], onDelete: Cascade)
+  consents        ConsentRecord[]
+  choices         ConsentChoice[]
+  authorizations  GuardianAuthorization[]
+  decisions       GuardianAuthorizationDecision[]
+  auditLogs       AuditLog[]
 
   @@unique([legalDocumentId, version])
   @@index([legalDocumentId, isCurrent])
@@ -551,6 +584,9 @@ model ConsentRecord {
   consentType             ConsentType
   accepted                Boolean
   acceptedAt              DateTime    @default(now())
+  clauseText              String?
+  actorKind               ActorKind   @default(USER)
+  actorRole               String?
   ipAddress               String?
   userAgent               String?
   createdAt               DateTime    @default(now())
@@ -566,18 +602,21 @@ model ConsentRecord {
 }
 
 model ConsentChoice {
-  id                     String   @id @default(cuid())
+  id                     String    @id @default(cuid())
   userId                 String
   registrationId         String
   code                   String
   accepted               Boolean
   value                  String?
-  source                 String   @default("WEB")
+  source                 String    @default("WEB")
   legalDocumentVersionId String?
   guardianId             String?
+  clauseText             String?
+  actorKind              ActorKind @default(USER)
+  actorRole              String?
   ipAddress              String?
   userAgent              String?
-  createdAt              DateTime @default(now())
+  createdAt              DateTime  @default(now())
 
   user                 User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
   registration         Registration          @relation(fields: [registrationId], references: [id], onDelete: Cascade)
@@ -605,6 +644,78 @@ model ConsentToken {
   registration Registration @relation(fields: [registrationId], references: [id], onDelete: Cascade)
   guardian     Guardian?    @relation(fields: [guardianId], references: [id], onDelete: SetNull)
 
+  @@index([registrationId, purpose])
+}
+
+model GuardianAuthorization {
+  id                     String                       @id @default(cuid())
+  guardianId             String
+  playerProfileId        String
+  registrationId         String
+  tokenId                String?                      @unique
+  status                 GuardianAuthorizationStatus  @default(PENDING)
+  authorizationType      GuardianAuthorizationType
+  requestedAt            DateTime                     @default(now())
+  openedAt               DateTime?
+  authorizedAt           DateTime?
+  revokedAt              DateTime?
+  ipAddress              String?
+  userAgent              String?
+  legalDocumentVersionId String?
+  createdAt              DateTime                     @default(now())
+  updatedAt              DateTime                     @updatedAt
+
+  guardian             Guardian                       @relation(fields: [guardianId], references: [id], onDelete: Cascade)
+  playerProfile        PlayerProfile                  @relation(fields: [playerProfileId], references: [id], onDelete: Cascade)
+  registration         Registration                   @relation(fields: [registrationId], references: [id], onDelete: Cascade)
+  currentToken         GuardianLinkToken?             @relation("AuthorizationCurrentToken", fields: [tokenId], references: [id], onDelete: SetNull)
+  legalDocumentVersion LegalDocumentVersion?          @relation(fields: [legalDocumentVersionId], references: [id], onDelete: SetNull)
+  decisions            GuardianAuthorizationDecision[]
+  tokens               GuardianLinkToken[]            @relation("AuthorizationTokens")
+  auditLogs            AuditLog[]
+
+  @@index([registrationId, authorizationType, status])
+  @@index([guardianId, status])
+  @@index([playerProfileId])
+}
+
+model GuardianAuthorizationDecision {
+  id                     String   @id @default(cuid())
+  authorizationId        String
+  code                   String
+  accepted               Boolean
+  clauseText             String?
+  legalDocumentVersionId String?
+  createdAt              DateTime @default(now())
+
+  authorization        GuardianAuthorization   @relation(fields: [authorizationId], references: [id], onDelete: Cascade)
+  legalDocumentVersion LegalDocumentVersion?   @relation(fields: [legalDocumentVersionId], references: [id], onDelete: SetNull)
+
+  @@index([authorizationId, createdAt])
+}
+
+model GuardianLinkToken {
+  id               String    @id @default(cuid())
+  tokenHash        String    @unique
+  purpose          String
+  guardianId       String
+  playerProfileId  String
+  registrationId   String
+  authorizationId  String?
+  expiresAt        DateTime
+  usedAt           DateTime?
+  reminderSentAt   DateTime?
+  ipAddress        String?
+  userAgent        String?
+  createdAt        DateTime  @default(now())
+
+  guardian      Guardian               @relation(fields: [guardianId], references: [id], onDelete: Cascade)
+  playerProfile PlayerProfile          @relation(fields: [playerProfileId], references: [id], onDelete: Cascade)
+  registration  Registration           @relation(fields: [registrationId], references: [id], onDelete: Cascade)
+  authorization GuardianAuthorization? @relation("AuthorizationTokens", fields: [authorizationId], references: [id], onDelete: SetNull)
+  currentFor    GuardianAuthorization? @relation("AuthorizationCurrentToken")
+
+  @@index([authorizationId, purpose])
   @@index([registrationId, purpose])
 }
 
@@ -727,23 +838,33 @@ model EmailTemplateOverride {
 }
 
 model AuditLog {
-  id         String   @id @default(cuid())
-  actorUserId String?
-  action     String
-  entityType String
-  entityId   String
-  metadata   Json?
-  ipAddress  String?
-  userAgent  String?
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id                     String    @id @default(cuid())
+  actorUserId            String?
+  actorKind              ActorKind @default(USER)
+  actorRole              String?
+  guardianId             String?
+  authorizationId        String?
+  legalDocumentVersionId String?
+  action                 String
+  entityType             String
+  entityId               String
+  metadata               Json?
+  ipAddress              String?
+  userAgent              String?
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
 
-  actor User? @relation(fields: [actorUserId], references: [id], onDelete: SetNull)
+  actor          User?                   @relation(fields: [actorUserId], references: [id], onDelete: SetNull)
+  guardian       Guardian?               @relation(fields: [guardianId], references: [id], onDelete: SetNull)
+  authorization  GuardianAuthorization?  @relation(fields: [authorizationId], references: [id], onDelete: SetNull)
+  legalDocumentVersion LegalDocumentVersion? @relation(fields: [legalDocumentVersionId], references: [id], onDelete: SetNull)
 
   @@index([actorUserId])
   @@index([entityType, entityId])
   @@index([createdAt])
   @@index([action])
+  @@index([guardianId])
+  @@index([authorizationId])
 }
 
 model RateLimitHit {

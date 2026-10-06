@@ -18,7 +18,13 @@ export default async function AdminAuditPage() {
               <span>
                 <strong>{row.action}</strong>
                 <span className={styles.meta}>
-                  {row.entityType} · {row.actor?.email ?? "system"} · {row.createdAt.toISOString().replace("T", " ").slice(0, 16)}
+                  {row.entityType} · {row.actorKind}
+                  {row.actorRole ? `/${row.actorRole}` : ""} · {row.actor?.email ?? row.guardian?.email ?? "system"} ·{" "}
+                  {row.createdAt.toISOString().replace("T", " ").slice(0, 16)}
+                  {row.ipAddress ? ` · ${it.adminAuditIp} ${row.ipAddress}` : ""}
+                  {row.legalDocumentVersion
+                    ? ` · ${row.legalDocumentVersion.legalDocument.slug} ${row.legalDocumentVersion.version}`
+                    : ""}
                 </span>
               </span>
             </li>

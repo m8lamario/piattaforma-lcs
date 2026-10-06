@@ -53,6 +53,8 @@ export type RegistrationEvidence = {
   hasPersonalData: boolean;
   isMinor: boolean;
   hasGuardian: boolean;
+  hasGuardianContact: boolean;
+  guardianAuthorization: "none" | "pending" | "authorized" | "refused";
   medicalStatus: MedicalEvidence;
   privacyAccepted: boolean;
   mediaDecision: MediaDecision;
@@ -98,7 +100,15 @@ function statusFor(
     case "PERSONAL_DATA":
       return evidence.hasPersonalData ? "complete" : "todo";
     case "GUARDIAN_IF_MINOR":
-      return evidence.hasGuardian ? "complete" : "todo";
+      if (evidence.guardianAuthorization === "authorized") return "complete";
+      if (
+        evidence.hasGuardianContact ||
+        evidence.guardianAuthorization === "pending" ||
+        evidence.guardianAuthorization === "refused"
+      ) {
+        return "attention";
+      }
+      return "todo";
     case "MEDICAL_CERT":
       if (evidence.medicalStatus === "approved") return "complete";
       if (

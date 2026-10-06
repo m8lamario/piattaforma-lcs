@@ -12,3 +12,4 @@
 | CONSENT_REVOKE_FORBIDDEN | CONSENTS | Casella non revocabile | Codice obbligatorio | Questa casella non si toglie da qui | Nessuno | `/area/consensi` |
 | CONSENT_TOKEN_INVALID | CONSENTS | Token C1/opt-in invalido | Scaduto o malformato | Link non valido o scaduto | Nessuno | conferma pubblica |
 | CONSENT_TOKEN_USED | CONSENTS | Token già usato | Double submit | Link già usato | Nessuno | conferma pubblica |
+| CONSENT_GUARDIAN_REQUIRED | CONSENTS | Il minore ha tentato un atto riservato al genitore | Sessione minore su privacy/media/marketing | Questo passo lo completa il genitore dal link ricevuto via email | Nessuno | consent actions |

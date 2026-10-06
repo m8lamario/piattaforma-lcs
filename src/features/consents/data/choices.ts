@@ -15,6 +15,9 @@ export type ChoiceWrite = {
   source?: string;
   legalDocumentVersionId?: string | null;
   guardianId?: string | null;
+  clauseText?: string | null;
+  actorKind?: "USER" | "GUARDIAN_LINK";
+  actorRole?: string | null;
   ipAddress?: string | null;
   userAgent?: string | null;
 };
@@ -30,6 +33,9 @@ export async function appendConsentChoice(input: ChoiceWrite) {
       source: input.source ?? "WEB",
       legalDocumentVersionId: input.legalDocumentVersionId ?? null,
       guardianId: input.guardianId ?? null,
+      clauseText: input.clauseText ?? null,
+      actorKind: input.actorKind ?? "USER",
+      actorRole: input.actorRole ?? null,
       ipAddress: input.ipAddress ?? null,
       userAgent: input.userAgent ?? null,
     },
@@ -55,7 +61,12 @@ export async function latestChoiceMap(registrationId: string) {
 
 export async function appendBoxSet(
   input: Omit<ChoiceWrite, "code" | "accepted" | "value"> & {
-    boxes: Array<{ code: ConsentBoxCode; accepted: boolean; value?: string | null }>;
+    boxes: Array<{
+      code: ConsentBoxCode;
+      accepted: boolean;
+      value?: string | null;
+      clauseText?: string | null;
+    }>;
   },
 ) {
   if (input.boxes.length === 0) return [];
@@ -71,6 +82,9 @@ export async function appendBoxSet(
           source: input.source ?? "WEB",
           legalDocumentVersionId: input.legalDocumentVersionId ?? null,
           guardianId: input.guardianId ?? null,
+          clauseText: box.clauseText ?? input.clauseText ?? null,
+          actorKind: input.actorKind ?? "USER",
+          actorRole: input.actorRole ?? null,
           ipAddress: input.ipAddress ?? null,
           userAgent: input.userAgent ?? null,
         },

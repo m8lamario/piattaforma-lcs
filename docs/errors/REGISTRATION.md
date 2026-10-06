@@ -14,3 +14,7 @@
 | GUARDIAN_SECOND_EMAIL | REGISTRATION | G3 senza email | Altro genitore | Inserisci l’email dell’altro genitore | Correggi | `saveGuardianAction` |
 | GUARDIAN_SAME_EMAIL | REGISTRATION | Email duplicate | Stesso recapito | Email dell’altro genitore diversa | Correggi | `saveGuardianAction` |
 | GUARDIAN_EMAIL_CORRECTION_USED | REGISTRATION | Correzione già usata | Secondo tentativo | Si può correggere una sola volta | Contatta org | `saveGuardianProfile` |
+| GUARDIAN_SELF | REGISTRATION | Nome e cognome del contatto uguali al minore | Auto-indicazione | Il contatto del genitore non può coincidere con il nome del giocatore | Correggi | `saveGuardianAction` |
+| GUARDIAN_EMAIL_IS_PLAYER | REGISTRATION | Email genitore = email minore | Auto-indicazione | Usa un’email del genitore diversa | Correggi | `saveGuardianAction` |
+| GUARDIAN_AUTHORIZATION_REQUIRED | REGISTRATION | Manca autorizzazione ENROLLMENT | Link non confermato | Attesa del genitore | Attendi | checklist |
+| GUARDIAN_AUTHORIZATION_REFUSED | REGISTRATION | Genitore ha rifiutato | Link refuse | Il genitore ha rifiutato | Contatta org | guardian link |

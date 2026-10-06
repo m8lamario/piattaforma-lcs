@@ -38,6 +38,15 @@ export async function startPlayerCheckoutAction(): Promise<ActionFailure | void>
   const windowCode = workspaceWriteCode(workspace.registration);
   if (windowCode) return fail(windowCode);
 
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { emailVerified: true },
+  });
+  if (!user?.emailVerified) return fail("AUTH_EMAIL_NOT_VERIFIED");
+  if (workspace.evidence.isMinor && workspace.evidence.guardianAuthorization !== "authorized") {
+    return fail("PAYMENT_GUARDIAN_REQUIRED");
+  }
+
   const amount = playerCheckoutAmount({
     paymentMode: workspace.registration.paymentMode,
     playerFeeAmount: workspace.registration.playerFeeAmount,

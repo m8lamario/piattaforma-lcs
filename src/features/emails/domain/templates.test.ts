@@ -63,4 +63,24 @@ describe("template email", () => {
     expect(invalidTemplateVariables("Ciao {{fiscalCode}} {{nome}}")).toEqual(["fiscalCode"]);
     expect(interpolateTemplate("{{nome}} {{fiscalCode}}", { nome: "Anna" })).toBe("Anna ");
   });
+
+  it("manda verifica email e richiesta al genitore senza allegati", () => {
+    const verify = render("EMAIL_VERIFY", {
+      confirmUrl: "https://hub.test/verifica-email/token",
+      scadenza: "24h",
+    });
+    const guardian = render("GUARDIAN_AUTHORIZE", {
+      playerName: "Luca Bianchi",
+      teamName: "Mole Cup",
+      confirmUrl: "https://hub.test/autorizzazione-genitore/token",
+      scadenza: "2026-10-13 12:00",
+      summary: "Atti di iscrizione",
+    });
+    expect(verify.text).toContain("https://hub.test/verifica-email/token");
+    expect(guardian.text).toContain("Luca Bianchi");
+    expect(guardian.text.toLowerCase()).not.toContain("allegat");
+    expect(redactSecretVariables(guardian.text, guardian.variables)).not.toContain(
+      "https://hub.test/autorizzazione-genitore/token",
+    );
+  });
 });

@@ -58,7 +58,8 @@ La casella obbligatoria per giocare è M3 (maggiorenni) o G4 (minorenni), nel pa
 | Giocatore titolare | sì, proprio file, tramite link temporaneo autenticato | sì |
 | Compagni di squadra | no | no |
 | Rappresentante di squadra | **no** — mai il file | solo lo **stato** (mancante / in revisione / ok / da ricaricare / scaduto) |
-| Amministratori dell’organizzazione | sì, con audit di ogni visualizzazione | sì |
+| Amministratori dell’organizzazione | no file: vedono stato e metadati | sì |
+| Revisore certificati (`MEDICAL_REVIEWER`) e Super Admin | sì, con audit di ogni visualizzazione | sì |
 | Organizzatore di una coppa locale | interfaccia di gestione della competizione, se autorizzato | lo stato; il file solo con il permesso di revisione documenti, con audit |
 | Fornitore di storage | Cloudflare R2, accesso tecnico agli oggetti | sì |
 | Scuole e federazioni | no, in via ordinaria | no |
@@ -76,7 +77,7 @@ Nessun medico esterno accede ai certificati.
 2. Stato «in revisione».
 3. Lo staff approva oppure rifiuta. Il rifiuto richiede un motivo visibile al giocatore.
 4. Il motivo di rifiuto **non** è copiato nelle email (niente dettaglio sanitario nel canale). Resta nell’area documenti.
-5. Il giocatore può sostituire il file. La regola è conservare solo l’ultimo approvato; la cancellazione del file precedente non è ancora automatica.
+5. Il giocatore può sostituire il file. Si conserva l’esito di verifica; il blob sostituito o rifiutato viene cancellato dallo storage. Il rifiuto può usare il motivo «contenuto sanitario eccedente il certificato richiesto» (controllo umano, non automatico).
 6. L’iscrizione può proseguire mentre il certificato è in revisione o rifiutato: il passo privacy non aspetta l’approvazione.
 7. In approvazione lo staff registra la data di scadenza letta sul certificato.
 
@@ -88,9 +89,9 @@ I file caricati sono sottoposti a scansione antivirus tramite Cloudflare Malicio
 
 ## 7. Conservazione
 
-La copia resta fino a 90 giorni dopo la conclusione del torneo locale (`endsAt` dell’edizione), poi va cancellata. Va cancellata prima in caso di ritiro. Su richiesta dell’interessato va cancellata se non c’è un motivo che ne imponga la conservazione. Si conserva solo l’ultimo file approvato. Non c’è un obbligo di tenuta ulteriore per controversie o assicurazione. L’esito della verifica può restare separato dal file. Backup del database: Neon Point-in-Time Restore, fino a 30 giorni.
+La copia resta fino a 90 giorni dopo la conclusione del torneo locale (`endsAt` dell’edizione), poi il file viene cancellato dallo storage. Va cancellata prima in caso di ritiro. Su richiesta dell’interessato va cancellata se non c’è un motivo che ne imponga la conservazione. Si conserva l’esito della verifica. Backup del database: Neon Point-in-Time Restore, fino a 30 giorni. **DA VALIDARE LEGALMENTE.**
 
-La cancellazione automatica a 90 giorni non è ancora un processo schedulato: fino a quel collegamento la copia resta nello storage privato.
+Un job applicativo, invocabile anche da route protetta da segreto, applica scadenza `EXPIRED`, cancellazione dei blob sostituiti/rifiutati e cancellazione del file approvato a 90 giorni da `endsAt`.
 
 Non c’è un pulsante «elimina definitivamente il certificato» indipendente dalla sostituzione.
 

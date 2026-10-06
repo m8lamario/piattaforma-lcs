@@ -12,6 +12,10 @@ function isOrgAdmin(actor: Actor) {
   return actor.roles.some((role) => role.role === "ORGANIZATION_ADMIN");
 }
 
+function isMedicalReviewer(actor: Actor) {
+  return actor.roles.some((role) => role.role === "MEDICAL_REVIEWER");
+}
+
 function isTeamRepFor(actor: Actor, teamId?: string) {
   if (!teamId) return false;
   return actor.roles.some(
@@ -35,6 +39,7 @@ function isCompetitionOrganizerFor(actor: Actor, competitionId?: string) {
 }
 
 const SUPER_ONLY: Action[] = ["platform:admin", "user:delete", "user:anonymize", "email:compose"];
+const ORG_ADMIN_DENIED: Action[] = [...SUPER_ONLY, "document:read_file", "document:review"];
 
 export function authorize(
   actor: Actor,
@@ -50,10 +55,26 @@ export function authorize(
   }
 
   if (isOrgAdmin(actor)) {
-    if (SUPER_ONLY.includes(action)) {
-      return deny("Solo Super Admin può gestire la piattaforma.");
+    if (ORG_ADMIN_DENIED.includes(action)) {
+      return deny(
+        action === "document:read_file" || action === "document:review"
+          ? "Il file del certificato è riservato al revisore."
+          : "Solo Super Admin può gestire la piattaforma.",
+      );
     }
     return { allow: true };
+  }
+
+  if (isMedicalReviewer(actor)) {
+    if (
+      action === "document:read_file" ||
+      action === "document:review" ||
+      action === "document:read_status" ||
+      action === "registration:read"
+    ) {
+      return { allow: true };
+    }
+    return deny("Questo ruolo può solo revisionare i certificati.");
   }
 
   switch (action) {

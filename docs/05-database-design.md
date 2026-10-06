@@ -13,6 +13,9 @@ erDiagram
   User ||--o{ TeamMembership : member
   PlayerProfile ||--o{ Guardian : has
   PlayerProfile ||--o{ Registration : files
+  Guardian ||--o{ GuardianAuthorization : authorizes
+  GuardianAuthorization ||--o{ GuardianAuthorizationDecision : records
+  GuardianAuthorization ||--o| GuardianLinkToken : uses
   Competition ||--o{ Edition : has
   Edition ||--o{ Team : has
   School ||--o{ Team : has
@@ -21,6 +24,7 @@ erDiagram
   Team ||--o{ Registration : roster
   Registration ||--o{ Document : attaches
   Registration ||--o{ Payment : pays
+  Registration ||--o{ GuardianAuthorization : awaits
   LegalDocument ||--o{ LegalDocumentVersion : versions
   LegalDocumentVersion ||--o{ ConsentRecord : accepted
   Registration ||--o{ ConsentChoice : boxes
@@ -43,6 +47,7 @@ Tabelle `User`, `Account`, `Session`, `VerificationToken` secondo Auth.js Prisma
 | PLAYER | null (lo scope giocatore è il proprio user) | null |
 | TEAM_REPRESENTATIVE | required | null |
 | ORGANIZATION_ADMIN | null | null |
+| MEDICAL_REVIEWER | null | null |
 | SUPER_ADMIN | null | null |
 | COMPETITION_ORGANIZER | null | required |
 
@@ -64,9 +69,23 @@ Un rappresentante che è anche giocatore ha `TEAM_REPRESENTATIVE` + membership `
 
 - firstName, lastName, relationship, email, phone
 - `kind` PRIMARY | SECONDARY
-- `soleResponsibility` sul contatto primario se G3 = unico esercente
+- `soleResponsibility` sul contatto primario se il minore indica unico esercente (dato, non autorizzazione)
 - `metadata Json`
-- Almeno un guardian required in applicazione se minore, non necessariamente constraint SQL (un profilo può essere salvato a metà). Unique `(playerProfileId, email)` per evitare duplicati.
+- Unique `(playerProfileId, email)`
+- Relazioni: `GuardianAuthorization`, `GuardianLinkToken`, consensi
+
+**GuardianAuthorization** — prova dell’intervento del genitore
+
+- guardianId, playerProfileId, registrationId, tokenId
+- status PENDING | OPENED | AUTHORIZED | REFUSED | EXPIRED | SUPERSEDED | REVOKED
+- authorizationType ENROLLMENT | PUBLICATION
+- requestedAt, openedAt, authorizedAt, revokedAt
+- ipAddress, userAgent, legalDocumentVersionId
+- Cambio genitore: nuova riga, precedente SUPERSEDED. Nessun overwrite di una riga già autorizzata.
+
+**GuardianAuthorizationDecision** — append-only: code, accepted, clauseText, legalDocumentVersionId, createdAt
+
+**GuardianLinkToken** — hash SHA-256, expiresAt, usedAt, purpose (AUTHORIZE | REVOKE | PUBLICATION), guardianId, playerProfileId. Plaintext solo nell’email.
 
 ## 5. Competizione e squadra
 
@@ -125,7 +144,7 @@ Vincolo di database, non solo applicativo: `Registration (teamId, editionId)` �
 - storageKey, mimeType, sizeBytes, checksumSha256
 - originalFilename (sanitizzato)
 - status UPLOADED|PENDING_REVIEW|APPROVED|REJECTED|EXPIRED|REPLACED
-- uploadedAt, expiresAt, replacedById
+- uploadedAt, expiresAt, replacedById, blobPurgedAt
 - **nessun byte del file**
 
 **DocumentReview**
@@ -142,17 +161,16 @@ Vincolo di database, non solo applicativo: `Registration (teamId, editionId)` �
 
 - userId, legalDocumentVersionId, registrationId nullable
 - consentType REQUIRED|OPTIONAL
-- accepted (boolean: un record di rifiuto esplicito è permesso per opzionali; i required esistono solo se accepted=true)
-- acceptedAt
-- ipAddress, userAgent (traccia tecnica; retention OPEN_DECISIONS)
-- guardianId nullable: valorizzato sulla conferma C1 del secondo genitore, non sulle caselle del giocatore
+- accepted, acceptedAt, ipAddress, userAgent
+- clauseText, actorKind USER|GUARDIAN_LINK, actorRole
+- guardianId nullable: valorizzato sugli atti del link genitore
 
 **ConsentChoice** — registro caselle (append-only)
 
-- userId, registrationId, code (`T1`, `M1`…`M11`, `G2`…`G14`, `C1`)
+- userId, registrationId, code (`T1`, `M1`…`M11`, `G1`…`G14`, `C1`)
 - accepted, value opzionale (G3: `OTHER_PARENT` | `SOLE`)
-- source (`WEB` | `EMAIL_C1` | `EMAIL_OPTIN` | `REVOKE` | `AREA`)
-- legalDocumentVersionId nullable, guardianId nullable, ip, userAgent, createdAt
+- source (`WEB` | `GUARDIAN_LINK` | `EMAIL_C1` | `EMAIL_OPTIN` | `REVOKE` | `AREA`)
+- legalDocumentVersionId, clauseText, guardianId, actorKind, actorRole, ip, userAgent, createdAt
 - Nessun `updatedAt`: le revoche sono un nuovo evento
 
 **ConsentToken** — C1 e doppio opt-in marketing (hash del token, scadenza, usedAt, reminderSentAt)
@@ -194,11 +212,13 @@ Indici: `EmailMessage` status+queuedAt, purpose+queuedAt, userId, actorUserId, p
 **AuditLog**
 
 - actorUserId nullable (sistema)
-- action (enum string: DOCUMENT_VIEW, CONSENT_ACCEPT, LOGIN, INVITE_CREATE, …)
+- actorKind USER|GUARDIAN_LINK|SYSTEM, actorRole, guardianId, authorizationId, legalDocumentVersionId
+- action (enum string: DOCUMENT_VIEW, CONSENT_ACCEPT, GUARDIAN_AUTHORIZE, …)
 - entityType, entityId
 - metadata Json redatto
 - ip, userAgent
-- createdAt (no updatedAt necessario; se Prisma convention richiede updatedAt, si aggiunge)
+- createdAt
+- Nessuna API di update o delete. `writeAuditLog` fail-closed.
 
 Indici: `actorUserId`, `entityType+entityId`, `createdAt`.
 

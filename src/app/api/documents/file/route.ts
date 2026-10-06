@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
 
   const actor = await getActorByUserId(session.user.id);
   const document = await getDocumentById(parsed.documentId);
-  if (!actor || !document) return notFound();
+  if (!actor || !document || document.blobPurgedAt) return notFound();
 
   const decision = authorize(actor, "document:read_file", {
     ownerUserId: document.playerProfile.userId,

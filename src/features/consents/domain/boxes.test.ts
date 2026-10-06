@@ -56,6 +56,7 @@ describe("caselle LCS 2026-27", () => {
 
   it("non attiva le foto del minore senza C1, anche se G9 è spuntata", () => {
     const map = mapOf([
+      { code: "G1", accepted: true },
       { code: "G3", accepted: true, value: "OTHER_PARENT" },
       { code: "G9", accepted: true },
       { code: "G14", accepted: true },
@@ -67,6 +68,7 @@ describe("caselle LCS 2026-27", () => {
 
   it("attiva G5 e G9 dopo C1 e G14 dai 14 anni", () => {
     const map = mapOf([
+      { code: "G1", accepted: true },
       { code: "G3", accepted: true, value: "OTHER_PARENT" },
       { code: "G5", accepted: true },
       { code: "G9", accepted: true },
@@ -82,6 +84,7 @@ describe("caselle LCS 2026-27", () => {
 
   it("sotto i 14 anni non richiede G14 dopo C1", () => {
     const map = mapOf([
+      { code: "G1", accepted: true },
       { code: "G3", accepted: true, value: "OTHER_PARENT" },
       { code: "G9", accepted: true },
       { code: "C1", accepted: true },
@@ -92,6 +95,7 @@ describe("caselle LCS 2026-27", () => {
 
   it("con unico esercente attiva subito, senza C1", () => {
     const map = mapOf([
+      { code: "G1", accepted: true },
       { code: "G3", accepted: true, value: "SOLE" },
       { code: "G9", accepted: true },
       { code: "G14", accepted: true },

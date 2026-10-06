@@ -1,6 +1,8 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { maybeSendC1Reminder } from "@/features/consents/data/tokens";
+import { maybeSendGuardianReminder } from "@/features/consents/data/guardianAuth";
+import { EmailVerifyNotice } from "@/features/auth/ui/EmailVerifyNotice";
 import { loadPlayerWorkspace, persistRegistrationStatus } from "@/features/registrations/data/workspace";
 import { RegistrationDashboard } from "@/features/registrations/ui/Dashboard";
 import { ButtonLink } from "@/shared/ui/Button";
@@ -24,11 +26,14 @@ export default async function AreaPage() {
   }
   if (workspace) {
     void maybeSendC1Reminder(workspace.registration.id).catch(() => undefined);
+    void maybeSendGuardianReminder(workspace.registration.id).catch(() => undefined);
   }
 
   if (workspace) {
     return (
-      <RegistrationDashboard
+      <>
+        {!workspace.user.emailVerified ? <EmailVerifyNotice /> : null}
+        <RegistrationDashboard
         competitionName={workspace.registration.competitionName}
         editionName={workspace.registration.editionName}
         teamName={workspace.registration.teamName}
@@ -43,6 +48,7 @@ export default async function AreaPage() {
         }}
         identityConflict={workspace.identityConflict}
       />
+      </>
     );
   }
 

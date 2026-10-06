@@ -266,10 +266,13 @@ export async function redeemInviteAction(
       ...trace,
     });
 
+    const { sendEmailVerification } = await import("@/features/auth/data/emailVerification");
+    await sendEmailVerification({ userId: result.user.id, email: result.user.email });
+
     await signIn("credentials", {
       email: result.user.email,
       password: parsed.data.password,
-      redirectTo: "/area",
+      redirectTo: "/verifica-email",
     });
     return {};
   } catch (error) {
@@ -404,10 +407,13 @@ export async function joinTeamAction(
       ...trace,
     });
 
+    const { sendEmailVerification } = await import("@/features/auth/data/emailVerification");
+    await sendEmailVerification({ userId: result.user.id, email: result.user.email });
+
     await signIn("credentials", {
       email: result.user.email,
       password: parsed.data.password,
-      redirectTo: "/area",
+      redirectTo: "/verifica-email",
     });
     return {};
   } catch (error) {

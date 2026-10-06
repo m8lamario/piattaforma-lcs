@@ -46,27 +46,48 @@ Regole:
 
 ## 3. Percorso giocatore (post-M0)
 
-Passi guidati, uno schermo alla volta, salvataggio per passo:
+Passi guidati, uno schermo alla volta, salvataggio per passo. L’account si crea dal link di squadra; l’email va verificata **prima** di anagrafica, consensi, upload e pagamento.
 
-1. Dati personali
-2. Genitore/tutore **solo se minore** (contatto 1 + G3: altro genitore o unico esercente)
-3. Certificato medico (upload della copia)
-4. Privacy / informative + T1, casella salute, marketing/partner/opt-out
-5. Liberatorie foto/video/social (una casella per uso; G14 dai 14 anni)
-6. Pagamento (se dovuto al giocatore)
-7. Riepilogo e “cosa succede ora”
+### Maggiorenne
 
-L’utente può uscire, **aprire ogni passo dalla dashboard** e riprendere. Dopo i dati personali, i passi successivi (incluso il certificato ancora da caricare) sono navigabili: si può completarne uno, saltarne temporaneamente un altro e tornarci dopo. La dashboard mostra il progresso **N/M completati** e il prossimo passo **finché** restano voci da fare o in attenzione. Se lo stato è `APPROVED` o `WITHDRAWN`, o la checklist è completa, non c’è CTA “Continua” verso il wizard.
+1. Verifica email
+2. Dati personali e controllo età
+3. Informative e condizioni necessarie (T1, presa visione, casella salute M3)
+4. Upload del certificato
+5. Revisione del file da `MEDICAL_REVIEWER` (o Super Admin)
+6. Liberatorie per canale (M7–M11)
+7. Marketing separato (M4/M5/M6)
+8. Pagamento (se dovuto al giocatore)
+9. Riepilogo e email di riepilogo
+
+### Minorenne (account del minore)
+
+1. Verifica email
+2. Dati personali e controllo età
+3. Contatti del genitore (nome, cognome, email, telefono; altro genitore o unico esercente come **dato inserito**, non come autorizzazione)
+4. Lettura delle informative (senza chiudere gli atti riservati al genitore)
+5. Upload del certificato (la revisione resta allo staff)
+6. Assenso immagini G14 (dai 14 anni), sull’account del minore
+7. Pagamento solo **dopo** l’autorizzazione di iscrizione del genitore
+8. Riepilogo: dati del minore, atti del minore, attesa o esito del genitore
+
+Il wizard del minore **non** registra G1, G2, G4, G5–G13 né marketing. Quelle caselle le compie il genitore sul link. Il frontend non è una barriera: le server action rifiutano la sessione del minore.
+
+L’utente può uscire, **aprire ogni passo dalla dashboard** e riprendere. Dopo i dati personali, i passi successivi (incluso il certificato ancora da caricare) sono navigabili, salvo i gate server. La dashboard mostra il progresso **N/M completati** e il prossimo passo **finché** restano voci da fare o in attenzione. Se lo stato è `APPROVED` o `WITHDRAWN`, o la checklist è completa, non c’è CTA “Continua” verso il wizard.
 
 Fuori dalla finestra `registrationOpensAt`/`registrationClosesAt`: il link di squadra non crea nuovi account, e scritture wizard e checkout sono bloccati.
 
-## 4. Minore
+## 4. Minore e autorizzazione del genitore
 
 1. Data di nascita → `isMinor = age < 18` (assunzione, da validare).
-2. Se minore, il passo guardian è **obbligatorio per lo stato `APPROVED`**, ma non blocca l’apertura degli altri passi.
-3. Consensi con audience `MINOR` e caselle G* dell’account minore; C1 è l’email al secondo genitore (OD-046).
-4. Il login resta del minore. Se c’è `Guardian.email`, le comunicazioni di servizio (stesso `title` della notifica, niente body sanitario) possono partire anche al tutore. Non è una firma del genitore (OD-002/032).
-5. Non si afferma che il click digitale del minore o del genitore abbia valore legale: tracciamo le caselle; la validità è OPEN_DECISIONS.
+2. Il passo tutore salva solo il contatto e apre una `GuardianAuthorization` `PENDING`. Email del genitore uguale a quella del minore, e nome-cognome identici al minore, sono rifiutati.
+3. Il sistema invia al contatto un’email di **richiesta di autorizzazione** (non una copia delle email del minore) con token crittografico, hashato, con scadenza, senza PII nel token.
+4. La pagina `/autorizzazione-genitore/[token]` mostra minore, torneo, finalità, documenti della versione corrente, trattamento del certificato, liberatorie distinte. Il genitore dichiara il ruolo (G1) e compie gli atti. Ogni scelta è un atto del `guardianId`, non del `userId` del minore.
+5. `GUARDIAN_IF_MINOR` e `PRIVACY` (percorso minore) sono completi solo con autorizzazione `ENROLLMENT` in stato `AUTHORIZED`. Senza, niente `APPROVED` e niente checkout giocatore.
+6. Se il contatto indica un altro genitore, il secondo riceve un link `PUBLICATION` (evoluzione di C1) per foto/video e cognome completo. Per giocare basta l’atto del contatto principale. Se anche l’iscrizione richieda entrambi: **DA VALIDARE LEGALMENTE**.
+7. G14 resta l’assenso del minore dai 14 anni, distinto dall’autorizzazione del genitore.
+8. Revoca: link dedicato `/revoca-genitore/[token]` senza login del minore. Lo storico precedente resta. Notifica interna con i canali da ritirare. La rimozione da social esterni resta organizzativa (OD-031).
+9. Non si introduce SPID, CIE o upload di documento d’identità. Non si afferma che il click abbia valore legale: OD-002 resta aperto.
 
 ## 5. Documento medico
 
@@ -74,13 +95,16 @@ Fuori dalla finestra `registrationOpensAt`/`registrationClosesAt`: il link di sq
 2. Validazione MIME reale + estensione; virus scanning è OPEN_DECISIONS.
 3. Metadata persistiti; blob privato.
 4. Stato `UPLOADED` / `PENDING_REVIEW`.
-5. Admin apre via signed URL (TTL breve), audit `DOCUMENT_VIEW`.
-6. Approve oppure reject + motivo obbligatorio → giocatore vede CTA “carica di nuovo”.
-7. Replace: il documento precedente passa a `REPLACED`, non si perde la storia.
+5. Solo `MEDICAL_REVIEWER` e Super Admin aprono il file via signed URL (TTL breve), audit `DOCUMENT_VIEW`. Org Admin e rappresentante vedono lo stato.
+6. Approve oppure reject + motivo obbligatorio (incluso «contenuto sanitario eccedente il certificato richiesto») → giocatore vede CTA “carica di nuovo”.
+7. Replace: il documento precedente passa a `REPLACED`. Il blob sostituito o rifiutato si cancella dallo storage; la riga di esito resta (`blobPurgedAt`).
+8. A 90 giorni da `Edition.endsAt` (e in anticipo sul ritiro) il job di retention cancella il file approvato e conserva l’esito di verifica. `EXPIRED` quando `expiresAt` è passato.
+
+La base giuridica della **copia** del certificato resta OD-035: **DA VALIDARE LEGALMENTE**.
 
 Il rappresentante vede solo lo stato, mai l’URL.
 
-Sul passo upload compare un **avviso operativo**: la piattaforma conserva una copia per la revisione; i moduli 2026-27 chiedevano solo presentazione e scadenza. L’informativa resta in `document-processing`; la casella salute M3/G4 è nel passo privacy. La revisione del file è **umana** (accetta/rifiuta): nessuna verifica automatica o AI in v1.
+Sul passo upload compare un **avviso operativo**: la piattaforma conserva una copia per la revisione. L’informativa resta in `document-processing`; la casella salute M3 (adulto) o G4 (genitore del minore) è distinta dalla presa visione. La revisione del file è **umana** (accetta/rifiuta): nessuna verifica automatica o AI.
 
 ## 6. Review organizzazione
 

@@ -7,13 +7,15 @@ import { parseDateOnly } from "@/features/players/domain/dates";
 import { guardianSchema } from "@/features/players/schemas/guardian";
 import { personalDataSchema } from "@/features/players/schemas/personal";
 import { loadPlayerWorkspace, persistRegistrationStatus, saveGuardianProfile, savePersonalProfile } from "@/features/registrations/data/workspace";
-import { ensureC1Sent } from "@/features/consents/data/followup";
+import { requestEnrollmentAuthorization } from "@/features/consents/data/guardianAuth";
+import { selfAsGuardianReason } from "@/features/consents/domain/guardianAuth";
 import { nextStepAfter } from "@/features/registrations/domain/wizard";
 import { workspaceWriteCode } from "@/features/registrations/domain/writeGate";
 import { authorize } from "@/shared/authz/authorize";
 import { getActorByUserId } from "@/shared/authz/getActor";
 import { fail, failValidation, type ActionFailure } from "@/shared/errors";
 import { writeAuditLog } from "@/shared/lib/audit";
+import { prisma } from "@/shared/lib/prisma";
 import {
   RATE_LIMITS,
   clientKey,
@@ -46,6 +48,13 @@ async function requireWritableRegistration() {
   const windowCode = workspaceWriteCode(workspace.registration);
   if (windowCode) {
     return { failure: fail(windowCode), session, actor, workspace: null };
+  }
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { emailVerified: true },
+  });
+  if (!user?.emailVerified) {
+    return { failure: fail("AUTH_EMAIL_NOT_VERIFIED"), session, actor, workspace: null };
   }
   return { failure: undefined as ActionFailure | undefined, session, actor, workspace };
 }
@@ -147,12 +156,22 @@ export async function saveGuardianAction(
     secondFirstName: formData.get("secondFirstName"),
     secondLastName: formData.get("secondLastName"),
     secondEmail: formData.get("secondEmail"),
-    g1: formData.get("g1") === "on",
     intent: formData.get("intent") || "continue",
   });
   if (!parsed.success) {
     return failValidation(parsed.error.issues[0]?.message);
   }
+
+  const selfReason = selfAsGuardianReason({
+    playerFirstName: access.workspace.profile.firstName,
+    playerLastName: access.workspace.profile.lastName,
+    playerEmail: access.workspace.user.email,
+    guardianFirstName: parsed.data.firstName,
+    guardianLastName: parsed.data.lastName,
+    guardianEmail: parsed.data.email,
+  });
+  if (selfReason === "email") return fail("GUARDIAN_EMAIL_IS_PLAYER");
+  if (selfReason === "name") return fail("GUARDIAN_SELF");
 
   const rateKey = await clientKey(`guardian:${access.session.user!.id}`);
   if (!(await consumeRateLimit(rateKey, RATE_LIMITS.profileWrite.limit, RATE_LIMITS.profileWrite.windowMs))) {
@@ -182,7 +201,15 @@ export async function saveGuardianAction(
   const updated = await loadPlayerWorkspace(access.session.user!.id);
   if (updated) {
     await persistRegistrationStatus(updated.registration.id, updated.projectedStatus);
-    await ensureC1Sent(updated.registration.id);
+    await requestEnrollmentAuthorization({
+      registrationId: updated.registration.id,
+      playerProfileId: updated.profile.id,
+      playerUserId: access.session.user!.id,
+      guardianId: saved.primaryId,
+      guardianEmail: parsed.data.email,
+      playerName: `${updated.profile.firstName} ${updated.profile.lastName}`.trim(),
+      tournamentName: `${updated.registration.competitionName} — ${updated.registration.editionName}`,
+    });
   }
 
   await writeAuditLog({

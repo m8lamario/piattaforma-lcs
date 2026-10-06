@@ -18,7 +18,7 @@ Ogni voce: problema, opzioni, decisione necessaria, conseguenze, impatto sullo s
 - **Opzioni:** email genitore con conferma; SPID/CIE genitore; carta identità; solo tracciamento + processo offline.
 - **Decisione necessaria:** parere legale + processo organizzativo.
 - **Conseguenze:** può aggiungere entità `GuardianVerification`.
-- **Impatto:** M4 si blocca sulla **validità**, non sulla **registrazione tecnica** del consenso. Workaround prodotto (OD-046): tracciare le caselle dell’account loggato; C1 conferma le scelte di pubblicazione via email al secondo genitore; non dichiarare validità legale.
+- **Workaround:** tracciare le caselle con attore esplicito. Per i minorenni gli atti riservati al genitore passano da `GuardianAuthorization` (link email, senza SPID/CIE). La **validità** giuridica del click resta aperta.
 
 ## OD-003 Email del minore come login
 
@@ -202,7 +202,7 @@ Già coperti: no PWA in M0; scan OD-021.
 - **Opzioni:** purge a fine edizione; N anni; obbligo sportivo più lungo; cancellazione su richiesta con eccezioni.
 - **Decisione necessaria:** legale + organizzazione sanitaria/regolamenti (lega OD-005).
 - **Conseguenze:** job di purge e regole storage.
-- **Impatto:** nessuno strutturale ora. Workaround: storia completa, nessuna cancellazione automatica.
+- **Impatto:** job invocabile (route protetta da segreto): 90 giorni da `endsAt`, ritiro, sostituiti/rifiutati. L’esito di verifica resta. Backup Neon: **DA DEFINIRE/VALIDARE LEGALMENTE**.
 
 ## OD-031 Ritiro liberatoria media e materiale già pubblicato
 
@@ -325,14 +325,14 @@ Già coperti: no PWA in M0; scan OD-021.
 
 ## OD-046 Modello consenso hub vs moduli LCS 2026-27
 
-- **Problema:** I moduli in `Moduli_privacy_LCS_2026-27` (file 08) chiedono che per i minorenni compili un genitore, con conferma email del secondo genitore (C1), e vietano di conservare copia del certificato. La constitution §2.9 dice che l’account è del giocatore e il tutore è un contatto. Incollare i quattro testi nel wizard senza adattare il flusso attribuirebbe i click alla persona sbagliata.
-- **Opzioni:** (a) adeguare il hub al compilante-genitore (rompe la constitution); (b) far riscrivere i moduli sul modello account-del-minore; (c) tenere l’account del giocatore, usare le caselle del file 08 adattate a chi clicca, lasciare i body markdown come placeholder finché il consulente non li riscrive.
-- **Decisione di prodotto (c), aggiornata col pacchetto del 5 ottobre 2026:** constitution vince su *chi* clicca. G1 è una dichiarazione obbligatoria nel passo tutore (H6). Nome e cognome del secondo genitore sono obbligatori se G3 = altro genitore (H3). Iscrizione dai 14 anni compiuti (H7). Il codice fiscale deve coincidere con la data di nascita (H8). Nessuna classe (H1). Nessuna esenzione CF (H2). Email e telefono del minore restano obbligatori (H9). Ruolo e maglia restano al rappresentante (H10). C1 è l’unico atto del secondo genitore. Non si afferma che il click abbia valore di firma genitoriale (OD-002 resta aperto).
-- **Certificato:** il pacchetto sezione E (approvato per la pubblicazione) tiene la copia 90 giorni dopo il torneo locale e chiede allo staff la data di scadenza in approvazione. La casella H4 «senza copia» non è applicata, perché contraddice E. Il modulo cartaceo (H5) è deciso e non è ancora una schermata.
-- **Liberatoria:** i cinque usi sono caselle facoltative. Il passo va compilato (anche tutte vuote). `MEDIA_RELEASE` required in edizione non può obbligare l’accettazione degli usi.
-- **Partner:** casella visibile solo se `content/legal/partners.json` elenca società per nome.
-- **Conseguenze:** `ConsentChoice` append-only per codice casella; `ConsentToken` per C1 e doppio opt-in; `/area/consensi` per revoca, export, richiesta di cancellazione; flag pubblicabile calcolato, visibile a staff e rappresentante (non i recapiti).
-- **Impatto:** wizard privacy/liberatorie/tutore, schema, email C1/opt-in, rosa e scheda admin.
+- **Problema:** I moduli in `Moduli_privacy_LCS_2026-27` chiedono che per i minorenni compili un genitore. La constitution §2.9 dice che l’account è del giocatore. Attribuire le caselle alla sessione del minore registra l’attore sbagliato.
+- **Opzioni:** (a) login del genitore (rompe constitution §2.9); (b) far riscrivere i moduli sul modello account-del-minore; (c) account del minore + **link di autorizzazione** del genitore per gli atti riservati, senza login del genitore.
+- **Decisione di prodotto (c), aggiornata:** constitution vince su *chi ha l’account*. Il minore inserisce i propri dati e i **contatti** del genitore. Quell’inserimento non è un’autorizzazione. G1, T1/G2, G4, G5–G13 e marketing del minore li registra il genitore su `/autorizzazione-genitore/[token]` come `GuardianAuthorization` + `ConsentChoice` con `guardianId` e `actorKind=GUARDIAN_LINK`. G14 resta sull’account del minore. C1 resta il link `PUBLICATION` del secondo genitore. Per giocare basta `ENROLLMENT` del contatto principale. Se anche l’iscrizione richieda entrambi: **DA VALIDARE LEGALMENTE**.
+- **Certificato:** la copia resta 90 giorni dopo `endsAt` e si cancella al ritiro; i sostituiti si purgano. Casella salute G4 sul link genitore. Base giuridica della copia: OD-035.
+- **Liberatoria:** i cinque usi restano facoltativi e separati. Completare il passo del minore = G14 (se applicabile) + attesa o esito del genitore.
+- **Non si afferma** che il click abbia valore di firma genitoriale. OD-002 resta aperto. Non si introduce SPID/CIE/documento d’identità.
+- **Conseguenze:** `GuardianAuthorization`, token monouso, email dedicate, revoca dal link, audit fail-closed, ruolo `MEDICAL_REVIEWER`.
+- **Impatto:** wizard, schema, email, rosa, scheda admin, `/admin/audit`.
 
 ---
 

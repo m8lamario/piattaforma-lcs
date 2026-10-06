@@ -32,7 +32,7 @@ export type ConsentBoxCode = (typeof CONSENT_BOX_CODES)[number];
 
 export type ConsentBoxPath = "adult" | "minor" | "both";
 export type ConsentBoxKind = "required" | "play" | "optional" | "opt_out" | "confirmation";
-export type ConsentBoxStep = "privacy" | "liberatorie" | "tutore" | "email";
+export type ConsentBoxStep = "privacy" | "liberatorie" | "tutore" | "email" | "guardian";
 export type G3Value = "OTHER_PARENT" | "SOLE";
 
 export type ConsentBoxDef = {
@@ -57,7 +57,7 @@ export const CONSENT_BOXES: ConsentBoxDef[] = [
   { code: "M9", path: "adult", kind: "optional", step: "liberatorie", labelKey: "boxM9" },
   { code: "M10", path: "adult", kind: "optional", step: "liberatorie", labelKey: "boxM10" },
   { code: "M11", path: "adult", kind: "optional", step: "liberatorie", labelKey: "boxM11" },
-  { code: "G1", path: "minor", kind: "required", step: "tutore", labelKey: "boxG1" },
+  { code: "G1", path: "minor", kind: "required", step: "guardian", labelKey: "boxG1" },
   { code: "G2", path: "minor", kind: "required", step: "privacy", labelKey: "boxG2" },
   { code: "G3", path: "minor", kind: "required", step: "tutore", labelKey: "boxG3" },
   { code: "G4", path: "minor", kind: "play", step: "privacy", labelKey: "boxG4" },
@@ -156,9 +156,10 @@ export function mediaActivation(input: {
   map: Map<string, ChoiceSnapshot>;
 }) {
   if (!input.isMinor) return true;
+  const declared = latestAccepted(input.map, "G1");
   const soleOrConfirmed = g3Value(input.map) === "SOLE" || latestAccepted(input.map, "C1");
   const agreement = !input.needsAgreement || latestAccepted(input.map, "G14");
-  return soleOrConfirmed && agreement;
+  return declared && soleOrConfirmed && agreement;
 }
 
 export function isBoxActive(

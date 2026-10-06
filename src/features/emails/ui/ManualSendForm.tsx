@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { useActionState } from "react";
 import { previewManualEmailAction, sendManualEmailAction } from "@/features/emails/actions";
 import { MANUAL_TEMPLATE_KEYS } from "@/features/emails/domain/catalog";
 import { emailPurposeLabel } from "@/features/emails/ui/labels";
@@ -29,6 +29,7 @@ type Props = {
   q: string;
   canCompose: boolean;
   copyGuardianAllowed: boolean;
+  idempotencyKey: string;
 };
 
 export function ManualSendForm({
@@ -37,13 +38,10 @@ export function ManualSendForm({
   q,
   canCompose,
   copyGuardianAllowed,
+  idempotencyKey,
 }: Props) {
   const [preview, previewAction] = useActionState(previewManualEmailAction, undefined);
   const [sent, sendAction] = useActionState(sendManualEmailAction, undefined);
-  const [idempotencyKey, setIdempotencyKey] = useState("");
-  useEffect(() => {
-    setIdempotencyKey((current) => current || crypto.randomUUID());
-  }, []);
 
   return (
     <div className={styles.colMain}>

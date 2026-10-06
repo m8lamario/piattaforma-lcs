@@ -16,13 +16,13 @@ Leonessa Cup e altri siti locali **non** vengono modificati da questo repository
 
 1. **Chiarezza prima della densità.** Percorso guidato, checklist, stati espliciti. Adatto a utenti giovani e a chi non è abituato ai moduli online.
 2. **Sicurezza e privacy by design.** Dati personali, minori, certificati medici, consensi e pagamenti sono il cuore del rischio. Non si ottimizza per “far funzionare il form”.
-3. **Tracciabilità.** Consensi versionati, audit sugli accessi ai documenti sanitari, log senza payload inutilmente sensibili.
+3. **Tracciabilità.** Ogni atto (accettazione, rifiuto, revoca, apertura file) registra chi, quando, su quale documento e versione, con quale ruolo o link, IP e user agent. Lo storico è append-only. I log non contengono payload inutilmente sensibili.
 4. **Deny by default.** Autorizzazione server-side, scoped. Un ID in URL o API non basta.
 5. **Estendibilità senza riscrittura.** Competizioni, edizioni, squadre, requisiti, informative e campi profilo devono poter crescere.
 6. **Nessuna invenzione legale o commerciale.** Placeholder espliciti. Le decisioni aperte vivono in `OPEN_DECISIONS.md`.
 7. **Nessun dark pattern.** I consensi non necessari non sono obbligatori per sbloccare l’iscrizione.
 8. **Documentazione come fonte di verità.** Il codice segue i documenti. Una decisione nuova si scrive nei docs, poi si implementa.
-9. **Una persona, un account.** Anche i minorenni hanno un account proprio. Il genitore/tutore è un contatto collegato, non il titolare del login.
+9. **Una persona, un account.** Anche i minorenni hanno un account proprio. Il genitore/tutore è un contatto collegato, non il titolare del login. L’inserimento dei dati del genitore da parte del minore non è un’autorizzazione. Gli atti che richiedono il genitore si registrano dal link dedicato, come azione del guardian, non della sessione del minore. La validità giuridica di quel click resta OD-002.
 10. **Ingresso controllato.** In v1 non esiste iscrizione pubblica da catalogo. Ogni squadra ha un solo link di iscrizione: il rappresentante lo condivide, il giocatore indica la propria email nel form. Gli inviti staff restano personali.
 
 ## 3. Cosa il prodotto è / non è
@@ -38,12 +38,13 @@ Leonessa Cup e altri siti locali **non** vengono modificati da questo repository
 
 ## 4. Ruoli v1
 
-- **Player** — gestisce il proprio account e la propria registrazione.
+- **Player** — gestisce il proprio account e la propria registrazione. Il minorenne non può chiudere da solo gli atti riservati al genitore.
 - **Team Representative** — gestisce roster e informazioni consentite della propria squadra. Vede lo **stato** dei documenti medici, mai il file.
-- **Organization Admin** — gestisce giocatori, squadre, documenti, consensi, pagamenti e registrazioni a livello ESL/LCS.
-- **Super Admin** — gestione completa della piattaforma.
+- **Organization Admin** — gestisce giocatori, squadre, consensi, pagamenti e registrazioni a livello ESL/LCS. Vede lo **stato** dei certificati, non il file.
+- **Medical Reviewer** — unico ruolo di piattaforma (oltre Super Admin) che apre e revisiona i file dei certificati, con audit di ogni accesso.
+- **Super Admin** — gestione completa della piattaforma, incluso il file medico quando necessario.
 
-Ruolo previsto nel modello permessi, non nella UI v1: **Competition Organizer** (scope `competitionId`).
+Ruolo previsto nel modello permessi, non nella UI v1: **Competition Organizer** (scope `competitionId`). Non riceve il file medico.
 
 ## 5. Vincoli di stack
 

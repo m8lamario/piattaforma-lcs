@@ -15,6 +15,8 @@ function evidence(overrides: Partial<RegistrationEvidence> = {}): RegistrationEv
     hasPersonalData: true,
     isMinor: false,
     hasGuardian: false,
+    hasGuardianContact: false,
+    guardianAuthorization: "none",
     medicalStatus: "approved",
     privacyAccepted: true,
     mediaDecision: "none",
@@ -28,6 +30,31 @@ function evidence(overrides: Partial<RegistrationEvidence> = {}): RegistrationEv
 }
 
 describe("projectChecklist", () => {
+  it("tiene il tutore in attenzione finché manca l’autorizzazione del genitore", () => {
+    const pending = projectChecklist(
+      defaultRequirements,
+      evidence({ isMinor: true, hasGuardianContact: true, guardianAuthorization: "pending" }),
+    );
+    const authorized = projectChecklist(
+      defaultRequirements,
+      evidence({
+        isMinor: true,
+        hasGuardianContact: true,
+        hasGuardian: true,
+        guardianAuthorization: "authorized",
+        privacyAccepted: true,
+        mediaDecision: "submitted",
+      }),
+    );
+    expect(pending.find((item) => item.code === "GUARDIAN_IF_MINOR")?.status).toBe("attention");
+    expect(authorized.find((item) => item.code === "GUARDIAN_IF_MINOR")?.status).toBe("complete");
+    const refused = projectChecklist(
+      defaultRequirements,
+      evidence({ isMinor: true, hasGuardianContact: true, guardianAuthorization: "refused" }),
+    );
+    expect(refused.find((item) => item.code === "GUARDIAN_IF_MINOR")?.status).toBe("attention");
+  });
+
   it("richiede il tutore solo se il giocatore è minore", () => {
     const adult = projectChecklist(defaultRequirements, evidence({ isMinor: false }));
     const minor = projectChecklist(

@@ -8,6 +8,8 @@ function evidence(overrides: Partial<RegistrationEvidence> = {}): RegistrationEv
     hasPersonalData: false,
     isMinor: false,
     hasGuardian: false,
+    hasGuardianContact: false,
+    guardianAuthorization: "none",
     medicalStatus: "none",
     privacyAccepted: false,
     mediaDecision: "none",

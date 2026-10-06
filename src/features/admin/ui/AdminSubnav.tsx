@@ -18,12 +18,14 @@ const LINKS = [
 type Props = {
   pathname: string;
   showAccounts?: boolean;
+  reviewerOnly?: boolean;
 };
 
-export function AdminSubnav({ pathname, showAccounts = false }: Props) {
+export function AdminSubnav({ pathname, showAccounts = false, reviewerOnly = false }: Props) {
+  const links = reviewerOnly ? LINKS.filter((link) => link.href === "/admin/documenti") : LINKS;
   return (
     <nav className={styles.subnav} aria-label={it.navAdmin}>
-      {LINKS.filter((link) => !("superOnly" in link && link.superOnly) || showAccounts).map((link) => {
+      {links.filter((link) => !("superOnly" in link && link.superOnly) || showAccounts).map((link) => {
         const current =
           link.href === "/admin" ? pathname === "/admin" : pathname === link.href || pathname.startsWith(`${link.href}/`);
         return (

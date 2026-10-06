@@ -25,7 +25,6 @@ export const guardianSchema = z
     secondFirstName: z.string().trim().max(80).optional(),
     secondLastName: z.string().trim().max(80).optional(),
     secondEmail: z.string().trim().optional(),
-    g1: z.boolean().refine((value) => value, { error: "Conferma di essere genitore o tutore." }),
     intent: saveIntentSchema,
   })
   .superRefine((value, ctx) => {

@@ -36,6 +36,7 @@ export default async function AdminEmailNewPage({ searchParams }: Props) {
             isMinor(selected.playerProfile.birthDate) &&
             selected.playerProfile.guardians[0]?.email,
         )}
+        idempotencyKey={crypto.randomUUID()}
       />
     </AdminFrame>
   );

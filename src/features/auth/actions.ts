@@ -14,6 +14,7 @@ import {
   createPasswordResetToken,
   findPasswordResetByToken,
 } from "@/features/auth/data/passwordReset";
+import { consumeEmailVerificationToken, sendEmailVerification } from "@/features/auth/data/emailVerification";
 import { dispatchOutboundEmail } from "@/features/emails/data/dispatch";
 import { prisma } from "@/shared/lib/prisma";
 import { writeAuditLog } from "@/shared/lib/audit";
@@ -175,4 +176,42 @@ export async function resetPasswordAction(
     entityId: user.id,
   });
   redirect("/accedi");
+}
+
+export async function verifyEmailAction(
+  _prev: ActionFailure | undefined,
+  formData: FormData,
+): Promise<ActionFailure | { done: true }> {
+  const token = String(formData.get("token") ?? "");
+  if (!isWellFormedInviteToken(token)) {
+    return fail("AUTH_EMAIL_TOKEN_INVALID");
+  }
+  const consumed = await consumeEmailVerificationToken(token);
+  if (!consumed.ok) {
+    return fail("AUTH_EMAIL_TOKEN_INVALID");
+  }
+  await writeAuditLog({
+    actorUserId: consumed.userId,
+    action: "EMAIL_VERIFY",
+    entityType: "User",
+    entityId: consumed.userId,
+  });
+  return { done: true as const };
+}
+
+export async function resendEmailVerificationAction(): Promise<ActionFailure | { sent: true }> {
+  const session = await auth();
+  if (!session?.user?.id) redirect("/accedi");
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { id: true, email: true, emailVerified: true },
+  });
+  if (!user) return fail("AUTH_ACCOUNT_MISSING");
+  if (user.emailVerified) return { sent: true };
+  const rateKey = await clientKey(`verify:${user.id}`);
+  if (!(await consumeRateLimit(rateKey, RATE_LIMITS.passwordReset.limit, RATE_LIMITS.passwordReset.windowMs))) {
+    return fail("RATE_LIMITED");
+  }
+  await sendEmailVerification({ userId: user.id, email: user.email });
+  return { sent: true };
 }

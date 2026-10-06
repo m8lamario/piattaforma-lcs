@@ -71,7 +71,7 @@ export async function listRecentReviewedMedicalDocuments() {
   return prisma.document.findMany({
     where: {
       type: { code: "MEDICAL_CERTIFICATE" },
-      status: { in: ["APPROVED", "REJECTED"] },
+      status: { in: ["APPROVED", "REJECTED", "EXPIRED"] },
     },
     orderBy: { updatedAt: "desc" },
     take: 20,
@@ -146,10 +146,15 @@ export async function storeMedicalCertificate(input: {
         data: { status: "REPLACED", replacedById: created.id },
       });
     }
-    return created;
+    return { created, replacedId: current?.id ?? null };
   });
 
-  return { ok: true as const, document };
+  if (document.replacedId) {
+    const { purgeDocumentBlob } = await import("@/features/documents/data/retention");
+    await purgeDocumentBlob(document.replacedId);
+  }
+
+  return { ok: true as const, document: document.created };
 }
 
 export async function reviewMedicalDocument(input: {
