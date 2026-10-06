@@ -1,4 +1,5 @@
 import { listCurrentLegalVersions } from "@/features/admin/data/catalog";
+import { LegalVersionNoticeForm } from "@/features/emails/ui/LegalVersionNoticeForm";
 import { AdminFrame } from "@/features/admin/ui/AdminFrame";
 import { PageHeader } from "@/shared/ui/PageHeader";
 import { it } from "@/shared/i18n/it";
@@ -17,6 +18,7 @@ export default async function AdminLegalPage() {
               <span className={styles.meta}>
                 {document.slug} · {document.versions[0]?.version ?? "—"}
               </span>
+              <LegalVersionNoticeForm slug={document.slug} />
             </span>
           </li>
         ))}

@@ -12,6 +12,8 @@ Principio: **deny by default**. Se un controllo non è esplicito, la risposta è
 | SUPER_ADMIN | globale | bootstrap |
 | COMPETITION_ORGANIZER | competitionId | schema pronto, UI non in v1 |
 
+Lo scope dell’organizer è la competition intera, non una singola edition. `authorize` consente `team:read` solo se `resource.competitionId` arriva dal record caricato e coincide col ruolo. Senza quell’id l’accesso è negato. Non riceve `admin:manage` né il file medico. Non c’è `editionId` sul ruolo: sarebbe una copia di `Team.editionId`.
+
 ## 2. Matrice (sì / stato / no)
 
 | Azione | Player | Team Rep | Org Admin | Super Admin |
@@ -33,6 +35,9 @@ Principio: **deny by default**. Se un controllo non è esplicito, la risposta è
 | Pagare quota individuale | se paymentMode lo richiede | no (salvo anche player) | no | no |
 | Pagare quota squadra | no | se paymentMode TEAM/BOTH | sì override | sì |
 | Pubblicare informative | no | no | sì | sì |
+| Leggere storico email (`email:read`) | no | no | sì | sì |
+| Inviare da template (`email:send`) | no | no | sì | sì |
+| Corpo libero / override template (`email:compose`) | no | no | no | sì |
 | Gestire ruoli e adapter | no | no | no | sì |
 | Audit log | no | no | lettura | lettura + config retention |
 
@@ -80,7 +85,10 @@ type Action =
   | "team:remove_player"
   | "user:delete"
   | "user:anonymize"
-  | "audit:delete";
+  | "audit:delete"
+  | "email:read"
+  | "email:send"
+  | "email:compose";
 
 function authorize(actor: Actor, action: Action, resource: Resource): Decision
 ```
@@ -92,6 +100,7 @@ Nessun bypass `if (role === SUPER_ADMIN) return true` sparso nelle pagine: il su
 - Un player non può auto-assegnarsi TEAM_REPRESENTATIVE (solo `StaffInvite` o Super Admin).
 - Il codice invito giocatore non concede admin né ruolo rappresentante.
 - Le API admin vivono sotto `/admin` **e** sotto check ruolo, entrambi necessari.
-- `staff:invite` e `admin:manage` per Org/Super Admin; `platform:admin`, `user:delete`, `user:anonymize` solo Super Admin.
+- `staff:invite` e `admin:manage` per Org/Super Admin; `platform:admin`, `user:delete`, `user:anonymize`, `email:compose` solo Super Admin.
+- `email:read` e `email:send` allo staff (Org Admin / Super Admin). Rep, giocatore e organizer no.
 - `team:remove_player` scoped a `teamId`: il rappresentante non tocca altre squadre né account altrui.
 - `audit:delete` è sempre deny, Super Admin compreso: i log non si cancellano da prodotto.

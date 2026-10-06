@@ -1,6 +1,6 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
 import type { ChecklistItem } from "@/features/registrations/domain/requirements";
@@ -13,48 +13,14 @@ import {
   type WizardStepId,
 } from "@/features/registrations/domain/wizard";
 import { it } from "@/shared/i18n/it";
-import { Icon, type IconName } from "@/shared/ui/Icon";
+import { Icon } from "@/shared/ui/Icon";
+import {
+  WIZARD_STEP_ICONS,
+  WIZARD_STEP_LABELS,
+  WIZARD_STEP_LEADS,
+  WIZARD_STEP_TIPS,
+} from "./wizardCopy";
 import styles from "./WizardShell.module.css";
-
-const LABELS: Record<WizardStepId, string> = {
-  dati: it.stepDati,
-  tutore: it.stepTutore,
-  certificato: it.stepCertificato,
-  privacy: it.stepPrivacy,
-  liberatorie: it.stepLiberatorie,
-  pagamento: it.stepPagamento,
-  riepilogo: it.stepRiepilogo,
-};
-
-const LEADS: Record<WizardStepId, string> = {
-  dati: it.stepDatiLead,
-  tutore: it.stepTutoreLead,
-  certificato: it.stepCertificatoLead,
-  privacy: it.stepPrivacyLead,
-  liberatorie: it.stepLiberatorieLead,
-  pagamento: it.stepPagamentoLead,
-  riepilogo: it.stepRiepilogoLead,
-};
-
-const TIPS: Record<WizardStepId, string> = {
-  dati: it.stepDatiTip,
-  tutore: it.stepTutoreTip,
-  certificato: it.stepCertificatoTip,
-  privacy: it.stepPrivacyTip,
-  liberatorie: it.stepLiberatorieTip,
-  pagamento: it.stepPagamentoTip,
-  riepilogo: it.stepRiepilogoTip,
-};
-
-const STEP_ICONS: Record<WizardStepId, IconName> = {
-  dati: "user",
-  tutore: "users",
-  certificato: "medical",
-  privacy: "privacy",
-  liberatorie: "camera",
-  pagamento: "payment",
-  riepilogo: "summary",
-};
 
 type Props = {
   step: WizardStepId;
@@ -77,8 +43,33 @@ function statusCopy(status: ChecklistItem["status"], active: boolean) {
   return it.wizardStepUpcoming;
 }
 
+function StepMark({
+  index,
+  status,
+  active,
+  className,
+}: {
+  index: number;
+  status: ChecklistItem["status"];
+  active: boolean;
+  className: string;
+}) {
+  const doneTick = status === "complete";
+  const attention = status === "attention" && !active;
+  return (
+    <span
+      className={`${className} ${doneTick ? styles.markDone : ""} ${active ? styles.markActive : ""} ${attention ? styles.markAttention : ""}`}
+      aria-hidden="true"
+    >
+      {doneTick ? <Icon name="check" size={12} /> : attention ? <Icon name="alert" size={12} /> : index + 1}
+    </span>
+  );
+}
+
 export function WizardShell({ step, steps, checklist, children }: Props) {
   const reduceMotion = useReducedMotion();
+  const headingRef = useRef<HTMLHeadingElement>(null);
+  const activeStepRef = useRef<HTMLLIElement>(null);
   const previous = steps[steps.indexOf(step) - 1];
   const { done, total } = completedStepCount(checklist);
   const progress = it.wizardProgress.replace("{done}", String(done)).replace("{total}", String(total));
@@ -88,9 +79,16 @@ export function WizardShell({ step, steps, checklist, children }: Props) {
   const kicker = solemn ? it.wizardKickerPrivacy : featured ? it.wizardKickerMedia : null;
   const laterHref = laterHrefFor(step, checklist);
 
+  useEffect(() => {
+    headingRef.current?.focus();
+  }, [step]);
+
+  useEffect(() => {
+    activeStepRef.current?.scrollIntoView({ inline: "center", block: "nearest", behavior: reduceMotion ? "auto" : "smooth" });
+  }, [step, reduceMotion]);
+
   return (
     <div className={styles.canvas}>
-      {/* Mobile progress indicator */}
       <div className={styles.mobileProgress}>
         <div className={styles.progressRow}>
           <p className={styles.progress}>
@@ -109,24 +107,24 @@ export function WizardShell({ step, steps, checklist, children }: Props) {
           {steps.map((id, index) => {
             const active = id === step;
             const status = statusForWizardStep(id, checklist);
-            const doneTick = status === "complete";
+            const statusLabel = statusCopy(status, active);
             return (
-              <li key={id} className={styles.stepItem}>
+              <li key={id} className={styles.stepItem} ref={active ? activeStepRef : undefined}>
                 <Link
                   href={`/area/registrazione/${id}`}
-                  className={`${styles.step} ${active ? styles.stepActive : ""} ${doneTick ? styles.stepDone : ""}`}
+                  className={`${styles.step} ${active ? styles.stepActive : ""}`}
                   aria-current={active ? "step" : undefined}
                 >
-                  <span className={styles.tick} aria-hidden="true">
-                    {doneTick ? <Icon name="check" size={12} /> : index + 1}
+                  <StepMark index={index} status={status} active={active} className={styles.tick} />
+                  <span className={styles.stepLabel}>
+                    {WIZARD_STEP_LABELS[id]}
+                    <span className="srOnly">{` (${statusLabel})`}</span>
                   </span>
-                  <span className={`${styles.stepLabel} srOnly`}>{LABELS[id]}</span>
                 </Link>
               </li>
             );
           })}
         </ol>
-        <p className={styles.currentLabel}>{LABELS[step]}</p>
       </div>
 
       <div className={styles.grid}>
@@ -135,7 +133,7 @@ export function WizardShell({ step, steps, checklist, children }: Props) {
             {previous ? (
               <Link href={`/area/registrazione/${previous}`} className={styles.back}>
                 <Icon name="back" size={16} />
-                {it.wizardBack}: {LABELS[previous]}
+                {it.wizardBack}
               </Link>
             ) : (
               <Link href="/area" className={styles.back}>
@@ -143,24 +141,25 @@ export function WizardShell({ step, steps, checklist, children }: Props) {
                 {it.backToArea}
               </Link>
             )}
+            {laterHref ? (
+              <Link href={laterHref} className={styles.laterMobile}>
+                {it.completeLater}
+              </Link>
+            ) : null}
           </div>
 
           <header className={styles.heading}>
             <span className={styles.headingIcon} aria-hidden="true">
-              <Icon name={STEP_ICONS[step]} size={22} />
+              <Icon name={WIZARD_STEP_ICONS[step]} size={22} />
             </span>
             <div className={styles.headingText}>
               {kicker ? <p className={styles.kicker}>{kicker}</p> : null}
-              <h1>{LABELS[step]}</h1>
-              <p className={styles.lead}>{LEADS[step]}</p>
+              <h1 ref={headingRef} tabIndex={-1}>
+                {WIZARD_STEP_LABELS[step]}
+              </h1>
+              <p className={styles.lead}>{WIZARD_STEP_LEADS[step]}</p>
             </div>
           </header>
-
-          {laterHref ? (
-            <p className={styles.later}>
-              <Link href={laterHref}>{it.completeLater}</Link>
-            </p>
-          ) : null}
 
           <motion.div
             key={step}
@@ -173,7 +172,6 @@ export function WizardShell({ step, steps, checklist, children }: Props) {
           </motion.div>
         </section>
 
-        {/* Desktop Context & Journey Rail */}
         <aside className={styles.rail}>
           <div className={styles.railCard}>
             <div className={styles.railHeader}>
@@ -189,28 +187,20 @@ export function WizardShell({ step, steps, checklist, children }: Props) {
               {steps.map((id, index) => {
                 const active = id === step;
                 const status = statusForWizardStep(id, checklist);
-                const doneTick = status === "complete";
-                const attention = status === "attention";
                 const statusLabel = statusCopy(status, active);
-
-                const content = (
-                  <>
-                    <span
-                      className={`${styles.journeyTick} ${doneTick ? styles.journeyDone : ""} ${active ? styles.journeyActive : ""} ${attention && !active ? styles.journeyAttention : ""}`}
-                    >
-                      {doneTick ? <Icon name="check" size={12} /> : index + 1}
-                    </span>
-                    <span className={styles.journeyInfo}>
-                      <span className={styles.journeyLabel}>{LABELS[id]}</span>
-                      <span className={styles.journeyStatus}>{statusLabel}</span>
-                    </span>
-                  </>
-                );
 
                 return (
                   <li key={id} className={`${styles.journeyItem} ${active ? styles.journeyItemActive : ""}`}>
-                    <Link href={`/area/registrazione/${id}`} className={styles.journeyLink} aria-current={active ? "step" : undefined}>
-                      {content}
+                    <Link
+                      href={`/area/registrazione/${id}`}
+                      className={styles.journeyLink}
+                      aria-current={active ? "step" : undefined}
+                    >
+                      <StepMark index={index} status={status} active={active} className={styles.journeyTick} />
+                      <span className={styles.journeyInfo}>
+                        <span className={styles.journeyLabel}>{WIZARD_STEP_LABELS[id]}</span>
+                        <span className={styles.journeyStatus}>{statusLabel}</span>
+                      </span>
                     </Link>
                   </li>
                 );
@@ -222,7 +212,7 @@ export function WizardShell({ step, steps, checklist, children }: Props) {
                 <Icon name="summary" size={16} />
                 <strong>{it.wizardTipsTitle}</strong>
               </div>
-              <p className={styles.tipText}>{TIPS[step]}</p>
+              <p className={styles.tipText}>{WIZARD_STEP_TIPS[step]}</p>
             </div>
 
             <div className={styles.railFooter}>

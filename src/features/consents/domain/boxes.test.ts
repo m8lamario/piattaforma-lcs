@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  groupedConsentBoxes,
   latestChoices,
   marketingConfirmed,
   mediaActivation,
@@ -126,6 +127,13 @@ describe("caselle LCS 2026-27", () => {
   it("tiene M1 e M3 come extra, non T1/M2", () => {
     expect(privacyExtraBoxes(false, false).map((box) => box.code)).toEqual(["M1", "M3", "M4", "M6"]);
     expect(privacyExtraBoxes(false, true).map((box) => box.code)).toContain("M5");
+  });
+
+  it("raggruppa obbligatorie, facoltative e opt-out senza cambiare l’ordine interno", () => {
+    const grouped = groupedConsentBoxes(privacyExtraBoxes(false, false));
+    expect(grouped.required.map((box) => box.code)).toEqual(["M1", "M3"]);
+    expect(grouped.optional.map((box) => box.code)).toEqual(["M4"]);
+    expect(grouped.optOut.map((box) => box.code)).toEqual(["M6"]);
   });
 
   it("attiva il marketing solo dopo il clic sull’email", () => {

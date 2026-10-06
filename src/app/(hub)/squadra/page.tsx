@@ -26,18 +26,21 @@ export default async function TeamPage() {
     redirect("/area");
   }
 
-  const allowed = authorize(actor, "team:read", { teamId });
-  if (!allowed.allow) {
-    redirect("/area");
-  }
-
   const [team, teamPayment, roster, teams] = await Promise.all([
     getTeamForActor(teamId),
-    prisma.payment.findFirst({ where: { teamId, status: "SUCCEEDED" } }),
+    prisma.payment.findFirst({ where: { teamId, registrationId: null, status: "SUCCEEDED" } }),
     listTeamRoster(teamId),
     listTeamsByIds(teamIds),
   ]);
   if (!team) redirect("/area");
+  if (
+    !authorize(actor, "team:read", {
+      teamId: team.id,
+      competitionId: team.edition.competitionId,
+    }).allow
+  ) {
+    redirect("/area");
+  }
 
   const teamAmount = teamCheckoutAmount({
     paymentMode: team.edition.paymentMode,

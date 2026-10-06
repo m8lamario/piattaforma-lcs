@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import Link from "next/link";
 import { LEGAL_CATALOG, legalEntryBySlug } from "@/features/consents/domain/catalog";
 import { LegalProse } from "@/features/consents/ui/LegalProse";
@@ -8,6 +9,7 @@ import styles from "@/app/privacy/page.module.css";
 
 type Props = {
   slug: string;
+  afterProse?: ReactNode;
   archivedVersion?: {
     version: string;
     body: string;
@@ -15,7 +17,7 @@ type Props = {
   };
 };
 
-export async function LegalPublicArticle({ slug, archivedVersion }: Props) {
+export async function LegalPublicArticle({ slug, afterProse, archivedVersion }: Props) {
   const entry = legalEntryBySlug(slug);
   if (!entry) {
     throw new Error("Documento legale sconosciuto.");
@@ -38,6 +40,7 @@ export async function LegalPublicArticle({ slug, archivedVersion }: Props) {
             <p className={styles.notice}>{it.legalArchivedVersionNotice}</p>
           ) : null}
           <LegalProse body={body} />
+          {afterProse}
           {archivedVersion ? (
             <p>
               <Link href={entry.publicPath}>{it.legalCurrentVersionLink}</Link>

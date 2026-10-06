@@ -4,6 +4,8 @@ import { headers } from "next/headers";
 import localFont from "next/font/local";
 import "@/shared/ui/tokens.css";
 import "./globals.css";
+import { CookieBanner } from "@/features/cookies/ui/CookieBanner";
+import { ADOBE_FONTS_ORIGINS, ADOBE_FONTS_STYLESHEET } from "@/shared/cookies/inventory";
 import { it } from "@/shared/i18n/it";
 import { DEFAULT_THEME, THEME_BOOTSTRAP_SCRIPT } from "@/shared/ui/theme";
 
@@ -26,12 +28,16 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
   return (
     <html lang="it" className={machton.variable} data-theme={DEFAULT_THEME} suppressHydrationWarning>
       <head>
-        <link rel="preconnect" href="https://use.typekit.net" crossOrigin="" />
-        <link rel="preconnect" href="https://p.typekit.net" crossOrigin="" />
-        <link rel="stylesheet" href="https://use.typekit.net/ajb7nmd.css" />
+        {ADOBE_FONTS_ORIGINS.map((origin) => (
+          <link key={origin} rel="preconnect" href={origin} crossOrigin="" />
+        ))}
+        <link rel="stylesheet" href={ADOBE_FONTS_STYLESHEET} />
         <script nonce={nonce} dangerouslySetInnerHTML={{ __html: THEME_BOOTSTRAP_SCRIPT }} />
       </head>
-      <body>{children}</body>
+      <body>
+        {children}
+        <CookieBanner />
+      </body>
     </html>
   );
 }

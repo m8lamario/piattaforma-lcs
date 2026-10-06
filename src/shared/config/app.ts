@@ -1,5 +1,6 @@
 export const AGE_OF_MAJORITY = Number(process.env.AGE_OF_MAJORITY ?? 18);
 export const AGE_OF_MEDIA_AGREEMENT = Number(process.env.AGE_OF_MEDIA_AGREEMENT ?? 14);
+export const MIN_REGISTRATION_AGE = 14;
 export const C1_TOKEN_DAYS = Number(process.env.C1_TOKEN_DAYS ?? 60);
 export const C1_REMINDER_DAYS = Number(process.env.C1_REMINDER_DAYS ?? 14);
 export const MARKETING_OPTIN_DAYS = Number(process.env.MARKETING_OPTIN_DAYS ?? 30);

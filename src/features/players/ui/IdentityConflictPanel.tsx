@@ -4,16 +4,24 @@ import { it } from "@/shared/i18n/it";
 import { Button, ButtonLink } from "@/shared/ui/Button";
 import styles from "./IdentityConflictPanel.module.css";
 
+type Section = "full" | "alert" | "recovery";
+
 type Props = {
   registrationId: string;
   showFormHint?: boolean;
+  section?: Section;
 };
 
-export function IdentityConflictPanel({ registrationId, showFormHint = true }: Props) {
-  return (
-    <section className={styles.panel} role="alert">
+export function IdentityConflictPanel({ registrationId, showFormHint = true, section = "full" }: Props) {
+  const alert = (
+    <>
       <h2 className={styles.title}>{it.identityConflictTitle}</h2>
       <p>{it.identityConflictBody}</p>
+    </>
+  );
+
+  const recovery = (
+    <>
       <ol className={styles.steps}>
         <li>{it.identityConflictTypo}</li>
         <li>{it.identityConflictOriginal}</li>
@@ -34,6 +42,13 @@ export function IdentityConflictPanel({ registrationId, showFormHint = true }: P
       <p className={styles.ref}>
         {it.errorRefLabel}: <code>IDENTITY_FISCAL_CODE_ASSOCIATED</code>
       </p>
+    </>
+  );
+
+  return (
+    <section className={styles.panel} role={section === "recovery" ? undefined : "alert"}>
+      {section !== "recovery" ? alert : null}
+      {section !== "alert" ? recovery : null}
     </section>
   );
 }

@@ -9,6 +9,7 @@ const LINKS = [
   { href: "/admin/edizioni", labelKey: "navAdminEditions" },
   { href: "/admin/squadre", labelKey: "navAdminTeams" },
   { href: "/admin/pagamenti", labelKey: "navAdminPayments" },
+  { href: "/admin/comunicazioni", labelKey: "navAdminEmails" },
   { href: "/admin/utenti", labelKey: "navAdminUsers", superOnly: true },
   { href: "/admin/audit", labelKey: "navAdminAudit" },
   { href: "/admin/informative", labelKey: "navAdminLegal" },

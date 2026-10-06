@@ -25,10 +25,17 @@ export const guardianSchema = z
     secondFirstName: z.string().trim().max(80).optional(),
     secondLastName: z.string().trim().max(80).optional(),
     secondEmail: z.string().trim().optional(),
+    g1: z.boolean().refine((value) => value, { error: "Conferma di essere genitore o tutore." }),
     intent: saveIntentSchema,
   })
   .superRefine((value, ctx) => {
     if (value.g3 !== "OTHER_PARENT") return;
+    if (!value.secondFirstName) {
+      ctx.addIssue({ code: "custom", message: "Inserisci il nome dell’altro genitore.", path: ["secondFirstName"] });
+    }
+    if (!value.secondLastName) {
+      ctx.addIssue({ code: "custom", message: "Inserisci il cognome dell’altro genitore.", path: ["secondLastName"] });
+    }
     const second = value.secondEmail?.trim().toLowerCase() ?? "";
     if (!second || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(second)) {
       ctx.addIssue({ code: "custom", message: "Inserisci l’email dell’altro genitore.", path: ["secondEmail"] });

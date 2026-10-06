@@ -31,9 +31,7 @@ function JoinMessage({ title, body }: { title: string; body: string }) {
     <section className={styles.sheet}>
       <h1>{title}</h1>
       <p>{body}</p>
-      <ButtonLink href="/accedi" variant="ghost">
-        {it.ctaLogin}
-      </ButtonLink>
+      <ButtonLink href="/accedi">{it.ctaLogin}</ButtonLink>
     </section>
   );
 }
@@ -57,6 +55,7 @@ export default async function TeamJoinPage({ params }: Props) {
     );
   }
 
+  const editionLine = `${team.edition.competition.name} · ${team.edition.name}`;
   const windowOpen = isRegistrationWindowOpen({
     isActive: team.edition.isActive,
     registrationOpensAt: team.edition.registrationOpensAt,
@@ -75,6 +74,7 @@ export default async function TeamJoinPage({ params }: Props) {
     return (
       <Frame>
         <section className={styles.sheet}>
+          <p className={styles.kicker}>{editionLine}</p>
           <h1>{it.inviteCreateAccount}</h1>
           <TeamJoinForm token={token} teamName={team.name} />
         </section>
@@ -96,6 +96,7 @@ export default async function TeamJoinPage({ params }: Props) {
     return (
       <Frame>
         <section className={styles.sheet}>
+          <p className={styles.kicker}>{editionLine}</p>
           <h1>{it.inviteTitle}</h1>
           <p>{it.teamJoinSession.replace("{email}", session.user.email).replace("{team}", team.name)}</p>
           <AttachTeamForm token={token} teamName={team.name} />
@@ -116,13 +117,17 @@ export default async function TeamJoinPage({ params }: Props) {
     return (
       <Frame>
         <section className={styles.sheet}>
+          <p className={styles.kicker}>{editionLine}</p>
           <h1>{it.inviteTitle}</h1>
           <p>{userMessage("INVITE_WRONG_SESSION")}</p>
           <form action={logoutAction}>
             <input type="hidden" name="next" value={`/iscrizione/${token}`} />
             <Button type="submit">{it.logoutRetryInvite}</Button>
           </form>
-          <LoginForm nextPath={`/iscrizione/${token}`} />
+          <div className={styles.secondary}>
+            <h2>{it.loginTitle}</h2>
+            <LoginForm nextPath={`/iscrizione/${token}`} />
+          </div>
         </section>
       </Frame>
     );

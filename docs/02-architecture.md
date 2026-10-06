@@ -41,6 +41,7 @@ src/
     payments/
     teams/
     notifications/
+    emails/
     admin/
   shared/
     ui/                         # primitive design system
@@ -78,6 +79,8 @@ Le route in `app/` chiamano domain + data. Nessuna query Prisma dentro un compon
 | payments | intent, stato, webhook | carte |
 | teams | squadra, inviti, roster view | certificati |
 | notifications | in-app + dispatch email | SMTP hardcoded |
+| emails | storico, template, webhook Resend | testi legali, CMS, pixel di apertura |
+| emails | outbox, template, webhook, admin comunicazioni | client di posta; pixel di apertura |
 | admin | review e config | bypass authz |
 
 ## 5. Adapter
@@ -92,7 +95,17 @@ Nessun SDK provider importato dalle feature: solo da `src/shared/adapters/live`.
 
 ```ts
 export interface EmailAdapter {
-  send(input: { to: string; template: string; variables: Record<string, string> }): Promise<void>;
+  readonly provider: string;
+  send(input: {
+    to: string;
+    subject: string;
+    text: string;
+    from?: string;
+    replyTo?: string | null;
+    idempotencyKey?: string;
+    tags?: Record<string, string>;
+  }): Promise<{ providerMessageId: string | null }>;
+  parseWebhook(input: { headers: Headers; rawBody: string }): Promise<EmailWebhookEvent>;
 }
 
 export interface StorageAdapter {
@@ -112,7 +125,7 @@ export interface MonitoringAdapter {
 }
 ```
 
-SDK live solo negli adapter. Checkout Stripe hosted: nessun campo carta nel DOM. Webhook: verifica firma, niente payload grezzo nei log.
+SDK live solo negli adapter. Checkout Stripe hosted: nessun campo carta nel DOM. Webhook: verifica firma, niente payload grezzo nei log. Email: testo piano, idempotenza Resend = id interno, `parseWebhook` Svix (`svix-id` / `svix-timestamp` / `svix-signature`). Lo stub non accetta webhook. Pagine e form non chiamano Resend: passano da `dispatchOutboundEmail`. Email solo testo (G12): niente HTML, niente tracking di aperture come stato. L’adapter non scrive sul database: l’outbox è `EmailMessage`/`EmailEvent`. `POST /api/webhooks/resend` autentica con Svix (`RESEND_WEBHOOK_SECRET`). Lo stub non accetta webhook. `EMAIL_REPLY_TO` è opzionale.
 
 ## 6. Motore requisiti
 
@@ -192,6 +205,8 @@ Principio cardine:
 | ADR-022 | Rate limit su Postgres (`RateLimitHit`), non Map in-process |
 | ADR-023 | Vista compagni senza stato medico; rosa rep con stato certificato |
 | ADR-024 | Gate wizard sequenziale solo su `PERSONAL_DATA` `todo`; gli altri passi visibili sono apribili; `APPROVED` resta proiezione di tutte le evidenze required |
+| ADR-025 | Team appartiene a una Edition. Registration e Payment non possono citare un’altra Edition: FK composta `(teamId, editionId)` e, per il pagamento individuale, `(registrationId, editionId)`. `UserRole` non ha `editionId`. `Competition.parentId` non è un’edizione. |
+| ADR-026 | Email secondaria: `EmailMessage` / `EmailEvent` / override template; adapter restituisce `providerMessageId`; tracking aperture spendibile; campagna su nuova versione legale solo da azione admin confermata |
 
 ## 12. Nota audit M0
 

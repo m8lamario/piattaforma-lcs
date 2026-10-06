@@ -27,7 +27,14 @@ function isTeamMember(actor: Actor, teamId?: string) {
   return typeof teamId === "string" && actor.membershipTeamIds.includes(teamId);
 }
 
-const SUPER_ONLY: Action[] = ["platform:admin", "user:delete", "user:anonymize"];
+function isCompetitionOrganizerFor(actor: Actor, competitionId?: string) {
+  if (!competitionId) return false;
+  return actor.roles.some(
+    (role) => role.role === "COMPETITION_ORGANIZER" && role.competitionId === competitionId,
+  );
+}
+
+const SUPER_ONLY: Action[] = ["platform:admin", "user:delete", "user:anonymize", "email:compose"];
 
 export function authorize(
   actor: Actor,
@@ -54,6 +61,9 @@ export function authorize(
     case "admin:manage":
     case "document:review":
     case "staff:invite":
+    case "email:read":
+    case "email:send":
+    case "email:compose":
     case "user:delete":
     case "user:anonymize":
       return deny("Permesso negato.");
@@ -66,6 +76,9 @@ export function authorize(
         : deny("Solo il rappresentante della squadra può eseguire questa azione.");
     case "team:read":
       if (isTeamRepFor(actor, resource.teamId) || isTeamMember(actor, resource.teamId)) {
+        return { allow: true };
+      }
+      if (isCompetitionOrganizerFor(actor, resource.competitionId)) {
         return { allow: true };
       }
       return deny("Non puoi vedere questa squadra.");

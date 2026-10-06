@@ -5,9 +5,9 @@ import {
   MARKETING_OPTIN_DAYS,
   appOrigin,
 } from "@/shared/config/app";
-import { prisma } from "@/shared/lib/prisma";
-import { emailAdapter } from "@/shared/adapters";
+import { dispatchOutboundEmail } from "@/features/emails/data/dispatch";
 import { it } from "@/shared/i18n/it";
+import { prisma } from "@/shared/lib/prisma";
 
 export type ConsentTokenPurpose = "C1" | "MARKETING";
 
@@ -31,7 +31,7 @@ export async function issueConsentToken(input: {
   });
   const token = createInviteToken();
   const days = input.purpose === "C1" ? C1_TOKEN_DAYS : MARKETING_OPTIN_DAYS;
-  await prisma.consentToken.create({
+  const row = await prisma.consentToken.create({
     data: {
       registrationId: input.registrationId,
       purpose: input.purpose,
@@ -41,7 +41,7 @@ export async function issueConsentToken(input: {
       expiresAt: daysFromNow(days),
     },
   });
-  return token;
+  return { token, id: row.id };
 }
 
 export async function findValidConsentToken(token: string, purpose: ConsentTokenPurpose) {
@@ -76,27 +76,49 @@ export async function sendC1Email(input: {
   playerName: string;
   confirmUrl: string;
   summary: string;
+  userId?: string | null;
+  tokenId?: string;
+  registrationId?: string;
 }) {
-  await emailAdapter.send({
+  await dispatchOutboundEmail({
+    idempotencyKey: input.tokenId ? `consent-c1:${input.tokenId}` : `consent-c1:${input.to}:${input.confirmUrl.slice(-12)}`,
+    purpose: "CONSENT_C1",
+    templateKey: "CONSENT_C1",
     to: input.to,
-    template: "CONSENT_C1",
+    userId: input.userId ?? null,
+    recipientKind: "GUARDIAN",
     variables: {
       title: it.emailC1Subject,
       playerName: input.playerName,
       confirmUrl: input.confirmUrl,
       summary: input.summary,
     },
+    sourceEntityType: input.registrationId ? "Registration" : "ConsentToken",
+    sourceEntityId: input.registrationId ?? input.tokenId ?? null,
   });
 }
 
-export async function sendMarketingOptInEmail(input: { to: string; confirmUrl: string }) {
-  await emailAdapter.send({
+export async function sendMarketingOptInEmail(input: {
+  to: string;
+  confirmUrl: string;
+  userId?: string | null;
+  tokenId?: string;
+  registrationId?: string;
+  recipientKind?: "USER" | "GUARDIAN";
+}) {
+  await dispatchOutboundEmail({
+    idempotencyKey: input.tokenId ? `consent-marketing:${input.tokenId}` : `consent-marketing:${input.to}:${input.confirmUrl.slice(-12)}`,
+    purpose: "CONSENT_MARKETING_OPTIN",
+    templateKey: "CONSENT_MARKETING_OPTIN",
     to: input.to,
-    template: "CONSENT_MARKETING_OPTIN",
+    userId: input.userId ?? null,
+    recipientKind: input.recipientKind ?? "USER",
     variables: {
       title: it.emailMarketingOptInSubject,
       confirmUrl: input.confirmUrl,
     },
+    sourceEntityType: input.registrationId ? "Registration" : "ConsentToken",
+    sourceEntityId: input.registrationId ?? input.tokenId ?? null,
   });
 }
 
@@ -111,7 +133,7 @@ export async function maybeSendC1Reminder(registrationId: string) {
     },
     include: {
       registration: {
-        include: { playerProfile: { select: { firstName: true, lastName: true } } },
+        include: { playerProfile: { select: { firstName: true, lastName: true, userId: true } } },
       },
     },
     orderBy: { createdAt: "desc" },
@@ -129,6 +151,9 @@ export async function maybeSendC1Reminder(registrationId: string) {
     playerName: `${pending.registration.playerProfile.firstName} ${pending.registration.playerProfile.lastName}`.trim(),
     confirmUrl: confirmationUrl("C1", token),
     summary: it.emailC1ReminderSummary,
+    userId: pending.registration.playerProfile.userId,
+    tokenId: `${pending.id}:reminder`,
+    registrationId,
   });
 }
 

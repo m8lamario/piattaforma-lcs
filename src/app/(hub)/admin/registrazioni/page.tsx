@@ -67,7 +67,7 @@ export default async function AdminRegistrationsPage({ searchParams }: Props) {
               <option value="">{it.filterAll}</option>
               {options.teams.map((team) => (
                 <option key={team.id} value={team.id}>
-                  {team.name}
+                  {team.edition.competition.name} · {team.edition.name} · {team.name}
                 </option>
               ))}
             </select>
@@ -108,7 +108,7 @@ export default async function AdminRegistrationsPage({ searchParams }: Props) {
                     {row.playerProfile.firstName} {row.playerProfile.lastName}
                   </strong>
                   <span className={styles.meta}>
-                    {row.edition.competition.name} · {row.team.name}
+                    {row.edition.competition.name} · {row.edition.name} · {row.team.name}
                   </span>
                 </span>
                 <StatusChip tone={row.status === "APPROVED" ? "complete" : row.status === "WITHDRAWN" ? "neutral" : "attention"}>

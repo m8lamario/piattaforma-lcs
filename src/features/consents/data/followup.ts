@@ -86,7 +86,7 @@ export async function ensureC1Sent(registrationId: string) {
   if (!secondary || !email) return;
 
   try {
-    const token = await issueConsentToken({
+    const issued = await issueConsentToken({
       registrationId,
       purpose: "C1",
       email,
@@ -95,8 +95,11 @@ export async function ensureC1Sent(registrationId: string) {
     await sendC1Email({
       to: email,
       playerName: `${ctx.profile.firstName} ${ctx.profile.lastName}`.trim(),
-      confirmUrl: confirmationUrl("C1", token),
+      confirmUrl: confirmationUrl("C1", issued.token),
       summary: it.confirmC1Help,
+      userId: ctx.profile.userId,
+      tokenId: issued.id,
+      registrationId,
     });
   } catch {
     logger.error("consent.c1_email_failed", { registrationId });
@@ -136,7 +139,7 @@ export async function ensureMarketingOptIn(registrationId: string) {
   if (!to) return;
 
   try {
-    const token = await issueConsentToken({
+    const issued = await issueConsentToken({
       registrationId,
       purpose: "MARKETING",
       email: to,
@@ -144,7 +147,11 @@ export async function ensureMarketingOptIn(registrationId: string) {
     });
     await sendMarketingOptInEmail({
       to,
-      confirmUrl: confirmationUrl("MARKETING", token),
+      confirmUrl: confirmationUrl("MARKETING", issued.token),
+      userId: ctx.profile.userId,
+      tokenId: issued.id,
+      registrationId,
+      recipientKind: ctx.isMinorPlayer ? "GUARDIAN" : "USER",
     });
   } catch {
     logger.error("consent.marketing_email_failed", { registrationId });

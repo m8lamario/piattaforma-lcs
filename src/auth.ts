@@ -4,12 +4,17 @@ import { PrismaAdapter } from "@auth/prisma-adapter";
 import { loginSchema } from "@/features/auth/schemas/login";
 import { verifyPassword } from "@/features/auth/domain/password";
 import { prisma } from "@/shared/lib/prisma";
+import { SESSION_MAX_AGE_SECONDS, SESSION_UPDATE_AGE_SECONDS } from "@/shared/cookies/inventory";
 import { logger } from "@/shared/lib/logger";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   adapter: PrismaAdapter(prisma),
   trustHost: true,
-  session: { strategy: "jwt" },
+  session: {
+    strategy: "jwt",
+    maxAge: SESSION_MAX_AGE_SECONDS,
+    updateAge: SESSION_UPDATE_AGE_SECONDS,
+  },
   pages: {
     signIn: "/accedi",
   },

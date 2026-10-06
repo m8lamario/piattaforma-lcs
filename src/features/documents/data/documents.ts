@@ -157,9 +157,17 @@ export async function reviewMedicalDocument(input: {
   reviewerId: string;
   decision: "APPROVED" | "REJECTED";
   reason?: string;
+  expiresAt?: Date | null;
 }) {
   if (input.decision === "REJECTED" && !input.reason?.trim()) {
     return { ok: false as const, reason: "reason_required" as const };
+  }
+  if (input.decision === "APPROVED") {
+    const today = new Date();
+    const startOfToday = Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate());
+    if (!input.expiresAt || input.expiresAt.getTime() <= startOfToday) {
+      return { ok: false as const, reason: "expiry_required" as const };
+    }
   }
 
   const updated = await prisma.$transaction(async (tx) => {
@@ -177,7 +185,10 @@ export async function reviewMedicalDocument(input: {
     });
     return tx.document.update({
       where: { id: document.id },
-      data: { status: input.decision },
+      data: {
+        status: input.decision,
+        expiresAt: input.decision === "APPROVED" ? input.expiresAt : null,
+      },
     });
   });
 

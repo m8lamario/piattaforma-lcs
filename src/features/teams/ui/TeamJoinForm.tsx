@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import Link from "next/link";
 import { joinTeamAction } from "@/features/teams/actions";
 import { Button } from "@/shared/ui/Button";
 import { ActionError } from "@/shared/ui/ActionError";
@@ -24,6 +25,7 @@ export function TeamJoinForm({ token, teamName }: { token: string; teamName: str
     >
       <input type="hidden" name="token" value={token} />
       <p className={fields.help}>{it.teamJoinLead.replace("{team}", teamName)}</p>
+      {state?.error ? <ActionError error={state.error} code={state.code} /> : null}
       <div className={fields.field}>
         <label className={fields.label} htmlFor="email">
           {it.email}
@@ -38,12 +40,16 @@ export function TeamJoinForm({ token, teamName }: { token: string; teamName: str
         />
       </div>
       <PasswordFields passwords={passwords} passwordId="password" confirmId="confirmPassword" hintId="password-hint" />
-      {state?.error ? <ActionError error={state.error} code={state.code} /> : null}
       <div className={fields.actions}>
         <Button type="submit" disabled={pending} aria-busy={pending}>
           {pending ? it.creatingAccount : it.submitRedeem}
         </Button>
       </div>
+      <p>
+        <Link href={`/accedi?next=${encodeURIComponent(`/iscrizione/${token}`)}`} className={fields.textLink}>
+          {it.ctaLogin}
+        </Link>
+      </p>
     </form>
   );
 }

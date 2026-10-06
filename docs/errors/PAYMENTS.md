@@ -13,3 +13,4 @@ Doppio click / tab chiuso a metà: si **riusa** il Payment `PENDING` (nuovo chec
 | PAYMENT_WEBHOOK_DUPLICATE | PAYMENTS | providerPaymentId già SUCCEEDED altrove | Replay | (API) | Nessuno | `applyProviderResult` |
 | PAYMENT_WEBHOOK_CONFLICT | PAYMENTS | Stato non avanzabile | Race | (API) | Nessuno | `applyProviderResult` |
 | PAYMENT_NOT_FOUND | PAYMENTS | paymentId assente | URL | Pagamento non trovato | Nessuno | esito |
+| PAYMENT_SCOPE_MISMATCH | PAYMENTS | teamId o registrationId di un'altra edition | Scope incoerente | Pagamento non appartenente a squadra o edizione | Nessuno | claim checkout |

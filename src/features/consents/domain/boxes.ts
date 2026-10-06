@@ -11,6 +11,7 @@ export const CONSENT_BOX_CODES = [
   "M9",
   "M10",
   "M11",
+  "G1",
   "G2",
   "G3",
   "G4",
@@ -56,6 +57,7 @@ export const CONSENT_BOXES: ConsentBoxDef[] = [
   { code: "M9", path: "adult", kind: "optional", step: "liberatorie", labelKey: "boxM9" },
   { code: "M10", path: "adult", kind: "optional", step: "liberatorie", labelKey: "boxM10" },
   { code: "M11", path: "adult", kind: "optional", step: "liberatorie", labelKey: "boxM11" },
+  { code: "G1", path: "minor", kind: "required", step: "tutore", labelKey: "boxG1" },
   { code: "G2", path: "minor", kind: "required", step: "privacy", labelKey: "boxG2" },
   { code: "G3", path: "minor", kind: "required", step: "tutore", labelKey: "boxG3" },
   { code: "G4", path: "minor", kind: "play", step: "privacy", labelKey: "boxG4" },
@@ -228,6 +230,14 @@ export function privacyExtraBoxes(isMinor: boolean, partnersPublished: boolean) 
   return boxesFor({ isMinor, step: "privacy", partnersPublished }).filter(
     (box) => box.code !== "T1" && box.code !== "M2" && box.code !== "G2",
   );
+}
+
+export function groupedConsentBoxes(boxes: ConsentBoxDef[]) {
+  return {
+    required: boxes.filter((box) => box.kind === "required" || box.kind === "play"),
+    optional: boxes.filter((box) => box.kind === "optional" || box.kind === "confirmation"),
+    optOut: boxes.filter((box) => box.kind === "opt_out"),
+  };
 }
 
 export function mediaFormBoxes(isMinor: boolean, needsAgreement: boolean) {

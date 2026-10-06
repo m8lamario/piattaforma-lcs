@@ -119,7 +119,12 @@ export default async function WizardStepPage({ params }: Props) {
       const currentBoxes = Object.fromEntries(workspace.choices.map((row) => [row.code, row.accepted]));
       body =
         documents.length === privacySlugs.length ? (
-          <PrivacyConsentForm documents={documents} extraBoxes={extraBoxes} currentBoxes={currentBoxes} />
+          <PrivacyConsentForm
+            documents={documents}
+            extraBoxes={extraBoxes}
+            currentBoxes={currentBoxes}
+            registrationId={workspace.registration.id}
+          />
         ) : (
           <PlaceholderStep title={it.stepPrivacy} body={it.placeholderPrivacy} />
         );

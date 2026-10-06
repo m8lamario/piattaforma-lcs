@@ -1,6 +1,34 @@
 import { Prisma } from "@generated/client";
+import type { Prisma as PrismaTypes } from "@generated/client";
 import { paymentProviderName } from "@/shared/config/drivers";
+import { paymentScopeViolation } from "@/shared/domain/hierarchy";
 import { prisma } from "@/shared/lib/prisma";
+
+type PaymentWriter = PrismaTypes.TransactionClient | typeof prisma;
+
+async function readPaymentScope(
+  db: PaymentWriter,
+  input: { editionId: string; registrationId?: string; teamId?: string },
+) {
+  const team = input.teamId
+    ? await db.team.findUnique({ where: { id: input.teamId }, select: { editionId: true } })
+    : null;
+  const registration = input.registrationId
+    ? await db.registration.findUnique({
+        where: { id: input.registrationId },
+        select: { editionId: true, teamId: true },
+      })
+    : null;
+
+  return paymentScopeViolation({
+    editionId: input.editionId,
+    teamId: input.teamId,
+    teamEditionId: team?.editionId,
+    registrationId: input.registrationId,
+    registrationEditionId: registration?.editionId,
+    registrationTeamId: registration?.teamId,
+  });
+}
 
 export async function createPendingPayment(input: {
   editionId: string;
@@ -10,17 +38,23 @@ export async function createPendingPayment(input: {
   teamId?: string;
   payerUserId: string;
 }) {
-  return prisma.payment.create({
-    data: {
-      editionId: input.editionId,
-      registrationId: input.registrationId,
-      teamId: input.teamId,
-      payerUserId: input.payerUserId,
-      amount: new Prisma.Decimal(input.amount),
-      currency: input.currency,
-      status: "PENDING",
-      provider: paymentProviderName(),
-    },
+  return prisma.$transaction(async (tx) => {
+    const violation = await readPaymentScope(tx, input);
+    if (violation) {
+      throw new Error("PAYMENT_SCOPE_MISMATCH");
+    }
+    return tx.payment.create({
+      data: {
+        editionId: input.editionId,
+        registrationId: input.registrationId,
+        teamId: input.teamId,
+        payerUserId: input.payerUserId,
+        amount: new Prisma.Decimal(input.amount),
+        currency: input.currency,
+        status: "PENDING",
+        provider: paymentProviderName(),
+      },
+    });
   });
 }
 
@@ -34,9 +68,13 @@ export async function claimCheckoutPayment(input: {
 }) {
   const where = input.registrationId
     ? { registrationId: input.registrationId }
-    : { teamId: input.teamId };
+    : { teamId: input.teamId, registrationId: null };
 
   return prisma.$transaction(async (tx) => {
+    const violation = await readPaymentScope(tx, input);
+    if (violation) {
+      return { ok: false as const, reason: "scope" as const, payment: null };
+    }
     const succeeded = await tx.payment.findFirst({
       where: { ...where, status: "SUCCEEDED" },
     });

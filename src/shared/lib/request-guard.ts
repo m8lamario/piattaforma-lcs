@@ -12,6 +12,7 @@ export const RATE_LIMITS = {
   passwordReset: { limit: 5, windowMs: 15 * 60 * 1000 },
   bulkInvite: { limit: 5, windowMs: 60 * 60 * 1000 },
   lifecycle: { limit: 20, windowMs: 60 * 60 * 1000 },
+  emailSend: { limit: 30, windowMs: 60 * 60 * 1000 },
 } as const;
 
 export async function clientKey(prefix: string) {

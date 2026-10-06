@@ -75,7 +75,7 @@ test("happy path: invito, redeem, wizard minimo, pagamento stub", async ({ page,
 
   await expect(player).toHaveURL(/\/area\/registrazione\/liberatorie/);
   await readLegalDocuments(player);
-  await player.getByRole("button", { name: "Non accetto e continuo" }).click();
+  await player.getByRole("button", { name: "Salva le scelte e continua" }).click();
 
   await expect(player).toHaveURL(/\/area\/registrazione\/pagamento/);
   await player.getByRole("button", { name: "Paga ora" }).click();

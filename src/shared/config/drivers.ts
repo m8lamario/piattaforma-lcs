@@ -32,6 +32,22 @@ export function resendConfigured() {
   return Boolean(process.env.RESEND_API_KEY && process.env.EMAIL_FROM);
 }
 
+export function emailFromAddress() {
+  return process.env.EMAIL_FROM?.trim() || "ESL Player Hub <noreply@localhost>";
+}
+
+export function emailReplyTo() {
+  return process.env.EMAIL_REPLY_TO?.trim() || null;
+}
+
+export function resendWebhookConfigured() {
+  return Boolean(process.env.RESEND_WEBHOOK_SECRET?.trim());
+}
+
+export function emailProviderName() {
+  return emailDriver() === "resend" && resendConfigured() ? "resend" : "stub";
+}
+
 export function r2Configured() {
   return Boolean(
     process.env.R2_ACCOUNT_ID &&

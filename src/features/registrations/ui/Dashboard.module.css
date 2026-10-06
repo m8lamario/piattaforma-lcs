@@ -108,6 +108,12 @@
   transition: background var(--duration-fast) var(--ease-out);
 }
 
+.itemAttention {
+  border-left: var(--line-width) solid var(--color-warning);
+  padding-left: calc(var(--space-2) + var(--line-width));
+  background: color-mix(in srgb, var(--color-warning-soft) 35%, transparent);
+}
+
 .item:hover {
   background: var(--color-surface-raised);
 }

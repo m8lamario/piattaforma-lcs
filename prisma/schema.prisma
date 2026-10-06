@@ -99,6 +99,21 @@ enum InviteStatus {
   REVOKED
 }
 
+enum EmailStatus {
+  QUEUED
+  SENT
+  DELIVERED
+  DELIVERY_DELAYED
+  BOUNCED
+  COMPLAINED
+  FAILED
+}
+
+enum EmailRecipientKind {
+  USER
+  GUARDIAN
+}
+
 model User {
   id               String              @id @default(cuid())
   email            String              @unique
@@ -128,6 +143,9 @@ model User {
   auditLogs              AuditLog[]
   payments               Payment[]           @relation("PaymentPayer")
   representativeTeams    Team[]              @relation("TeamRepresentativeUser")
+  emailMessagesReceived  EmailMessage[]      @relation("EmailRecipient")
+  emailMessagesSent      EmailMessage[]      @relation("EmailActor")
+  emailTemplateEdits     EmailTemplateOverride[] @relation("EmailTemplateEditor")
 
   @@index([lifecycleStatus])
 }
@@ -177,6 +195,10 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
+/// Scope: PLAYER e gli admin di piattaforma non hanno FK.
+/// TEAM_REPRESENTATIVE richiede teamId (l'edizione si legge da Team, non si duplica).
+/// COMPETITION_ORGANIZER richiede competitionId e copre tutte le Edition di quella Competition.
+/// Non c'è editionId: un ruolo per edizione duplicherebbe Team.editionId e potrebbe divergere.
 model UserRole {
   id            String   @id @default(cuid())
   userId        String
@@ -336,6 +358,8 @@ model Team {
   payments       Payment[]
   userRoles      UserRole[]
 
+  // Bersaglio della FK composta (id, editionId). id è già unico; la coppia serve a Registration e Payment.
+  @@unique([id, editionId])
   @@index([editionId])
   @@index([schoolId])
   @@index([representativeUserId])
@@ -416,7 +440,7 @@ model Registration {
   updatedAt       DateTime            @updatedAt
 
   playerProfile  PlayerProfile   @relation(fields: [playerProfileId], references: [id], onDelete: Cascade)
-  team           Team            @relation(fields: [teamId], references: [id], onDelete: Restrict)
+  team           Team            @relation(fields: [teamId, editionId], references: [id, editionId], onDelete: Restrict, onUpdate: Restrict)
   edition        Edition         @relation(fields: [editionId], references: [id], onDelete: Restrict)
   documents      Document[]
   consentRecords ConsentRecord[]
@@ -425,6 +449,7 @@ model Registration {
   payments       Payment[]
 
   @@unique([playerProfileId, editionId])
+  @@unique([id, editionId])
   @@index([teamId])
   @@index([editionId, status])
 }
@@ -601,8 +626,8 @@ model Payment {
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
 
-  registration Registration? @relation(fields: [registrationId], references: [id], onDelete: SetNull)
-  team         Team?         @relation(fields: [teamId], references: [id], onDelete: SetNull)
+  registration Registration? @relation(fields: [registrationId, editionId], references: [id, editionId], onDelete: Restrict, onUpdate: Restrict)
+  team         Team?         @relation(fields: [teamId, editionId], references: [id, editionId], onDelete: Restrict, onUpdate: Restrict)
   edition      Edition       @relation(fields: [editionId], references: [id], onDelete: Restrict)
   payer        User?         @relation("PaymentPayer", fields: [payerUserId], references: [id], onDelete: SetNull)
 
@@ -623,10 +648,82 @@ model Notification {
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  emailMessages EmailMessage[]
 
   @@index([userId, readAt])
   @@index([createdAt])
+}
+
+model EmailMessage {
+  id                 String             @id @default(cuid())
+  idempotencyKey     String             @unique
+  purpose            String
+  templateKey        String
+  status             EmailStatus        @default(QUEUED)
+  userId             String?
+  recipientKind      EmailRecipientKind @default(USER)
+  toAddress          String
+  fromAddress        String
+  replyTo            String?
+  subject            String
+  textBody           String
+  provider           String
+  providerMessageId  String?
+  errorCode          String?
+  errorMessage       String?
+  sourceEntityType   String?
+  sourceEntityId     String?
+  notificationId     String?
+  actorUserId        String?
+  queuedAt           DateTime           @default(now())
+  sentAt             DateTime?
+  lastEventAt        DateTime?
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  user         User?          @relation("EmailRecipient", fields: [userId], references: [id], onDelete: SetNull)
+  actor        User?          @relation("EmailActor", fields: [actorUserId], references: [id], onDelete: SetNull)
+  notification Notification?  @relation(fields: [notificationId], references: [id], onDelete: SetNull)
+  events       EmailEvent[]
+
+  @@index([status, queuedAt])
+  @@index([purpose, queuedAt])
+  @@index([userId])
+  @@index([actorUserId])
+  @@index([provider, providerMessageId])
+  @@index([lastEventAt])
+  @@index([notificationId])
+}
+
+model EmailEvent {
+  id              String   @id @default(cuid())
+  emailMessageId  String
+  provider        String
+  providerEventId String
+  type            String
+  occurredAt      DateTime
+  bounceType      String?
+  summary         String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  emailMessage EmailMessage @relation(fields: [emailMessageId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerEventId])
+  @@index([emailMessageId, occurredAt])
+}
+
+model EmailTemplateOverride {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  subject     String
+  textBody    String
+  updatedById String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  updatedBy User? @relation("EmailTemplateEditor", fields: [updatedById], references: [id], onDelete: SetNull)
 }
 
 model AuditLog {

@@ -6,7 +6,8 @@ Proteggere identità, dati anagrafici, dati di minori, documenti sanitari, conse
 
 ## 2. Autenticazione
 
-- Auth.js, cookie di sessione httpOnly, `Secure` in produzione, `SameSite=Lax` (o Strict se compatibile con webhook/redirect pagamento — i webhook non usano cookie).
+- Auth.js, cookie di sessione httpOnly, `Secure` su HTTPS, `SameSite=Lax`, durata fissata a 30 giorni. I webhook non usano cookie.
+- Cookie `eph-team`: httpOnly, SameSite=Lax, Secure su HTTPS, cancellato al logout. Non autorizza da solo: ogni action ricalcola il permesso.
 - Password: hash (Argon2id o bcrypt, scelta in foundation: Argon2 se disponibile, altrimenti bcrypt).
 - Verifica email prima di upload documenti e consensi vincolanti.
 - Rate limit su `/accedi`, redeem invito, reset password, upload.
@@ -144,7 +145,7 @@ Non loggare: password, token, CF completo (mascherare), body documenti, Authoriz
 ## 20. Esito review M7
 
 - CSP + nosniff, referrer, frame deny, permissions policy.
-- Rate limit Postgres (`RateLimitHit`) su login/invito/upload/consensi/profilo/reset/CSV.
+- Rate limit Postgres (`RateLimitHit`) su login/invito/upload/consensi/profilo/reset/CSV/invio email admin.
 
 ## 21. Esito review M8–M12
 
@@ -152,5 +153,9 @@ Non loggare: password, token, CF completo (mascherare), body documenti, Authoriz
 - `StaffInvite` hashato; redeem senza Registration.
 - Withdraw senza delete; reset password anti-enumerazione.
 - Stripe webhook firmato; R2 bucket privato; HMAC file invariato.
-- Email Resend: variables `title` / URL / elenco versioni per la ricevuta consensi; mai CF o motivo medico. Permalink `/documenti-legali/{slug}/{version}` invece di allegati.
+- Email Resend: testo, variabili allowlist, mai CF o motivo medico. Permalink `/documenti-legali/{slug}/{version}` invece di allegati.
+- Webhook Resend firmato (`svix-id` / `svix-timestamp` / `svix-signature`). Evento duplicato: HTTP 200. Messaggio sconosciuto: HTTP 200. Firma invalida: 400.
+- Snapshot `EmailMessage.textBody` senza URL di reset/invito/C1; i log non riportano destinatario né corpo.
+- `/admin/comunicazioni` solo staff (`email:read` / `email:send`); corpo libero e override template solo Super Admin (`email:compose`).
+- Audit `EMAIL_VIEW` (solo id), `EMAIL_SEND`, `EMAIL_RETRY`, `EMAIL_TEMPLATE_UPDATE`. La lista non scrive un audit per riga.
 - Playwright happy path in CI; nonce CSP sul bootstrap tema.

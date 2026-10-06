@@ -1,6 +1,6 @@
 # 08 — Privacy and Consent Architecture
 
-**Questo file non è una privacy policy.** Non ha valore legale. I testi visibili all’utente in `content/legal/` derivano dai moduli LCS 2026-27 (1.0 del 1 ottobre 2026), adattati al modello account-del-giocatore e alla copia del certificato. Restano `[INSERIRE …]` su titolare, sede, P.IVA, email, partner, base giuridica della copia, regolamento di torneo. Non si afferma che il prodotto o i testi siano «conformi» né firmati.
+**Questo file non è una privacy policy.** I testi visibili all’utente in `content/legal/` usano i dati di `docs/pack-dati-da-compilare.md` (5 ottobre 2026). Restano `[INSERIRE …]` solo sui punti ancora aperti: foro, base giuridica dei cookie tecnici, strumento Neon/Cloudflare, contratto del medico esterno. Non si afferma che il prodotto sia «conforme».
 
 Fonte dei testi utente: `content/legal/{slug}.md`, versionati come `LegalDocument` / `LegalDocumentVersion` (seed e `ensureLegalDocuments`). Catalogo unico: `src/features/consents/domain/catalog.ts`.
 
@@ -8,7 +8,7 @@ Fonte dei testi utente: `content/legal/{slug}.md`, versionati come `LegalDocumen
 
 ## 1. Titolare e contatti (da compilare nei testi)
 
-I campi vivono nei markdown, non nel codice:
+I campi vivono nei markdown, non nel codice. **Modulo da compilare (un solo posto):** [`pack-dati-da-compilare.md`](pack-dati-da-compilare.md). Non si inventano i valori: si copiano da lì in `content/legal/` e in `partners.json`.
 
 - Titolare: `[INSERIRE NOME TITOLARE DEL TRATTAMENTO]`
 - Email privacy: `[INSERIRE EMAIL PRIVACY]`
@@ -86,7 +86,7 @@ Non è un elenco legale chiuso. Serve al compilatore dei testi. Dettaglio nelle 
 | Certificato | file privato + metadati + review (motivo rifiuto) | file: giocatore e staff + audit; rep: **stato only** |
 | Consensi | versione, accepted, timestamp, IP/UA | staff può consultare versione/data, non serve il body in rosa |
 | Pagamenti | importo, stato, id provider, pagatore; **niente carta** | stub; provider live = OD-006 |
-| Comunicazioni | notifica in-app; email Resend/stub con `template=type`, `title`, URL | niente CF né motivo sanitario; ricevuta consensi con link alle versioni |
+| Comunicazioni | notifica in-app; storico `EmailMessage` (indirizzo, oggetto, corpo redatto); invio Resend/stub | niente CF né motivo sanitario; link di reset/invito/C1 omessi nello snapshot; ricevuta consensi con link alle versioni |
 | Audit / log | azione, entità, metadati redatti, IP/UA | CF/token/password/storageKey redatti nei log |
 | Squadra / scuola | nome squadra, logo key, istituto, maglia/ruolo | compagni: nome e maglia, non PII extra |
 | Tema UI | `prefers-color-scheme`, nessun cookie | visitatori inclusi |
@@ -106,12 +106,12 @@ Tutti via adapter. Finché restano stub, **non** lanciare verso utenti reali.
 | PostgreSQL | `DATABASE_URL` | OD-012 |
 | Auth | Auth.js (credenziali) nell’app | OD-023 per SPID/OAuth |
 | Storage file | stub in prod; `local` fuori prod | OD-010 |
-| Email | stub | OD-011 |
+| Email | stub o Resend (`EMAIL_DRIVER`) | OD-011 |
 | Pagamenti | stub | OD-006 |
 | Monitoring | stub | OD-013 |
 | Antivirus | stub ok | OD-021 |
 
-L’elenco nominativo va in `privacy-policy.md` sezione responsabili **prima** di ogni go-live di un adapter.
+Lo storico `EmailMessage` contiene dati personali (indirizzo, oggetto, corpo). Va indicato nell’informativa fornitori quando il legale chiude OD-011 / DPA Resend: il codice non inventa base giuridica né periodo di conservazione. G12: email solo testo, senza pixel; un webhook `email.opened`/`email.clicked` si archivia e non cambia lo stato. `ensureLegalDocuments` non invia campagne.
 
 ---
 
@@ -165,7 +165,7 @@ Sezioni 14–15 di `privacy-policy.md`. Processo organizzativo: OD-029 (resta ap
 Tool admin (non è l’esercizio del diritto dell’interessato, è un attrezzo di piattaforma):
 
 - Rappresentante: solo **rimozione dalla propria rosa**. L’account del giocatore resta.
-- Super Admin: **chiusura account** (niente login) e **anonimizzazione** (PII tolta, tracce operative e audit restano).
+- Super Admin: **chiusura account** (niente login) e **anonimizzazione** (PII tolta, tracce operative e audit restano). Destinatario, oggetto e corpo di `EmailMessage` vengono redatti.
 - File medici: **non** si purgano in automatico (OD-030). Accesso resta HMAC + staff; il giocatore chiuso non accede.
 - Audit: **nessuna** cancellazione da UI, neanche per Super Admin. Nessun payload sanitario nei metadata.
 
@@ -175,7 +175,7 @@ Workaround canale: `[INSERIRE EMAIL PRIVACY]`.
 
 ## 11. Cookie
 
-`cookie-policy.md` elenca i cookie/storage **effettivi** (sessione/CSRF Auth.js) e lascia vuoti analytics/pixel. Banner: OD-027. Non è un `ConsentRecord`. Il tema UI segue `prefers-color-scheme` e non imposta cookie.
+`cookie-policy.md` elenca i cookie e le risorse esterne **effettivi**. Inventario di codice: `src/shared/cookies/inventory.ts`. Durata sessione Auth.js fissata a 30 giorni. `eph-team` è HttpOnly, Secure su HTTPS, cancellato al logout. Non ci sono analytics, pixel o `localStorage`/`sessionStorage`. Il banner Accetta / Rifiuta / Preferenze resta nascosto finché `OPTIONAL_TECHNOLOGIES` è vuoto; uno strumento non necessario resta spento senza una scelta registrata (`eph-cookie-consent`, non impostato oggi). Non è un `ConsentRecord`. La valutazione giuridica del banner e delle basi giuridiche resta OD-027. Il tema UI segue `prefers-color-scheme`.
 
 ---
 

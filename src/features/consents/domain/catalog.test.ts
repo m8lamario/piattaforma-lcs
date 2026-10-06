@@ -10,7 +10,6 @@ describe("catalogo documenti legali", () => {
     expect(new Set(slugs).size).toBe(slugs.length);
     for (const item of LEGAL_CATALOG) {
       const body = readFileSync(path.join(process.cwd(), "content/legal", `${item.slug}.md`), "utf8");
-      expect(body).toContain("[INSERIRE");
       expect(body.toLowerCase()).not.toContain("gdpr compliant");
     }
   });

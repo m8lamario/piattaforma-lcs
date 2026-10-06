@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { fiscalCodeControlChar, isValidFiscalCode, normalizeFiscalCode } from "./fiscalCode";
+import { fiscalCodeControlChar, fiscalCodeMatchesBirthDate, isValidFiscalCode, normalizeFiscalCode } from "./fiscalCode";
 
 describe("fiscalCode", () => {
   it("normalizza spazi e minuscole", () => {
@@ -18,5 +18,15 @@ describe("fiscalCode", () => {
     const valid = `${body}${fiscalCodeControlChar(body)}`;
     const tampered = `${valid.slice(0, 15)}${valid[15] === "Z" ? "A" : "Z"}`;
     expect(isValidFiscalCode(tampered)).toBe(false);
+  });
+
+  it("confronta la data di nascita codificata nel codice fiscale", () => {
+    const body = "RSSMRA80A01H501";
+    const code = `${body}${fiscalCodeControlChar(body)}`;
+    expect(fiscalCodeMatchesBirthDate(code, new Date(Date.UTC(1980, 0, 1)))).toBe(true);
+    expect(fiscalCodeMatchesBirthDate(code, new Date(Date.UTC(1980, 0, 2)))).toBe(false);
+    const female = `RSSMRA80A41H501`;
+    const femaleCode = `${female.slice(0, 15)}${fiscalCodeControlChar(female.slice(0, 15))}`;
+    expect(fiscalCodeMatchesBirthDate(femaleCode, new Date(Date.UTC(1980, 0, 1)))).toBe(true);
   });
 });

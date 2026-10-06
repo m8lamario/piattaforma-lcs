@@ -11,6 +11,7 @@ const HUB_SECTIONS = [
   { href: "/admin/edizioni", titleKey: "navAdminEditions", descKey: "adminEditionsHelp" },
   { href: "/admin/squadre", titleKey: "navAdminTeams", descKey: "adminTeamsHelp" },
   { href: "/admin/pagamenti", titleKey: "navAdminPayments", descKey: "adminPaymentsHelp" },
+  { href: "/admin/comunicazioni", titleKey: "navAdminEmails", descKey: "adminEmailsHelp" },
   { href: "/admin/audit", titleKey: "navAdminAudit", descKey: "adminAuditHelp" },
   { href: "/admin/informative", titleKey: "navAdminLegal", descKey: "adminLegalHelp" },
 ] as const;

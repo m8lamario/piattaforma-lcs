@@ -1,22 +1,10 @@
 import { Prisma } from "@generated/client";
-import { emailAdapter } from "@/shared/adapters";
 import { appOrigin } from "@/shared/config/app";
-import { isMinor } from "@/features/players/domain/age";
+import { dispatchOutboundEmail } from "@/features/emails/data/dispatch";
+import { minorGuardianEmail } from "@/features/emails/data/recipients";
 import { it } from "@/shared/i18n/it";
 import { logger } from "@/shared/lib/logger";
 import { prisma } from "@/shared/lib/prisma";
-
-async function minorGuardianEmail(userId: string) {
-  const profile = await prisma.playerProfile.findUnique({
-    where: { userId },
-    select: {
-      birthDate: true,
-      guardians: { orderBy: { createdAt: "asc" }, take: 1, select: { email: true } },
-    },
-  });
-  if (!profile?.birthDate || !isMinor(profile.birthDate)) return null;
-  return profile.guardians[0]?.email?.trim().toLowerCase() || null;
-}
 
 function metadataString(metadata: unknown, key: string): string | null {
   if (!metadata || typeof metadata !== "object" || Array.isArray(metadata)) return null;
@@ -35,6 +23,53 @@ async function hasNotification(input: {
     select: { metadata: true },
   });
   return rows.some((row) => metadataString(row.metadata, input.key) === input.value);
+}
+
+async function dispatchNotificationEmails(input: {
+  notificationId: string;
+  userId: string;
+  type: string;
+  variables: Record<string, string>;
+  sourceEntityType?: string;
+  sourceEntityId?: string;
+}) {
+  const user = await prisma.user.findUnique({
+    where: { id: input.userId },
+    select: { email: true },
+  });
+  try {
+    if (user?.email) {
+      await dispatchOutboundEmail({
+        idempotencyKey: `notification:${input.notificationId}:user`,
+        purpose: input.type,
+        templateKey: input.type,
+        to: user.email,
+        userId: input.userId,
+        recipientKind: "USER",
+        variables: input.variables,
+        notificationId: input.notificationId,
+        sourceEntityType: input.sourceEntityType,
+        sourceEntityId: input.sourceEntityId,
+      });
+    }
+    const guardianEmail = await minorGuardianEmail(input.userId);
+    if (guardianEmail && guardianEmail !== user?.email?.toLowerCase()) {
+      await dispatchOutboundEmail({
+        idempotencyKey: `notification:${input.notificationId}:guardian`,
+        purpose: input.type,
+        templateKey: input.type,
+        to: guardianEmail,
+        userId: input.userId,
+        recipientKind: "GUARDIAN",
+        variables: input.variables,
+        notificationId: input.notificationId,
+        sourceEntityType: input.sourceEntityType,
+        sourceEntityId: input.sourceEntityId,
+      });
+    }
+  } catch {
+    logger.error("notification.email_failed", { type: input.type });
+  }
 }
 
 export async function createNotification(input: {
@@ -58,31 +93,21 @@ export async function createNotification(input: {
   const variables = {
     title: input.title,
     areaUrl,
+    link: areaUrl,
     ...input.emailVariables,
   };
-  const user = await prisma.user.findUnique({
-    where: { id: input.userId },
-    select: { email: true },
+  await dispatchNotificationEmails({
+    notificationId: row.id,
+    userId: input.userId,
+    type: input.type,
+    variables,
+    sourceEntityType: input.metadata?.registrationId
+      ? "Registration"
+      : input.metadata?.documentId
+        ? "Document"
+        : undefined,
+    sourceEntityId: input.metadata?.registrationId ?? input.metadata?.documentId,
   });
-  try {
-    if (user?.email) {
-      await emailAdapter.send({
-        to: user.email,
-        template: input.type,
-        variables,
-      });
-    }
-    const guardianEmail = await minorGuardianEmail(input.userId);
-    if (guardianEmail && guardianEmail !== user?.email?.toLowerCase()) {
-      await emailAdapter.send({
-        to: guardianEmail,
-        template: input.type,
-        variables,
-      });
-    }
-  } catch {
-    logger.error("notification.email_failed", { type: input.type });
-  }
   return row;
 }
 
