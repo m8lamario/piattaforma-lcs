@@ -201,7 +201,7 @@ Documenti, consensi e token di consenso restano sulla Registration: edition e co
 
 **Notification** — userId, type, title, body, readAt, metadata Json (senza dati sanitari).
 
-**EmailMessage** — un destinatario per riga. `idempotencyKey` unique; purpose/templateKey; status (`QUEUED`/`SENT`/`DELIVERED`/`DELIVERY_DELAYED`/`BOUNCED`/`COMPLAINED`/`FAILED`); `userId` opzionale `onDelete: SetNull`; `recipientKind` USER/GUARDIAN; snapshot `toAddress`/`fromAddress`/`replyTo`/`subject`/`textBody` (URL con token già redatti); provider + `providerMessageId`; errore breve; origine (`sourceEntityType`/`sourceEntityId`); `notificationId` e `actorUserId` opzionali; `queuedAt`/`sentAt`/`lastEventAt`.
+**EmailMessage** — un destinatario per riga. `idempotencyKey` unique; purpose/templateKey; status (`QUEUED`/`SENT`/`DELIVERED`/`DELIVERY_DELAYED`/`BOUNCED`/`COMPLAINED`/`FAILED`); `userId` opzionale `onDelete: SetNull`; `recipientKind` USER/GUARDIAN; snapshot `toAddress`/`fromAddress`/`replyTo`/`subject`/`textBody` (URL con token già redatti); l’HTML si genera all’invio dal layout comune e non è persistito; provider + `providerMessageId`; errore breve; origine (`sourceEntityType`/`sourceEntityId`); `notificationId` e `actorUserId` opzionali; `queuedAt`/`sentAt`/`lastEventAt`.
 
 **EmailEvent** — unique `(provider, providerEventId)`; type grezzo (`email.delivered`, `local.queued`, …); `occurredAt`; sommario bounce. Non si salva il JSON del webhook.
 

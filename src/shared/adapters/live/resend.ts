@@ -135,6 +135,7 @@ export function createResendEmailAdapter(): EmailAdapter {
         to: input.to,
         subject: input.subject,
         text: input.text,
+        html: input.html,
         replyTo: input.replyTo ?? replyTo,
       };
       const options = input.idempotencyKey ? { idempotencyKey: input.idempotencyKey } : undefined;

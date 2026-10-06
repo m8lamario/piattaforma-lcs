@@ -100,6 +100,7 @@ export interface EmailAdapter {
     to: string;
     subject: string;
     text: string;
+    html?: string;
     from?: string;
     replyTo?: string | null;
     idempotencyKey?: string;
@@ -125,7 +126,7 @@ export interface MonitoringAdapter {
 }
 ```
 
-SDK live solo negli adapter. Checkout Stripe hosted: nessun campo carta nel DOM. Webhook: verifica firma, niente payload grezzo nei log. Email: testo piano, idempotenza Resend = id interno, `parseWebhook` Svix (`svix-id` / `svix-timestamp` / `svix-signature`). Lo stub non accetta webhook. Pagine e form non chiamano Resend: passano da `dispatchOutboundEmail`. Email solo testo (G12): niente HTML, niente tracking di aperture come stato. L’adapter non scrive sul database: l’outbox è `EmailMessage`/`EmailEvent`. `POST /api/webhooks/resend` autentica con Svix (`RESEND_WEBHOOK_SECRET`). Lo stub non accetta webhook. `EMAIL_REPLY_TO` è opzionale.
+SDK live solo negli adapter. Checkout Stripe hosted: nessun campo carta nel DOM. Webhook: verifica firma, niente payload grezzo nei log. Email: HTML di presentazione + testo, idempotenza Resend = id interno, `parseWebhook` Svix (`svix-id` / `svix-timestamp` / `svix-signature`). Lo stub non accetta webhook. Pagine e form non chiamano Resend: passano da `dispatchOutboundEmail`. Layout HTML centralizzato (`src/features/emails/domain/layout.ts`); G12: niente pixel di tracking né stato da aperture. L’adapter non scrive sul database: l’outbox è `EmailMessage`/`EmailEvent`. `POST /api/webhooks/resend` autentica con Svix (`RESEND_WEBHOOK_SECRET`). Lo stub non accetta webhook. `EMAIL_REPLY_TO` è opzionale.
 
 ## 6. Motore requisiti
 

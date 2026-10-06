@@ -65,7 +65,7 @@ La scelta, quando servirà, si modifica o si revoca da questa pagina. Revocare r
 
 Checkout: se attivo, cookie e dati sul dominio Stripe seguono la sua [informativa cookie](https://stripe.com/it/legal/cookies-policy) e la sua [informativa privacy](https://stripe.com/it/privacy). Il pagamento si apre sul sito di Stripe solo quando la persona avvia il checkout.
 
-Email e storage file non impostano cookie di tracciamento in questa app. Le email sono testo semplice, senza pixel di apertura. I certificati sono letti dal server e consegnati da questa piattaforma (`/api/documents/file`), non dal dominio dello storage nel browser. Confermato nel codice dell’app: Resend invia solo testo, senza pixel di apertura; i file non sono aperti dal browser sul dominio R2. Tracking nel pannello Resend e cookie aggiunti dall’hosting Vercel restano fuori da questo codice. Trasferimenti extra-UE: vedi [informativa privacy](/privacy). Adobe Fonts: vedi la sezione 2.
+Email e storage file non impostano cookie di tracciamento in questa app. Le email usano HTML di presentazione (logo e stile) e un fallback testuale; non includono pixel di apertura. I certificati sono letti dal server e consegnati da questa piattaforma (`/api/documents/file`), non dal dominio dello storage nel browser. Confermato nel codice dell’app: Resend invia HTML + testo, senza pixel di apertura; i file non sono aperti dal browser sul dominio R2. Tracking nel pannello Resend e cookie aggiunti dall’hosting Vercel restano fuori da questo codice. Trasferimenti extra-UE: vedi [informativa privacy](/privacy). Adobe Fonts: vedi la sezione 2.
 
 ---
 

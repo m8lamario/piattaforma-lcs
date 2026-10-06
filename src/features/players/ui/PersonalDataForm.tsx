@@ -7,6 +7,7 @@ import { savePersonalDataAction } from "@/features/players/actions";
 import { formatDateOnly } from "@/features/players/domain/dates";
 import { personalDataSchema } from "@/features/players/schemas/personal";
 import { Button } from "@/shared/ui/Button";
+import { WizardLaterButton } from "@/features/registrations/ui/WizardShell";
 import { ActionError } from "@/shared/ui/ActionError";
 import { FieldStatus } from "@/shared/ui/FieldStatus";
 import { FormErrorSummary, fieldMessages } from "@/shared/ui/FormErrorSummary";
@@ -213,6 +214,7 @@ export function PersonalDataForm({ email, defaults, registrationId, identityConf
         <Button type="button" variant="ghost" disabled={pending} onClick={() => submit("exit")}>
           {it.saveExit}
         </Button>
+        <WizardLaterButton />
       </div>
     </form>
   );

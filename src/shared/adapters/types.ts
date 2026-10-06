@@ -2,6 +2,7 @@ export type EmailSendInput = {
   to: string;
   subject: string;
   text: string;
+  html?: string;
   from?: string;
   replyTo?: string | null;
   idempotencyKey?: string;

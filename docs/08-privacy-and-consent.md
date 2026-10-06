@@ -109,7 +109,7 @@ Tutti via adapter. Finché restano stub, **non** lanciare verso utenti reali.
 | Monitoring | stub | OD-013 |
 | Antivirus | stub ok | OD-021 |
 
-Lo storico `EmailMessage` contiene dati personali (indirizzo, oggetto, corpo). Va indicato nell’informativa fornitori quando il legale chiude OD-011 / DPA Resend: il codice non inventa base giuridica né periodo di conservazione. G12: email solo testo, senza pixel; un webhook `email.opened`/`email.clicked` si archivia e non cambia lo stato. `ensureLegalDocuments` non invia campagne.
+Lo storico `EmailMessage` contiene dati personali (indirizzo, oggetto, corpo). Va indicato nell’informativa fornitori quando il legale chiude OD-011 / DPA Resend: il codice non inventa base giuridica né periodo di conservazione. G12: HTML di presentazione (logo, layout) senza pixel di tracking; un webhook `email.opened`/`email.clicked` si archivia e non cambia lo stato. `ensureLegalDocuments` non invia campagne.
 
 ---
 

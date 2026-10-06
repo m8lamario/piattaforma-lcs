@@ -43,9 +43,9 @@ function templateVariablesFromForm(formData: FormData, email: string, firstName:
 }
 
 export async function previewManualEmailAction(
-  _prev: ActionState<{ subject?: string; text?: string }> | undefined,
+  _prev: ActionState<{ subject?: string; text?: string; html?: string }> | undefined,
   formData: FormData,
-): Promise<ActionState<{ subject?: string; text?: string }>> {
+): Promise<ActionState<{ subject?: string; text?: string; html?: string }>> {
   const { actor } = await requireEmailActor("/admin/comunicazioni/nuova", "email:send");
   const templateKey = String(formData.get("templateKey") ?? "MANUAL");
   if (!isEmailTemplateKey(templateKey) || !MANUAL_TEMPLATE_KEYS.includes(templateKey)) {
@@ -63,7 +63,7 @@ export async function previewManualEmailAction(
     customSubject: compose ? String(formData.get("customSubject") ?? "") : undefined,
     customText: compose ? String(formData.get("customText") ?? "") : undefined,
   });
-  return { subject: rendered.subject, text: rendered.text };
+  return { subject: rendered.subject, text: rendered.text, html: rendered.html };
 }
 
 const sendSchema = z.object({

@@ -10,6 +10,7 @@ import { Button } from "@/shared/ui/Button";
 import { ActionError } from "@/shared/ui/ActionError";
 import { FieldStatus } from "@/shared/ui/FieldStatus";
 import { FormErrorSummary, fieldMessages } from "@/shared/ui/FormErrorSummary";
+import { WizardLaterButton } from "@/features/registrations/ui/WizardShell";
 import { it } from "@/shared/i18n/it";
 import fields from "@/shared/ui/form.module.css";
 
@@ -132,7 +133,7 @@ export function GuardianForm({ defaults }: Props) {
 
       <fieldset className={fields.group}>
         <legend className={fields.legend}>{it.fieldGroupGuardianPerson}</legend>
-        <div className={fields.pair}>
+        <div className={fields.trio}>
           <div className={fields.field}>
             <label className={fields.label} htmlFor="guardian-first">
               {it.firstName}
@@ -169,29 +170,29 @@ export function GuardianForm({ defaults }: Props) {
               </FieldStatus>
             ) : null}
           </div>
-        </div>
-        <div className={fields.field}>
-          <label className={fields.label} htmlFor="relationship">
-            {it.relationship}
-          </label>
-          <select
-            id="relationship"
-            className={fields.select}
-            aria-invalid={Boolean(errors.relationship)}
-            aria-describedby={errors.relationship ? "relationship-error" : undefined}
-            {...form.register("relationship")}
-          >
-            {GUARDIAN_RELATIONSHIPS.map((value) => (
-              <option key={value} value={value}>
-                {RELATION_LABEL[value]}
-              </option>
-            ))}
-          </select>
-          {errors.relationship?.message ? (
-            <FieldStatus id="relationship-error" tone="danger">
-              {errors.relationship.message}
-            </FieldStatus>
-          ) : null}
+          <div className={fields.field}>
+            <label className={fields.label} htmlFor="relationship">
+              {it.relationship}
+            </label>
+            <select
+              id="relationship"
+              className={fields.select}
+              aria-invalid={Boolean(errors.relationship)}
+              aria-describedby={errors.relationship ? "relationship-error" : undefined}
+              {...form.register("relationship")}
+            >
+              {GUARDIAN_RELATIONSHIPS.map((value) => (
+                <option key={value} value={value}>
+                  {RELATION_LABEL[value]}
+                </option>
+              ))}
+            </select>
+            {errors.relationship?.message ? (
+              <FieldStatus id="relationship-error" tone="danger">
+                {errors.relationship.message}
+              </FieldStatus>
+            ) : null}
+          </div>
         </div>
       </fieldset>
 
@@ -269,7 +270,6 @@ export function GuardianForm({ defaults }: Props) {
           />
           {it.g3Sole}
         </label>
-        <p className={fields.help}>{it.guardianWaitingBody}</p>
         {errors.g3?.message ? (
           <FieldStatus id="g3-error" tone="danger">
             {errors.g3.message}
@@ -342,6 +342,7 @@ export function GuardianForm({ defaults }: Props) {
         <Button type="button" variant="ghost" disabled={pending} onClick={() => submit("exit")}>
           {it.saveExit}
         </Button>
+        <WizardLaterButton />
       </div>
     </form>
   );

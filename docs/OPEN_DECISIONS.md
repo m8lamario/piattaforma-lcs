@@ -62,7 +62,7 @@ Ogni voce: problema, opzioni, decisione necessaria, conseguenze, impatto sullo s
 - **Problema:** Resend, SES, Mailgun, altro.
 - **Opzioni:** adapter.
 - **Decisione necessaria:** ops + DPA. **Scelta implementativa M11:** Resend (`EMAIL_DRIVER=resend`).
-- **Conseguenze:** template con `title` / URL; mai CF o motivo medico. Default stub. Lo storico `EmailMessage` è dato personale: DPA/informativa fornitori restano al legale. Tracking aperture (pixel) non si attiva (G12).
+- **Conseguenze:** template con `title` / URL; mai CF o motivo medico. Default stub. Lo storico `EmailMessage` è dato personale: DPA/informativa fornitori restano al legale. HTML di presentazione sì; tracking aperture (pixel) non si attiva (G12).
 - **Impatto:** adapter `live/resend.ts`.
 
 ## OD-007 Modalità BOTH (doppio canale)

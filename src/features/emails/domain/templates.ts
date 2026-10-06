@@ -1,5 +1,7 @@
+import { appOrigin } from "@/shared/config/app";
 import { it } from "@/shared/i18n/it";
 import { EMAIL_TEMPLATE_KEYS, isEmailTemplateKey, type EmailTemplateKey } from "./catalog";
+import { buildEmailHtml } from "./content";
 import { interpolateTemplate, pickEmailVariables } from "./variables";
 
 export type EmailTemplateSource = {
@@ -115,13 +117,26 @@ export function renderEmailContent(input: {
   variables: Record<string, string>;
   customSubject?: string;
   customText?: string;
+  origin?: string;
 }) {
   const subjectSource = input.customSubject?.trim() || input.template.subject;
   const bodySource = input.customText?.trim() || input.template.textBody;
   const variables = pickEmailVariables(input.variables);
+  const subject = collapse(interpolateTemplate(subjectSource, variables));
+  const text = collapse(interpolateTemplate(bodySource, variables));
+  const origin = (input.origin ?? appOrigin()).replace(/\/$/, "");
+  const html = buildEmailHtml({
+    key: input.template.key,
+    subject,
+    text,
+    variables,
+    origin,
+    customized: Boolean(input.customText?.trim()),
+  });
   return {
-    subject: collapse(interpolateTemplate(subjectSource, variables)),
-    text: collapse(interpolateTemplate(bodySource, variables)),
+    subject,
+    text,
+    html,
     variables,
   };
 }

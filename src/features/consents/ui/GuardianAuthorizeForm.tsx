@@ -7,10 +7,12 @@ import { LegalReader } from "@/features/consents/ui/LegalReader";
 import type { ConsentBoxDef } from "@/features/consents/domain/boxes";
 import { Button } from "@/shared/ui/Button";
 import { ActionError } from "@/shared/ui/ActionError";
+import { Icon } from "@/shared/ui/Icon";
 import { it } from "@/shared/i18n/it";
 import fields from "@/shared/ui/form.module.css";
 import type { ConsentDocumentView } from "@/features/consents/ui/PrivacyConsentForm";
-import styles from "@/features/consents/ui/ConsentForm.module.css";
+import consentStyles from "@/features/consents/ui/ConsentForm.module.css";
+import pageStyles from "@/app/autorizzazione-genitore/[token]/page.module.css";
 
 type Props = {
   token: string;
@@ -32,10 +34,10 @@ export function GuardianAuthorizeForm({ token, purpose, playerName, tournamentNa
 
   if (state && "done" in state && state.done) {
     return (
-      <>
-        <h1>{it.guardianLinkTitle}</h1>
-        <p className={fields.help}>{"refused" in state && state.refused ? it.guardianLinkRefused : it.guardianLinkDone}</p>
-      </>
+      <div className={pageStyles.statusCard}>
+        <h1 className={pageStyles.title}>{it.guardianLinkTitle}</h1>
+        <p className={pageStyles.lead}>{"refused" in state && state.refused ? it.guardianLinkRefused : it.guardianLinkDone}</p>
+      </div>
     );
   }
 
@@ -46,14 +48,34 @@ export function GuardianAuthorizeForm({ token, purpose, playerName, tournamentNa
 
   return (
     <form className={fields.form} action={action} aria-busy={pending}>
-      <h1>{it.guardianLinkTitle}</h1>
-      <p className={fields.help}>{it.guardianLinkHelp}</p>
-      <p>
-        <strong>{it.guardianLinkPlayer}:</strong> {playerName}
-      </p>
-      <p>
-        <strong>{it.guardianLinkTournament}:</strong> {tournamentName}
-      </p>
+      <header className={pageStyles.headerCard}>
+        <p className={pageStyles.kicker}>{tournamentName}</p>
+        <h1 className={pageStyles.title}>{it.guardianLinkTitle}</h1>
+        <p className={pageStyles.lead}>{it.guardianLinkHelp}</p>
+
+        <div className={pageStyles.metaGrid}>
+          <div className={pageStyles.metaItem}>
+            <span className={pageStyles.metaIcon} aria-hidden="true">
+              <Icon name="user" size={18} />
+            </span>
+            <div className={pageStyles.metaContent}>
+              <span className={pageStyles.metaLabel}>{it.guardianLinkPlayer}</span>
+              <span className={pageStyles.metaValue}>{playerName}</span>
+            </div>
+          </div>
+
+          <div className={pageStyles.metaItem}>
+            <span className={pageStyles.metaIcon} aria-hidden="true">
+              <Icon name="team" size={18} />
+            </span>
+            <div className={pageStyles.metaContent}>
+              <span className={pageStyles.metaLabel}>{it.guardianLinkTournament}</span>
+              <span className={pageStyles.metaValue}>{tournamentName}</span>
+            </div>
+          </div>
+        </div>
+      </header>
+
       {state && "error" in state && state.error ? <ActionError error={state.error} code={state.code} /> : null}
 
       <input type="hidden" name="token" value={token} />
@@ -62,11 +84,18 @@ export function GuardianAuthorizeForm({ token, purpose, playerName, tournamentNa
         <input key={document.slug} type="hidden" name={`version:${document.slug}`} value={document.versionId} />
       ))}
 
-      {documents.map((document) => (
-        <article key={document.slug} className={styles.block}>
-          <LegalReader document={document} read={Boolean(readSlugs[document.slug])} onRead={() => markRead(document.slug)} />
-        </article>
-      ))}
+      <div className={pageStyles.docList}>
+        <h2 className={pageStyles.sectionTitle}>{it.legalIndexTitle}</h2>
+        {documents.map((document) => (
+          <article key={document.slug} className={consentStyles.block}>
+            <LegalReader
+              document={document}
+              read={Boolean(readSlugs[document.slug])}
+              onRead={() => markRead(document.slug)}
+            />
+          </article>
+        ))}
+      </div>
 
       {requiredReady ? (
         <>
@@ -83,6 +112,7 @@ export function GuardianAuthorizeForm({ token, purpose, playerName, tournamentNa
               />
             </>
           ) : null}
+
           {g3Box ? (
             <fieldset className={fields.group}>
               <legend className={fields.legend}>{it.g3Legend}</legend>
@@ -110,6 +140,7 @@ export function GuardianAuthorizeForm({ token, purpose, playerName, tournamentNa
               </label>
             </fieldset>
           ) : null}
+
           <ConsentBoxList
             boxes={otherBoxes}
             values={values}

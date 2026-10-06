@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { startPlayerCheckoutAction } from "@/features/payments/actions";
 import { Button, ButtonLink } from "@/shared/ui/Button";
+import { WizardLaterButton } from "@/features/registrations/ui/WizardShell";
 import { ActionError } from "@/shared/ui/ActionError";
 import { it } from "@/shared/i18n/it";
 import fields from "@/shared/ui/form.module.css";
@@ -55,6 +56,7 @@ export function PlayerPaymentForm({ covered, teamOnly, amount, currency }: Props
         <Button type="submit" variant="success" icon="payment" disabled={pending} aria-busy={pending}>
           {pending ? it.redirecting : it.paymentPay}
         </Button>
+        <WizardLaterButton />
       </div>
     </form>
   );
