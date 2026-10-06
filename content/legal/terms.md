@@ -1,4 +1,4 @@
-**Condizioni di iscrizione e uso**, compilate con i dati forniti da European Students League S.r.l. il 5 ottobre 2026. La casella T1 è «Accetto il regolamento e le condizioni di iscrizione». Il foro competente resta **[INSERIRE FORO COMPETENTE — DA DEFINIRE CON IL LEGALE]** (sede della società: Torino).
+**Condizioni di iscrizione e uso**, compilate con i dati forniti da European Students League S.r.l. il 5 ottobre 2026. La casella T1 è «Accetto il regolamento e le condizioni di iscrizione». Foro competente: Torino.
 
 **Mole Cup, Leonessa Cup, Colosseo Cup, Ferrea Cup, Olympius e Turas Cup**, stagione 2026/2027, versione 1.0 del 5 ottobre 2026. Data di entrata in vigore su questa piattaforma: **5 ottobre 2026**.
 
@@ -129,7 +129,7 @@ Queste condizioni possono essere aggiornate. La versione in vigore è su [/termi
 
 Questi Termini sono disciplinati dalla legge italiana.
 
-**[INSERIRE FORO COMPETENTE — DA DEFINIRE CON IL LEGALE]**. Sede legale della società: Torino.
+Foro competente: Torino.
 
 ---
 

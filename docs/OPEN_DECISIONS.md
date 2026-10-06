@@ -6,7 +6,7 @@ Ogni voce: problema, opzioni, decisione necessaria, conseguenze, impatto sullo s
 
 ## OD-001 Testi legali ufficiali
 
-- **Problema:** I dati di `docs/pack-dati-da-compilare.md` (5 ottobre 2026, Pietro Filippo Turolla) sono stati copiati nei testi. Restano aperti: foro (D15), base giuridica dei cookie tecnici (G9), strumento di trasferimento di Neon e Cloudflare, contratto del medico esterno. La cancellazione automatica della copia a 90 giorni non è ancora un job.
+- **Problema:** I dati di `docs/pack-dati-da-compilare.md` (5 ottobre 2026, Pietro Filippo Turolla) sono stati copiati nei testi. Foro: Torino. Nessun medico esterno accede ai certificati. Cookie della piattaforma: tecnici strettamente necessari, banner disattivato. Neon: Francoforte. Cloudflare R2: giurisdizione UE. Resta da leggere nei DPA se Neon o Cloudflare trattano dati fuori da quella regione. Partner: nessuno al go-live. La cancellazione automatica della copia a 90 giorni non è ancora un job.
 - **Opzioni:** (a) placeholder versionati in `content/legal`; (b) attendere i testi prima di ogni UI.
 - **Decisione necessaria:** firma di organizzazione/legale sui campi `[INSERIRE …]` ancora aperti. Compilare [`docs/pack-dati-da-compilare.md`](pack-dati-da-compilare.md); mappa in `docs/08-privacy-and-consent.md`.
 - **Conseguenze:** senza quei campi il prodotto non è pubblicabile verso utenti reali.
@@ -176,9 +176,9 @@ Già coperti: no PWA in M0; scan OD-021.
 - **Problema:** Esistono cookie tecnici Auth.js e `eph-team`. Nel codice non ci sono analytics né pixel. Il tema UI segue `prefers-color-scheme` e non usa cookie. Adobe Fonts è caricato su ogni pagina (font dell’interfaccia; le risposte verificate non impostano `Set-Cookie`).
 - **Opzioni:** solo cookie tecnici senza banner; banner se si aggiungono analitici; niente terze parti.
 - **Decisione tecnica (codice):** niente analytics/pixel. Durata sessione fissata a 30 giorni. `eph-team` Secure su HTTPS e cancellato al logout. Il banner Accetta / Rifiuta / Preferenze esiste ma non viene mostrato finché l’elenco degli strumenti non necessari è vuoto. Quegli strumenti restano spenti senza una scelta registrata. Il cookie di scelta non viene scritto finché l’elenco è vuoto.
-- **Decisione necessaria:** legale, su G8/G9/G10 del pack (banner dovuto o no; base giuridica). Prima di introdurre analytics/pixel: aggiornare `cookie-policy` e l’inventario.
+- **Decisione dell’organizzazione (6 ottobre 2026):** i quattro cookie (sessione, protezione del login, ritorno dopo il login, squadra selezionata) sono tecnici strettamente necessari. Niente cookie di statistica, profilazione o pubblicità. Il banner resta disattivato. Prima di introdurre analytics o pixel: aggiornare `cookie-policy` e l’inventario.
 - **Conseguenze:** un nuovo consenso cookie non è un `ConsentRecord` del wizard.
-- **Impatto:** pagina `/cookie` con inventario e pannello di gestione. Valutazione giuridica ancora aperta.
+- **Impatto:** pagina `/cookie` con inventario. Il banner non viene mostrato finché l’elenco degli strumenti non necessari è vuoto.
 
 ## OD-028 Condizioni di iscrizione (`terms`) nel wizard
 

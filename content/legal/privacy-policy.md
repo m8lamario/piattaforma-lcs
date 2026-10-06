@@ -2,7 +2,7 @@
 
 **ai sensi dell’art. 13 del Regolamento UE 2016/679 (GDPR) — Mole Cup, Leonessa Cup, Colosseo Cup, Ferrea Cup, Olympius e Turas Cup, stagione 2026/2027 — versione 1.0 del 5 ottobre 2026.**
 
-Testo del **Modulo 1** LCS 2026-27, compilato con i dati forniti da European Students League S.r.l. il 5 ottobre 2026. Resta aperto lo strumento di trasferimento di Neon e Cloudflare: **[INSERIRE STRUMENTO NEON E CLOUDFLARE]**.
+Testo del **Modulo 1** LCS 2026-27, compilato con i dati forniti da European Students League S.r.l. il 5 ottobre 2026.
 
 ---
 
@@ -52,7 +52,7 @@ Negare i consensi facoltativi non impedisce di partecipare al torneo.
 
 Strumenti elettronici e cartacei, personale autorizzato e istruito, misure di sicurezza adeguate (art. 32 GDPR). Non facciamo profilazione e non prendiamo decisioni basate unicamente su trattamenti automatizzati.
 
-Su questa piattaforma: accesso per ruoli, file medici su storage privato con link a tempo e audit, password con hash, verifica email prima di upload e consensi vincolanti. Hosting Vercel in regione UE, database Neon PostgreSQL in regione UE, file su Cloudflare R2, email Resend, pagamenti Stripe. Cifratura a riposo e in transito. Backup del database: Neon Point-in-Time Restore, retention fino a 30 giorni. I file caricati sono sottoposti a scansione antivirus (Cloudflare Malicious Uploads Detection). Contratti di responsabile del trattamento (art. 28) sugli account ESL di Vercel, Neon, Cloudflare, Resend e Stripe.
+Su questa piattaforma: accesso per ruoli, file medici su storage privato con link a tempo e audit, password con hash, verifica email prima di upload e consensi vincolanti. Hosting Vercel in regione UE, database Neon PostgreSQL in AWS Europe Central 1 (Francoforte, Germania), file su Cloudflare R2 con giurisdizione Unione europea, email Resend, pagamenti Stripe. Cifratura a riposo e in transito. Backup del database: Neon Point-in-Time Restore, retention fino a 30 giorni. I file caricati sono sottoposti a scansione antivirus (Cloudflare Malicious Uploads Detection). Contratti di responsabile del trattamento (art. 28) sugli account ESL di Vercel, Neon, Cloudflare, Resend e Stripe.
 
 ---
 
@@ -62,13 +62,13 @@ Organizzatori locali dei tornei, fotografi e videomaker incaricati, fornitori de
 
 Nella piattaforma: il giocatore vede i propri dati e il proprio certificato; i compagni vedono nome, cognome, maglia e ruolo; il rappresentante di squadra vede nome, stato iscrizione, stato del certificato (mai il file) e il flag pubblicabile; gli amministratori vedono iscrizioni, file medici con audit, consensi e pagamenti senza carta.
 
-Fornitori: hosting Vercel (UE), database Neon PostgreSQL (UE), storage Cloudflare R2, email Resend, pagamenti Stripe. DPA art. 28 sugli account ESL di questi fornitori.
+Fornitori: hosting Vercel (UE), database Neon PostgreSQL in AWS Europe Central 1 (Francoforte, Germania), storage Cloudflare R2 con giurisdizione Unione europea, email Resend, pagamenti Stripe. DPA art. 28 sugli account ESL di questi fornitori.
 
 ---
 
 ## 6. Trasferimenti extra-UE
 
-Vercel, Resend e Stripe possono comportare trasferimenti verso gli Stati Uniti, con clausole contrattuali standard e/o EU-U.S. Data Privacy Framework, secondo i rispettivi strumenti. Lo strumento di trasferimento di Neon e Cloudflare è **[INSERIRE STRUMENTO NEON E CLOUDFLARE]**.
+Vercel, Resend e Stripe possono comportare trasferimenti verso gli Stati Uniti, con clausole contrattuali standard e/o EU-U.S. Data Privacy Framework, secondo i rispettivi strumenti. Il database Neon è conservato a Francoforte e i file su Cloudflare R2 restano nell’Unione europea. Eventuali trattamenti o trasferimenti di Neon e Cloudflare fuori da quella regione di conservazione non sono indicati qui e vanno letti nei rispettivi contratti di responsabile del trattamento.
 
 ---
 
