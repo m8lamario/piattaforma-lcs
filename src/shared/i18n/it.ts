@@ -65,7 +65,7 @@ export const it = {
   stepTutoreLead: "Serve un contatto di un genitore o tutore. L’account resta il tuo.",
   stepCertificatoLead: "Carica il certificato agonistico. Il rappresentante vede solo lo stato, non il file.",
   stepPrivacyLead:
-    "Leggi ogni informativa e conferma solo se l’hai presa visione. I campi [INSERIRE …] (titolare, sede, email) restano da compilare.",
+    "Leggi ogni informativa e conferma solo se l’hai presa visione.",
   stepLiberatorieLead:
     "Scelta su foto, video e social: distinta dalla privacy. Se non è obbligatoria, puoi rifiutare senza bloccare l’iscrizione.",
   stepPagamentoLead: "Quota di iscrizione, se l’edizione la chiede a te. Nessun dato della carta su questo sito.",
@@ -210,7 +210,7 @@ export const it = {
   heroMedicalRejected: "Il certificato è stato rifiutato. Caricane uno nuovo.",
   statusAccountCreated: "Account creato. Completa l’iscrizione quando il percorso sarà disponibile.",
   consentPrivacyHelp:
-    "Leggi ogni informativa e conferma solo se l’hai presa visione. I testi derivano dai moduli LCS 2026-27, adattati a questa piattaforma: non sono un parere legale e non sono firmati. Restano da compilare i campi [INSERIRE …].",
+    "Leggi ogni informativa e conferma solo se l’hai presa visione. I testi derivano dai moduli LCS 2026-27, adattati a questa piattaforma con i dati dell’organizzazione. Non sono un parere legale firmato.",
   consentMediaHelp:
     "Questa è una scelta distinta dalla privacy. Serve per foto, video e canali social, uso per uso. Completare il passo senza spuntare gli usi è consentito.",
   consentMediaOptional: "Per questa edizione puoi non accettare: l’iscrizione non si blocca.",
@@ -235,7 +235,7 @@ export const it = {
   consentReadLocked: "Leggi l’informativa prima di confermare.",
   legalIndexTitle: "Informative",
   legalIndexHelp:
-    "Elenco delle informative versionate. I testi derivano dai moduli LCS 2026-27 adattati a questa piattaforma; i campi [INSERIRE …] restano da compilare. Non sono testi firmati.",
+    "Elenco delle informative versionate. I testi derivano dai moduli LCS 2026-27 adattati a questa piattaforma con i dati dell’organizzazione. Non sono un parere legale firmato.",
   terms: "Condizioni",
   cookies: "Cookie",
   cookiePanelTitle: "Gestione dei cookie",
@@ -263,7 +263,7 @@ export const it = {
   cookieAnalytics: "Statistiche",
   cookieMarketing: "Marketing e profilazione",
   legalPlaceholderNotice:
-    "I testi visibili derivano dai moduli LCS 2026-27 (1.0 del 1 ottobre 2026) e dal funzionamento di questa piattaforma. Non è un parere legale e non è un testo firmato. I campi [INSERIRE …] (titolare, sede, P.IVA, email privacy, partner, base giuridica della copia del certificato, regolamento di torneo) restano da compilare.",
+    "I testi visibili derivano dai moduli LCS 2026-27 e dai dati forniti dall’organizzazione. Non sono un parere legale firmato. Alcuni campi sono ancora segnati come da compilare.",
   legalArchivedVersionNotice:
     "Questa pagina mostra la versione registrata al momento dell’accettazione, non necessariamente il testo corrente.",
   legalCurrentVersionLink: "Apri il testo corrente",

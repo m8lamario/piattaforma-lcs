@@ -73,7 +73,7 @@ Organizzatori locali dei tornei, fotografi e videomaker incaricati, fornitori de
 
 ## 6. Trasferimenti extra-UE
 
-Vercel, Resend e Stripe possono comportare trasferimenti verso gli Stati Uniti, con clausole contrattuali standard e/o EU-U.S. Data Privacy Framework. Fornitori: Vercel e Neon in regione UE, file su Cloudflare R2, email Resend, pagamenti Stripe. DPA art. 28 sugli account ESL. Lo strumento di trasferimento di Neon e Cloudflare è indicato nell’[informativa privacy](/privacy).
+Vercel, Resend e Stripe possono comportare trasferimenti verso gli Stati Uniti, con clausole contrattuali standard e/o EU-U.S. Data Privacy Framework. Il database Neon è in AWS Europe Central 1 (Francoforte, Germania). I file su Cloudflare R2 hanno giurisdizione Unione europea. Dettaglio nell’[informativa privacy](/privacy).
 
 ---
 

@@ -2,7 +2,7 @@
 
 **Mole Cup, Leonessa Cup, Colosseo Cup, Ferrea Cup, Olympius e Turas Cup**, versione 1.0 del 5 ottobre 2026. Data di entrata in vigore su questa piattaforma: **5 ottobre 2026**.
 
-Questo documento **non** è un passo del wizard e **non** viene registrato come consenso versionato. La valutazione giuridica del banner resta aperta (OD-027). Non copre i cookie dei siti delle coppe locali.
+Questo documento **non** è un passo del wizard e **non** viene registrato come consenso versionato. Non copre i cookie dei siti delle coppe locali.
 
 ---
 
@@ -45,11 +45,9 @@ Una richiesta diretta al foglio di stile, al ping e a un file del font **non** h
 
 ## 3. Base giuridica e banner
 
-Classificazione operativa: i cookie di sessione, CSRF, ritorno dopo il login e `eph-team` sono tecnici. La base giuridica definitiva è **[INSERIRE BASE GIURIDICA DEI COOKIE TECNICI]**.
+I quattro cookie di questa piattaforma (sessione di accesso, protezione del login, ritorno dopo il login e memorizzazione della squadra selezionata dal rappresentante) sono esclusivamente funzionali al funzionamento e alla sicurezza del servizio. Non ci sono cookie di statistica, profilazione o pubblicità. L’organizzazione li qualifica come cookie tecnici strettamente necessari. Il banner di consenso resta disattivato.
 
 Non ci sono cookie non tecnici. Se ne venissero aggiunti, restano spenti finché la persona non registra una scelta.
-
-Il banner Accetta / Rifiuta / Preferenze non viene mostrato: nel codice non ci sono analytics, marketing o profilazione. Il componente resta nascosto finché quell’elenco è vuoto. La conferma del legale su questa scelta resta aperta (OD-027). Questa pagina non afferma che «i cookie tecnici non richiedono consenso».
 
 La scelta, quando servirà, si modifica o si revoca da questa pagina. Revocare riporta allo stato «nessuna scelta» e rispegne gli strumenti non necessari. Uscire dall’account non è la revoca di un consenso cookie: chiude la sessione e cancella `eph-team`.
 

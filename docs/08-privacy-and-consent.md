@@ -1,6 +1,6 @@
 # 08 — Privacy and Consent Architecture
 
-**Questo file non è una privacy policy.** I testi visibili all’utente in `content/legal/` usano i dati di `docs/pack-dati-da-compilare.md` (5 ottobre 2026). Restano `[INSERIRE …]` solo sui punti ancora aperti: foro, base giuridica dei cookie tecnici, strumento Neon/Cloudflare, contratto del medico esterno. Non si afferma che il prodotto sia «conforme».
+**Questo file non è una privacy policy.** I testi visibili all’utente in `content/legal/` usano i dati di `docs/pack-dati-da-compilare.md` (5 ottobre 2026). Foro: Torino. Nessun medico esterno accede ai certificati. I quattro cookie della piattaforma sono tecnici strettamente necessari e il banner resta disattivato. Neon conserva il database a Francoforte; Cloudflare R2 ha giurisdizione Unione europea. Eventuali trattamenti di quei fornitori fuori da quella regione vanno letti nei DPA. Non si afferma che il prodotto sia «conforme».
 
 Fonte dei testi utente: `content/legal/{slug}.md`, versionati come `LegalDocument` / `LegalDocumentVersion` (seed e `ensureLegalDocuments`). Catalogo unico: `src/features/consents/domain/catalog.ts`.
 
@@ -175,7 +175,7 @@ Workaround canale: `[INSERIRE EMAIL PRIVACY]`.
 
 ## 11. Cookie
 
-`cookie-policy.md` elenca i cookie e le risorse esterne **effettivi**. Inventario di codice: `src/shared/cookies/inventory.ts`. Durata sessione Auth.js fissata a 30 giorni. `eph-team` è HttpOnly, Secure su HTTPS, cancellato al logout. Non ci sono analytics, pixel o `localStorage`/`sessionStorage`. Il banner Accetta / Rifiuta / Preferenze resta nascosto finché `OPTIONAL_TECHNOLOGIES` è vuoto; uno strumento non necessario resta spento senza una scelta registrata (`eph-cookie-consent`, non impostato oggi). Non è un `ConsentRecord`. La valutazione giuridica del banner e delle basi giuridiche resta OD-027. Il tema UI segue `prefers-color-scheme`.
+`cookie-policy.md` elenca i cookie e le risorse esterne **effettivi**. Inventario di codice: `src/shared/cookies/inventory.ts`. Durata sessione Auth.js fissata a 30 giorni. `eph-team` è HttpOnly, Secure su HTTPS, cancellato al logout. Non ci sono analytics, pixel o `localStorage`/`sessionStorage`. Il banner Accetta / Rifiuta / Preferenze resta nascosto finché `OPTIONAL_TECHNOLOGIES` è vuoto; uno strumento non necessario resta spento senza una scelta registrata (`eph-cookie-consent`, non impostato oggi). Non è un `ConsentRecord`. L’organizzazione ha qualificato i quattro cookie della piattaforma come tecnici strettamente necessari: il banner resta disattivato (OD-027). Il tema UI segue `prefers-color-scheme`.
 
 ---
 

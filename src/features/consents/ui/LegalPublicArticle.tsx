@@ -35,7 +35,7 @@ export async function LegalPublicArticle({ slug, afterProse, archivedVersion }: 
               {it.consentVersion} {archivedVersion.version}
             </p>
           ) : null}
-          <p className={styles.notice}>{it.legalPlaceholderNotice}</p>
+          {body.includes("[INSERIRE") ? <p className={styles.notice}>{it.legalPlaceholderNotice}</p> : null}
           {archivedVersion && !archivedVersion.isCurrent ? (
             <p className={styles.notice}>{it.legalArchivedVersionNotice}</p>
           ) : null}

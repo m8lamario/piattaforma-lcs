@@ -66,7 +66,7 @@ La casella obbligatoria per giocare è M3 (maggiorenni) o G4 (minorenni), nel pa
 
 Accesso tecnico: niente percorso pubblico; token a tempo legato al documento e all’utente (default 60 secondi); ogni lettura è registrata.
 
-Un medico esterno può accedere al certificato di un partecipante solo se ESL lo autorizza per una verifica di idoneità, limitatamente a quel documento. Il contratto di quell’incarico è **[INSERIRE CONTRATTO DEL MEDICO ESTERNO]**.
+Nessun medico esterno accede ai certificati.
 
 ---
 
@@ -106,7 +106,7 @@ Cifratura a riposo: sì. Cifratura in transito: sì. Storage di produzione: Clou
 
 ## 9. Destinatari e trasferimenti extra-UE
 
-Come nell’[informativa privacy](/privacy). Il file non è trasmesso in via ordinaria a scuole o federazioni. Lo strumento di trasferimento extra-SEE di Cloudflare R2 è **[INSERIRE STRUMENTO CLOUDFLARE]**.
+Come nell’[informativa privacy](/privacy). Il file non è trasmesso in via ordinaria a scuole o federazioni. Il bucket Cloudflare R2 ha giurisdizione Unione europea: i file sono mantenuti nell’Unione europea. Eventuali trattamenti del fornitore fuori da quella regione vanno letti nel suo contratto di responsabile del trattamento.
 
 ---
 
