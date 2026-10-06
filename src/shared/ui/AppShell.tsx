@@ -1,5 +1,4 @@
 import type { ReactNode } from "react";
-import Image from "next/image";
 import { it } from "@/shared/i18n/it";
 import { AppNav } from "./AppNav";
 import { BrandMark } from "./BrandMark";

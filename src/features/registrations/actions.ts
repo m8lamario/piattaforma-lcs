@@ -11,6 +11,7 @@ import { Prisma } from "@generated/client";
 import { clearIdentityConflict } from "@/features/players/domain/identity";
 import { createNotification } from "@/features/notifications/data/notifications";
 import { fail, type ActionFailure } from "@/shared/errors";
+import { purgeDocumentBlob } from "@/features/documents/data/retention";
 
 export async function withdrawRegistrationAction(
   _prev: ActionFailure | undefined,
@@ -49,6 +50,13 @@ export async function withdrawRegistrationAction(
       },
     }),
   ]);
+  const medicalFiles = await prisma.document.findMany({
+    where: { registrationId: registration.id, blobPurgedAt: null },
+    select: { id: true },
+  });
+  for (const document of medicalFiles) {
+    await purgeDocumentBlob(document.id);
+  }
   await createNotification({
     userId: registration.playerProfile.userId,
     type: "REGISTRATION_WITHDRAWN",

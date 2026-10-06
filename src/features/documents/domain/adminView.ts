@@ -1,6 +1,7 @@
 export const adminDocumentSelect = {
   id: true,
   status: true,
+  blobPurgedAt: true,
   originalFilename: true,
   mimeType: true,
   sizeBytes: true,

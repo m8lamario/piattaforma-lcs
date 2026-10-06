@@ -1,4 +1,4 @@
-import { getActorByUserId, isStaff, representativeTeamIds } from "@/shared/authz/getActor";
+import { getActorByUserId, isStaff, isMedicalReviewer, representativeTeamIds } from "@/shared/authz/getActor";
 import { countUnreadNotifications } from "@/features/notifications/data/notifications";
 import { isTerminalRegistrationStatus } from "@/features/registrations/domain/requirements";
 import { prisma } from "@/shared/lib/prisma";
@@ -25,7 +25,7 @@ export async function loadAppShell(userId: string) {
   return {
     actor,
     showTeam: actor ? representativeTeamIds(actor).length > 0 : false,
-    showAdmin: actor ? isStaff(actor) : false,
+    showAdmin: actor ? isStaff(actor) || isMedicalReviewer(actor) : false,
     showPlayerTeam: Boolean(actor && actor.membershipTeamIds.length > 0),
     unreadCount,
     withdrawRegistrationId,

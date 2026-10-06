@@ -8,12 +8,13 @@ type Props = {
   documentId: string;
   reasonRequired?: boolean;
   expiryRequired?: boolean;
+  canOpenFile?: boolean;
 };
 
-export function ReviewForm({ documentId, reasonRequired, expiryRequired }: Props) {
+export function ReviewForm({ documentId, reasonRequired, expiryRequired, canOpenFile = true }: Props) {
   return (
     <div className={styles.stack}>
-      <OpenDocumentButton documentId={documentId} />
+      {canOpenFile ? <OpenDocumentButton documentId={documentId} /> : null}
 
       <form action={reviewDocumentAction} className={styles.stack}>
         <input type="hidden" name="documentId" value={documentId} />
@@ -47,6 +48,9 @@ export function ReviewForm({ documentId, reasonRequired, expiryRequired }: Props
           {it.adminRejectReason}
         </label>
         <textarea id="reason" name="reason" className={styles.textarea} rows={4} required />
+        <label className={styles.label} htmlFor="excessHealth">
+          <input id="excessHealth" name="excessHealth" type="checkbox" /> {it.medicalExcessReason}
+        </label>
         <PendingSubmitButton
           idle={it.adminReject}
           pendingLabel={it.loadingReject}

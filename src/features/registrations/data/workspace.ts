@@ -40,7 +40,10 @@ import {
 import { prisma } from "@/shared/lib/prisma";
 import { logger } from "@/shared/lib/logger";
 
-function medicalFromStatus(status: string | undefined): MedicalEvidence {
+import { isMedicalExpired } from "@/features/documents/domain/retention";
+
+function medicalFromStatus(status: string | undefined, expiresAt?: Date | null): MedicalEvidence {
+  if (status === "APPROVED" && isMedicalExpired(expiresAt ?? null)) return "expired";
   switch (status) {
     case "APPROVED":
       return "approved";
@@ -92,6 +95,12 @@ export async function loadPlayerWorkspace(userId: string) {
                 where: { purpose: "MARKETING", usedAt: { not: null } },
                 select: { usedAt: true },
                 take: 5,
+              },
+              authorizations: {
+                where: { authorizationType: "ENROLLMENT" },
+                orderBy: { requestedAt: "desc" },
+                take: 3,
+                select: { id: true, status: true, guardianId: true, authorizationType: true },
               },
             },
             orderBy: { createdAt: "desc" },
@@ -145,16 +154,29 @@ export async function loadPlayerWorkspace(userId: string) {
   const secondaryGuardian = profile.guardians.find((row) => row.kind === "SECONDARY") ?? null;
   const g3 = g3Value(choiceMap);
 
+  const enrollment = registration.authorizations[0] ?? null;
+  const contactComplete = hasMinorGuardianRequirement({
+    primary: primaryGuardian,
+    secondaryEmail: secondaryGuardian?.email,
+    g3,
+  });
+  const guardianAuthorization: "authorized" | "refused" | "pending" | "none" =
+    enrollment?.status === "AUTHORIZED"
+      ? "authorized"
+      : enrollment?.status === "REFUSED"
+        ? "refused"
+        : enrollment
+          ? "pending"
+          : "none";
+
   const evidence: RegistrationEvidence = {
     hasAccount: true,
     hasPersonalData: hasCompletePersonalData(profile),
     isMinor: isMinorPlayer,
-    hasGuardian: hasMinorGuardianRequirement({
-      primary: primaryGuardian,
-      secondaryEmail: secondaryGuardian?.email,
-      g3,
-    }),
-    medicalStatus: medicalFromStatus(medicalDoc?.status),
+    hasGuardian: guardianAuthorization === "authorized",
+    hasGuardianContact: contactComplete,
+    guardianAuthorization,
+    medicalStatus: medicalFromStatus(medicalDoc?.status, medicalDoc?.expiresAt),
     privacyAccepted,
     mediaDecision,
     payment: {
@@ -170,7 +192,7 @@ export async function loadPlayerWorkspace(userId: string) {
     : projectRegistrationStatus(evidence, checklist);
 
   return {
-    user: { id: user.id, email: user.email },
+    user: { id: user.id, email: user.email, emailVerified: Boolean(user.emailVerified) },
     profile: {
       id: profile.id,
       firstName: profile.firstName,
@@ -204,6 +226,7 @@ export async function loadPlayerWorkspace(userId: string) {
         }
       : null,
     g3,
+    guardianAuthorization,
     needsMediaAgreement: needsAgreement,
     choices: [...choiceMap.values()],
     publication: publicationFlags({
@@ -505,23 +528,12 @@ export async function saveGuardianProfile(
     data: {
       userId,
       registrationId,
-      code: "G1",
-      accepted: true,
-      source: "WEB",
-      guardianId: primaryId,
-      ipAddress: input.ipAddress ?? null,
-      userAgent: input.userAgent ?? null,
-    },
-  });
-
-  await prisma.consentChoice.create({
-    data: {
-      userId,
-      registrationId,
       code: "G3",
       accepted: true,
       value: input.g3,
-      source: "WEB",
+      source: "CONTACT",
+      actorKind: "USER",
+      actorRole: "PLAYER",
       guardianId: primaryId,
       ipAddress: input.ipAddress ?? null,
       userAgent: input.userAgent ?? null,
@@ -533,7 +545,11 @@ export async function saveGuardianProfile(
       where: { registrationId, purpose: "C1", usedAt: null },
       data: { usedAt: new Date() },
     });
+    await prisma.guardianLinkToken.updateMany({
+      where: { registrationId, purpose: "PUBLICATION", usedAt: null },
+      data: { usedAt: new Date() },
+    });
   }
 
-  return { ok: true as const, primaryId };
+  return { ok: true as const, primaryId, playerProfileId: profile.id, registrationId };
 }

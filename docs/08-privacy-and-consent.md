@@ -48,17 +48,15 @@ Pacchetto `privacySlugsFor(isMinor)`:
 - maggiorenne: `privacy-policy` + `document-processing` + `terms`
 - minorenne: quelli + `minor-privacy`
 
-Ogni documento: testo scrollabile, versione, avviso placeholder, checkbox **non** preselezionata. Tutte devono essere confermate. `ConsentRecord` in append su `legalDocumentVersionId` corrente (`consentType=REQUIRED`, `accepted=true`). Versione non `isCurrent` rifiutata.
-
-Caselle dello stesso passo (mai pre-spuntate): T1 (da `terms`), M1 se adulto, M3/G4 salute, marketing, partner (se elenco nominativo), opt-out edizioni successive, G5 cognome completo se minore. M2/G2 si registrano dalla presa visione dei documenti. G1 non è una casella del giocatore (OD-046).
+Ogni documento: testo scrollabile, versione, avviso placeholder, checkbox **non** preselezionata. Per i **maggiorenni** tutte devono essere confermate dalla sessione del giocatore. Per i **minorenni** il passo è in sola lettura: gli atti T1, G2, G4 e gli opzionali G5–G8 li registra il genitore dal link. `ConsentRecord` in append su `legalDocumentVersionId` corrente. Versione non `isCurrent` rifiutata. Snapshot del testo della clausola in `clauseText`. `actorKind` `USER` o `GUARDIAN_LINK`.
 
 ### 3.2 Wizard — passo liberatorie (`/area/registrazione/liberatorie`)
 
-`media-release` da leggere, poi una casella per uso: canali, promozione, sponsor, stampa, interviste (M7–M11 o G9–G13). Per i minori dai 14 anni, G14 in fondo: senza, gli usi e G5 restano inattivi. Completare il passo = registrare le caselle, anche tutte vuote. Gli usi non bloccano mai l’iscrizione.
+`media-release` da leggere. Per i maggiorenni, una casella per uso (M7–M11). Per i minorenni il passo wizard registra solo G14 (assenso del minore dai 14 anni); G9–G13 le compie il genitore sul link, distinte per canale. Completare il passo adulto = registrare le caselle, anche tutte vuote. Gli usi non bloccano mai l’iscrizione.
 
 ### 3.3 Certificato (`/area/registrazione/certificato`)
 
-Upload del file (il hub conserva la copia per la revisione). L’informativa documenti resta nel pacchetto privacy. La casella salute M3/G4 è nel passo privacy. Avviso operativo: i moduli 2026-27 chiedevano solo presentazione e scadenza; finché il legale non riscrive, la copy dice che esiste una copia in piattaforma. Il rappresentante in `/squadra` vede solo lo **stato**, mai il file.
+Upload del file (il hub conserva la copia per la revisione). L’informativa documenti resta nel pacchetto privacy. La casella salute M3 (adulto) o G4 (genitore del minore) è distinta dalla presa visione. Avviso operativo: esiste una copia in piattaforma. Il rappresentante e l’Org Admin in `/squadra` e in admin vedono solo lo **stato**, mai il file. Apre il file solo `MEDICAL_REVIEWER` o Super Admin. Base giuridica della copia: **DA VALIDARE LEGALMENTE** (OD-035).
 
 ### 3.4 Pagine pubbliche
 
@@ -117,17 +115,19 @@ Lo storico `EmailMessage` contiene dati personali (indirizzo, oggetto, corpo). V
 
 ## 6. Registrazione dell’accettazione
 
-`ConsentRecord` memorizza: userId, legalDocumentVersionId, datetime, consentType, accepted, ipAddress, userAgent, registrationId, guardianId (sempre null in v1).
+`ConsentRecord` memorizza: userId del giocatore (titolare del dossier), legalDocumentVersionId, datetime, consentType, accepted, ipAddress, userAgent, registrationId, `guardianId` se l’atto è del link genitore, `actorKind` (`USER` | `GUARDIAN_LINK`), `clauseText`.
 
-**Vietato** usare solo `privacyAccepted = true`. Le caselle granulari stanno in `ConsentChoice` (una riga per evento, mai sovrascritta).
+`ConsentChoice` è append-only: codice, accepted, version, snapshot della clausola, IP/UA, `guardianId` e `actorKind`. Vietato usare solo `privacyAccepted = true`.
 
-Re-consent: OD-024. IP/UA retention: OD-022.
+`GuardianAuthorization` è la prova dell’intervento del genitore: guardianId, playerProfileId (minore), tokenId, status, requestedAt/openedAt/authorizedAt/revokedAt, IP, user agent, documentVersion, authorizationType (`ENROLLMENT` | `PUBLICATION`). Non si associa l’autorizzazione al solo userId del minore.
+
+Re-consent: OD-024. IP/UA retention: OD-022 (**DA DEFINIRE/VALIDARE LEGALMENTE**).
 
 Copy UI: presa visione della versione X in data Y. Vietato dire che il click è legalmente valido.
 
-Quando il pacchetto wizard è completo (privacy dell’audience + decisione sulla liberatoria), parte una notifica `REGISTRATION_RECEIVED` con email di ricevuta: elenco slug/versioni e link a `/documenti-legali/{slug}/{version}`. Idempotente su `Notification.metadata.fingerprint` + `registrationId`. Una nuova versione accettata cambia l’impronta e genera una nuova ricevuta.
+La ricevuta `REGISTRATION_RECEIVED` parte quando i requisiti di contenuto (privacy del soggetto competente + decisione sulla liberatoria) sono chiusi, non al solo click del minore. Idempotente su `Notification.metadata.fingerprint` + `registrationId`.
 
-La prima transizione della registration a `APPROVED` invia `REGISTRATION_APPROVED` (link ad `/area`, senza ripetere l’elenco versioni). Certificato approvato/da aggiornare riusa le notifiche esistenti, con link all’area e senza motivo sanitario nel canale email. Audit `CONSENT_ACCEPT` / `CONSENT_REFUSE` include `slug`, `versionId` e l’etichetta `version`.
+La prima transizione della registration a `APPROVED` invia `REGISTRATION_APPROVED`. Certificato approvato/da aggiornare riusa le notifiche esistenti, con link all’area e senza motivo sanitario nel canale email. Audit fail-closed: se la scrittura fallisce, l’operazione fallisce. `CONSENT_ACCEPT` / `CONSENT_REFUSE` / `GUARDIAN_AUTHORIZE` / `GUARDIAN_REFUSE` / `CONSENT_REVOKE` includono slug, versionId, attore e ruolo.
 
 ---
 
@@ -135,26 +135,23 @@ La prima transizione della registration a `APPROVED` invia `REGISTRATION_APPROVE
 
 Sezione prominente, passo proprio, testo strutturato in `media-release.md`. Tutti i contenuti sostanziali del documento restano `[INSERIRE …]`. Le caselle uso-per-uso sono nel form (codici M7–M11 / G9–G13). Nessun pre-check, nessun «accetta tutto».
 
-Il flag **pubblicabile** è calcolato: per i maggiorenni vale l’uso «canali del torneo»; per i minorenni servono anche C1 (o unico esercente) e, dai 14 anni, G14. Gli altri usi sono sotto-flag. Il hub non pubblica album: il flag serve a rosa, admin e a chi pubblica fuori da questo repository.
+Il flag **pubblicabile** è calcolato: per i maggiorenni vale l’uso «canali del torneo»; per i minorenni servono l’autorizzazione `ENROLLMENT` del contatto principale, C1/`PUBLICATION` (o unico esercente) e, dai 14 anni, G14. Gli altri usi sono sotto-flag. Il hub non pubblica album: il flag serve a rosa, admin e a chi pubblica fuori da questo repository.
 
 ---
 
 ## 8. Minori
 
 - Dati tutore = dati personali del tutore (sezione in `minor-privacy.md` e in `privacy-policy.md`).
-- Account del minore; tutore = contatto collegato (constitution §2.9, OD-046).
-- Passo tutore: contatto 1 + G3 (altro genitore con email, oppure dichiarazione di unico esercente). Se G3 = altro genitore, email C1 al secondo contatto (`guardianId` sul token e sulla conferma).
-- G14: il minore dai 14 anni spunta l’accordo sulle immagini. Sotto i 14 anni G14 non è richiesta per attivare gli usi dopo C1/unico.
-- `[INSERIRE REQUISITO CONSENSO GENITORE SE PREVISTO DALLA LEGGE / DAL LEGALE]` — OD-002 resta aperto.
-- Email del minore come login: OD-003.
-
----
+- Account del minore; tutore = contatto collegato, senza login (constitution §2.9).
+- Passo tutore: solo anagrafica di contatto. G1 e gli atti successivi stanno sul link `/autorizzazione-genitore/[token]`.
+- Se G3 = altro genitore, il secondo riceve un link `PUBLICATION` (C1) per foto/video e cognome. Per giocare basta `ENROLLMENT` del contatto principale. Se anche l’iscrizione richieda entrambi: **DA VALIDARE LEGALMENTE**.
+- G14: il minore dai 14 anni spunta l’accordo sulle immagini dal proprio account. Sotto i 14 anni G14 non è richiesta.
+- Revoca dal link `/revoca-genitore/[token]` senza accedere all’account del minore.
+- Validità del click: OD-002 resta aperto. Email del minore come login: OD-003.
 
 ## 9. Certificati
 
-Informative in `document-processing.md`: finalità, accesso staff vs stato-only del rep, retention, review, sostituzione senza delete del blob, sicurezza, placeholder su base giuridica del dato sanitario (OD-035, OD-030, OD-005).
-
----
+Informative in `document-processing.md`. Accesso file: titolare, `MEDICAL_REVIEWER`, Super Admin. Org Admin e rappresentante: stato only. Retention: job a 90 giorni da `endsAt`, cancellazione al ritiro, purge dei sostituiti; esito di verifica conservato. Base giuridica della copia: OD-035, **DA VALIDARE LEGALMENTE**.
 
 ## 10. Diritti e cancellazione
 
@@ -166,7 +163,7 @@ Tool admin (non è l’esercizio del diritto dell’interessato, è un attrezzo 
 
 - Rappresentante: solo **rimozione dalla propria rosa**. L’account del giocatore resta.
 - Super Admin: **chiusura account** (niente login) e **anonimizzazione** (PII tolta, tracce operative e audit restano). Destinatario, oggetto e corpo di `EmailMessage` vengono redatti.
-- File medici: **non** si purgano in automatico (OD-030). Accesso resta HMAC + staff; il giocatore chiuso non accede.
+- File medici: job di retention (90 giorni da `endsAt`, ritiro, sostituiti). Accesso resta HMAC + revisore; il giocatore chiuso non accede. Backup Neon PITR: **DA DEFINIRE/VALIDARE LEGALMENTE** (non cancellabile dall’app).
 - Audit: **nessuna** cancellazione da UI, neanche per Super Admin. Nessun payload sanitario nei metadata.
 
 Workaround canale: `[INSERIRE EMAIL PRIVACY]`.

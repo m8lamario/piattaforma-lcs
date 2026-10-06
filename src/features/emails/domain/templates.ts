@@ -21,6 +21,31 @@ export function defaultEmailTemplates(): Record<EmailTemplateKey, EmailTemplateS
       subject: it.emailPasswordResetSubject,
       textBody: it.emailPasswordResetText,
     },
+    EMAIL_VERIFY: {
+      key: "EMAIL_VERIFY",
+      subject: it.emailVerifySubject,
+      textBody: it.emailVerifyText,
+    },
+    GUARDIAN_AUTHORIZE: {
+      key: "GUARDIAN_AUTHORIZE",
+      subject: it.emailGuardianAuthorizeSubject,
+      textBody: it.emailGuardianAuthorizeText,
+    },
+    GUARDIAN_AUTHORIZED: {
+      key: "GUARDIAN_AUTHORIZED",
+      subject: it.emailGuardianAuthorizedSubject,
+      textBody: it.emailGuardianAuthorizedText,
+    },
+    GUARDIAN_REFUSED: {
+      key: "GUARDIAN_REFUSED",
+      subject: it.emailGuardianRefusedSubject,
+      textBody: it.emailGuardianRefusedText,
+    },
+    MEDIA_REVOKE_INTERNAL: {
+      key: "MEDIA_REVOKE_INTERNAL",
+      subject: it.emailMediaRevokeSubject,
+      textBody: it.emailMediaRevokeText,
+    },
     REGISTRATION_RECEIVED: {
       key: "REGISTRATION_RECEIVED",
       subject: it.emailRegistrationReceivedSubject,

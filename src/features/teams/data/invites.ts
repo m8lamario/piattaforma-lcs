@@ -182,7 +182,6 @@ export async function createAccountFromInvite(input: {
       data: {
         email,
         passwordHash,
-        emailVerified: new Date(),
         name: `${input.firstName} ${input.lastName}`.trim(),
         roles: { create: { role: "PLAYER" } },
         playerProfile: {
@@ -411,7 +410,6 @@ export async function createAccountFromTeamLink(input: {
       data: {
         email,
         passwordHash,
-        emailVerified: new Date(),
         name: firstName,
         roles: { create: { role: "PLAYER" } },
         playerProfile: { create: { firstName, lastName: "—" } },

@@ -9,6 +9,7 @@ import {
   reviewMedicalDocument,
   storeMedicalCertificate,
 } from "@/features/documents/data/documents";
+import { MEDICAL_EXCESS_REASON } from "@/features/documents/domain/retention";
 import { createDocumentAccessToken } from "@/features/documents/domain/signedUrl";
 import { parseDateOnly } from "@/features/players/domain/dates";
 import {
@@ -131,7 +132,7 @@ export async function createSignedDocumentUrlAction(documentId: string) {
   if (!actor) return fail("AUTH_ACCOUNT_MISSING");
 
   const document = await getDocumentById(documentId);
-  if (!document) return fail("DOCUMENT_NOT_FOUND");
+  if (!document || document.blobPurgedAt) return fail("DOCUMENT_NOT_FOUND");
 
   const decision = authorize(actor, "document:read_file", {
     ownerUserId: document.playerProfile.userId,
@@ -156,7 +157,10 @@ export async function reviewDocumentAction(formData: FormData) {
 
   const documentId = String(formData.get("documentId") ?? "");
   const decision = String(formData.get("decision") ?? "");
-  const reason = String(formData.get("reason") ?? "");
+  let reason = String(formData.get("reason") ?? "");
+  if (formData.get("excessHealth") === "on") {
+    reason = reason.trim() ? `${MEDICAL_EXCESS_REASON}. ${reason.trim()}` : MEDICAL_EXCESS_REASON;
+  }
   const expiresAt = parseDateOnly(String(formData.get("expiresAt") ?? ""));
   const document = await getDocumentById(documentId);
   if (!document) return;

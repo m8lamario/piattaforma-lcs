@@ -69,7 +69,10 @@ export const ERROR_CATALOG: Record<ErrorCode, ErrorDefinition> = {
     severity: "warning",
     retrySafe: true,
   }),
-  AUTH_EMAIL_NOT_VERIFIED: def("AUTH", "emailVerified assente su azione vincolante.", 403, "contact_org"),
+  AUTH_EMAIL_NOT_VERIFIED: def("AUTH", "emailVerified assente su azione vincolante.", 403, "login"),
+  AUTH_EMAIL_TOKEN_INVALID: def("AUTH", "Token verifica email assente, scaduto o già usato.", 400, "retry", {
+    retrySafe: true,
+  }),
 
   FORBIDDEN_RESOURCE: def("AUTHZ", "authorize ha negato l’azione sulla risorsa.", 403, "none"),
   FORBIDDEN_REGISTRATION_WRITE: def("AUTHZ", "registration:write denied.", 403, "none"),
@@ -182,8 +185,14 @@ export const ERROR_CATALOG: Record<ErrorCode, ErrorDefinition> = {
     retrySafe: true,
   }),
   CONSENT_REVOKE_FORBIDDEN: def("CONSENTS", "Casella obbligatoria non revocabile da area consensi.", 400, "none"),
-  CONSENT_TOKEN_INVALID: def("CONSENTS", "Token C1 o opt-in assente, scaduto o malformato.", 400, "none"),
-  CONSENT_TOKEN_USED: def("CONSENTS", "Token C1 o opt-in già usato.", 409, "none", { severity: "info" }),
+  CONSENT_TOKEN_INVALID: def("CONSENTS", "Token C1, opt-in o link genitore assente, scaduto o malformato.", 400, "none"),
+  CONSENT_TOKEN_USED: def("CONSENTS", "Token C1, opt-in o link genitore già usato.", 409, "none", { severity: "info" }),
+  CONSENT_GUARDIAN_REQUIRED: def(
+    "CONSENTS",
+    "Il minore ha tentato un atto riservato al genitore.",
+    403,
+    "none",
+  ),
 
   PAYMENT_ALREADY_COMPLETED: def("PAYMENTS", "Già SUCCEEDED utile (player o team). Secondo checkout bloccato.", 409, "none"),
   PAYMENT_IN_PROGRESS: def("PAYMENTS", "Esiste PENDING: si riusa, non si crea un secondo intent.", 409, "retry", {
@@ -205,6 +214,12 @@ export const ERROR_CATALOG: Record<ErrorCode, ErrorDefinition> = {
     409,
     "none",
   ),
+  PAYMENT_GUARDIAN_REQUIRED: def(
+    "PAYMENTS",
+    "Checkout giocatore minore senza autorizzazione di iscrizione del genitore.",
+    403,
+    "wait",
+  ),
 
   TEAM_NOT_FOUND: def("TEAMS", "Team id inesistente dopo authz.", 404, "none"),
   TEAM_PLAYER_ALREADY_ON_TEAM: def("TEAMS", "inviteCreateBlocker already_on_team.", 409, "none", { severity: "info" }),
@@ -220,6 +235,16 @@ export const ERROR_CATALOG: Record<ErrorCode, ErrorDefinition> = {
     retrySafe: true,
   }),
   GUARDIAN_EMAIL_CORRECTION_USED: def("REGISTRATION", "Email del secondo genitore già corretta una volta.", 400, "contact_org"),
+  GUARDIAN_SELF: def("REGISTRATION", "Il minore ha indicato se stesso come genitore (stesso nome).", 400, "correct_input"),
+  GUARDIAN_EMAIL_IS_PLAYER: def("REGISTRATION", "Email del genitore uguale a quella del minore.", 400, "correct_input"),
+  GUARDIAN_AUTHORIZATION_REQUIRED: def(
+    "REGISTRATION",
+    "Manca GuardianAuthorization ENROLLMENT AUTHORIZED.",
+    403,
+    "wait",
+    { severity: "warning" },
+  ),
+  GUARDIAN_AUTHORIZATION_REFUSED: def("REGISTRATION", "Il genitore ha rifiutato l’autorizzazione.", 409, "contact_org"),
 
   VALIDATION_INVALID_INPUT: def("VALIDATION", "Zod safeParse fallito.", 400, "correct_input", {
     severity: "info",

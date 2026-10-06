@@ -19,6 +19,7 @@ function playerName(document: { playerProfile: { firstName: string; lastName: st
 function statusLabel(status: string) {
   if (status === "APPROVED") return it.statusDocumentAPPROVED;
   if (status === "REJECTED") return it.statusDocumentREJECTED;
+  if (status === "EXPIRED") return it.statusDocumentEXPIRED;
   return it.statusDocumentPENDING_REVIEW;
 }
 
@@ -41,7 +42,7 @@ export default async function AdminDocumentsPage({ searchParams }: Props) {
   ]);
 
   return (
-    <AdminFrame path="/admin/documenti">
+    <AdminFrame path="/admin/documenti" allowReviewer>
       <PageHeader title={it.adminDocumentsTitle} description={it.adminDocumentsHelp} />
       <form className={styles.filters} method="get">
         <div className={styles.filtersRow}>

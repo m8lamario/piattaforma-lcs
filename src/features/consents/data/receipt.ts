@@ -10,6 +10,7 @@ import {
 import { latestChoices, choiceSummaryLines, type ConsentBoxCode } from "@/features/consents/domain/boxes";
 import { isPartnerBoxVisible } from "@/features/consents/data/partners";
 import { createNotification, hasConsentReceipt } from "@/features/notifications/data/notifications";
+import { dispatchOutboundEmail } from "@/features/emails/data/dispatch";
 import { appOrigin } from "@/shared/config/app";
 import { it } from "@/shared/i18n/it";
 import { logger } from "@/shared/lib/logger";
@@ -45,6 +46,17 @@ export async function dispatchConsentReceiptIfComplete(input: {
     isCurrent: record.legalDocumentVersion.isCurrent,
     accepted: record.accepted,
   }));
+
+  let guardianEmail: string | null = null;
+  if (input.isMinor) {
+    const enrollment = await prisma.guardianAuthorization.findFirst({
+      where: { registrationId: input.registrationId, authorizationType: "ENROLLMENT" },
+      orderBy: { requestedAt: "desc" },
+      select: { status: true, guardian: { select: { email: true } } },
+    });
+    if (enrollment?.status !== "AUTHORIZED") return;
+    guardianEmail = enrollment.guardian.email;
+  }
   if (
     !isConsentReceiptReady(input.isMinor, { applies: input.mediaApplies, required: input.mediaRequired }, consents)
   ) {
@@ -88,6 +100,19 @@ export async function dispatchConsentReceiptIfComplete(input: {
       metadata: { fingerprint, registrationId: input.registrationId },
       emailVariables: { documents: body },
     });
+    if (guardianEmail) {
+      await dispatchOutboundEmail({
+        idempotencyKey: `registration-received-guardian:${input.registrationId}:${fingerprint}`,
+        purpose: "REGISTRATION_RECEIVED",
+        templateKey: "REGISTRATION_RECEIVED",
+        to: guardianEmail,
+        userId: input.userId,
+        recipientKind: "GUARDIAN",
+        variables: { documents: body, areaUrl: `${appOrigin()}/area` },
+        sourceEntityType: "Registration",
+        sourceEntityId: input.registrationId,
+      });
+    }
   } catch {
     logger.error("notification.dispatch_failed", { type: "REGISTRATION_RECEIVED" });
   }

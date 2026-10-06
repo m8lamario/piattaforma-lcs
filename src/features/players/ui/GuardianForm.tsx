@@ -23,7 +23,6 @@ type Values = {
   secondFirstName?: string;
   secondLastName?: string;
   secondEmail?: string;
-  g1: boolean;
   intent: "continue" | "exit";
 };
 
@@ -44,7 +43,6 @@ const FIELD_ORDER = [
   "secondFirstName",
   "secondLastName",
   "secondEmail",
-  "g1",
 ] as const;
 
 type Props = {
@@ -79,7 +77,6 @@ export function GuardianForm({ defaults }: Props) {
       secondFirstName: defaults.secondFirstName,
       secondLastName: defaults.secondLastName,
       secondEmail: defaults.secondEmail,
-      g1: false,
       intent: "continue",
     },
   });
@@ -99,7 +96,6 @@ export function GuardianForm({ defaults }: Props) {
       secondFirstName: "second-first",
       secondLastName: "second-last",
       secondEmail: "second-email",
-      g1: "g1",
     };
     const first = FIELD_ORDER.find((name) => formErrors[name]);
     if (first) document.getElementById(ids[first])?.focus();
@@ -118,7 +114,6 @@ export function GuardianForm({ defaults }: Props) {
         data.set("secondFirstName", values.secondFirstName ?? "");
         data.set("secondLastName", values.secondLastName ?? "");
         data.set("secondEmail", values.secondEmail ?? "");
-        if (values.g1) data.set("g1", "on");
         data.set("intent", intent);
         startTransition(() => {
           action(data);
@@ -274,6 +269,7 @@ export function GuardianForm({ defaults }: Props) {
           />
           {it.g3Sole}
         </label>
+        <p className={fields.help}>{it.guardianWaitingBody}</p>
         {errors.g3?.message ? (
           <FieldStatus id="g3-error" tone="danger">
             {errors.g3.message}
@@ -338,16 +334,6 @@ export function GuardianForm({ defaults }: Props) {
           </>
         ) : null}
       </fieldset>
-
-      <label className={fields.radio} htmlFor="g1">
-        <input id="g1" type="checkbox" aria-invalid={Boolean(errors.g1)} aria-describedby={errors.g1 ? "g1-error" : undefined} {...form.register("g1")} />
-        {it.boxG1}
-      </label>
-      {errors.g1?.message ? (
-        <FieldStatus id="g1-error" tone="danger">
-          {errors.g1.message}
-        </FieldStatus>
-      ) : null}
 
       <div className={`${fields.actions} ${fields.sticky}`}>
         <Button type="button" disabled={pending} aria-busy={pending} onClick={() => submit("continue")}>

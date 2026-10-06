@@ -186,7 +186,13 @@ export async function listAuditLogs() {
       entityType: true,
       entityId: true,
       createdAt: true,
+      actorKind: true,
+      actorRole: true,
+      ipAddress: true,
+      userAgent: true,
+      legalDocumentVersion: { select: { version: true, legalDocument: { select: { slug: true } } } },
       actor: { select: { email: true, name: true } },
+      guardian: { select: { email: true } },
     },
   });
 }

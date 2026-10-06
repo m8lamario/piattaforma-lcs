@@ -63,9 +63,24 @@ describe("authorize deny-by-default", () => {
     expect(authorize(otherRep, "document:read_status", ownDoc).allow).toBe(false);
   });
 
-  it("consente all'org admin la review ma non platform:admin", () => {
-    expect(authorize(orgAdmin, "document:review", ownDoc).allow).toBe(true);
+  it("consente all'org admin la console ma non il file medico", () => {
+    expect(authorize(orgAdmin, "admin:manage").allow).toBe(true);
+    expect(authorize(orgAdmin, "document:review", ownDoc).allow).toBe(false);
+    expect(authorize(orgAdmin, "document:read_file", ownDoc).allow).toBe(false);
+    expect(authorize(orgAdmin, "document:read_status", ownDoc).allow).toBe(true);
     expect(authorize(orgAdmin, "platform:admin").allow).toBe(false);
+  });
+
+  it("consente al revisore certificati file e review, non la console", () => {
+    const reviewer: Actor = {
+      userId: "reviewer-1",
+      roles: [{ role: "MEDICAL_REVIEWER" }],
+      membershipTeamIds: [],
+    };
+    expect(authorize(reviewer, "document:review", ownDoc).allow).toBe(true);
+    expect(authorize(reviewer, "document:read_file", ownDoc).allow).toBe(true);
+    expect(authorize(reviewer, "admin:manage").allow).toBe(false);
+    expect(authorize(reviewer, "email:send").allow).toBe(false);
   });
 
   it("nega al giocatore di scrivere la registrazione di un altro", () => {

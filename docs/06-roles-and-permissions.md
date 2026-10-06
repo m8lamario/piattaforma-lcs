@@ -9,6 +9,7 @@ Principio: **deny by default**. Se un controllo non è esplicito, la risposta è
 | PLAYER | proprio userId / playerProfileId | membership su team dopo redeem invito |
 | TEAM_REPRESENTATIVE | teamId | invito admin |
 | ORGANIZATION_ADMIN | globale piattaforma | Super Admin |
+| MEDICAL_REVIEWER | globale, solo certificati | Super Admin |
 | SUPER_ADMIN | globale | bootstrap |
 | COMPETITION_ORGANIZER | competitionId | schema pronto, UI non in v1 |
 
@@ -16,30 +17,30 @@ Lo scope dell’organizer è la competition intera, non una singola edition. `au
 
 ## 2. Matrice (sì / stato / no)
 
-| Azione | Player | Team Rep | Org Admin | Super Admin |
-|---|---|---|---|---|
-| Login proprio account | sì | sì | sì | sì |
-| Modificare dati propri | sì | se anche player | impersonation no in v1 | sì tecnico |
-| Vedere roster propria squadra (minimo) | sì | sì | sì | sì |
-| Invitare giocatori | no | sì (proprio team) | sì | sì |
-| Vedere stato certificato del roster | no (né dei compagni) | **stato** | sì | sì |
-| Aggiornare maglia/ruolo rosa | no | sì (proprio team) | sì | sì |
-| Ritirare iscrizione | la propria | no | sì | sì |
-| Rimuovere giocatore dalla rosa | no | sì (proprio team, solo PLAYER) | sì | sì |
-| Chiudere account (`user:delete`) | no | no | no | sì (policy piattaforma) |
-| Anonimizzare account (`user:anonymize`) | no | no | no | sì |
-| Cancellare audit log | no | no | no | no (retention futura, non UI) |
-| Invitare rappresentante | no | no | sì | sì |
-| Vedere/scaricare file certificato | solo il proprio via signed URL | **no** | sì + audit | sì + audit |
-| Approvare/rifiutare documento | no | no | sì | sì |
-| Pagare quota individuale | se paymentMode lo richiede | no (salvo anche player) | no | no |
-| Pagare quota squadra | no | se paymentMode TEAM/BOTH | sì override | sì |
-| Pubblicare informative | no | no | sì | sì |
-| Leggere storico email (`email:read`) | no | no | sì | sì |
-| Inviare da template (`email:send`) | no | no | sì | sì |
-| Corpo libero / override template (`email:compose`) | no | no | no | sì |
-| Gestire ruoli e adapter | no | no | no | sì |
-| Audit log | no | no | lettura | lettura + config retention |
+| Azione | Player | Team Rep | Org Admin | Medical Reviewer | Super Admin |
+|---|---|---|---|---|---|
+| Login proprio account | sì | sì | sì | sì | sì |
+| Modificare dati propri | sì | se anche player | impersonation no in v1 | no | sì tecnico |
+| Vedere roster propria squadra (minimo) | sì | sì | sì | no | sì |
+| Invitare giocatori | no | sì (proprio team) | sì | no | sì |
+| Vedere stato certificato del roster | no (né dei compagni) | **stato** | **stato** | sì | sì |
+| Aggiornare maglia/ruolo rosa | no | sì (proprio team) | sì | no | sì |
+| Ritirare iscrizione | la propria | no | sì | no | sì |
+| Rimuovere giocatore dalla rosa | no | sì (proprio team, solo PLAYER) | sì | no | sì |
+| Chiudere account (`user:delete`) | no | no | no | no | sì (policy piattaforma) |
+| Anonimizzare account (`user:anonymize`) | no | no | no | no | sì |
+| Cancellare audit log | no | no | no | no | no (retention futura, non UI) |
+| Invitare rappresentante | no | no | sì | no | sì |
+| Vedere/scaricare file certificato | solo il proprio via signed URL | **no** | **no** | sì + audit | sì + audit |
+| Approvare/rifiutare documento | no | no | no | sì | sì |
+| Pagare quota individuale | se paymentMode lo richiede | no (salvo anche player) | no | no | no |
+| Pagare quota squadra | no | se paymentMode TEAM/BOTH | sì override | no | sì |
+| Pubblicare informative | no | no | sì | no | sì |
+| Leggere storico email (`email:read`) | no | no | sì | no | sì |
+| Inviare da template (`email:send`) | no | no | sì | no | sì |
+| Corpo libero / override template (`email:compose`) | no | no | no | no | sì |
+| Gestire ruoli e adapter | no | no | no | no | sì |
+| Audit log | no | no | lettura | no | lettura + config retention |
 
 ## 3. IDOR
 
@@ -101,6 +102,7 @@ Nessun bypass `if (role === SUPER_ADMIN) return true` sparso nelle pagine: il su
 - Il codice invito giocatore non concede admin né ruolo rappresentante.
 - Le API admin vivono sotto `/admin` **e** sotto check ruolo, entrambi necessari.
 - `staff:invite` e `admin:manage` per Org/Super Admin; `platform:admin`, `user:delete`, `user:anonymize`, `email:compose` solo Super Admin.
-- `email:read` e `email:send` allo staff (Org Admin / Super Admin). Rep, giocatore e organizer no.
+- `document:read_file` e `document:review` per il titolare (proprio file), `MEDICAL_REVIEWER` e Super Admin. Org Admin e rappresentante: solo `document:read_status`.
+- `email:read` e `email:send` allo staff (Org Admin / Super Admin). Rep, giocatore, organizer e revisore certificati no.
 - `team:remove_player` scoped a `teamId`: il rappresentante non tocca altre squadre né account altrui.
 - `audit:delete` è sempre deny, Super Admin compreso: i log non si cancellano da prodotto.

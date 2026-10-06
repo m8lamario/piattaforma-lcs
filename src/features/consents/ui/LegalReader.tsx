@@ -11,7 +11,7 @@ import type { ConsentDocumentView } from "./PrivacyConsentForm";
 type Props = {
   document: ConsentDocumentView;
   read: boolean;
-  onRead: () => void;
+  onRead?: () => void;
 };
 
 const BOTTOM_PX = 28;
@@ -34,7 +34,7 @@ export function LegalReader({ document, read, onRead }: Props) {
     if (!el) return;
     if (!reachedEnd(el)) return;
     setReached(true);
-    onRead();
+    onRead?.();
   }, [onRead]);
 
   function openDialog() {

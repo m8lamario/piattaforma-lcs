@@ -1,8 +1,13 @@
 import { prisma } from "@/shared/lib/prisma";
-import { logger } from "@/shared/lib/logger";
+import type { ActorKind } from "@generated/client";
 
 export async function writeAuditLog(input: {
   actorUserId?: string | null;
+  actorKind?: ActorKind | "USER" | "GUARDIAN_LINK" | "SYSTEM";
+  actorRole?: string | null;
+  guardianId?: string | null;
+  authorizationId?: string | null;
+  legalDocumentVersionId?: string | null;
   action: string;
   entityType: string;
   entityId: string;
@@ -10,22 +15,20 @@ export async function writeAuditLog(input: {
   ipAddress?: string | null;
   userAgent?: string | null;
 }) {
-  try {
-    await prisma.auditLog.create({
-      data: {
-        actorUserId: input.actorUserId ?? null,
-        action: input.action,
-        entityType: input.entityType,
-        entityId: input.entityId,
-        metadata: input.metadata ?? undefined,
-        ipAddress: input.ipAddress ?? null,
-        userAgent: input.userAgent ?? null,
-      },
-    });
-  } catch {
-    logger.error("audit.write_failed", {
+  await prisma.auditLog.create({
+    data: {
+      actorUserId: input.actorUserId ?? null,
+      actorKind: (input.actorKind ?? "USER") as ActorKind,
+      actorRole: input.actorRole ?? null,
+      guardianId: input.guardianId ?? null,
+      authorizationId: input.authorizationId ?? null,
+      legalDocumentVersionId: input.legalDocumentVersionId ?? null,
       action: input.action,
       entityType: input.entityType,
-    });
-  }
+      entityId: input.entityId,
+      metadata: input.metadata ?? undefined,
+      ipAddress: input.ipAddress ?? null,
+      userAgent: input.userAgent ?? null,
+    },
+  });
 }

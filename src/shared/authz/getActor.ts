@@ -37,3 +37,7 @@ export function isStaff(actor: Actor) {
     (role) => role.role === "ORGANIZATION_ADMIN" || role.role === "SUPER_ADMIN",
   );
 }
+
+export function isMedicalReviewer(actor: Actor) {
+  return actor.roles.some((role) => role.role === "MEDICAL_REVIEWER" || role.role === "SUPER_ADMIN");
+}

@@ -4,6 +4,8 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { appendBoxSet, appendConsentChoice } from "@/features/consents/data/choices";
+import { notifyMediaRevocation } from "@/features/consents/data/guardianAuth";
+import { it } from "@/shared/i18n/it";
 import { ensureC1Sent, ensureMarketingOptIn } from "@/features/consents/data/followup";
 import { recordConsent } from "@/features/consents/data/legal";
 import { isPartnerBoxVisible } from "@/features/consents/data/partners";
@@ -129,6 +131,9 @@ export async function savePrivacyConsentsAction(
   if (!access.ok) return access.error;
 
   const { session, workspace } = access;
+  if (workspace.evidence.isMinor) {
+    return fail("CONSENT_GUARDIAN_REQUIRED");
+  }
   const rateKey = await clientKey(`consent:${session.user!.id}`);
   if (!(await consumeRateLimit(rateKey, RATE_LIMITS.consentWrite.limit, RATE_LIMITS.consentWrite.windowMs))) {
     return fail("CONSENT_RATE_LIMITED");
@@ -192,7 +197,9 @@ export async function savePrivacyConsentsAction(
     userId: session.user!.id,
     registrationId: workspace.registration.id,
     legalDocumentVersionId: termsVersionId,
-    boxes,
+    actorKind: "USER",
+    actorRole: "PLAYER",
+    boxes: boxes.map((box) => ({ ...box, clauseText: it[`box${box.code}`] })),
     ...trace,
   });
 
@@ -228,6 +235,26 @@ export async function saveMediaConsentAction(
     return fail("CONSENT_RATE_LIMITED");
   }
 
+  if (workspace.evidence.isMinor) {
+    const g14 = submittedBoxesFrom(formData, ["G14"]);
+    const trace = await userAgentAndIp();
+    await appendBoxSet({
+      userId: session.user!.id,
+      registrationId: workspace.registration.id,
+      actorKind: "USER",
+      actorRole: "PLAYER",
+      boxes: g14.map((box) => ({ ...box, clauseText: it.boxG14 })),
+      ...trace,
+    });
+    await persistAndRedirect(
+      session.user!.id,
+      "liberatorie",
+      String(formData.get("intent") || "continue"),
+      workspace.checklist,
+    );
+    return;
+  }
+
   const versionId = String(formData.get("versionId") ?? "");
   if (!versionId) return fail("CONSENT_VERSION_MISSING");
 
@@ -255,7 +282,9 @@ export async function saveMediaConsentAction(
     userId: session.user!.id,
     registrationId: workspace.registration.id,
     legalDocumentVersionId: versionId,
-    boxes,
+    actorKind: "USER",
+    actorRole: "PLAYER",
+    boxes: boxes.map((box) => ({ ...box, clauseText: it[`box${box.code}`] })),
     ...trace,
   });
 
@@ -301,6 +330,9 @@ export async function revokeConsentBoxAction(
 
   const code = String(formData.get("code") ?? "");
   if (!isConsentBoxCode(code)) return fail("CONSENT_REVOKE_FORBIDDEN");
+  if (workspace.evidence.isMinor && code !== "G14") {
+    return fail("CONSENT_REVOKE_FORBIDDEN");
+  }
   const allowed = revocableCodes(workspace.evidence.isMinor, workspace.partnersPublished);
   if (!allowed.some((box) => box.code === code)) {
     return fail("CONSENT_REVOKE_FORBIDDEN");
@@ -312,6 +344,9 @@ export async function revokeConsentBoxAction(
     registrationId: workspace.registration.id,
     code,
     accepted: false,
+    clauseText: it[`box${code}`],
+    actorKind: "USER",
+    actorRole: "PLAYER",
     ...trace,
   });
   await writeAuditLog({
@@ -322,6 +357,14 @@ export async function revokeConsentBoxAction(
     metadata: { code },
     ...trace,
   });
+  if (code === "G14" || code.startsWith("G9") || code === "G5" || code === "G10" || code === "G11" || code === "G12" || code === "G13") {
+    await notifyMediaRevocation({
+      registrationId: workspace.registration.id,
+      playerUserId: session.user!.id,
+      playerName: `${workspace.profile.firstName} ${workspace.profile.lastName}`.trim(),
+      codes: [code],
+    });
+  }
 
   revalidatePath("/area");
   revalidatePath("/area/consensi");

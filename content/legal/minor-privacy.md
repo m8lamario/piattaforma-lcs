@@ -10,11 +10,13 @@ Gentili genitori, i dati dei ragazzi minorenni meritano una protezione specifica
 
 ## Come funziona su questa piattaforma
 
-**L’account è del minore**, dai 14 anni compiuti. Il genitore o tutore è un contatto, non il titolare del login. Le caselle del form le spunta l’account loggato (il minore), tranne C1: quella la conferma il secondo genitore dal link in email. Nel passo tutore il contatto spunta G1 («dichiaro di essere genitore o tutore») e indica la scelta G3. Se c’è un altro genitore, nome, cognome ed email sono obbligatori.
+**DA VALIDARE LEGALMENTE.** L’account è del minore, dai 14 anni compiuti. Il genitore o tutore resta un contatto, senza login proprio. Il minore inserisce anagrafica e recapiti del genitore: questo non è un’autorizzazione. Gli atti di iscrizione, salute, liberatorie e marketing si compiono dal link monouso inviato al genitore; restano attribuiti a quel contatto, non alla sessione del minore. G14 (assenso del minore dai 14 anni) resta sull’account del minore. C1 è il link del secondo genitore su pubblicazione e cognome completo.
 
-**Certificato medico.** Si carica un file: certificato di idoneità sportiva agonistica per il calcio. La copia è conservata per verificare l’idoneità e la scadenza, con accesso limitato al personale autorizzato, fino a 90 giorni dopo la conclusione del torneo locale. Dettaglio: [informativa documenti](/privacy/documenti).
+Nel passo tutore il minore indica nome, cognome, email e telefono del contatto e la scelta G3 (altro genitore oppure unico esercente). G1 («dichiaro di essere genitore o tutore») si spunta sul link del genitore. Se c’è un altro genitore, nome, cognome ed email sono obbligatori.
 
-Revoca e export: [area consensi](/area/consensi).
+**Certificato medico.** Si carica un file: certificato di idoneità sportiva agonistica per il calcio. La copia è conservata per verificare l’idoneità e la scadenza, con accesso al titolare, al revisore certificati e al Super Admin, fino a 90 giorni dopo la conclusione del torneo locale. Dettaglio: [informativa documenti](/privacy/documenti).
+
+Revoca e export: [area consensi](/area/consensi). Il genitore può revocare gli usi facoltativi dal link di revoca ricevuto dopo la conferma.
 
 ---
 

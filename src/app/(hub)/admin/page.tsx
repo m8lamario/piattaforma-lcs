@@ -19,7 +19,7 @@ const HUB_SECTIONS = [
 export default async function AdminHubPage() {
   const stats = await adminHubStats();
   return (
-    <AdminFrame path="/admin">
+    <AdminFrame path="/admin" allowReviewer>
       <PageHeader kicker={it.navAdmin} title={it.adminHubTitle} description={it.adminHubHelp} />
       <div className={styles.stats}>
         <p className={styles.stat}>

@@ -14,3 +14,4 @@ Doppio click / tab chiuso a metà: si **riusa** il Payment `PENDING` (nuovo chec
 | PAYMENT_WEBHOOK_CONFLICT | PAYMENTS | Stato non avanzabile | Race | (API) | Nessuno | `applyProviderResult` |
 | PAYMENT_NOT_FOUND | PAYMENTS | paymentId assente | URL | Pagamento non trovato | Nessuno | esito |
 | PAYMENT_SCOPE_MISMATCH | PAYMENTS | teamId o registrationId di un'altra edition | Scope incoerente | Pagamento non appartenente a squadra o edizione | Nessuno | claim checkout |
+| PAYMENT_GUARDIAN_REQUIRED | PAYMENTS | Checkout giocatore minore senza autorizzazione di iscrizione | Manca GuardianAuthorization AUTHORIZED | Il pagamento si apre dopo l’autorizzazione del genitore | Attendi | player checkout |

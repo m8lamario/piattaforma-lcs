@@ -87,6 +87,10 @@ export async function recordConsent(input: {
   versionId: string;
   consentType: "REQUIRED" | "OPTIONAL";
   accepted: boolean;
+  guardianId?: string | null;
+  clauseText?: string | null;
+  actorKind?: "USER" | "GUARDIAN_LINK";
+  actorRole?: string | null;
   ipAddress?: string | null;
   userAgent?: string | null;
 }) {
@@ -103,8 +107,12 @@ export async function recordConsent(input: {
       userId: input.userId,
       legalDocumentVersionId: version.id,
       registrationId: input.registrationId,
+      guardianId: input.guardianId ?? null,
       consentType: input.consentType,
       accepted: input.accepted,
+      clauseText: input.clauseText ?? version.legalDocument.title,
+      actorKind: input.actorKind ?? "USER",
+      actorRole: input.actorRole ?? null,
       ipAddress: input.ipAddress ?? null,
       userAgent: input.userAgent ?? null,
     },
