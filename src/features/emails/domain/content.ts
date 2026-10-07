@@ -5,7 +5,7 @@ import { wrapEmailLayout } from "./layout";
 import { interpolateTemplate } from "./variables";
 import type { EmailTone } from "./theme";
 
-export type EmailCtaUrlKey = "link" | "confirmUrl" | "resetUrl" | "redeemUrl" | "areaUrl";
+export type EmailCtaUrlKey = "link" | "confirmUrl" | "resetUrl" | "redeemUrl" | "areaUrl" | "activateUrl";
 
 export type EmailVisualSpec = {
   heading: string;
@@ -205,6 +205,36 @@ const SPECS: Record<EmailTemplateKey, (ctx: SpecContext) => EmailVisualSpec> = {
     ctaLabel: it.emailCtaOpenArea,
     ctaUrl: url(vars, "link"),
     tone: "neutral",
+  }),
+  SCHOOL_ACCESS_APPROVED: ({ vars, subject }) => ({
+    heading: subject,
+    preheader: it.emailSchoolAccessApprovedPreheader,
+    intro: t(it.emailSchoolAccessApprovedIntro, vars),
+    details: [
+      detail(it.emailLabelSchool, vars.schoolName),
+      detail(it.emailLabelExpiry, vars.scadenza),
+    ].filter(Boolean) as EmailVisualSpec["details"],
+    ctaLabel: it.emailCtaActivateAccount,
+    ctaUrl: url(vars, "activateUrl"),
+    tone: "success",
+  }),
+  SCHOOL_ACCESS_REJECTED: ({ vars, subject }) => ({
+    heading: subject,
+    preheader: it.emailSchoolAccessRejectedPreheader,
+    intro: t(it.emailSchoolAccessRejectedIntro, vars),
+    details: [detail(it.emailLabelSchool, vars.schoolName)].filter(Boolean) as EmailVisualSpec["details"],
+    boxBody: vars.summary,
+    tone: "danger",
+  }),
+  SCHOOL_ACCESS_INTERNAL: ({ vars, subject }) => ({
+    heading: subject,
+    preheader: it.emailSchoolAccessInternalPreheader,
+    intro: t(it.emailSchoolAccessInternalIntro, vars),
+    details: [detail(it.emailLabelSchool, vars.schoolName)].filter(Boolean) as EmailVisualSpec["details"],
+    boxBody: vars.summary,
+    ctaLabel: it.emailCtaReviewRequest,
+    ctaUrl: url(vars, "link"),
+    tone: "warning",
   }),
   MANUAL: ({ vars, subject }) => ({
     heading: vars.title || subject,

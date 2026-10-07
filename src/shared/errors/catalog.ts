@@ -13,7 +13,8 @@ export type ErrorCategory =
   | "SYSTEM"
   | "VALIDATION"
   | "LIFECYCLE"
-  | "EMAILS";
+  | "EMAILS"
+  | "SCHOOL_ACCESS";
 
 export type ErrorSeverity = "info" | "warning" | "error" | "critical";
 
@@ -280,6 +281,40 @@ export const ERROR_CATALOG: Record<ErrorCode, ErrorDefinition> = {
   LIFECYCLE_USER_NOT_FOUND: def("LIFECYCLE", "User id inesistente dopo authz super admin.", 404, "none"),
   LIFECYCLE_TARGET_NOT_ACTIVE: def("LIFECYCLE", "Remove-from-team su account non ACTIVE.", 409, "none"),
   LIFECYCLE_REGISTRATION_REMOVED: def("LIFECYCLE", "Registration.status = REMOVED: scritture wizard bloccate.", 409, "none"),
+
+  SCHOOL_ACCESS_DUPLICATE: def("SCHOOL_ACCESS", "Richiesta PENDING già presente per email o scuola+edizione.", 409, "wait", {
+    severity: "info",
+  }),
+  SCHOOL_ACCESS_ALREADY_APPROVED: def(
+    "SCHOOL_ACCESS",
+    "Richiesta APPROVED non ancora attivata per email o scuola+edizione.",
+    409,
+    "none",
+    { severity: "info" },
+  ),
+  SCHOOL_ACCESS_SCHOOL_EXISTS: def(
+    "SCHOOL_ACCESS",
+    "Esiste già un Team per scuola (nome+città) e edizione.",
+    409,
+    "contact_org",
+  ),
+  SCHOOL_ACCESS_EMAIL_TAKEN: def("SCHOOL_ACCESS", "User.email già presente: niente nuovo account rappresentante.", 409, "login"),
+  SCHOOL_ACCESS_NOT_FOUND: def("SCHOOL_ACCESS", "SchoolRegistrationRequest id assente dopo authz.", 404, "none"),
+  SCHOOL_ACCESS_NOT_PENDING: def("SCHOOL_ACCESS", "Approvazione/rifiuto su richiesta non PENDING.", 409, "none"),
+  SCHOOL_ACCESS_EDITION_UNAVAILABLE: def("SCHOOL_ACCESS", "Edition assente o isActive=false.", 400, "correct_input"),
+  SCHOOL_ACCESS_TOKEN_INVALID: def("SCHOOL_ACCESS", "Token attivazione sconosciuto o malformato.", 400, "contact_org"),
+  SCHOOL_ACCESS_TOKEN_EXPIRED: def("SCHOOL_ACCESS", "activationExpiresAt superato.", 410, "contact_org"),
+  SCHOOL_ACCESS_TOKEN_USED: def("SCHOOL_ACCESS", "Token già consumato (activatedAt).", 409, "login"),
+  SCHOOL_ACCESS_ALREADY_ACTIVATED: def("SCHOOL_ACCESS", "User già con passwordHash.", 409, "login"),
+  SCHOOL_ACCESS_RATE_LIMITED: def("SCHOOL_ACCESS", "Rate limit invio richiesta o attivazione.", 429, "wait", {
+    severity: "warning",
+  }),
+  SCHOOL_ACCESS_RESEND_NOT_ALLOWED: def(
+    "SCHOOL_ACCESS",
+    "Reinvio attivazione solo se APPROVED e account senza password.",
+    409,
+    "none",
+  ),
 
   EMAIL_WEBHOOK_INVALID: def("EMAILS", "Firma o payload webhook Resend invalidi.", 400, "none"),
   EMAIL_NOT_FOUND: def("EMAILS", "EmailMessage id assente dopo authz staff.", 404, "none"),

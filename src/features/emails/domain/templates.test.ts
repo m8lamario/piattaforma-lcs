@@ -134,6 +134,22 @@ describe("template email", () => {
       REGISTRATION_WITHDRAWN: { areaUrl: "https://hub.test/area" },
       REGISTRATION_REMINDER: { link: "https://hub.test/area" },
       LEGAL_VERSION_NOTICE: { link: "https://hub.test/area" },
+      SCHOOL_ACCESS_APPROVED: {
+        firstName: "Anna",
+        schoolName: "Liceo Demo",
+        activateUrl: "https://hub.test/attiva-account/token",
+        scadenza: "21 ottobre 2026, 18:00",
+      },
+      SCHOOL_ACCESS_REJECTED: {
+        firstName: "Anna",
+        schoolName: "Liceo Demo",
+        summary: "Dati da verificare con la segreteria.",
+      },
+      SCHOOL_ACCESS_INTERNAL: {
+        schoolName: "Liceo Demo",
+        summary: "Liceo Demo · Brescia",
+        link: "https://hub.test/admin/richieste/abc",
+      },
       MANUAL: { title: "Avviso", body: "Testo operativo", link: "https://hub.test/area" },
     };
 

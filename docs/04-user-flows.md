@@ -11,10 +11,26 @@ sequenceDiagram
   SA->>OA: crea utente admin
   OA->>OA: crea Competition e Edition
   OA->>OA: configura requisiti e paymentMode
-  OA->>OA: crea School e Team
-  OA->>TR: StaffInvite (email, team, token hashato)
+  OA->>OA: crea School e Team (percorso interno, invariato)
+  OA->>TR: StaffInvite (email, team, token hashato) se la squadra esiste già
   TR->>Sys: apre /invito-staff/[token]
   TR->>TR: crea o collega account; ruolo TEAM_REPRESENTATIVE; niente Registration
+```
+
+Una scuola non ancora in piattaforma non scrive all’organizzazione per farsi creare l’account. Percorso pubblico:
+
+```mermaid
+sequenceDiagram
+  participant TR as Richiedente
+  participant Sys as Hub
+  participant OA as OrgAdmin
+  TR->>Sys: /richiedi-accesso (dati, edizione attiva)
+  Sys->>Sys: duplicati, scuola già in edizione, email già User
+  Sys->>OA: notifica in-app e email
+  OA->>Sys: approva (admin:manage)
+  Sys->>Sys: School (nuova o riusata), Team, User senza password, token hashato
+  Sys->>TR: email Attiva il tuo account
+  TR->>Sys: /attiva-account/[token] imposta la password
 ```
 
 ## 2. Link di iscrizione della squadra (ingresso unico v1)
@@ -42,7 +58,7 @@ Regole:
 - L’email è del giocatore, raccolta nel form di iscrizione, e resta collegata a User, membership e `Registration.teamId`.
 - Non esiste registrazione senza quel token e senza finestra iscrizioni aperta.
 - Se l’email ha già un account, il redeem collega membership/registration senza creare un secondo user.
-- `PlayerInvite` per singolo giocatore non è più il percorso di ingresso. `StaffInvite` resta personale.
+- `PlayerInvite` per singolo giocatore non è più il percorso di ingresso. `StaffInvite` resta personale per una squadra già creata. Il primo rappresentante di una scuola nuova usa `SchoolRegistrationRequest`.
 
 ## 3. Percorso giocatore (post-M0)
 
@@ -149,7 +165,8 @@ I template hanno placeholder e non includono CF o link firmati lunghi in chiaro 
 
 ## 10. Invito rappresentante e reinvio giocatore
 
-- Staff: `StaffInvite` per email+squadra; redeem su `/invito-staff/[token]`; account unico se l’email è già giocatore.
+- Scuola nuova: form pubblico `/richiedi-accesso`; solo Org/Super Admin approva o rifiuta; l’account nasce senza password e si attiva su `/attiva-account/[token]`. Nessuna password in email. Il ruolo assegnato è solo `TEAM_REPRESENTATIVE`.
+- Staff: `StaffInvite` per email+squadra già esistente; redeem su `/invito-staff/[token]`; account unico se l’email è già giocatore.
 - Reinvio giocatore: revoca il pending precedente e emette un nuovo token (visibile una volta in UI). Il plaintext non si rimostra.
 - CSV rappresentante: `email,firstName,lastName`, max 50, CF mai.
 

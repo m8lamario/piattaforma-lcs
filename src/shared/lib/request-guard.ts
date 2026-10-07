@@ -13,6 +13,8 @@ export const RATE_LIMITS = {
   bulkInvite: { limit: 5, windowMs: 60 * 60 * 1000 },
   lifecycle: { limit: 20, windowMs: 60 * 60 * 1000 },
   emailSend: { limit: 30, windowMs: 60 * 60 * 1000 },
+  schoolAccessRequest: { limit: 5, windowMs: 60 * 60 * 1000 },
+  schoolAccessActivate: { limit: 10, windowMs: 60 * 60 * 1000 },
 } as const;
 
 export async function clientKey(prefix: string) {

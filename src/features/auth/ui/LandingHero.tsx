@@ -115,6 +115,17 @@ export function LandingHero() {
           </ol>
         </div>
       </section>
+
+      <section className={styles.schools} aria-labelledby="scuole">
+        <div className={styles.schoolsInner}>
+          <p className={styles.schoolsKicker}>{it.landingSchoolKicker}</p>
+          <h2 id="scuole">{it.landingSchoolTitle}</h2>
+          <p className={styles.schoolsCopy}>{it.landingSchoolCopy}</p>
+          <ButtonLink href="/richiedi-accesso" variant="secondary">
+            {it.landingSchoolCta}
+          </ButtonLink>
+        </div>
+      </section>
     </motion.div>
   );
 }

@@ -4,7 +4,7 @@
 
 | Area | Audience | Prefisso | Auth |
 |---|---|---|---|
-| Pubblica | non autenticati | `/` `/accedi` `/invito` `/invito/[token]` `/invito-staff/[token]` `/recupera-password` `/privacy` | no |
+| Pubblica | non autenticati | `/` `/accedi` `/invito` `/invito/[token]` `/invito-staff/[token]` `/richiedi-accesso` `/attiva-account/[token]` `/recupera-password` `/privacy` | no |
 | Giocatore | Player | `/area` | sì |
 | Squadra (rappresentante) | Team Representative | `/squadra` | sì + ruolo |
 | Organizzazione | Org Admin / Super Admin | `/admin` | sì + ruolo |
@@ -20,7 +20,10 @@ Un utente può avere più ruoli (es. rappresentante che è anche giocatore). La 
 /recupera-password/[token]
 /invito                        incolla link/codice invito giocatore
 /invito/[token]                redeem invito giocatore
-/invito-staff/[token]          redeem invito rappresentante
+/invito-staff/[token]          redeem invito rappresentante (squadra già creata)
+/richiedi-accesso              richiesta pubblica di accesso per una scuola non ancora in piattaforma
+/richiedi-accesso/inviata      conferma invio richiesta (nessun dato in URL)
+/attiva-account/[token]        il rappresentante imposta la password dopo l’approvazione
 /privacy                       informative versionate (moduli LCS adattati; restano [INSERIRE …] organizzativi)
 /liberatorie                   liberatoria foto/video (stesso testo del passo wizard)
 
@@ -41,6 +44,8 @@ Un utente può avere più ruoli (es. rappresentante che è anche giocatore). La 
 /squadra/inviti                inviti, reinvio, CSV
 
 /admin                         hub organizzazione
+/admin/richieste               coda richieste di accesso scuole
+/admin/richieste/[id]
 /admin/registrazioni
 /admin/giocatori/[id]
 /admin/documenti

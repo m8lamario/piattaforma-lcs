@@ -153,7 +153,7 @@ Default foundation (documentato, modificabile):
 
 Magic link e OAuth: non in M0; vedi OPEN_DECISIONS.
 
-L’account giocatore si crea **solo** dal link stabile della squadra (`/iscrizione/[registrationToken]`). `StaffInvite` resta il ingresso del rappresentante. Non esiste `/register` aperto. Reset password usa `VerificationToken` con identifier `password-reset:{email}`.
+L’account giocatore si crea **solo** dal link stabile della squadra (`/iscrizione/[registrationToken]`). Non esiste `/register` aperto per i giocatori. Il primo rappresentante di una scuola nuova entra da `SchoolRegistrationRequest` (approvazione `admin:manage`, poi `/attiva-account/[token]` senza password in email). `StaffInvite` resta l’ingresso di un ulteriore rappresentante su una squadra già creata. Reset password usa `VerificationToken` con identifier `password-reset:{email}`.
 
 ## 8. Dati estendibili del profilo
 
@@ -208,6 +208,7 @@ Principio cardine:
 | ADR-024 | Gate wizard sequenziale solo su `PERSONAL_DATA` `todo`; gli altri passi visibili sono apribili; `APPROVED` resta proiezione di tutte le evidenze required |
 | ADR-025 | Team appartiene a una Edition. Registration e Payment non possono citare un’altra Edition: FK composta `(teamId, editionId)` e, per il pagamento individuale, `(registrationId, editionId)`. `UserRole` non ha `editionId`. `Competition.parentId` non è un’edizione. |
 | ADR-026 | Email secondaria: `EmailMessage` / `EmailEvent` / override template; adapter restituisce `providerMessageId`; tracking aperture spendibile; campagna su nuova versione legale solo da azione admin confermata |
+| ADR-027 | Richiesta pubblica scuola (`SchoolRegistrationRequest`) → approvazione `admin:manage` → User senza password + token di attivazione hashato; `StaffInvite` non copre la scuola assente |
 
 ## 12. Nota audit M0
 

@@ -10,7 +10,7 @@ Proteggere identità, dati anagrafici, dati di minori, documenti sanitari, conse
 - Cookie `eph-team`: httpOnly, SameSite=Lax, Secure su HTTPS, cancellato al logout. Non autorizza da solo: ogni action ricalcola il permesso.
 - Password: hash (Argon2id o bcrypt, scelta in foundation: Argon2 se disponibile, altrimenti bcrypt).
 - Verifica email prima di upload documenti e consensi vincolanti.
-- Rate limit su `/accedi`, redeem invito, reset password, upload.
+- Rate limit su `/accedi`, redeem invito, reset password, upload, richiesta accesso scuola, attivazione account.
 - `AUTH_SECRET` e DB URL solo in env. Nessun secret in client bundle.
 
 ## 3. Autorizzazione
@@ -151,6 +151,7 @@ Non loggare: password, token, CF completo (mascherare), body documenti, Authoriz
 
 - `/admin` dietro sessione + `admin:manage`; liste senza storageKey.
 - `StaffInvite` hashato; redeem senza Registration.
+- `SchoolRegistrationRequest`: token di attivazione SHA-256, monouso, con scadenza; User creato senza `passwordHash`; nessuna password in email.
 - Withdraw senza delete; reset password anti-enumerazione.
 - Stripe webhook firmato; R2 bucket privato; HMAC file invariato.
 - Email Resend: HTML di presentazione + testo, variabili allowlist, mai CF o motivo medico. Permalink `/documenti-legali/{slug}/{version}` invece di allegati.

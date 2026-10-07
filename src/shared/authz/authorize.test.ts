@@ -146,6 +146,8 @@ describe("authorize deny-by-default", () => {
     expect(authorize(player, "admin:manage").allow).toBe(false);
     expect(authorize(rep, "admin:manage").allow).toBe(false);
     expect(authorize(orgAdmin, "admin:manage").allow).toBe(true);
+    expect(authorize(player, "staff:invite").allow).toBe(false);
+    expect(authorize(rep, "staff:invite", { teamId: "team-1" }).allow).toBe(false);
   });
 
   it("consente al rappresentante di togliere un giocatore solo dalla propria squadra", () => {

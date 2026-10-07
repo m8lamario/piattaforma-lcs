@@ -19,6 +19,8 @@ erDiagram
   Competition ||--o{ Edition : has
   Edition ||--o{ Team : has
   School ||--o{ Team : has
+  School ||--o{ SchoolRegistrationRequest : requests
+  Edition ||--o{ SchoolRegistrationRequest : target
   Team ||--o{ PlayerInvite : sends
   Team ||--o{ StaffInvite : staff
   Team ||--o{ Registration : roster
@@ -120,7 +122,9 @@ Un rappresentante che è anche giocatore ha `TEAM_REPRESENTATIVE` + membership `
 
 Il token in chiaro sta solo nell’URL/email; in DB si salva **hash**.
 
-**StaffInvite** — come PlayerInvite ma per rappresentanti: teamId, email, token hash, status, expiresAt, invitedBy. Il redeem **non** crea `Registration`. Se l’email ha già un User, si aggiunge `TEAM_REPRESENTATIVE` + membership `REPRESENTATIVE`.
+**StaffInvite** — come PlayerInvite ma per rappresentanti: teamId, email, token hash, status, expiresAt, invitedBy. Il redeem **non** crea `Registration`. Se l’email ha già un User, si aggiunge `TEAM_REPRESENTATIVE` + membership `REPRESENTATIVE`. Serve una squadra già creata.
+
+**SchoolRegistrationRequest** — coda pubblica per una scuola non ancora in edizione. Campi: richiedente (nome, cognome, email, telefono), scuola (name, city, `schoolNameKey` normalizzato), `requesterRole` (`INSTITUTE_REPRESENTATIVE` | `TEACHER` | `OTHER`, solo dato di revisione), email istituzionale opzionale, `editionId`, status `PENDING` | `APPROVED` | `REJECTED`, `rejectionReason`, `reviewedAt`, `reviewedByUserId`. Dopo l’approvazione: `schoolId`, `teamId`, `userId`, hash del token di attivazione, scadenza, `activatedAt`. Indici unici parziali Postgres: una `PENDING` per email e una `PENDING` per (`schoolNameKey`, `editionId`). Il token in chiaro sta solo nell’URL/email. L’account approvato riceve `TEAM_REPRESENTATIVE` sullo `teamId` creato o riusato, mai ruoli di piattaforma.
 
 ## 6. Registrazione
 

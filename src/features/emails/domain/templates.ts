@@ -98,6 +98,21 @@ export function defaultEmailTemplates(): Record<EmailTemplateKey, EmailTemplateS
       subject: it.emailLegalVersionSubject,
       textBody: it.emailLegalVersionText,
     },
+    SCHOOL_ACCESS_APPROVED: {
+      key: "SCHOOL_ACCESS_APPROVED",
+      subject: it.emailSchoolAccessApprovedSubject,
+      textBody: it.emailSchoolAccessApprovedText,
+    },
+    SCHOOL_ACCESS_REJECTED: {
+      key: "SCHOOL_ACCESS_REJECTED",
+      subject: it.emailSchoolAccessRejectedSubject,
+      textBody: it.emailSchoolAccessRejectedText,
+    },
+    SCHOOL_ACCESS_INTERNAL: {
+      key: "SCHOOL_ACCESS_INTERNAL",
+      subject: it.emailSchoolAccessInternalSubject,
+      textBody: it.emailSchoolAccessInternalText,
+    },
     MANUAL: {
       key: "MANUAL",
       subject: it.emailManualSubject,
