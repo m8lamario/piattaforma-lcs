@@ -80,6 +80,7 @@ describe("template email", () => {
     const verify = render("EMAIL_VERIFY", {
       codice: "482913",
       scadenza: "24 ore",
+      areaUrl: "https://hub.test/verifica-email",
     });
     const guardian = render("GUARDIAN_AUTHORIZE", {
       playerName: "Luca Bianchi",
@@ -89,8 +90,10 @@ describe("template email", () => {
       summary: "Atti di iscrizione",
     });
     expect(verify.text).toContain("482913");
-    expect(verify.text).not.toContain("/verifica-email/");
-    expect(verify.html).toContain("4&nbsp;&nbsp;8&nbsp;&nbsp;2&nbsp;&nbsp;9&nbsp;&nbsp;1&nbsp;&nbsp;3");
+    expect(verify.text).toContain("https://hub.test/verifica-email");
+    expect(verify.html).toMatch(/>482913</);
+    expect(verify.html).not.toContain("&nbsp;&nbsp;");
+    expect(verify.html).toContain("https://hub.test/verifica-email");
     expect(verify.html).not.toContain("/verifica-email/");
     expect(redactSecretVariables(verify.text, verify.variables)).not.toContain("482913");
     expect(guardian.text).toContain("Luca Bianchi");
@@ -108,7 +111,7 @@ describe("template email", () => {
       "player-invite": { redeemUrl: "https://hub.test/invito/token", teamName: "Alpha" },
       "staff-invite": { redeemUrl: "https://hub.test/invito-staff/token", teamName: "Alpha" },
       "password-reset": { resetUrl: "https://hub.test/recupera-password/token" },
-      EMAIL_VERIFY: { codice: "482913", scadenza: "24 ore" },
+      EMAIL_VERIFY: { codice: "482913", scadenza: "24 ore", areaUrl: "https://hub.test/verifica-email" },
       GUARDIAN_AUTHORIZE: {
         playerName: "Luca Bianchi",
         teamName: "Mole Cup",

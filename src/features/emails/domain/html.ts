@@ -71,15 +71,12 @@ export function infoBoxHtml(title: string | undefined, body: string) {
 
 export function verificationCodeHtml(code: string, label: string) {
   if (!/^\d{6}$/.test(code)) return "";
-  const shown = code
-    .split("")
-    .map((digit) => escapeHtml(digit))
-    .join("&nbsp;&nbsp;");
+  const digits = escapeHtml(code);
   return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:4px 0 20px 0;">
     <tr>
       <td align="center" style="background:${EMAIL_THEME.infoBox};border:1px solid ${EMAIL_THEME.border};border-radius:${EMAIL_THEME.radius};padding:18px 12px 16px 12px;">
         <p style="margin:0 0 10px 0;font-family:${EMAIL_THEME.font};font-size:12px;letter-spacing:0.08em;text-transform:uppercase;color:${EMAIL_THEME.textMuted};">${escapeHtml(label)}</p>
-        <p style="margin:0;font-family:Consolas, 'Courier New', monospace;font-size:32px;font-weight:700;line-height:1.2;color:${EMAIL_THEME.headerBg};">${shown}</p>
+        <p style="margin:0;font-family:Consolas, 'Courier New', monospace;font-size:32px;font-weight:700;letter-spacing:0.28em;line-height:1.2;color:${EMAIL_THEME.headerBg};-webkit-user-select:all;user-select:all;">${digits}</p>
       </td>
     </tr>
   </table>`;

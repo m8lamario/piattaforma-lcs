@@ -9,7 +9,7 @@ import {
   judgeEmailVerifyCode,
   normalizeEmailVerifyCode,
 } from "@/features/auth/domain/verify";
-import { EMAIL_VERIFY_HOURS } from "@/shared/config/app";
+import { EMAIL_VERIFY_HOURS, appOrigin } from "@/shared/config/app";
 import { dispatchOutboundEmail } from "@/features/emails/data/dispatch";
 import { it } from "@/shared/i18n/it";
 import { logger } from "@/shared/lib/logger";
@@ -86,6 +86,7 @@ export async function sendEmailVerification(input: { userId: string; email: stri
         title: it.emailVerifySubject,
         codice: code,
         scadenza: expiryLabel(EMAIL_VERIFY_HOURS),
+        areaUrl: `${appOrigin()}/verifica-email`,
       },
       sourceEntityType: "User",
       sourceEntityId: input.userId,
