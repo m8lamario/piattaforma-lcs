@@ -1,6 +1,7 @@
 import { INVITE_TTL_DAYS } from "@/shared/config/app";
 import { prisma } from "@/shared/lib/prisma";
 import { hashPassword } from "@/features/auth/domain/password";
+import { displayNameFromEmail, namesFromEmail } from "@/features/teams/domain/emailName";
 import { inspectInvite, type InviteRecord } from "../domain/invite";
 import { createInviteToken, hashInviteToken } from "../domain/token";
 
@@ -333,11 +334,6 @@ export async function findTeamByRegistrationToken(token: string) {
   });
 }
 
-function displayNameFromEmail(email: string) {
-  const local = email.split("@")[0]?.replace(/[._+-]+/g, " ").trim();
-  return local && local.length > 0 ? local.slice(0, 80) : "Giocatore";
-}
-
 async function linkPlayerToTeam(
   tx: Parameters<Parameters<typeof prisma.$transaction>[0]>[0],
   input: {
@@ -404,15 +400,15 @@ export async function createAccountFromTeamLink(input: {
     const existing = await tx.user.findUnique({ where: { email } });
     if (existing) return { ok: false as const, reason: "login_required" as const };
 
-    const firstName = displayNameFromEmail(email);
+    const { firstName, lastName } = namesFromEmail(email);
     const passwordHash = await hashPassword(input.password);
     const user = await tx.user.create({
       data: {
         email,
         passwordHash,
-        name: firstName,
+        name: displayNameFromEmail(email),
         roles: { create: { role: "PLAYER" } },
-        playerProfile: { create: { firstName, lastName: "—" } },
+        playerProfile: { create: { firstName, lastName } },
       },
       include: { playerProfile: true },
     });
@@ -454,8 +450,7 @@ export async function attachExistingUserToTeamLink(input: {
       (await tx.playerProfile.create({
         data: {
           userId: input.userId,
-          firstName: displayNameFromEmail(input.email),
-          lastName: "—",
+          ...namesFromEmail(input.email),
         },
       }));
 
