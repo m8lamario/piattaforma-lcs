@@ -65,6 +65,7 @@ test("happy path: invito, redeem, wizard minimo, pagamento stub", async ({ page,
   await player.locator("#confirmPassword").fill(password);
   await player.getByRole("button", { name: "Crea account e continua" }).click();
   await expect(player).toHaveURL(/\/verifica-email/);
+  await expect(player.getByLabel("Codice di verifica")).toBeVisible();
 
   await markEmailVerified(email);
 
@@ -114,6 +115,7 @@ test("minore: verifica email, tutore, attesa genitore e link di autorizzazione",
   await player.getByRole("button", { name: "Crea account e continua" }).click();
   await expect(player).toHaveURL(/\/verifica-email/);
   await expect(player.getByRole("heading", { name: "Verifica email" })).toBeVisible();
+  await expect(player.getByLabel("Codice di verifica")).toBeVisible();
 
   await markEmailVerified(email);
 

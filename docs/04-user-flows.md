@@ -66,7 +66,7 @@ All’accesso `/area` è la panoramica operativa, non un’area giocatore vuota.
 
 ## 3. Percorso giocatore (post-M0)
 
-Passi guidati, uno schermo alla volta, salvataggio per passo. L’account si crea dal link di squadra; l’email va verificata **prima** di anagrafica, consensi, upload e pagamento.
+Passi guidati, uno schermo alla volta, salvataggio per passo. L’account si crea dal link di squadra; l’email va verificata con un codice numerico a 6 cifre **prima** di anagrafica, consensi, upload e pagamento.
 
 ### Maggiorenne
 

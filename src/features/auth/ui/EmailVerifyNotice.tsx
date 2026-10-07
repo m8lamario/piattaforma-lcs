@@ -5,8 +5,7 @@ import fields from "@/shared/ui/form.module.css";
 export function EmailVerifyNotice() {
   return (
     <p className={`${fields.banner} ${fields.bannerInfo}`} role="status">
-      {it.emailVerifyHelp}{" "}
-      <Link href="/verifica-email">{it.emailVerifyResend}</Link>
+      {it.emailVerifyNotice} <Link href="/verifica-email">{it.emailVerifyOpen}</Link>
     </p>
   );
 }

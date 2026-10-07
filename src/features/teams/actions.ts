@@ -30,6 +30,8 @@ import { fail, failValidation, userMessage, type ActionFailure, type ActionState
 import { parseBulkInviteCsv } from "@/features/teams/domain/bulk";
 import { registrationReminder } from "@/features/teams/domain/reminder";
 import { extractInviteToken, isWellFormedInviteToken } from "@/features/teams/domain/token";
+import { ensureEmailVerification } from "@/features/auth/data/emailVerification";
+import { emailVerificationPath } from "@/features/auth/domain/verify";
 import { isRegistrationWindowOpen } from "@/features/registrations/domain/window";
 import { loadPlayerWorkspace } from "@/features/registrations/data/workspace";
 import { createNotification } from "@/features/notifications/data/notifications";
@@ -266,13 +268,13 @@ export async function redeemInviteAction(
       ...trace,
     });
 
-    const { sendEmailVerification } = await import("@/features/auth/data/emailVerification");
-    await sendEmailVerification({ userId: result.user.id, email: result.user.email });
+    const status = await ensureEmailVerification({ userId: result.user.id, email: result.user.email });
+    const destination = status.verified ? "/area" : emailVerificationPath("/area");
 
     await signIn("credentials", {
       email: result.user.email,
       password: parsed.data.password,
-      redirectTo: "/verifica-email",
+      redirectTo: destination,
     });
     return {};
   } catch (error) {
@@ -311,7 +313,8 @@ export async function attachInviteAction(formData: FormData) {
   });
 
   if (path.path === "already_on_team") {
-    redirect("/area");
+    const status = await ensureEmailVerification({ userId: session.user.id, email: session.user.email });
+    redirect(status.verified ? "/area" : emailVerificationPath("/area"));
   }
   if (path.path !== "attach_existing") {
     return fail(redeemPathCode(path.path));
@@ -334,7 +337,8 @@ export async function attachInviteAction(formData: FormData) {
       entityId: found.invite.id,
       ...trace,
     });
-    redirect("/area");
+    const status = await ensureEmailVerification({ userId: session.user.id, email: session.user.email });
+    redirect(status.verified ? "/area" : emailVerificationPath("/area"));
   } catch (error) {
     if (error instanceof Error && error.message === "INVITE_RACE") {
       return fail("INVITE_ALREADY_USED");
@@ -407,13 +411,13 @@ export async function joinTeamAction(
       ...trace,
     });
 
-    const { sendEmailVerification } = await import("@/features/auth/data/emailVerification");
-    await sendEmailVerification({ userId: result.user.id, email: result.user.email });
+    const status = await ensureEmailVerification({ userId: result.user.id, email: result.user.email });
+    const destination = status.verified ? "/area" : emailVerificationPath("/area");
 
     await signIn("credentials", {
       email: result.user.email,
       password: parsed.data.password,
-      redirectTo: "/verifica-email",
+      redirectTo: destination,
     });
     return {};
   } catch (error) {
@@ -458,7 +462,10 @@ export async function attachTeamLinkAction(formData: FormData) {
     session: { userId: session.user.id, email: session.user.email },
     existingRegistrations: context.existingRegistrations,
   });
-  if (path.path === "already_on_team") redirect("/area");
+  if (path.path === "already_on_team") {
+    const status = await ensureEmailVerification({ userId: session.user.id, email: session.user.email });
+    redirect(status.verified ? "/area" : emailVerificationPath("/area"));
+  }
   if (path.path !== "attach_existing") return fail(redeemPathCode(path.path));
 
   const result = await attachExistingUserToTeamLink({
@@ -477,7 +484,8 @@ export async function attachTeamLinkAction(formData: FormData) {
     metadata: { teamName: result.teamName },
     ...trace,
   });
-  redirect("/area");
+  const status = await ensureEmailVerification({ userId: session.user.id, email: session.user.email });
+  redirect(status.verified ? "/area" : emailVerificationPath("/area"));
 }
 
 async function requireTeamAction(

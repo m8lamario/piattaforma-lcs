@@ -19,13 +19,14 @@ export const EMAIL_VARIABLE_KEYS = [
   "confirmUrl",
   "schoolName",
   "activateUrl",
+  "codice",
 ] as const;
 
 export type EmailVariableKey = (typeof EMAIL_VARIABLE_KEYS)[number];
 
 export const EMAIL_VARIABLE_KEY_SET = new Set<string>(EMAIL_VARIABLE_KEYS);
 
-export const SECRET_EMAIL_VARIABLE_KEYS = ["redeemUrl", "resetUrl", "confirmUrl", "activateUrl"] as const;
+export const SECRET_EMAIL_VARIABLE_KEYS = ["redeemUrl", "resetUrl", "confirmUrl", "activateUrl", "codice"] as const;
 
 const FORBIDDEN_VARIABLE_KEYS = new Set([
   "fiscalCode",
@@ -90,7 +91,9 @@ export function redactSecretVariables(
   let next = text;
   for (const key of SECRET_EMAIL_VARIABLE_KEYS) {
     const value = variables[key];
-    if (value) next = next.split(value).join(replacement);
+    if (!value) continue;
+    const hidden = key === "codice" ? "[codice omesso]" : replacement;
+    next = next.split(value).join(hidden);
   }
   return next;
 }

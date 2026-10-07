@@ -11,6 +11,7 @@ const REDACT_KEYS = new Set([
   "redeemUrl",
   "resetUrl",
   "confirmUrl",
+  "codice",
   "to",
   "toAddress",
   "text",

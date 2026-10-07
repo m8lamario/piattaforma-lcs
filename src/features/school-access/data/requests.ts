@@ -379,7 +379,7 @@ export async function activateSchoolAccessAccount(input: { token: string; passwo
 
     await tx.user.update({
       where: { id: request.user.id },
-      data: { passwordHash, emailVerified: new Date() },
+      data: { passwordHash },
     });
 
     return { ok: true as const, userId: request.user.id, email: request.email };

@@ -397,7 +397,7 @@ Già coperti: no PWA in M0; scan OD-021.
 | M1-D1 | TTL invito 14 giorni (`INVITE_TTL_DAYS`) |
 | M1-D2 | Nuovo invito alla stessa email+squadra revoca il pending precedente |
 | M1-D3 | Il token non consente di impostare una nuova password su un account esistente |
-| M1-D4 | Redeem riuscito imposta `emailVerified` |
+| M1-D4 | Redeem non marca `emailVerified`: la verifica è un codice a 6 cifre |
 | M1-D5 | Con email stub il rappresentante vede il link una sola volta (oltre al log adapter) |
 | M1-D6 | Rate limit in-process (non distribuito) su create/redeem |
 | M1-D7 | Attach non sovrascrive `TeamMembership.role` esistente |

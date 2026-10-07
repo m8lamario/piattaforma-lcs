@@ -97,7 +97,6 @@ export async function redeemStaffInvite(input: {
         data: {
           email,
           passwordHash: await hashPassword(input.password),
-          emailVerified: new Date(),
           name: invite.team.name,
         },
       });

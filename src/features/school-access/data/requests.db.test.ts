@@ -206,7 +206,7 @@ describe.skipIf(!hasDatabase)("richiesta accesso scuola sul database", () => {
 
       const after = await prisma.user.findUnique({ where: { email: ctx.email } });
       expect(after?.passwordHash).toBeTruthy();
-      expect(after?.emailVerified).toBeTruthy();
+      expect(after?.emailVerified).toBeNull();
     });
   });
 

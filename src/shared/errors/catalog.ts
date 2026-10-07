@@ -71,8 +71,13 @@ export const ERROR_CATALOG: Record<ErrorCode, ErrorDefinition> = {
     retrySafe: true,
   }),
   AUTH_EMAIL_NOT_VERIFIED: def("AUTH", "emailVerified assente su azione vincolante.", 403, "login"),
-  AUTH_EMAIL_TOKEN_INVALID: def("AUTH", "Token verifica email assente, scaduto o già usato.", 400, "retry", {
+  AUTH_EMAIL_CODE_INVALID: def("AUTH", "Codice verifica assente o non corrispondente.", 400, "correct_input", {
     retrySafe: true,
+  }),
+  AUTH_EMAIL_CODE_EXPIRED: def("AUTH", "Codice verifica scaduto.", 400, "retry", { retrySafe: true }),
+  AUTH_EMAIL_CODE_LOCKED: def("AUTH", "Tentativi del codice verifica esauriti.", 400, "retry", { retrySafe: true }),
+  AUTH_EMAIL_CODE_COOLDOWN: def("AUTH", "Reinvio del codice verifica ancora in cooldown.", 429, "wait", {
+    severity: "warning",
   }),
 
   FORBIDDEN_RESOURCE: def("AUTHZ", "authorize ha negato l’azione sulla risorsa.", 403, "none"),

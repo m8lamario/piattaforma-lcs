@@ -76,10 +76,10 @@ describe("template email", () => {
     expect(interpolateTemplate("{{nome}} {{fiscalCode}}", { nome: "Anna" })).toBe("Anna ");
   });
 
-  it("manda verifica email e richiesta al genitore senza allegati", () => {
+  it("manda il codice di verifica e la richiesta al genitore senza allegati", () => {
     const verify = render("EMAIL_VERIFY", {
-      confirmUrl: "https://hub.test/verifica-email/token",
-      scadenza: "24h",
+      codice: "482913",
+      scadenza: "24 ore",
     });
     const guardian = render("GUARDIAN_AUTHORIZE", {
       playerName: "Luca Bianchi",
@@ -88,13 +88,17 @@ describe("template email", () => {
       scadenza: "2026-10-13 12:00",
       summary: "Atti di iscrizione",
     });
-    expect(verify.text).toContain("https://hub.test/verifica-email/token");
+    expect(verify.text).toContain("482913");
+    expect(verify.text).not.toContain("/verifica-email/");
+    expect(verify.html).toContain("4&nbsp;&nbsp;8&nbsp;&nbsp;2&nbsp;&nbsp;9&nbsp;&nbsp;1&nbsp;&nbsp;3");
+    expect(verify.html).not.toContain("/verifica-email/");
+    expect(redactSecretVariables(verify.text, verify.variables)).not.toContain("482913");
     expect(guardian.text).toContain("Luca Bianchi");
     expect(guardian.text.toLowerCase()).not.toContain("allegat");
     expect(redactSecretVariables(guardian.text, guardian.variables)).not.toContain(
       "https://hub.test/autorizzazione-genitore/token",
     );
-    expect(verify.html).toContain("Conferma l’email");
+    expect(verify.html).toContain("Codice di verifica");
     expect(guardian.html).toContain("Mole Cup");
     expect(guardian.html).toContain("Apri l’autorizzazione");
   });
@@ -104,7 +108,7 @@ describe("template email", () => {
       "player-invite": { redeemUrl: "https://hub.test/invito/token", teamName: "Alpha" },
       "staff-invite": { redeemUrl: "https://hub.test/invito-staff/token", teamName: "Alpha" },
       "password-reset": { resetUrl: "https://hub.test/recupera-password/token" },
-      EMAIL_VERIFY: { confirmUrl: "https://hub.test/verifica-email/token", scadenza: "24h" },
+      EMAIL_VERIFY: { codice: "482913", scadenza: "24 ore" },
       GUARDIAN_AUTHORIZE: {
         playerName: "Luca Bianchi",
         teamName: "Mole Cup",

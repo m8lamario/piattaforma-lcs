@@ -26,6 +26,8 @@ import {
 import { writeAuditLog } from "@/shared/lib/audit";
 import { RATE_LIMITS, clientKey, consumeRateLimit, userAgentAndIp } from "@/shared/lib/request-guard";
 import { isWellFormedInviteToken } from "@/features/teams/domain/token";
+import { deliverEmailVerification } from "@/features/auth/data/emailVerification";
+import { emailVerificationPath } from "@/features/auth/domain/verify";
 import { fail, failValidation, type ActionFailure } from "@/shared/errors";
 import { it } from "@/shared/i18n/it";
 
@@ -251,5 +253,6 @@ export async function activateSchoolAccessAction(_prev: ActionFailure | undefine
     entityType: "SchoolRegistrationRequest",
     entityId: found?.id ?? result.userId,
   });
-  redirect("/accedi");
+  await deliverEmailVerification({ userId: result.userId, email: result.email });
+  redirect(`/accedi?next=${encodeURIComponent(emailVerificationPath("/area"))}`);
 }
