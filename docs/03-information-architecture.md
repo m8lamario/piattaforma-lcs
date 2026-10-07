@@ -21,8 +21,9 @@ Un utente può avere più ruoli (es. rappresentante che è anche giocatore). La 
 /invito                        incolla link/codice invito giocatore
 /invito/[token]                redeem invito giocatore
 /invito-staff/[token]          redeem invito rappresentante (squadra già creata)
-/richiedi-accesso              richiesta pubblica di accesso per una scuola non ancora in piattaforma
+/richiedi-accesso              landing e richiesta pubblica di accesso/candidatura per scuole e rappresentanti
 /richiedi-accesso/inviata      conferma invio richiesta (nessun dato in URL)
+/scuole                        alias pubblico con redirect a /richiedi-accesso
 /attiva-account/[token]        il rappresentante imposta la password dopo l’approvazione
 /privacy                       informative versionate (moduli LCS adattati; restano [INSERIRE …] organizzativi)
 /liberatorie                   liberatoria foto/video (stesso testo del passo wizard)
