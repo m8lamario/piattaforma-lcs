@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { PublicationChips } from "@/features/consents/ui/PublicationChips";
 import { it } from "@/shared/i18n/it";
 import type { RosterRow } from "@/features/teams/domain/roster";
@@ -40,15 +41,25 @@ type Props = {
   teamId: string;
   rows: RosterRow[];
   canEditRoster?: boolean;
+  emptyLabel?: string;
+  emptyHref?: string;
 };
 
-export function TeamRoster({ teamId, rows, canEditRoster = true }: Props) {
+export function TeamRoster({ teamId, rows, canEditRoster = true, emptyLabel, emptyHref }: Props) {
   return (
     <section className={styles.wrap}>
       <h2>{it.rosterTitle}</h2>
       <p className={styles.help}>{it.rosterHelp}</p>
       {rows.length === 0 ? (
-        <p className={styles.empty}>{it.rosterEmpty}</p>
+        <p className={styles.empty}>
+          {emptyLabel ?? it.rosterEmpty}
+          {emptyHref ? (
+            <>
+              {" "}
+              <Link href={emptyHref}>{it.rosterFilterAll}</Link>
+            </>
+          ) : null}
+        </p>
       ) : (
         <ul className={styles.list}>
           {rows.map((row) => (

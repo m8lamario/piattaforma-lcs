@@ -23,6 +23,8 @@ export async function AuthenticatedShell({ children }: Props) {
       showTeam={shell.showTeam}
       showAdmin={shell.showAdmin}
       showPlayerTeam={shell.showPlayerTeam}
+      showConsents={shell.showConsents}
+      showSchool={shell.showSchool}
       unreadCount={shell.unreadCount}
       withdrawRegistrationId={shell.withdrawRegistrationId}
     >

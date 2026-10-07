@@ -122,6 +122,18 @@
   color: var(--color-text);
 }
 
+.navGroup {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.navChild {
+  min-height: calc(var(--control-min) - 0.25rem) !important;
+  padding-left: var(--space-8) !important;
+  font-size: var(--text-sm);
+  font-weight: 600 !important;
+}
+
 .navActive {
   color: var(--color-text) !important;
   border-left-color: var(--color-line) !important;

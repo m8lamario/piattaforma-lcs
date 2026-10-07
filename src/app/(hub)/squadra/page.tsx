@@ -8,7 +8,7 @@ import { TEAM_COOKIE } from "@/shared/config/app";
 import { teamCheckoutAmount } from "@/features/payments/domain/amounts";
 import { TeamPaymentForm } from "@/features/payments/ui/TeamPaymentForm";
 import { listTeamRoster, listTeamsByIds } from "@/features/teams/data/roster";
-import { summarizeRoster } from "@/features/teams/domain/roster";
+import { filterRoster, parseRosterFilter, summarizeRoster } from "@/features/teams/domain/roster";
 import { resolveSelectedTeamId } from "@/features/teams/domain/selection";
 import { TeamRoster } from "@/features/teams/ui/TeamRoster";
 import { TeamSwitcher } from "@/features/teams/ui/TeamSwitcher";
@@ -16,15 +16,21 @@ import { TeamSubnav } from "@/features/teams/ui/TeamSubnav";
 import { RosterStrip } from "@/features/teams/ui/RosterStrip";
 import { WindowNotice } from "@/features/registrations/ui/WindowNotice";
 import { PageHeader } from "@/shared/ui/PageHeader";
+import { it } from "@/shared/i18n/it";
 import styles from "./page.module.css";
 
-export default async function TeamPage() {
+type Props = { searchParams: Promise<{ stato?: string }> };
+
+export default async function TeamPage({ searchParams }: Props) {
   const { actor, teamIds } = await requireRepresentativeTeamId();
   const jar = await cookies();
   const teamId = resolveSelectedTeamId(teamIds, jar.get(TEAM_COOKIE)?.value);
   if (!teamId) {
     redirect("/area");
   }
+
+  const query = await searchParams;
+  const filter = parseRosterFilter(query.stato);
 
   const [team, teamPayment, roster, teams] = await Promise.all([
     getTeamForActor(teamId),
@@ -51,6 +57,7 @@ export default async function TeamPage() {
     registrationOpensAt: team.edition.registrationOpensAt,
     registrationClosesAt: team.edition.registrationClosesAt,
   };
+  const visible = filterRoster(roster, filter);
 
   return (
     <main className={styles.main}>
@@ -59,14 +66,19 @@ export default async function TeamPage() {
         title={team.name}
         description={`${team.school.name}${team.school.city ? ` · ${team.school.city}` : ""}`}
       />
-      <TeamSubnav current="dashboard" />
+      <TeamSubnav current={filter === "open" ? "status" : "dashboard"} />
       <TeamSwitcher teams={teams} selectedId={teamId} />
       <WindowNotice edition={editionWindow} />
-      <RosterStrip counts={summarizeRoster(roster)} />
+      <RosterStrip counts={summarizeRoster(roster)} current={filter} />
 
       <div className={styles.teamGrid}>
         <section className={styles.rosterSection}>
-          <TeamRoster teamId={teamId} rows={roster} />
+          <TeamRoster
+            teamId={teamId}
+            rows={visible}
+            emptyLabel={filter ? it.rosterFilterEmpty : undefined}
+            emptyHref={filter ? "/squadra" : undefined}
+          />
         </section>
 
         {teamAmount !== null ? (

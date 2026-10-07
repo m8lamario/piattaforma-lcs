@@ -59,7 +59,7 @@ Test obbligatori: tentativo di accesso a registrazione/documento di un altro use
 
 Consentiti al **rappresentante**: firstName, lastName, jerseyNumber, rosterRole, registration status, medical **status only**, payment **status only**.
 
-Consentiti ai **compagni** (`/area/squadra`): firstName, lastName, jerseyNumber, rosterRole. Non stato certificato, non pagamento, non checklist.
+Consentiti ai **compagni** (`/area/squadra`, solo giocatore senza ruolo rappresentante): firstName, lastName, jerseyNumber, rosterRole. Non stato certificato, non pagamento, non checklist. Il rappresentante usa la rosa.
 
 Negati: fiscalCode, phone, email (rep può vedere email dell’invito che ha creato), birthDate, storageKey, consent bodies, guardian details (OPEN: il rep vede se “dati genitore completi” sì/no, non i dati).
 
