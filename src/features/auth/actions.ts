@@ -14,7 +14,13 @@ import {
   createPasswordResetToken,
   findPasswordResetByToken,
 } from "@/features/auth/data/passwordReset";
-import { consumeEmailVerificationToken, sendEmailVerification } from "@/features/auth/data/emailVerification";
+import { confirmEmailVerificationCode, sendEmailVerification } from "@/features/auth/data/emailVerification";
+import {
+  emailVerificationPath,
+  normalizeEmailVerifyCode,
+  pathAfterEmailVerification,
+  safeInternalPath,
+} from "@/features/auth/domain/verify";
 import { dispatchOutboundEmail } from "@/features/emails/data/dispatch";
 import { prisma } from "@/shared/lib/prisma";
 import { writeAuditLog } from "@/shared/lib/audit";
@@ -44,14 +50,21 @@ export async function loginAction(_prev: ActionFailure | undefined, formData: Fo
     return fail("AUTH_RATE_LIMITED");
   }
 
-  const nextPath = String(formData.get("next") ?? "/area");
-  const redirectTo = nextPath.startsWith("/") && !nextPath.startsWith("//") ? nextPath : "/area";
+  const redirectTo = safeInternalPath(String(formData.get("next") ?? "/area"));
+  const account = await prisma.user.findUnique({
+    where: { email: parsed.data.email.toLowerCase() },
+    select: { emailVerified: true, passwordHash: true, lifecycleStatus: true },
+  });
+  const destination =
+    account?.passwordHash && account.lifecycleStatus === "ACTIVE" && !account.emailVerified
+      ? emailVerificationPath(redirectTo)
+      : redirectTo;
 
   try {
     await signIn("credentials", {
       email: parsed.data.email.toLowerCase(),
       password: parsed.data.password,
-      redirectTo,
+      redirectTo: destination,
     });
     return {};
   } catch (error) {
@@ -178,40 +191,71 @@ export async function resetPasswordAction(
   redirect("/accedi");
 }
 
-export async function verifyEmailAction(
+export async function verifyEmailCodeAction(
   _prev: ActionFailure | undefined,
   formData: FormData,
-): Promise<ActionFailure | { done: true }> {
-  const token = String(formData.get("token") ?? "");
-  if (!isWellFormedInviteToken(token)) {
-    return fail("AUTH_EMAIL_TOKEN_INVALID");
+): Promise<ActionFailure | undefined> {
+  const session = await auth();
+  const destination = pathAfterEmailVerification(String(formData.get("next") ?? ""));
+  if (!session?.user?.id) {
+    redirect(`/accedi?next=${encodeURIComponent(emailVerificationPath(destination))}`);
   }
-  const consumed = await consumeEmailVerificationToken(token);
-  if (!consumed.ok) {
-    return fail("AUTH_EMAIL_TOKEN_INVALID");
+  if (!normalizeEmailVerifyCode(String(formData.get("code") ?? ""))) {
+    return fail("AUTH_EMAIL_CODE_INVALID");
   }
+
+  const rateKey = await clientKey(`email-verify:${session.user.id}`);
+  if (!(await consumeRateLimit(rateKey, RATE_LIMITS.emailVerify.limit, RATE_LIMITS.emailVerify.windowMs))) {
+    return fail("AUTH_RATE_LIMITED");
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { id: true, email: true, emailVerified: true },
+  });
+  if (!user) return fail("AUTH_ACCOUNT_MISSING");
+  if (user.emailVerified) redirect(destination);
+
+  const confirmed = await confirmEmailVerificationCode({
+    userId: user.id,
+    email: user.email,
+    code: String(formData.get("code") ?? ""),
+  });
+  if (!confirmed.ok) {
+    if (confirmed.reason === "expired") return fail("AUTH_EMAIL_CODE_EXPIRED");
+    if (confirmed.reason === "locked") return fail("AUTH_EMAIL_CODE_LOCKED");
+    return fail("AUTH_EMAIL_CODE_INVALID");
+  }
+
   await writeAuditLog({
-    actorUserId: consumed.userId,
+    actorUserId: confirmed.userId,
     action: "EMAIL_VERIFY",
     entityType: "User",
-    entityId: consumed.userId,
+    entityId: confirmed.userId,
   });
-  return { done: true as const };
+  redirect(destination);
 }
 
 export async function resendEmailVerificationAction(): Promise<ActionFailure | { sent: true }> {
   const session = await auth();
-  if (!session?.user?.id) redirect("/accedi");
+  if (!session?.user?.id) redirect("/accedi?next=/verifica-email");
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
     select: { id: true, email: true, emailVerified: true },
   });
   if (!user) return fail("AUTH_ACCOUNT_MISSING");
   if (user.emailVerified) return { sent: true };
-  const rateKey = await clientKey(`verify:${user.id}`);
-  if (!(await consumeRateLimit(rateKey, RATE_LIMITS.passwordReset.limit, RATE_LIMITS.passwordReset.windowMs))) {
-    return fail("RATE_LIMITED");
+  const rateKey = await clientKey(`email-verify-resend:${user.id}`);
+  if (
+    !(await consumeRateLimit(rateKey, RATE_LIMITS.emailVerifyResend.limit, RATE_LIMITS.emailVerifyResend.windowMs))
+  ) {
+    return fail("AUTH_RATE_LIMITED");
   }
-  await sendEmailVerification({ userId: user.id, email: user.email });
-  return { sent: true };
+  try {
+    const sent = await sendEmailVerification({ userId: user.id, email: user.email });
+    if (!sent.sent) return fail("AUTH_EMAIL_CODE_COOLDOWN");
+    return { sent: true };
+  } catch {
+    return fail("SYSTEM_UNEXPECTED");
+  }
 }

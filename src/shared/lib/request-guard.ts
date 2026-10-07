@@ -10,6 +10,8 @@ export const RATE_LIMITS = {
   upload: { limit: 20, windowMs: 60 * 60 * 1000 },
   consentWrite: { limit: 40, windowMs: 60 * 60 * 1000 },
   passwordReset: { limit: 5, windowMs: 15 * 60 * 1000 },
+  emailVerify: { limit: 8, windowMs: 15 * 60 * 1000 },
+  emailVerifyResend: { limit: 5, windowMs: 15 * 60 * 1000 },
   bulkInvite: { limit: 5, windowMs: 60 * 60 * 1000 },
   lifecycle: { limit: 20, windowMs: 60 * 60 * 1000 },
   emailSend: { limit: 30, windowMs: 60 * 60 * 1000 },

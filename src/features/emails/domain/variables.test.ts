@@ -32,4 +32,9 @@ describe("variabili template email", () => {
     expect(redactSecretVariables(body, { resetUrl })).toBe("Apri: [link omesso]");
     expect(redactSecretVariables(body, { resetUrl })).not.toContain("secret-token");
   });
+
+  it("omette il codice di verifica dallo snapshot persistito", () => {
+    const body = "Codice: 482913";
+    expect(redactSecretVariables(body, { codice: "482913" })).toBe("Codice: [codice omesso]");
+  });
 });

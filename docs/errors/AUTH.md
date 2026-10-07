@@ -11,6 +11,9 @@
 | AUTH_RESET_TOKEN_INVALID | AUTH | Token reset assente/scaduto/usato | Link monouso | Questo link non è valido o è già stato usato | Nuovo link | `resetPasswordAction` |
 | AUTH_ACCOUNT_CREATED_LOGIN_FAILED | AUTH | User creato ma signIn fallito | AuthError dopo redeem | Accedi dalla pagina di login | Accedi | redeem invito |
 | AUTH_EMAIL_NOT_VERIFIED | AUTH | emailVerified assente | Gate documenti/consensi/anagrafica/pagamento | Verifica l’email prima di continuare | Accedi / verifica | upload/consensi/profilo |
-| AUTH_EMAIL_TOKEN_INVALID | AUTH | Token verifica email assente, scaduto o già usato | Link monouso | Questo link di verifica non è valido o è già stato usato | Riprova | `verifyEmailAction` |
+| AUTH_EMAIL_CODE_INVALID | AUTH | Codice verifica assente o diverso | Cifre errate o nessun codice attivo | Il codice non è corretto | Correggi | `verifyEmailCodeAction` |
+| AUTH_EMAIL_CODE_EXPIRED | AUTH | Codice verifica scaduto | Oltre la validità | Il codice è scaduto. Richiedine uno nuovo | Riprova | `verifyEmailCodeAction` |
+| AUTH_EMAIL_CODE_LOCKED | AUTH | Tentativi del codice esauriti | Troppi inserimenti | Troppi tentativi. Richiedi un nuovo codice | Riprova | `verifyEmailCodeAction` |
+| AUTH_EMAIL_CODE_COOLDOWN | AUTH | Reinvio ancora in cooldown | Richiesta troppo ravvicinata | Attendi un momento prima di richiedere un nuovo codice | Attendi | `resendEmailVerificationAction` |
 
 Login su account `DELETED` / `ANONYMIZED`: stesso fail `AUTH_INVALID_CREDENTIALS` (anti-enumerazione). Non si rivela se l’email esiste o è chiusa. I codici `LIFECYCLE_ACCOUNT_*` sono per admin e catalogo, non per la pagina di accesso.

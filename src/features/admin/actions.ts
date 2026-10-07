@@ -27,6 +27,8 @@ import { dispatchOutboundEmail } from "@/features/emails/data/dispatch";
 import { writeAuditLog } from "@/shared/lib/audit";
 import { RATE_LIMITS, clientKey, consumeRateLimit, userAgentAndIp } from "@/shared/lib/request-guard";
 import { isWellFormedInviteToken } from "@/features/teams/domain/token";
+import { ensureEmailVerification } from "@/features/auth/data/emailVerification";
+import { emailVerificationPath } from "@/features/auth/domain/verify";
 import { fail, failValidation, type ActionFailure, type ActionState } from "@/shared/errors";
 import { anonymizeUserAccount, deleteUserAccount } from "@/features/admin/data/lifecycle";
 import { anonymizeAccountSchema, deleteAccountSchema } from "@/features/admin/schemas/lifecycle";
@@ -263,14 +265,16 @@ export async function redeemStaffInviteAction(
       entityType: "StaffInvite",
       entityId: found.invite.id,
     });
+    const status = await ensureEmailVerification({ userId: result.user.id, email: result.user.email });
+    const destination = status.verified ? "/squadra" : emailVerificationPath("/squadra");
     if (!session?.user?.id) {
       await signIn("credentials", {
         email: result.user.email,
         password: parsed.data.password,
-        redirectTo: "/squadra",
+        redirectTo: destination,
       });
     }
-    redirect("/squadra");
+    redirect(destination);
   } catch (error) {
     if (error instanceof AuthError) {
       return fail("STAFF_INVITE_LOGIN_FAILED");

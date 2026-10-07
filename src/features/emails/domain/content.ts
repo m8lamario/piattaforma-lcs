@@ -1,6 +1,6 @@
 import { it } from "@/shared/i18n/it";
 import { isEmailTemplateKey, type EmailTemplateKey } from "./catalog";
-import { detailsHtml, infoBoxHtml, paragraphsHtml } from "./html";
+import { detailsHtml, infoBoxHtml, paragraphsHtml, verificationCodeHtml } from "./html";
 import { wrapEmailLayout } from "./layout";
 import { interpolateTemplate } from "./variables";
 import type { EmailTone } from "./theme";
@@ -14,6 +14,7 @@ export type EmailVisualSpec = {
   details: { label: string; value: string }[];
   boxTitle?: string;
   boxBody?: string;
+  code?: string;
   ctaLabel?: string;
   ctaUrl?: string;
   tone: EmailTone;
@@ -68,9 +69,8 @@ const SPECS: Record<EmailTemplateKey, (ctx: SpecContext) => EmailVisualSpec> = {
     heading: subject,
     preheader: it.emailVerifyPreheader,
     intro: t(it.emailVerifyIntro, vars),
-    details: [detail(it.emailLabelExpiry, vars.scadenza)].filter(Boolean) as EmailVisualSpec["details"],
-    ctaLabel: it.emailCtaConfirmEmail,
-    ctaUrl: url(vars, "confirmUrl"),
+    details: [detail(it.emailLabelCodeExpiry, vars.scadenza)].filter(Boolean) as EmailVisualSpec["details"],
+    code: /^\d{6}$/.test(vars.codice ?? "") ? vars.codice : undefined,
     tone: "neutral",
   }),
   GUARDIAN_AUTHORIZE: ({ vars, subject }) => ({
@@ -272,9 +272,10 @@ export function buildEmailHtml(input: {
   const ctaUrl = spec.ctaUrl?.trim() || "";
   const intro = input.customized ? input.text : spec.intro;
   const skip = ctaUrl ? [ctaUrl] : [];
+  const codeHtml = !input.customized && spec.code ? verificationCodeHtml(spec.code, it.emailLabelVerifyCode) : "";
   const bodyHtml = input.customized
     ? paragraphsHtml(intro, skip)
-    : `${paragraphsHtml(intro, skip)}${detailsHtml(spec.details)}${infoBoxHtml(spec.boxTitle, spec.boxBody ?? "")}`;
+    : `${paragraphsHtml(intro, skip)}${codeHtml}${detailsHtml(spec.details)}${infoBoxHtml(spec.boxTitle, spec.boxBody ?? "")}`;
 
   return wrapEmailLayout({
     origin: input.origin,
