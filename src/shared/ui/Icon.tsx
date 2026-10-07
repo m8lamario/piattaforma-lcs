@@ -32,7 +32,11 @@ export type IconName =
   | "bell"
   | "externalLink"
   | "save"
-  | "settings";
+  | "settings"
+  | "trophy"
+  | "stopwatch"
+  | "fileCheck"
+  | "zap";
 
 const PATHS: Record<IconName, ReactNode> = {
   menu: (
@@ -228,6 +232,28 @@ const PATHS: Record<IconName, ReactNode> = {
     <>
       <circle cx="12" cy="12" r="3" />
       <path d="M12 4.5v2M12 17.5v2M4.5 12h2M17.5 12h2M6.4 6.4l1.4 1.4M16.2 16.2l1.4 1.4M17.6 6.4l-1.4 1.4M7.8 16.2l-1.4 1.4" />
+    </>
+  ),
+  trophy: (
+    <>
+      <path d="M8 21h8M12 17v4M7 4h10v4a5 5 0 0 1-10 0V4ZM7 6H4a2 2 0 0 0-2 2v1a4 4 0 0 0 4 4h1M17 6h3a2 2 0 0 1 2 2v1a4 4 0 0 1-4 4h-1" />
+    </>
+  ),
+  stopwatch: (
+    <>
+      <circle cx="12" cy="14" r="7" />
+      <path d="M12 11v3l2 2M10 3h4M12 3v4" />
+    </>
+  ),
+  fileCheck: (
+    <>
+      <path d="M14.5 3.5H6a1.5 1.5 0 0 0-1.5 1.5v14A1.5 1.5 0 0 0 6 20.5h12a1.5 1.5 0 0 0 1.5-1.5V8.5L14.5 3.5Z" />
+      <path d="M14 3.5V9h5.5M9.5 14.5l2 2 3.5-3.5" />
+    </>
+  ),
+  zap: (
+    <>
+      <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
     </>
   ),
 };

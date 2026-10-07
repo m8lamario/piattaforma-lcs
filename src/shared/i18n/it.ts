@@ -426,6 +426,94 @@ export const it = {
   schoolAccessTitle: "Richiedi accesso alla tua scuola",
   schoolAccessLead:
     "Compila i dati. Verificheremo la richiesta e ti scriveremo all’email indicata se viene approvata.",
+
+  // School Tournament Landing
+  schoolLandingKicker: "Istituti & Rappresentanti",
+  schoolLandingTitleMain: "Il torneo",
+  schoolLandingTitleScript: "delle",
+  schoolLandingTitleSuffix: "Scuole",
+  schoolLandingTagline: "Il campionato studentesco ufficiale tra istituti superiori.",
+  schoolLandingLead:
+    "Porta i colori del tuo istituto in campo. Registra la tua scuola o candidati come rappresentante: riceverai l’accesso per formare la squadra e invitare i tuoi compagni con un unico link.",
+  schoolLandingCtaForm: "Invia richiesta istituto",
+  schoolLandingCtaHow: "Come funziona",
+  schoolLandingBadge: "Candidatura ufficiale 2026",
+  schoolLandingBackHome: "Torna alla home",
+  schoolLandingAlreadyAccount: "Hai già un account rappresentante?",
+  schoolLandingLoginLink: "Accedi qui",
+
+  // Tournament in brief (Highlights)
+  schoolLandingOverviewKicker: "Il campionato",
+  schoolLandingOverviewTitle: "La competizione che accende le scuole",
+  schoolLandingOverview1Title: "Derby tra istituti",
+  schoolLandingOverview1Copy:
+    "Il torneo studentesco ufficiale che mette a confronto le scuole superiori della tua città per decretare i campioni dell’anno scolastico.",
+  schoolLandingOverview2Title: "Arbitri e classifiche ufficiali",
+  schoolLandingOverview2Copy:
+    "Direzione di gara qualificata, fase a gironi, tabellone a eliminazione diretta e statistiche aggiornate turno dopo turno.",
+  schoolLandingOverview3Title: "Tifo, highlights e media",
+  schoolLandingOverview3Copy:
+    "Fotografi a bordo campo, riprese video delle gare, interviste e la carica dei compagni di classe sugli spalti.",
+  schoolLandingOverview4Title: "Zero scartoffie cartacee",
+  schoolLandingOverview4Copy:
+    "Certificati medici agonistici, liberatorie foto e autorizzazioni per i minorenni si gestiscono interamente online.",
+
+  // How it works (Steps)
+  schoolLandingStepsKicker: "Come partecipare",
+  schoolLandingStepsTitle: "Dalla richiesta al fischio d’inizio in 4 passi",
+  schoolLandingStep1Num: "01",
+  schoolLandingStep1Title: "Invia la candidatura",
+  schoolLandingStep1Copy:
+    "Compila il modulo in basso con i dati della scuola, la tua città e il referente (studente o docente). Riceveremo subito la notifica.",
+  schoolLandingStep2Num: "02",
+  schoolLandingStep2Title: "Verifica e attivazione",
+  schoolLandingStep2Copy:
+    "Lo staff approva la scuola e ti invia via email il link personale per attivare il tuo account rappresentante e impostare la password.",
+  schoolLandingStep3Num: "03",
+  schoolLandingStep3Title: "Condividi 1 solo link",
+  schoolLandingStep3Copy:
+    "Dalla tua console trovi l’unico link di squadra da girare ai compagni su WhatsApp o via email. Ognuno compila i propri dati da sé.",
+  schoolLandingStep4Num: "04",
+  schoolLandingStep4Title: "Monitora la rosa e gioca",
+  schoolLandingStep4Copy:
+    "Vedi in tempo reale chi è in regola con documenti e consensi dei genitori. Quando il roster è al completo, siete pronti per scendere in campo!",
+
+  // Why join (Benefits)
+  schoolLandingBenefitsKicker: "Perché candidarsi",
+  schoolLandingBenefitsTitle: "La piattaforma pensata per chi organizza",
+  schoolLandingBenefitRepsTitle: "Per rappresentanti e capitani",
+  schoolLandingBenefitRepsCopy:
+    "Nessun caos di fogli volanti o documenti persi. Dalla dashboard vedi chi manca all’appello e condividi il link di squadra con un clic.",
+  schoolLandingBenefitSchoolTitle: "Per docenti e presidenza",
+  schoolLandingBenefitSchoolCopy:
+    "Massima tutela della privacy con archiviazione protetta a norma GDPR, flusso verificato per i minorenni e revisione sanitaria separata.",
+  schoolLandingBenefitPlayersTitle: "Per giocatori e famiglie",
+  schoolLandingBenefitPlayersCopy:
+    "Percorso guidato chiaro su smartphone, autorizzazione dei genitori tramite link dedicato e assistenza costante da parte dello staff.",
+
+  // Form Section
+  schoolLandingFormKicker: "Modulo di candidatura",
+  schoolLandingFormTitle: "Registra la tua scuola o il rappresentante",
+  schoolLandingFormLead:
+    "Inserisci i dati dell’istituto e del referente. Seleziona la competizione e invia la richiesta all’organizzazione.",
+  schoolLandingFormNote:
+    "La richiesta non comporta impegni immediati ed è soggetta ad approvazione da parte dello staff ESL/LCS. Riceverai un’email di riscontro all’indirizzo indicato.",
+
+  // FAQ
+  schoolLandingFaqKicker: "Domande frequenti",
+  schoolLandingFaqTitle: "Tutto quello che c’è da sapere",
+  schoolLandingFaq1Q: "Chi può inviare la richiesta di accesso?",
+  schoolLandingFaq1A:
+    "Può inviarla un rappresentante d’istituto, un rappresentante di classe/squadra o un docente referente per le attività sportive dell’istituto.",
+  schoolLandingFaq2Q: "Cosa succede dopo aver inviato il modulo?",
+  schoolLandingFaq2A:
+    "Lo staff organizzativo verifica la disponibilità dei posti per l’edizione selezionata. Appena approvata, il referente riceve via email il link personale per attivare il proprio account.",
+  schoolLandingFaq3Q: "Come fanno i compagni di scuola a iscriversi?",
+  schoolLandingFaq3A:
+    "Il rappresentante riceve un unico link di invito da condividere nel gruppo classe o squadra. Ogni studente apre il link, inserisce la propria email e completa la registrazione autonoma.",
+  schoolLandingFaq4Q: "Cosa serve per i giocatori minorenni?",
+  schoolLandingFaq4A:
+    "I minorenni indicano i dati del genitore/tutore, che riceve un link dedicato via email per confermare l’autorizzazione e le liberatorie con piena validità.",
   schoolAccessSchoolName: "Nome della scuola",
   schoolAccessCity: "Città",
   schoolAccessRole: "Il tuo ruolo",

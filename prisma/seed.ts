@@ -1,5 +1,4 @@
 import "dotenv/config";
-import { randomBytes } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { PrismaClient } from "../generated/client";
@@ -13,6 +12,24 @@ if (!connectionString) {
 }
 
 const prisma = new PrismaClient({ adapter: new PrismaPg({ connectionString }) });
+
+const EDITION_REQUIREMENTS = [
+  { code: "PERSONAL_DATA" as const, required: true, appliesTo: "ALL" as const },
+  { code: "GUARDIAN_IF_MINOR" as const, required: true, appliesTo: "MINOR" as const },
+  { code: "MEDICAL_CERT" as const, required: true, appliesTo: "ALL" as const },
+  { code: "PRIVACY" as const, required: true, appliesTo: "ALL" as const },
+  { code: "MEDIA_RELEASE" as const, required: true, appliesTo: "ALL" as const },
+  { code: "PAYMENT" as const, required: true, appliesTo: "ALL" as const },
+];
+
+const CUPS = [
+  { name: "Leonessa Cup", slug: "leonessa-cup" },
+  { name: "Ferrea Cup", slug: "ferrea-cup" },
+  { name: "Mole Cup", slug: "mole-cup" },
+  { name: "Colosseo Cup", slug: "colosseo-cup" },
+  { name: "Turas Cup", slug: "turas-cup" },
+  { name: "Olympius Cup", slug: "olympius-cup" },
+];
 
 async function upsertUser(email: string, password: string, name: string) {
   const passwordHash = await hashPassword(password);
@@ -35,34 +52,32 @@ async function ensureRole(userId: string, role: "SUPER_ADMIN" | "ORGANIZATION_AD
   }
 }
 
-async function main() {
-  const superAdmin = await upsertUser(
-    "super@gmail.com",
-    "CiaoCiao",
-    "Super Admin",
-  );
-  const orgAdmin = await upsertUser(
-    "org@gmail.com",
-    "CiaoCiao",
-    "Organization Admin",
-  );
-  const rep = await upsertUser(
-    "rep@gmail.com",
-    "CiaoCiao",
-    "Rappresentante Demo",
-  );
-
-  await ensureRole(superAdmin.id, "SUPER_ADMIN");
-  await ensureRole(orgAdmin.id, "ORGANIZATION_ADMIN");
-
-  const competition = await prisma.competition.upsert({
+async function removeEslDemoCup() {
+  const competition = await prisma.competition.findUnique({
     where: { slug: "esl-demo" },
-    update: {},
-    create: {
-      name: "ESL Demo Cup",
-      slug: "esl-demo",
-      description: "Edizione di sviluppo. Non è una coppa ufficiale.",
-    },
+    include: { editions: true },
+  });
+  if (!competition) {
+    return;
+  }
+
+  const editionIds = competition.editions.map((edition) => edition.id);
+
+  await prisma.payment.deleteMany({ where: { editionId: { in: editionIds } } });
+  await prisma.registration.deleteMany({ where: { editionId: { in: editionIds } } });
+  await prisma.schoolRegistrationRequest.deleteMany({ where: { editionId: { in: editionIds } } });
+  await prisma.team.deleteMany({ where: { editionId: { in: editionIds } } });
+  await prisma.edition.deleteMany({ where: { competitionId: competition.id } });
+  await prisma.competition.delete({ where: { id: competition.id } });
+
+  await prisma.school.deleteMany({ where: { id: "seed-school-demo" } });
+}
+
+async function ensureEmptyCup(name: string, slug: string) {
+  const competition = await prisma.competition.upsert({
+    where: { slug },
+    update: { name },
+    create: { name, slug },
   });
 
   const edition = await prisma.edition.upsert({
@@ -85,6 +100,44 @@ async function main() {
     },
   });
 
+  await prisma.editionRequirement.createMany({
+    data: EDITION_REQUIREMENTS.map((requirement) => ({
+      editionId: edition.id,
+      ...requirement,
+    })),
+    skipDuplicates: true,
+  });
+
+  return competition;
+}
+
+async function main() {
+  const superAdmin = await upsertUser(
+    "it@estudentsleague.it",
+    "CiaoCiao",
+    "Super Admin",
+  );
+  const orgAdmin = await upsertUser(
+    "amministrazione@estudentsleague.it",
+    "CiaoCiao",
+    "Organization Admin",
+  );
+  const rep = await upsertUser(
+    "rep@gmail.com",
+    "CiaoCiao",
+    "Rappresentante Demo",
+  );
+
+  await ensureRole(superAdmin.id, "SUPER_ADMIN");
+  await ensureRole(orgAdmin.id, "ORGANIZATION_ADMIN");
+
+  await removeEslDemoCup();
+
+  const cups = [];
+  for (const cup of CUPS) {
+    cups.push(await ensureEmptyCup(cup.name, cup.slug));
+  }
+
   await prisma.documentType.upsert({
     where: { code: "MEDICAL_CERTIFICATE" },
     update: {},
@@ -95,58 +148,6 @@ async function main() {
       maxSizeBytes: 10_485_760,
       requiresExpiry: false,
     },
-  });
-
-  await prisma.editionRequirement.createMany({
-    data: [
-      { editionId: edition.id, code: "PERSONAL_DATA", required: true, appliesTo: "ALL" },
-      { editionId: edition.id, code: "GUARDIAN_IF_MINOR", required: true, appliesTo: "MINOR" },
-      { editionId: edition.id, code: "MEDICAL_CERT", required: true, appliesTo: "ALL" },
-      { editionId: edition.id, code: "PRIVACY", required: true, appliesTo: "ALL" },
-      { editionId: edition.id, code: "MEDIA_RELEASE", required: true, appliesTo: "ALL" },
-      { editionId: edition.id, code: "PAYMENT", required: true, appliesTo: "ALL" },
-    ],
-    skipDuplicates: true,
-  });
-
-  const school = await prisma.school.upsert({
-    where: { id: "seed-school-demo" },
-    update: {},
-    create: {
-      id: "seed-school-demo",
-      name: "Liceo Demo",
-      city: "Italia",
-    },
-  });
-
-  const team = await prisma.team.upsert({
-    where: { inviteCode: "DEMO-TEAM" },
-    update: { representativeUserId: rep.id },
-    create: {
-      editionId: edition.id,
-      schoolId: school.id,
-      name: "Liceo Demo",
-      inviteCode: "DEMO-TEAM",
-      registrationToken: randomBytes(32).toString("base64url"),
-      contactName: "Rappresentante Demo",
-      contactEmail: rep.email,
-      representativeUserId: rep.id,
-    },
-  });
-
-  const repRole = await prisma.userRole.findFirst({
-    where: { userId: rep.id, role: "TEAM_REPRESENTATIVE", teamId: team.id },
-  });
-  if (!repRole) {
-    await prisma.userRole.create({
-      data: { userId: rep.id, role: "TEAM_REPRESENTATIVE", teamId: team.id },
-    });
-  }
-
-  await prisma.teamMembership.upsert({
-    where: { teamId_userId: { teamId: team.id, userId: rep.id } },
-    update: { role: "REPRESENTATIVE" },
-    create: { teamId: team.id, userId: rep.id, role: "REPRESENTATIVE" },
   });
 
   for (const item of LEGAL_CATALOG) {
@@ -178,8 +179,10 @@ async function main() {
   }
 
   console.info("Seed completato.");
-  console.info("Rep:", rep.email);
-  console.info("Team:", team.name);
+  console.info("Super Admin:", superAdmin.email);
+  console.info("Organization Admin:", orgAdmin.email);
+  console.info("Rappresentante (senza squadra):", rep.email);
+  console.info("Coppe:", cups.map((cup) => cup.name).join(", "));
 }
 
 main()
