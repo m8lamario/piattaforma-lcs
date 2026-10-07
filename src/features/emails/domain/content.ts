@@ -71,6 +71,8 @@ const SPECS: Record<EmailTemplateKey, (ctx: SpecContext) => EmailVisualSpec> = {
     intro: t(it.emailVerifyIntro, vars),
     details: [detail(it.emailLabelCodeExpiry, vars.scadenza)].filter(Boolean) as EmailVisualSpec["details"],
     code: /^\d{6}$/.test(vars.codice ?? "") ? vars.codice : undefined,
+    ctaLabel: it.emailCtaEnterCode,
+    ctaUrl: url(vars, "areaUrl"),
     tone: "neutral",
   }),
   GUARDIAN_AUTHORIZE: ({ vars, subject }) => ({
