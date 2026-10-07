@@ -7,6 +7,7 @@ import { HERO_PHOTO_INTERVAL_MS, HERO_PHOTOS } from "@/features/auth/ui/heroPhot
 import { SchoolAccessForm } from "@/features/school-access/ui/SchoolAccessForm";
 import { it } from "@/shared/i18n/it";
 import { ButtonLink } from "@/shared/ui/Button";
+import { Icon, type IconName } from "@/shared/ui/Icon";
 import styles from "./SchoolLanding.module.css";
 
 type EditionOption = { id: string; label: string };
@@ -71,28 +72,32 @@ function SchoolHeroStage() {
 export function SchoolLanding({ editions }: Props) {
   const reduceMotion = useReducedMotion();
 
-  const OVERVIEW_CARDS = [
+  const OVERVIEW_CARDS: {
+    icon: IconName;
+    title: string;
+    copy: string;
+  }[] = [
     {
-      icon: "🏆",
+      icon: "trophy",
       title: it.schoolLandingOverview1Title,
       copy: it.schoolLandingOverview1Copy,
     },
     {
-      icon: "⏱️",
+      icon: "stopwatch",
       title: it.schoolLandingOverview2Title,
       copy: it.schoolLandingOverview2Copy,
     },
     {
-      icon: "📸",
+      icon: "camera",
       title: it.schoolLandingOverview3Title,
       copy: it.schoolLandingOverview3Copy,
     },
     {
-      icon: "⚡",
+      icon: "fileCheck",
       title: it.schoolLandingOverview4Title,
       copy: it.schoolLandingOverview4Copy,
     },
-  ] as const;
+  ];
 
   const STEPS = [
     {
@@ -199,7 +204,7 @@ export function SchoolLanding({ editions }: Props) {
                 <article key={card.title} className={styles.overviewCard}>
                   <div className={styles.overviewCardHeader}>
                     <span className={styles.overviewCardIcon} aria-hidden="true">
-                      {card.icon}
+                      <Icon name={card.icon} size={20} />
                     </span>
                     <h3>{card.title}</h3>
                   </div>
@@ -281,7 +286,8 @@ export function SchoolLanding({ editions }: Props) {
                 </Link>
               </div>
               <Link href="/" className={styles.backHomeLink}>
-                ← {it.schoolLandingBackHome}
+                <Icon name="back" size={16} />
+                <span>{it.schoolLandingBackHome}</span>
               </Link>
             </div>
           </div>
