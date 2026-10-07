@@ -1,0 +1,110 @@
+.canvas {
+  width: 100%;
+  max-width: var(--content-max-canvas);
+  display: grid;
+  gap: var(--space-6);
+  align-self: start;
+}
+
+.section {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.section h2 {
+  margin: 0;
+  font-size: var(--text-kicker);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+}
+
+.lead {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  line-height: 1.5;
+}
+
+.progress {
+  margin: 0;
+  font-weight: 650;
+}
+
+.breakdown {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+.actions {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+}
+
+.actions a,
+.note {
+  display: grid;
+  gap: 2px;
+  min-height: var(--control-min);
+  padding: var(--space-4) var(--space-2);
+  border-bottom: 1px solid var(--color-hairline);
+  text-decoration: none;
+  color: inherit;
+}
+
+.actions a:hover {
+  background: var(--color-surface-raised);
+}
+
+.actions a:first-child,
+.note:first-child {
+  border-top: 1px solid var(--color-hairline);
+}
+
+.ok {
+  color: var(--color-text-muted);
+}
+
+.personalMeta {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+.personalChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.personalActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.unreadList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+}
+
+.unreadList a {
+  display: grid;
+  gap: var(--space-1);
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--color-hairline);
+  text-decoration: none;
+  color: inherit;
+}
+
+.unreadList p {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}

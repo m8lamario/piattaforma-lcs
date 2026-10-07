@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { toRosterRow, toTeammateRow, summarizeRoster } from "./roster";
+import { filterRoster, parseRosterFilter, rosterBucket, summarizeRoster, toRosterRow, toTeammateRow } from "./roster";
 
 describe("team roster projection", () => {
   it("espone solo nome, stato iscrizione e stato certificato", () => {
@@ -55,6 +55,30 @@ describe("team roster projection", () => {
       ok: 1,
       withdrawn: 1,
     });
+  });
+
+  it("filtra la rosa sugli stessi bucket dei conteggi", () => {
+    const rows = [
+      toRosterRow({ registrationId: "1", firstName: "A", lastName: "A", registrationStatus: "APPROVED" }),
+      toRosterRow({
+        registrationId: "2",
+        firstName: "B",
+        lastName: "B",
+        registrationStatus: "ACCOUNT_CREATED",
+      }),
+      toRosterRow({
+        registrationId: "3",
+        firstName: "C",
+        lastName: "C",
+        registrationStatus: "CHANGES_REQUESTED",
+        medicalStatus: "REJECTED",
+      }),
+    ];
+    expect(rosterBucket(rows[1]!)).toBe("invited");
+    expect(filterRoster(rows, "ok")).toHaveLength(1);
+    expect(filterRoster(rows, "open").map((row) => row.registrationId)).toEqual(["2", "3"]);
+    expect(parseRosterFilter("attention")).toBe("attention");
+    expect(parseRosterFilter("nope")).toBeNull();
   });
 
   it("nella vista compagni non espone stato medico", () => {

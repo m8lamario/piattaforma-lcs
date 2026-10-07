@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { Suspense, type ReactNode } from "react";
 import { it } from "@/shared/i18n/it";
 import { AppNav } from "./AppNav";
 import { BrandMark } from "./BrandMark";
@@ -9,6 +9,8 @@ type Props = {
   showTeam?: boolean;
   showAdmin?: boolean;
   showPlayerTeam?: boolean;
+  showConsents?: boolean;
+  showSchool?: boolean;
   unreadCount?: number;
   withdrawRegistrationId?: string | null;
   children: ReactNode;
@@ -19,6 +21,8 @@ export function AppShell({
   showTeam,
   showAdmin,
   showPlayerTeam,
+  showConsents,
+  showSchool,
   unreadCount,
   withdrawRegistrationId,
   children,
@@ -30,14 +34,18 @@ export function AppShell({
       </a>
       <header className={styles.header}>
         <BrandMark href="/area" compact />
-        <AppNav
-          email={email}
-          showTeam={showTeam}
-          showAdmin={showAdmin}
-          showPlayerTeam={showPlayerTeam}
-          unreadCount={unreadCount}
-          withdrawRegistrationId={withdrawRegistrationId}
-        />
+        <Suspense>
+          <AppNav
+            email={email}
+            showTeam={showTeam}
+            showAdmin={showAdmin}
+            showPlayerTeam={showPlayerTeam}
+            showConsents={showConsents}
+            showSchool={showSchool}
+            unreadCount={unreadCount}
+            withdrawRegistrationId={withdrawRegistrationId}
+          />
+        </Suspense>
       </header>
       <div id="contenuto" className={styles.content} tabIndex={-1}>
         {children}

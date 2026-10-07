@@ -3,7 +3,7 @@ import { it } from "@/shared/i18n/it";
 import styles from "./TeamRoster.module.css";
 
 type Props = {
-  current: "dashboard" | "invites";
+  current: "dashboard" | "status" | "invites" | "school";
 };
 
 export function TeamSubnav({ current }: Props) {
@@ -11,6 +11,9 @@ export function TeamSubnav({ current }: Props) {
     <nav className={styles.subnav} aria-label={it.navTeam}>
       <Link href="/squadra" aria-current={current === "dashboard" ? "page" : undefined}>
         {it.rosterTitle}
+      </Link>
+      <Link href="/squadra?stato=open" aria-current={current === "status" ? "page" : undefined}>
+        {it.navRosterStatus}
       </Link>
       <Link href="/squadra/inviti" aria-current={current === "invites" ? "page" : undefined}>
         {it.invitesNav}

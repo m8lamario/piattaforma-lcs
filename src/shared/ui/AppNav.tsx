@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { logoutAction } from "@/features/auth/actions";
 import { WithdrawForm } from "@/features/registrations/ui/WithdrawForm";
 import { it } from "@/shared/i18n/it";
@@ -10,16 +10,31 @@ import { Button } from "./Button";
 import { Icon, type IconName } from "./Icon";
 import styles from "./AppShell.module.css";
 
+type NavItem = {
+  href: string;
+  label: string;
+  icon: IconName;
+  badge?: number;
+  children?: { href: string; label: string }[];
+};
+
 type Props = {
   email?: string | null;
   showTeam?: boolean;
   showAdmin?: boolean;
   showPlayerTeam?: boolean;
+  showConsents?: boolean;
+  showSchool?: boolean;
   unreadCount?: number;
   withdrawRegistrationId?: string | null;
 };
 
-function isActive(href: string, pathname: string) {
+function pathAndQuery(href: string) {
+  const [path, query] = href.split("?");
+  return { path: path ?? href, query: query ?? "" };
+}
+
+function isActive(href: string, pathname: string, search: string) {
   if (href === "/area") {
     return (
       pathname === "/area" ||
@@ -28,7 +43,25 @@ function isActive(href: string, pathname: string) {
       pathname.startsWith("/area/pagamento")
     );
   }
+  const { path, query } = pathAndQuery(href);
+  if (path === "/squadra" && query.startsWith("stato=")) {
+    return pathname === "/squadra" && search === `?${query}`;
+  }
+  if (href === "/squadra") {
+    if (pathname !== "/squadra") return false;
+    return !search.startsWith("?stato=open");
+  }
+  if (href === "/squadra/scuola") {
+    return pathname === "/squadra/scuola" || pathname.startsWith("/squadra/scuola/");
+  }
   return pathname === href || pathname.startsWith(`${href}/`);
+}
+
+function isGroupActive(item: NavItem, pathname: string) {
+  if (item.href === "/squadra") {
+    return pathname === "/squadra" || pathname.startsWith("/squadra/inviti");
+  }
+  return isActive(item.href, pathname, "");
 }
 
 export function AppNav({
@@ -36,10 +69,14 @@ export function AppNav({
   showTeam,
   showAdmin,
   showPlayerTeam,
+  showConsents = false,
+  showSchool,
   unreadCount = 0,
   withdrawRegistrationId = null,
 }: Props) {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const search = searchParams.toString() ? `?${searchParams.toString()}` : "";
   const [open, setOpen] = useState(false);
   const [openForPath, setOpenForPath] = useState(pathname);
   if (openForPath !== pathname) {
@@ -55,13 +92,28 @@ export function AppNav({
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
-  const links: { href: string; label: string; icon: IconName; badge?: number }[] = [
-    { href: "/area", label: it.navArea, icon: "area" },
-    { href: "/area/consensi", label: it.navConsents, icon: "privacy" },
-    ...(showTeam ? [{ href: "/squadra", label: it.navTeam, icon: "team" as const }] : []),
+  const links: NavItem[] = [
+    { href: "/area", label: showTeam ? it.navOverview : it.navArea, icon: "area" },
+    ...(showConsents && !showTeam ? [{ href: "/area/consensi", label: it.navConsents, icon: "privacy" as const }] : []),
+    ...(showTeam
+      ? [
+          {
+            href: "/squadra",
+            label: it.navTeam,
+            icon: "team" as const,
+            children: [
+              { href: "/squadra", label: it.rosterTitle },
+              { href: "/squadra?stato=open", label: it.navRosterStatus },
+              { href: "/squadra/inviti", label: it.invitesNav },
+            ],
+          },
+        ]
+      : []),
     ...(showPlayerTeam ? [{ href: "/area/squadra", label: it.navPlayerTeam, icon: "users" as const }] : []),
     ...(showAdmin ? [{ href: "/admin", label: it.navAdmin, icon: "org" as const }] : []),
     { href: "/area/comunicazioni", label: it.navCommunications, icon: "inbox", badge: unreadCount },
+    ...(showSchool ? [{ href: "/squadra/scuola", label: it.navSchool, icon: "org" as const }] : []),
+    ...(showConsents && showTeam ? [{ href: "/area/consensi", label: it.navConsents, icon: "privacy" as const }] : []),
     { href: "/area/account", label: it.navAccount, icon: "user" },
   ];
 
@@ -82,21 +134,39 @@ export function AppNav({
       <div className={`${styles.drawer} ${open ? styles.drawerOpen : ""}`}>
         <nav id="app-nav" className={styles.nav} aria-label="Principale">
           {links.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className={isActive(link.href, pathname) ? styles.navActive : undefined}
-              aria-current={isActive(link.href, pathname) ? "page" : undefined}
-              onClick={() => setOpen(false)}
-            >
-              <Icon name={link.icon} size={18} />
-              {link.label}
-              {link.badge ? (
-                <span className={styles.badge} aria-label={`${it.unreadBadge}: ${link.badge}`}>
-                  {link.badge}
-                </span>
-              ) : null}
-            </Link>
+            <div key={link.href + link.label} className={link.children ? styles.navGroup : undefined}>
+              <Link
+                href={link.href}
+                className={
+                  (link.children ? isGroupActive(link, pathname) : isActive(link.href, pathname, search))
+                    ? styles.navActive
+                    : undefined
+                }
+                aria-current={
+                  !link.children && isActive(link.href, pathname, search) ? "page" : undefined
+                }
+                onClick={() => setOpen(false)}
+              >
+                <Icon name={link.icon} size={18} />
+                {link.label}
+                {link.badge ? (
+                  <span className={styles.badge} aria-label={`${it.unreadBadge}: ${link.badge}`}>
+                    {link.badge}
+                  </span>
+                ) : null}
+              </Link>
+              {link.children?.map((child) => (
+                <Link
+                  key={child.href}
+                  href={child.href}
+                  className={`${styles.navChild} ${isActive(child.href, pathname, search) ? styles.navActive : ""}`}
+                  aria-current={isActive(child.href, pathname, search) ? "page" : undefined}
+                  onClick={() => setOpen(false)}
+                >
+                  {child.label}
+                </Link>
+              ))}
+            </div>
           ))}
         </nav>
         <div className={styles.session}>

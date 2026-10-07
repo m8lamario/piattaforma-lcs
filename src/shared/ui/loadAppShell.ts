@@ -2,6 +2,7 @@ import { getActorByUserId, isStaff, isMedicalReviewer, representativeTeamIds } f
 import { countUnreadNotifications } from "@/features/notifications/data/notifications";
 import { isTerminalRegistrationStatus } from "@/features/registrations/domain/requirements";
 import { prisma } from "@/shared/lib/prisma";
+import { shellNavFlags } from "./shellNav";
 
 export async function loadAppShell(userId: string) {
   const [actor, unreadCount, profile] = await Promise.all([
@@ -21,12 +22,16 @@ export async function loadAppShell(userId: string) {
   const registration = profile?.registrations[0];
   const withdrawRegistrationId =
     registration && !isTerminalRegistrationStatus(registration.status) ? registration.id : null;
+  const flags = shellNavFlags({
+    isRepresentative: actor ? representativeTeamIds(actor).length > 0 : false,
+    isStaffOrReviewer: actor ? isStaff(actor) || isMedicalReviewer(actor) : false,
+    hasMembership: Boolean(actor && actor.membershipTeamIds.length > 0),
+    hasPlayerRegistration: Boolean(registration),
+  });
 
   return {
     actor,
-    showTeam: actor ? representativeTeamIds(actor).length > 0 : false,
-    showAdmin: actor ? isStaff(actor) || isMedicalReviewer(actor) : false,
-    showPlayerTeam: Boolean(actor && actor.membershipTeamIds.length > 0),
+    ...flags,
     unreadCount,
     withdrawRegistrationId,
   };

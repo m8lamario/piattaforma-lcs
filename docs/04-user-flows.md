@@ -60,6 +60,10 @@ Regole:
 - Se l’email ha già un account, il redeem collega membership/registration senza creare un secondo user.
 - `PlayerInvite` per singolo giocatore non è più il percorso di ingresso. `StaffInvite` resta personale per una squadra già creata. Il primo rappresentante di una scuola nuova usa `SchoolRegistrationRequest`.
 
+## 2b. Console del rappresentante
+
+All’accesso `/area` è la panoramica operativa, non un’area giocatore vuota. Mostra scuola, competizione, conteggi rosa cliccabili, copia del link `/iscrizione/{token}`, azioni richieste (incompleta, attenzione, non pubblicabili, comunicazioni non lette) e, solo se esiste una `Registration` dell’utente, lo stato della propria iscrizione. La rosa resta in `/squadra` con gli stessi bucket; i filtri `?stato=` non ricalcolano gli stati.
+
 ## 3. Percorso giocatore (post-M0)
 
 Passi guidati, uno schermo alla volta, salvataggio per passo. L’account si crea dal link di squadra; l’email va verificata **prima** di anagrafica, consensi, upload e pagamento.

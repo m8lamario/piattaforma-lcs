@@ -23,6 +23,66 @@ export type RosterCounts = {
   withdrawn: number;
 };
 
+export const ROSTER_FILTERS = [
+  "open",
+  "invited",
+  "inProgress",
+  "attention",
+  "ok",
+  "withdrawn",
+  "publication",
+] as const;
+
+export type RosterFilter = (typeof ROSTER_FILTERS)[number];
+export type RosterBucket = Exclude<RosterFilter, "open" | "publication">;
+
+export function rosterBucket(row: Pick<RosterRow, "registrationStatus" | "medicalStatus">): RosterBucket {
+  if (row.registrationStatus === "WITHDRAWN") return "withdrawn";
+  if (row.registrationStatus === "APPROVED") return "ok";
+  if (
+    row.registrationStatus === "CHANGES_REQUESTED" ||
+    row.medicalStatus === "rejected" ||
+    row.medicalStatus === "expired"
+  ) {
+    return "attention";
+  }
+  if (row.registrationStatus === "INVITED" || row.registrationStatus === "ACCOUNT_CREATED") return "invited";
+  return "inProgress";
+}
+
+export function parseRosterFilter(value: string | undefined | null): RosterFilter | null {
+  if (!value) return null;
+  return (ROSTER_FILTERS as readonly string[]).includes(value) ? (value as RosterFilter) : null;
+}
+
+export function rosterFilterHref(filter: RosterFilter | null): string {
+  return filter ? `/squadra?stato=${filter}` : "/squadra";
+}
+
+export function matchesRosterFilter(
+  row: Pick<RosterRow, "registrationStatus" | "medicalStatus" | "publication">,
+  filter: RosterFilter | null,
+): boolean {
+  if (!filter) return true;
+  if (filter === "publication") return Boolean(row.publication && row.publication.status !== "publishable");
+  if (filter === "open") {
+    const bucket = rosterBucket(row);
+    return bucket === "invited" || bucket === "inProgress" || bucket === "attention";
+  }
+  return rosterBucket(row) === filter;
+}
+
+export function filterRoster<T extends Pick<RosterRow, "registrationStatus" | "medicalStatus" | "publication">>(
+  rows: T[],
+  filter: RosterFilter | null,
+): T[] {
+  return rows.filter((row) => matchesRosterFilter(row, filter));
+}
+
+export function unpublishedCount(rows: Pick<RosterRow, "publication">[]): number {
+  return rows.filter((row) => row.publication && row.publication.status !== "publishable").length;
+}
+
 export function toRosterRow(input: {
   registrationId: string;
   userId?: string;
@@ -95,27 +155,7 @@ export function summarizeRoster(rows: Pick<RosterRow, "registrationStatus" | "me
     withdrawn: 0,
   };
   for (const row of rows) {
-    if (row.registrationStatus === "WITHDRAWN") {
-      counts.withdrawn += 1;
-      continue;
-    }
-    if (row.registrationStatus === "APPROVED") {
-      counts.ok += 1;
-      continue;
-    }
-    if (
-      row.registrationStatus === "CHANGES_REQUESTED" ||
-      row.medicalStatus === "rejected" ||
-      row.medicalStatus === "expired"
-    ) {
-      counts.attention += 1;
-      continue;
-    }
-    if (row.registrationStatus === "INVITED" || row.registrationStatus === "ACCOUNT_CREATED") {
-      counts.invited += 1;
-      continue;
-    }
-    counts.inProgress += 1;
+    counts[rosterBucket(row)] += 1;
   }
   return counts;
 }

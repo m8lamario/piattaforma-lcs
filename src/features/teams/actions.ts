@@ -531,6 +531,8 @@ export async function selectTeamAction(formData: FormData) {
   jar.set(TEAM_COOKIE, teamId, teamCookieOptions(shouldUseSecureCookie(headerList.get("x-forwarded-proto"))));
   revalidatePath("/squadra");
   revalidatePath("/squadra/inviti");
+  revalidatePath("/squadra/scuola");
+  revalidatePath("/area");
 }
 
 export async function resendInviteAction(

@@ -16,6 +16,7 @@ export default async function PlayerTeamPage() {
     loadAppShell(session.user.id),
     loadPlayerWorkspace(session.user.id),
   ]);
+  if (shell.showTeam) redirect("/squadra");
   const teamId = workspace?.registration.teamId ?? shell.actor?.membershipTeamIds[0];
   if (!teamId || !shell.actor) redirect("/area");
   if (!authorize(shell.actor, "team:read", { teamId }).allow) redirect("/area");

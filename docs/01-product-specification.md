@@ -43,10 +43,11 @@ Il giocatore entra **solo con il link della propria squadra**, indica la propria
 
 ## 6. Capacità del rappresentante
 
-- Accedere alla propria squadra (invito da Organization/Super Admin).
-- Condividere l’unico link di iscrizione della squadra. L’email del giocatore si raccoglie nel form, non in un invito separato.
-- Vedere checklist e stati di registrazione/pagamento dei propri giocatori.
-- Vedere **stato** del certificato (caricato / in revisione / approvato / rifiutato / scaduto), **mai il file**.
+- Accedere alla propria squadra (invito da Organization/Super Admin, o dopo approvazione della richiesta scuola).
+- All’accesso, in `/area`, capire squadra e competizione, avanzamento iscrizioni, urgenze e come copiare il link.
+- Condividere l’unico link di iscrizione della squadra dalla panoramica e da `/squadra/inviti`. L’email del giocatore si raccoglie nel form, non in un invito separato.
+- Vedere la rosa con stato di registrazione, pubblicabilità e **stato** del certificato (caricato / in revisione / approvato / rifiutato / scaduto), **mai il file**.
+- Se è anche giocatore, completare la propria iscrizione e i consensi da una sezione distinta; altrimenti quelle voci non stanno nel menu.
 - Non vedere codice fiscale, telefono, email completa dei compagni oltre quanto strettamente necessario al roster (vedi ruoli).
 
 ## 7. Capacità organizzazione

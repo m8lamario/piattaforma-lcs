@@ -6,7 +6,7 @@
 |---|---|---|---|
 | Pubblica | non autenticati | `/` `/accedi` `/invito` `/invito/[token]` `/invito-staff/[token]` `/richiedi-accesso` `/attiva-account/[token]` `/recupera-password` `/privacy` | no |
 | Giocatore | Player | `/area` | sì |
-| Squadra (rappresentante) | Team Representative | `/squadra` | sì + ruolo |
+| Rappresentante | Team Representative | `/area` (console) e `/squadra` | sì + ruolo |
 | Organizzazione | Org Admin / Super Admin | `/admin` | sì + ruolo |
 
 Un utente può avere più ruoli (es. rappresentante che è anche giocatore). La navigazione mostra solo le aree per cui è autorizzato.
@@ -27,21 +27,22 @@ Un utente può avere più ruoli (es. rappresentante che è anche giocatore). La 
 /privacy                       informative versionate (moduli LCS adattati; restano [INSERIRE …] organizzativi)
 /liberatorie                   liberatoria foto/video (stesso testo del passo wizard)
 
-/area                          dashboard giocatore (post-iscrizione senza CTA wizard)
+/area                          giocatore: checklist; rappresentante: console operativa
 /area/registrazione            wizard
 /area/registrazione/[step]
 /area/dati                     redirige al passo dati
-/area/squadra                  compagni: nome, maglia, ruolo (niente stato medico)
+/area/squadra                  compagni (solo giocatore): nome, maglia, ruolo
 /area/comunicazioni
-/area/consensi
+/area/consensi                 solo se l’utente ha un’iscrizione da giocatore
 /area/consensi/export
 /area/account
 /area/pagamento/esito
 /conferma-genitore/[token]
 /conferma-marketing/[token]
 
-/squadra                       cruscotto rappresentante (conteggi, pagamento TEAM/BOTH)
-/squadra/inviti                inviti, reinvio, CSV
+/squadra                       rosa (filtro `?stato=`), pagamento TEAM/BOTH
+/squadra/inviti                link stabile di iscrizione
+/squadra/scuola                dati scuola, referente, squadre/competizioni
 
 /admin                         hub organizzazione
 /admin/richieste               coda richieste di accesso scuole
@@ -94,13 +95,17 @@ Le liberatorie foto/video **non** sono un link minore in footer. Hanno uno step 
 
 ## 4. Navigazione rappresentante
 
-1. Stato rosa (quanti in regola / in attesa / da completare)
-2. Invita giocatore
-3. Elenco giocatori con checklist ridotta
-4. Pagamento squadra se `paymentMode` lo prevede
-5. Dati squadra (nome, logo, referente)
+Menu principale:
 
-Nessuna voce “apri certificato”.
+1. **Panoramica** (`/area`) — squadra attiva, link di iscrizione, azioni richieste, eventuale iscrizione personale
+2. **Squadra** — Rosa (`/squadra`), stato iscrizioni (`/squadra?stato=open`), link (`/squadra/inviti`)
+3. **Comunicazioni** — archivio; le non lette compaiono anche in panoramica
+4. **Scuola** (`/squadra/scuola`) — istituto, referente, squadre/competizioni accessibili
+5. **Account**
+
+`Consensi` compare solo se il rappresentante ha un’iscrizione da giocatore. `Compagni` non è nel menu del rappresentante: maglia e ruolo stanno nella rosa, unica fonte di verità (stato iscrizione, certificato, pubblicabilità). Il giocatore senza ruolo rappresentante continua a vedere i compagni in `/area/squadra` senza stato medico.
+
+Nessuna voce “apri certificato”. Pagamento squadra se `paymentMode` TEAM/BOTH resta sulla rosa.
 
 ## 5. Contenuti pubblici privacy
 
