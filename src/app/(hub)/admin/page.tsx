@@ -10,6 +10,7 @@ const HUB_SECTIONS = [
   { href: "/admin/registrazioni", titleKey: "navAdminRegistrations", descKey: "adminRegistrationsHelp" },
   { href: "/admin/edizioni", titleKey: "navAdminEditions", descKey: "adminEditionsHelp" },
   { href: "/admin/squadre", titleKey: "navAdminTeams", descKey: "adminTeamsHelp" },
+  { href: "/admin/richieste", titleKey: "navAdminSchoolRequests", descKey: "adminSchoolRequestsHelp" },
   { href: "/admin/pagamenti", titleKey: "navAdminPayments", descKey: "adminPaymentsHelp" },
   { href: "/admin/comunicazioni", titleKey: "navAdminEmails", descKey: "adminEmailsHelp" },
   { href: "/admin/audit", titleKey: "navAdminAudit", descKey: "adminAuditHelp" },
@@ -29,6 +30,10 @@ export default async function AdminHubPage() {
         <p className={styles.stat}>
           <strong>{stats.registrations}</strong>
           <span>{it.adminStatRegistrations}</span>
+        </p>
+        <p className={styles.stat}>
+          <strong>{stats.pendingSchoolRequests}</strong>
+          <span>{it.adminStatPendingSchoolRequests}</span>
         </p>
         <p className={styles.stat}>
           <strong>{stats.byStatus.APPROVED ?? 0}</strong>

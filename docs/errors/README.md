@@ -32,6 +32,7 @@ Le categorie sono file separati: si può aggiungere un file nuovo (es. `LIFECYCL
 | [VALIDATION.md](VALIDATION.md) | Zod e date |
 | [LIFECYCLE.md](LIFECYCLE.md) | Rimozione rosa, chiusura e anonimizzazione account |
 | [EMAILS.md](EMAILS.md) | Invio, storico, webhook Resend |
+| [SCHOOL_ACCESS.md](SCHOOL_ACCESS.md) | Richiesta accesso scuole, approvazione, attivazione |
 
 
 ## Principi

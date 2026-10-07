@@ -98,7 +98,8 @@ Nessun bypass `if (role === SUPER_ADMIN) return true` sparso nelle pagine: il su
 
 ## 6. Privilege escalation
 
-- Un player non può auto-assegnarsi TEAM_REPRESENTATIVE (solo `StaffInvite` o Super Admin).
+- Un player non può auto-assegnarsi TEAM_REPRESENTATIVE (solo `StaffInvite`, approvazione di `SchoolRegistrationRequest` da Org/Super Admin, o Super Admin).
+- Il form `/richiedi-accesso` non concede ruoli. Approvare o rifiutare richiede `admin:manage`. Il richiedente non può auto-approvarsi né ricevere `ORGANIZATION_ADMIN` / `SUPER_ADMIN`.
 - Il codice invito giocatore non concede admin né ruolo rappresentante.
 - Le API admin vivono sotto `/admin` **e** sotto check ruolo, entrambi necessari.
 - `staff:invite` e `admin:manage` per Org/Super Admin; `platform:admin`, `user:delete`, `user:anonymize`, `email:compose` solo Super Admin.

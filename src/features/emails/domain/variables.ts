@@ -17,13 +17,15 @@ export const EMAIL_VARIABLE_KEYS = [
   "redeemUrl",
   "resetUrl",
   "confirmUrl",
+  "schoolName",
+  "activateUrl",
 ] as const;
 
 export type EmailVariableKey = (typeof EMAIL_VARIABLE_KEYS)[number];
 
 export const EMAIL_VARIABLE_KEY_SET = new Set<string>(EMAIL_VARIABLE_KEYS);
 
-export const SECRET_EMAIL_VARIABLE_KEYS = ["redeemUrl", "resetUrl", "confirmUrl"] as const;
+export const SECRET_EMAIL_VARIABLE_KEYS = ["redeemUrl", "resetUrl", "confirmUrl", "activateUrl"] as const;
 
 const FORBIDDEN_VARIABLE_KEYS = new Set([
   "fiscalCode",
@@ -48,14 +50,15 @@ export function pickEmailVariables(input: Record<string, string | undefined | nu
     if (typeof value === "string" && value.length > 0) out[key] = value;
   }
   if (!out.link) {
-    out.link = out.areaUrl || out.redeemUrl || out.resetUrl || out.confirmUrl || "";
+    out.link = out.areaUrl || out.redeemUrl || out.resetUrl || out.confirmUrl || out.activateUrl || "";
   }
   if (!out.link) delete out.link;
   if (!out.nome && out.firstName) out.nome = out.firstName;
   if (!out.cognome && out.lastName) out.cognome = out.lastName;
   if (!out.nome_squadra && out.teamName) out.nome_squadra = out.teamName;
+  if (!out.nome_squadra && out.schoolName) out.nome_squadra = out.schoolName;
   if (!out.link) {
-    out.link = out.areaUrl || out.redeemUrl || out.resetUrl || out.confirmUrl || "";
+    out.link = out.areaUrl || out.redeemUrl || out.resetUrl || out.confirmUrl || out.activateUrl || "";
   }
   return out;
 }

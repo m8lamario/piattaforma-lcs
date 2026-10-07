@@ -121,6 +121,18 @@ enum InviteStatus {
   REVOKED
 }
 
+enum SchoolRequesterRole {
+  INSTITUTE_REPRESENTATIVE
+  TEACHER
+  OTHER
+}
+
+enum SchoolRegistrationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 enum EmailStatus {
   QUEUED
   SENT
@@ -168,6 +180,8 @@ model User {
   emailMessagesReceived  EmailMessage[]      @relation("EmailRecipient")
   emailMessagesSent      EmailMessage[]      @relation("EmailActor")
   emailTemplateEdits     EmailTemplateOverride[] @relation("EmailTemplateEditor")
+  schoolAccessReviews    SchoolRegistrationRequest[] @relation("SchoolRequestReviewer")
+  schoolAccessAccount    SchoolRegistrationRequest[] @relation("SchoolRequestAccount")
 
   @@index([lifecycleStatus])
 }
@@ -327,6 +341,7 @@ model Edition {
   registrations Registration[]
   requirements EditionRequirement[]
   payments     Payment[]
+  schoolAccessRequests SchoolRegistrationRequest[]
 
   @@unique([competitionId, year, name])
   @@index([competitionId])
@@ -357,6 +372,7 @@ model School {
   updatedAt DateTime @updatedAt
 
   teams Team[]
+  registrationRequests SchoolRegistrationRequest[]
 
   @@index([name])
 }
@@ -384,6 +400,7 @@ model Team {
   registrations  Registration[]
   payments       Payment[]
   userRoles      UserRole[]
+  registrationRequests SchoolRegistrationRequest[]
 
   // Bersaglio della FK composta (id, editionId). id è già unico; la coppia serve a Registration e Payment.
   @@unique([id, editionId])
@@ -453,6 +470,43 @@ model StaffInvite {
   @@index([status])
   @@index([invitedByUserId])
   @@index([acceptedByUserId])
+}
+
+model SchoolRegistrationRequest {
+  id                   String                    @id @default(cuid())
+  firstName            String
+  lastName             String
+  email                String
+  phone                String
+  schoolName           String
+  schoolNameKey        String
+  city                 String
+  requesterRole        SchoolRequesterRole
+  institutionalEmail   String?
+  editionId            String
+  status               SchoolRegistrationStatus  @default(PENDING)
+  rejectionReason      String?
+  reviewedAt           DateTime?
+  reviewedByUserId     String?
+  schoolId             String?
+  teamId               String?
+  userId               String?
+  activationTokenHash  String?                   @unique
+  activationExpiresAt  DateTime?
+  activatedAt          DateTime?
+  createdAt            DateTime                  @default(now())
+  updatedAt            DateTime                  @updatedAt
+
+  edition    Edition  @relation(fields: [editionId], references: [id], onDelete: Restrict)
+  reviewedBy User?    @relation("SchoolRequestReviewer", fields: [reviewedByUserId], references: [id], onDelete: SetNull)
+  school     School?  @relation(fields: [schoolId], references: [id], onDelete: SetNull)
+  team       Team?    @relation(fields: [teamId], references: [id], onDelete: SetNull)
+  user       User?    @relation("SchoolRequestAccount", fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([status])
+  @@index([email])
+  @@index([schoolNameKey, editionId])
+  @@index([reviewedByUserId])
 }
 
 model Registration {

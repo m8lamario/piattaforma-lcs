@@ -29,14 +29,16 @@ export async function uniqueCompetitionSlug(name: string) {
 }
 
 export async function adminHubStats() {
-  const [pendingDocuments, registrations, byStatus] = await Promise.all([
+  const [pendingDocuments, registrations, byStatus, pendingSchoolRequests] = await Promise.all([
     prisma.document.count({ where: { status: "PENDING_REVIEW", type: { code: "MEDICAL_CERTIFICATE" } } }),
     prisma.registration.count(),
     prisma.registration.groupBy({ by: ["status"], _count: { _all: true } }),
+    prisma.schoolRegistrationRequest.count({ where: { status: "PENDING" } }),
   ]);
   return {
     pendingDocuments,
     registrations,
+    pendingSchoolRequests,
     byStatus: Object.fromEntries(byStatus.map((row) => [row.status, row._count._all])) as Record<
       string,
       number
