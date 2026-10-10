@@ -103,20 +103,25 @@
   text-transform: none;
 }
 
-.lead {
+.lead,
+.copy {
   margin: 0;
-  font-size: clamp(1.05rem, 2.2vw, var(--text-lg));
-  font-weight: 600;
-  color: var(--color-text);
   line-height: var(--leading-body);
   max-width: 36rem;
 }
 
+.lead {
+  font-size: clamp(1.05rem, 2.2vw, var(--text-lg));
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+:global(html[data-theme="light"]) .hero .lead {
+  color: var(--color-hero-fg);
+}
+
 .copy {
-  margin: 0;
   color: var(--color-hero-muted);
-  line-height: var(--leading-body);
-  max-width: 36rem;
 }
 
 .actions {
