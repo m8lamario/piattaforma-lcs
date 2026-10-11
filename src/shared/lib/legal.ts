@@ -12,7 +12,11 @@ export async function readLegalDocument(slug: string) {
   return readFile(file, "utf8");
 }
 
+let placeholdersMemo: Promise<boolean> | undefined;
+
 export async function legalFilesHavePlaceholders() {
-  const bodies = await Promise.all(LEGAL_CATALOG.map((item) => readLegalDocument(item.slug)));
-  return bodies.some((body) => body.includes("[INSERIRE"));
+  placeholdersMemo ??= Promise.all(LEGAL_CATALOG.map((item) => readLegalDocument(item.slug))).then((bodies) =>
+    bodies.some((body) => body.includes("[INSERIRE")),
+  );
+  return placeholdersMemo;
 }

@@ -10,13 +10,15 @@ import { requireStaff } from "@/shared/authz/requireStaff";
 import { it } from "@/shared/i18n/it";
 
 export default async function AdminEmailTemplatesPage() {
-  const { actor } = await requireStaff("/admin/comunicazioni/template");
+  const [{ actor }, overrides] = await Promise.all([
+    requireStaff("/admin/comunicazioni/template"),
+    listEmailTemplateOverrides(),
+  ]);
   const canEdit = authorize(actor, "email:compose").allow;
-  const overrides = await listEmailTemplateOverrides();
   const overrideByKey = new Map(overrides.map((row) => [row.key, row]));
   const defaults = defaultEmailTemplates();
   return (
-    <AdminFrame path="/admin/comunicazioni/template">
+    <AdminFrame path="/admin/comunicazioni/template" actor={actor}>
       <p>
         <Link href="/admin/comunicazioni">{it.adminEmailBack}</Link>
       </p>

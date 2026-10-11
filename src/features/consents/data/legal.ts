@@ -53,8 +53,8 @@ export const ensureLegalDocuments = cache(async () => {
   );
 });
 
-export async function getCurrentLegalVersions(slugs: string[]) {
-  await ensureLegalDocuments();
+async function readCurrentLegalVersions(slugs: string[]) {
+  if (slugs.length === 0) return [];
   return prisma.legalDocumentVersion.findMany({
     where: {
       isCurrent: true,
@@ -63,6 +63,16 @@ export async function getCurrentLegalVersions(slugs: string[]) {
     include: { legalDocument: true },
     orderBy: { createdAt: "asc" },
   });
+}
+
+export async function getCurrentLegalVersions(slugs: string[]) {
+  const versions = await readCurrentLegalVersions(slugs);
+  const found = new Set(versions.map((row) => row.legalDocument.slug));
+  if (slugs.every((slug) => found.has(slug))) {
+    return versions;
+  }
+  await ensureLegalDocuments();
+  return readCurrentLegalVersions(slugs);
 }
 
 export async function getCurrentLegalBySlug(slug: string) {

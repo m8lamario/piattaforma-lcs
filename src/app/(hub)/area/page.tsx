@@ -1,11 +1,16 @@
 import { cookies } from "next/headers";
+import { after } from "next/server";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { maybeSendC1Reminder } from "@/features/consents/data/tokens";
 import { maybeSendGuardianReminder } from "@/features/consents/data/guardianAuth";
 import { EmailVerifyNotice } from "@/features/auth/ui/EmailVerifyNotice";
 import { listUnreadNotifications } from "@/features/notifications/data/notifications";
-import { loadPlayerWorkspace, persistRegistrationStatus } from "@/features/registrations/data/workspace";
+import {
+  loadPlayerWorkspace,
+  persistRegistrationStatus,
+  type PlayerWorkspace,
+} from "@/features/registrations/data/workspace";
 import { RegistrationDashboard } from "@/features/registrations/ui/Dashboard";
 import { isRegistrationWindowOpen } from "@/features/registrations/domain/window";
 import { teamCheckoutAmount } from "@/features/payments/domain/amounts";
@@ -23,37 +28,44 @@ import { loadAppShell } from "@/shared/ui/loadAppShell";
 import { EmptyState } from "@/shared/ui/EmptyState";
 import { it } from "@/shared/i18n/it";
 
+function scheduleWorkspaceFollowUp(workspace: PlayerWorkspace | null) {
+  if (!workspace) return;
+  after(async () => {
+    if (workspace.projectedStatus !== workspace.registration.status) {
+      await persistRegistrationStatus(workspace.registration.id, workspace.projectedStatus);
+    }
+    await Promise.all([
+      maybeSendC1Reminder(workspace.registration.id).catch(() => undefined),
+      maybeSendGuardianReminder(workspace.registration.id).catch(() => undefined),
+    ]);
+  });
+}
+
 export default async function AreaPage() {
   const session = await auth();
   if (!session?.user?.id) {
     redirect("/accedi");
   }
 
-  const [shell, workspace] = await Promise.all([
-    loadAppShell(session.user.id),
-    loadPlayerWorkspace(session.user.id),
-  ]);
+  const userId = session.user.id;
+  const shellPromise = loadAppShell(userId);
+  const workspacePromise = loadPlayerWorkspace(userId);
 
-  if (workspace && workspace.projectedStatus !== workspace.registration.status) {
-    await persistRegistrationStatus(workspace.registration.id, workspace.projectedStatus);
-  }
-  if (workspace) {
-    void maybeSendC1Reminder(workspace.registration.id).catch(() => undefined);
-    void maybeSendGuardianReminder(workspace.registration.id).catch(() => undefined);
-  }
-
+  const shell = await shellPromise;
   if (shell.showTeam && shell.actor) {
     const teamIds = representativeTeamIds(shell.actor);
     const jar = await cookies();
     const teamId = resolveSelectedTeamId(teamIds, jar.get(TEAM_COOKIE)?.value);
     if (teamId) {
-      const [team, teamPayment, roster, teams, unread] = await Promise.all([
+      const [workspace, team, teamPayment, roster, teams, unread] = await Promise.all([
+        workspacePromise,
         getTeamForActor(teamId),
         prisma.payment.findFirst({ where: { teamId, registrationId: null, status: "SUCCEEDED" } }),
         listTeamRoster(teamId),
         listTeamsByIds(teamIds),
-        listUnreadNotifications(session.user.id),
+        listUnreadNotifications(userId),
       ]);
+      scheduleWorkspaceFollowUp(workspace);
       if (
         team &&
         authorize(shell.actor, "team:read", {
@@ -94,14 +106,23 @@ export default async function AreaPage() {
           </>
         );
       }
+      return (
+        <EmptyState icon="team" title={it.areaOverviewTitle}>
+          <p>{it.areaRepEmpty}</p>
+        </EmptyState>
+      );
     }
 
+    scheduleWorkspaceFollowUp(await workspacePromise);
     return (
       <EmptyState icon="team" title={it.areaOverviewTitle}>
         <p>{it.areaRepEmpty}</p>
       </EmptyState>
     );
   }
+
+  const workspace = await workspacePromise;
+  scheduleWorkspaceFollowUp(workspace);
 
   if (workspace) {
     return (

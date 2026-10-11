@@ -4,12 +4,11 @@ import { getAdminDocumentView } from "@/features/documents/data/documents";
 import { OpenDocumentButton } from "@/features/documents/ui/OpenDocumentButton";
 import { ReviewForm } from "@/features/documents/ui/ReviewForm";
 import { AdminFrame } from "@/features/admin/ui/AdminFrame";
+import { requireStaffOrReviewer } from "@/shared/authz/requireStaff";
 import { Icon } from "@/shared/ui/Icon";
 import { PageHeader } from "@/shared/ui/PageHeader";
 import { StatusChip, type StatusTone } from "@/shared/ui/StatusChip";
-import { auth } from "@/auth";
 import { authorize } from "@/shared/authz/authorize";
-import { getActorByUserId } from "@/shared/authz/getActor";
 import { it } from "@/shared/i18n/it";
 import styles from "./page.module.css";
 
@@ -33,24 +32,26 @@ function statusTone(status: string): StatusTone {
 
 export default async function AdminDocumentDetailPage({ params, searchParams }: Props) {
   const { id } = await params;
-  const query = await searchParams;
-  const document = await getAdminDocumentView(id);
+  const [query, access, document] = await Promise.all([
+    searchParams,
+    requireStaffOrReviewer(`/admin/documenti/${id}`),
+    getAdminDocumentView(id),
+  ]);
   if (!document || document.status === "REPLACED") notFound();
 
-  const session = await auth();
-  const actor = session?.user?.id ? await getActorByUserId(session.user.id) : null;
+  const actor = access.actor;
   const resource = {
     ownerUserId: document.playerProfile.userId,
     teamId: document.registration.teamId,
   };
-  const canReview = actor ? authorize(actor, "document:review", resource).allow : false;
-  const canOpen = actor ? authorize(actor, "document:read_file", resource).allow && !document.blobPurgedAt : false;
+  const canReview = authorize(actor, "document:review", resource).allow;
+  const canOpen = authorize(actor, "document:read_file", resource).allow && !document.blobPurgedAt;
 
   const pending = document.status === "PENDING_REVIEW";
   const rejectReason = document.reviews[0]?.decision === "REJECTED" ? document.reviews[0].reason : null;
 
   return (
-    <AdminFrame path={`/admin/documenti/${id}`} allowReviewer>
+    <AdminFrame path={`/admin/documenti/${id}`} allowReviewer actor={actor}>
       <p>
         <Link href="/admin/documenti" className={styles.back}>
           <Icon name="back" size={16} />

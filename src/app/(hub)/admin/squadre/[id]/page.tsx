@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { getTeamAdmin } from "@/features/admin/data/catalog";
 import { AdminFrame } from "@/features/admin/ui/AdminFrame";
+import { requireStaff } from "@/shared/authz/requireStaff";
 import { StaffInviteForm } from "@/features/admin/ui/StaffInviteForm";
 import { PageHeader } from "@/shared/ui/PageHeader";
 import { StatusChip } from "@/shared/ui/StatusChip";
@@ -11,10 +12,10 @@ type Props = { params: Promise<{ id: string }> };
 
 export default async function AdminTeamDetailPage({ params }: Props) {
   const { id } = await params;
-  const team = await getTeamAdmin(id);
+  const [{ actor }, team] = await Promise.all([requireStaff(`/admin/squadre/${id}`), getTeamAdmin(id)]);
   if (!team) notFound();
   return (
-    <AdminFrame path={`/admin/squadre/${id}`}>
+    <AdminFrame path={`/admin/squadre/${id}`} actor={actor}>
       <PageHeader
         kicker={`${team.edition.competition.name} · ${team.edition.name}`}
         title={team.name}

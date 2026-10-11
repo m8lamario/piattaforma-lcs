@@ -29,8 +29,7 @@ const STATUS_COPY: Record<string, string> = {
 type Props = { params: Promise<{ id: string }> };
 
 export default async function AdminPlayerPage({ params }: Props) {
-  const { actor } = await requireStaff(`/admin/giocatori`);
-  const { id } = await params;
+  const [{ actor }, { id }] = await Promise.all([requireStaff("/admin/giocatori"), params]);
   const profile = await getPlayerAdmin(id);
   if (!profile) notFound();
   const registration = profile.registrations[0];
@@ -38,7 +37,7 @@ export default async function AdminPlayerPage({ params }: Props) {
   const document = registration?.documents[0];
 
   return (
-    <AdminFrame path={`/admin/giocatori/${id}`}>
+    <AdminFrame path={`/admin/giocatori/${id}`} actor={actor}>
       <PageHeader
         kicker={it.adminPlayer}
         title={`${profile.firstName} ${profile.lastName}`}

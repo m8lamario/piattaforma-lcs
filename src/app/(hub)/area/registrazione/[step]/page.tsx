@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { after } from "next/server";
 import { auth } from "@/auth";
 import { loadAppShell } from "@/shared/ui/loadAppShell";
 import { authorize } from "@/shared/authz/authorize";
@@ -65,12 +66,19 @@ export default async function WizardStepPage({ params }: Props) {
     redirect(`/area/registrazione/${gated}`);
   }
 
-  void maybeSendC1Reminder(workspace.registration.id).catch(() => undefined);
-  void maybeSendGuardianReminder(workspace.registration.id).catch(() => undefined);
+  after(() => {
+    void maybeSendC1Reminder(workspace.registration.id).catch(() => undefined);
+    void maybeSendGuardianReminder(workspace.registration.id).catch(() => undefined);
+  });
 
   const steps = visibleWizardSteps(workspace.checklist);
   const privacySlugs = privacySlugsFor(workspace.evidence.isMinor);
-  const legalVersions = await getCurrentLegalVersions([...privacySlugs, MEDIA_RELEASE_SLUG]);
+  const legalVersions =
+    raw === "privacy"
+      ? await getCurrentLegalVersions(privacySlugs)
+      : raw === "liberatorie"
+        ? await getCurrentLegalVersions([MEDIA_RELEASE_SLUG])
+        : [];
   const toView = (slug: string) => {
     const version = legalVersions.find((entry) => entry.legalDocument.slug === slug);
     if (!version) return null;

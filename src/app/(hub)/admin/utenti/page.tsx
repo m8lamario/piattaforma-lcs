@@ -15,13 +15,12 @@ import fields from "@/shared/ui/form.module.css";
 type Props = { searchParams: Promise<{ q?: string; done?: string }> };
 
 export default async function AdminUsersPage({ searchParams }: Props) {
-  const { actor } = await requireStaff("/admin/utenti");
+  const [{ actor }, query] = await Promise.all([requireStaff("/admin/utenti"), searchParams]);
   if (!authorize(actor, "platform:admin").allow) redirect("/admin");
-  const query = await searchParams;
   const rows = await listUsersAdmin(query.q?.trim() || undefined);
 
   return (
-    <AdminFrame path="/admin/utenti">
+    <AdminFrame path="/admin/utenti" actor={actor}>
       <PageHeader title={it.lifecycleUsersTitle} description={it.lifecycleUsersHelp} />
       {query.done === "deleted" ? (
         <p className={fields.bannerOk} role="status">

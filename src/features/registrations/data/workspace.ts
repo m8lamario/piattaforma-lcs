@@ -60,81 +60,190 @@ function medicalFromStatus(status: string | undefined, expiresAt?: Date | null):
 }
 
 export async function loadPlayerWorkspace(userId: string) {
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    include: {
-      playerProfile: {
-        include: {
-          guardians: { orderBy: { createdAt: "asc" } },
-          registrations: {
-            include: {
-              team: {
-                include: {
-                  edition: { include: { competition: true, requirements: true } },
-                  payments: {
-                    where: { status: "SUCCEEDED", registrationId: null },
-                    select: { id: true },
-                  },
-                },
-              },
-              documents: {
-                where: { status: { not: "REPLACED" } },
-                include: {
-                  type: true,
-                  reviews: { orderBy: { createdAt: "desc" }, take: 1 },
-                },
-                orderBy: { uploadedAt: "desc" },
-              },
-              payments: true,
-              consentRecords: {
-                include: { legalDocumentVersion: { include: { legalDocument: true } } },
-                orderBy: { acceptedAt: "desc" },
-              },
-              consentChoices: { orderBy: { createdAt: "asc" } },
-              consentTokens: {
-                where: { purpose: "MARKETING", usedAt: { not: null } },
-                select: { usedAt: true },
-                take: 5,
-              },
-              authorizations: {
-                where: { authorizationType: "ENROLLMENT" },
-                orderBy: { requestedAt: "desc" },
-                take: 3,
-                select: { id: true, status: true, guardianId: true, authorizationType: true },
-              },
-            },
-            orderBy: { createdAt: "desc" },
-            take: 1,
-          },
-        },
+  const [user, profile, registration] = await Promise.all([
+    prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, email: true, emailVerified: true },
+    }),
+    prisma.playerProfile.findUnique({
+      where: { userId },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        birthDate: true,
+        fiscalCode: true,
+        phone: true,
+        metadata: true,
       },
-    },
-  });
+    }),
+    prisma.registration.findFirst({
+      where: { playerProfile: { userId } },
+      orderBy: { createdAt: "desc" },
+      select: { id: true, status: true, teamId: true, editionId: true },
+    }),
+  ]);
 
-  const profile = user?.playerProfile ?? null;
-  const registration = profile?.registrations[0] ?? null;
   if (!user || !profile || !registration) {
     return null;
   }
 
+  const registrationId = registration.id;
+  const [
+    team,
+    edition,
+    competition,
+    requirementRows,
+    teamPayment,
+    guardians,
+    documents,
+    documentTypes,
+    reviews,
+    payments,
+    consentRecords,
+    legalVersions,
+    legalDocuments,
+    consentChoices,
+    consentTokens,
+    authorizations,
+    partnersPublished,
+  ] = await Promise.all([
+    prisma.team.findUnique({ where: { id: registration.teamId }, select: { id: true, name: true } }),
+    prisma.edition.findUnique({
+      where: { id: registration.editionId },
+      select: {
+        name: true,
+        paymentMode: true,
+        currency: true,
+        playerFeeAmount: true,
+        teamFeeAmount: true,
+        isActive: true,
+        registrationOpensAt: true,
+        registrationClosesAt: true,
+      },
+    }),
+    prisma.competition.findFirst({
+      where: { editions: { some: { id: registration.editionId } } },
+      select: { name: true },
+    }),
+    prisma.editionRequirement.findMany({
+      where: { editionId: registration.editionId },
+      select: { code: true, required: true, appliesTo: true },
+    }),
+    prisma.payment.findFirst({
+      where: { teamId: registration.teamId, registrationId: null, status: "SUCCEEDED" },
+      select: { id: true },
+    }),
+    prisma.guardian.findMany({
+      where: { playerProfileId: profile.id },
+      orderBy: { createdAt: "asc" },
+      select: {
+        firstName: true,
+        lastName: true,
+        relationship: true,
+        email: true,
+        phone: true,
+        kind: true,
+        soleResponsibility: true,
+        emailCorrectionUsed: true,
+      },
+    }),
+    prisma.document.findMany({
+      where: { registrationId, status: { not: "REPLACED" } },
+      orderBy: { uploadedAt: "desc" },
+      select: {
+        id: true,
+        status: true,
+        originalFilename: true,
+        uploadedAt: true,
+        expiresAt: true,
+        typeId: true,
+      },
+    }),
+    prisma.documentType.findMany({
+      where: { documents: { some: { registrationId, status: { not: "REPLACED" } } } },
+      select: { id: true, code: true },
+    }),
+    prisma.documentReview.findMany({
+      where: { document: { registrationId, status: { not: "REPLACED" } } },
+      orderBy: { createdAt: "desc" },
+      select: { documentId: true, decision: true, reason: true },
+    }),
+    prisma.payment.findMany({
+      where: { registrationId },
+      select: { status: true },
+    }),
+    prisma.consentRecord.findMany({
+      where: { registrationId },
+      orderBy: { acceptedAt: "desc" },
+      select: { legalDocumentVersionId: true, accepted: true },
+    }),
+    prisma.legalDocumentVersion.findMany({
+      where: { consents: { some: { registrationId } } },
+      select: { id: true, isCurrent: true, legalDocumentId: true },
+    }),
+    prisma.legalDocument.findMany({
+      where: { versions: { some: { consents: { some: { registrationId } } } } },
+      select: { id: true, slug: true },
+    }),
+    prisma.consentChoice.findMany({
+      where: { registrationId },
+      orderBy: { createdAt: "asc" },
+      select: { code: true, accepted: true, value: true, createdAt: true },
+    }),
+    prisma.consentToken.findMany({
+      where: { registrationId, purpose: "MARKETING", usedAt: { not: null } },
+      select: { usedAt: true },
+      take: 5,
+    }),
+    prisma.guardianAuthorization.findMany({
+      where: { registrationId, authorizationType: "ENROLLMENT" },
+      orderBy: { requestedAt: "desc" },
+      take: 3,
+      select: { id: true, status: true, guardianId: true, authorizationType: true },
+    }),
+    isPartnerBoxVisible(),
+  ]);
+
+  if (!team || !edition || !competition) {
+    return null;
+  }
+
   const requirements: EditionRequirement[] =
-    registration.team.edition.requirements.length > 0
-      ? registration.team.edition.requirements.map((requirement) => ({
+    requirementRows.length > 0
+      ? requirementRows.map((requirement) => ({
           code: requirement.code,
           required: requirement.required,
           appliesTo: requirement.appliesTo,
         }))
       : DEFAULT_EDITION_REQUIREMENTS;
 
-  const medicalDoc = registration.documents.find((document) => document.type.code === "MEDICAL_CERTIFICATE");
-  const consents: CurrentConsent[] = registration.consentRecords.map((record) => ({
-    slug: record.legalDocumentVersion.legalDocument.slug,
-    versionId: record.legalDocumentVersionId,
-    isCurrent: record.legalDocumentVersion.isCurrent,
-    accepted: record.accepted,
-  }));
+  const typeById = new Map(documentTypes.map((type) => [type.id, type.code]));
+  const latestReviewByDocument = new Map<string, { decision: string; reason: string | null }>();
+  for (const review of reviews) {
+    if (!latestReviewByDocument.has(review.documentId)) {
+      latestReviewByDocument.set(review.documentId, review);
+    }
+  }
+  const medicalRow = documents.find((document) => typeById.get(document.typeId) === "MEDICAL_CERTIFICATE");
+  const medicalReview = medicalRow ? latestReviewByDocument.get(medicalRow.id) : undefined;
+  const versionById = new Map(legalVersions.map((version) => [version.id, version]));
+  const legalById = new Map(legalDocuments.map((document) => [document.id, document.slug]));
+  const consents: CurrentConsent[] = consentRecords.flatMap((record) => {
+    const version = versionById.get(record.legalDocumentVersionId);
+    const slug = version ? legalById.get(version.legalDocumentId) : undefined;
+    if (!version || !slug) return [];
+    return [
+      {
+        slug,
+        versionId: record.legalDocumentVersionId,
+        isCurrent: version.isCurrent,
+        accepted: record.accepted,
+      },
+    ];
+  });
   const choiceMap = latestChoices(
-    registration.consentChoices.map((row) => ({
+    consentChoices.map((row) => ({
       code: row.code,
       accepted: row.accepted,
       value: row.value,
@@ -143,18 +252,17 @@ export async function loadPlayerWorkspace(userId: string) {
   );
   const isMinorPlayer = profile.birthDate ? isMinor(profile.birthDate) : false;
   const needsAgreement = profile.birthDate ? needsMediaAgreement(profile.birthDate) : false;
-  const partnersPublished = await isPartnerBoxVisible();
   const privacyAccepted =
     isPrivacyPackComplete(isMinorPlayer, consents) &&
     privacyBoxesComplete(isMinorPlayer, partnersPublished, choiceMap);
   const mediaRecorded = mediaBoxesRecorded(isMinorPlayer, choiceMap);
   const mediaDecision: "none" | "submitted" =
     mediaRecorded || mediaDecisionFrom(consents) === "submitted" ? "submitted" : "none";
-  const primaryGuardian = profile.guardians.find((row) => row.kind !== "SECONDARY") ?? profile.guardians[0] ?? null;
-  const secondaryGuardian = profile.guardians.find((row) => row.kind === "SECONDARY") ?? null;
+  const primaryGuardian = guardians.find((row) => row.kind !== "SECONDARY") ?? guardians[0] ?? null;
+  const secondaryGuardian = guardians.find((row) => row.kind === "SECONDARY") ?? null;
   const g3 = g3Value(choiceMap);
 
-  const enrollment = registration.authorizations[0] ?? null;
+  const enrollment = authorizations[0] ?? null;
   const contactComplete = hasMinorGuardianRequirement({
     primary: primaryGuardian,
     secondaryEmail: secondaryGuardian?.email,
@@ -176,13 +284,13 @@ export async function loadPlayerWorkspace(userId: string) {
     hasGuardian: guardianAuthorization === "authorized",
     hasGuardianContact: contactComplete,
     guardianAuthorization,
-    medicalStatus: medicalFromStatus(medicalDoc?.status, medicalDoc?.expiresAt),
+    medicalStatus: medicalFromStatus(medicalRow?.status, medicalRow?.expiresAt),
     privacyAccepted,
     mediaDecision,
     payment: {
-      mode: registration.team.edition.paymentMode,
-      playerSucceeded: registration.payments.some((payment) => payment.status === "SUCCEEDED"),
-      teamSucceeded: registration.team.payments.length > 0,
+      mode: edition.paymentMode,
+      playerSucceeded: payments.some((payment) => payment.status === "SUCCEEDED"),
+      teamSucceeded: Boolean(teamPayment),
     },
   };
 
@@ -237,34 +345,34 @@ export async function loadPlayerWorkspace(userId: string) {
     partnersPublished,
     marketingOptIn: marketingConfirmed(
       choiceMap,
-      registration.consentTokens.map((row) => ({ usedAt: row.usedAt?.getTime() ?? null })),
+      consentTokens.map((row) => ({ usedAt: row.usedAt?.getTime() ?? null })),
     ),
     registration: {
       id: registration.id,
       status: registration.status,
       teamId: registration.teamId,
-      teamName: registration.team.name,
+      teamName: team.name,
       editionId: registration.editionId,
-      editionName: registration.team.edition.name,
-      competitionName: registration.team.edition.competition.name,
-      paymentMode: registration.team.edition.paymentMode,
-      currency: registration.team.edition.currency,
-      playerFeeAmount: registration.team.edition.playerFeeAmount,
-      teamFeeAmount: registration.team.edition.teamFeeAmount,
-      isActive: registration.team.edition.isActive,
-      registrationOpensAt: registration.team.edition.registrationOpensAt,
-      registrationClosesAt: registration.team.edition.registrationClosesAt,
+      editionName: edition.name,
+      competitionName: competition.name,
+      paymentMode: edition.paymentMode,
+      currency: edition.currency,
+      playerFeeAmount: edition.playerFeeAmount,
+      teamFeeAmount: edition.teamFeeAmount,
+      isActive: edition.isActive,
+      registrationOpensAt: edition.registrationOpensAt,
+      registrationClosesAt: edition.registrationClosesAt,
     },
     evidence,
     checklist,
     projectedStatus: projected,
-    medicalDocument: medicalDoc
+    medicalDocument: medicalRow
       ? {
-          id: medicalDoc.id,
-          status: medicalDoc.status,
-          originalFilename: medicalDoc.originalFilename,
-          uploadedAt: medicalDoc.uploadedAt,
-          rejectReason: medicalDoc.reviews[0]?.decision === "REJECTED" ? medicalDoc.reviews[0].reason : null,
+          id: medicalRow.id,
+          status: medicalRow.status,
+          originalFilename: medicalRow.originalFilename,
+          uploadedAt: medicalRow.uploadedAt,
+          rejectReason: medicalReview?.decision === "REJECTED" ? medicalReview.reason : null,
         }
       : null,
   };
