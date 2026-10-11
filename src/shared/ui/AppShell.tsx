@@ -12,7 +12,6 @@ type Props = {
   showConsents?: boolean;
   showSchool?: boolean;
   unreadCount?: number;
-  withdrawRegistrationId?: string | null;
   children: ReactNode;
 };
 
@@ -24,7 +23,6 @@ export function AppShell({
   showConsents,
   showSchool,
   unreadCount,
-  withdrawRegistrationId,
   children,
 }: Props) {
   return (
@@ -43,7 +41,6 @@ export function AppShell({
             showConsents={showConsents}
             showSchool={showSchool}
             unreadCount={unreadCount}
-            withdrawRegistrationId={withdrawRegistrationId}
           />
         </Suspense>
       </header>
