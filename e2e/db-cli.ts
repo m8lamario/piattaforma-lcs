@@ -39,29 +39,11 @@ async function main() {
       const user = await prisma.user.update({
         where: { email: value },
         data: { passwordHash },
-        select: { id: true, passwordHash: true, lifecycleStatus: true },
+        select: { passwordHash: true },
       });
-      const seedMatches = await verifyPassword("CiaoCiao", user.passwordHash);
-      // #region agent log
-      await fetch("http://127.0.0.1:7693/ingest/5c6b6d7d-171d-41fc-8f12-2fa6a7b3b82d", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "9b8024" },
-        body: JSON.stringify({
-          sessionId: "9b8024",
-          runId: "post-fix",
-          hypothesisId: "A",
-          location: "e2e/db-cli.ts:ensure-rep-password",
-          message: "reset demo rep password to seed value",
-          data: {
-            userId: user.id,
-            lifecycle: user.lifecycleStatus,
-            seedMatches,
-            dbHost: (process.env.DATABASE_URL ?? "").split("@")[1]?.split("/")[0] ?? "none",
-          },
-          timestamp: Date.now(),
-        }),
-      }).catch(() => {});
-      // #endregion
+      const seedMatches = user.passwordHash
+        ? await verifyPassword("CiaoCiao", user.passwordHash)
+        : false;
       process.stdout.write(seedMatches ? "ok" : "mismatch");
       return;
     }
@@ -145,64 +127,11 @@ async function main() {
           data: { userId: user.id, role: "TEAM_REPRESENTATIVE", teamId: team.id },
         });
       }
-      // #region agent log
-      await fetch("http://127.0.0.1:7693/ingest/5c6b6d7d-171d-41fc-8f12-2fa6a7b3b82d", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "9b8024" },
-        body: JSON.stringify({
-          sessionId: "9b8024",
-          runId: "post-fix",
-          hypothesisId: "F",
-          location: "e2e/db-cli.ts:ensure-e2e-team",
-          message: "ensured isolated e2e team for demo rep",
-          data: {
-            teamId: team.id,
-            editionId: edition.id,
-            createdRole: !role,
-          },
-          timestamp: Date.now(),
-        }),
-      }).catch(() => {});
-      // #endregion
       process.stdout.write(team.id);
       return;
     }
     if (command === "clear-rate-limits") {
       await prisma.rateLimitHit.deleteMany({ where: { key: { startsWith: value } } });
-      if (value === "login") {
-        const { verifyPassword } = await import("../src/features/auth/domain/password");
-        const user = await prisma.user.findUnique({
-          where: { email: "rep@gmail.com" },
-          select: { id: true, passwordHash: true, lifecycleStatus: true },
-        });
-        const seedMatches = user?.passwordHash
-          ? await verifyPassword("CiaoCiao", user.passwordHash)
-          : false;
-        // #region agent log
-        await fetch("http://127.0.0.1:7693/ingest/5c6b6d7d-171d-41fc-8f12-2fa6a7b3b82d", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "9b8024" },
-          body: JSON.stringify({
-            sessionId: "9b8024",
-            runId: "pre-fix",
-            hypothesisId: "A",
-            location: "e2e/db-cli.ts:clear-rate-limits",
-            message: "seed password vs db hash",
-            data: {
-              found: Boolean(user),
-              userId: user?.id ?? null,
-              lifecycle: user?.lifecycleStatus ?? null,
-              hasHash: Boolean(user?.passwordHash),
-              hashLen: user?.passwordHash?.length ?? 0,
-              hashPrefix: user?.passwordHash?.slice(0, 7) ?? null,
-              seedMatches,
-              dbHost: (process.env.DATABASE_URL ?? "").split("@")[1]?.split("/")[0] ?? "none",
-            },
-            timestamp: Date.now(),
-          }),
-        }).catch(() => {});
-        // #endregion
-      }
       process.stdout.write("ok");
       return;
     }
