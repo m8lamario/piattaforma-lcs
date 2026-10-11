@@ -1,14 +1,15 @@
+import { cache } from "react";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { authorize } from "@/shared/authz/authorize";
 import { getActorByUserId } from "@/shared/authz/getActor";
 import type { Action } from "@/shared/authz/types";
 
-export async function requireStaff(nextPath = "/admin") {
+export const requireStaff = cache(async (nextPath = "/admin") => {
   return requireAction(nextPath, "admin:manage");
-}
+});
 
-export async function requireAction(nextPath: string, action: Action) {
+export const requireAction = cache(async (nextPath: string, action: Action) => {
   const session = await auth();
   if (!session?.user?.id) {
     redirect(`/accedi?next=${encodeURIComponent(nextPath)}`);
@@ -21,9 +22,9 @@ export async function requireAction(nextPath: string, action: Action) {
   if (!allowed.allow) redirect("/area");
 
   return { session, actor };
-}
+});
 
-export async function requireStaffOrReviewer(nextPath = "/admin/documenti") {
+export const requireStaffOrReviewer = cache(async (nextPath = "/admin/documenti") => {
   const session = await auth();
   if (!session?.user?.id) {
     redirect(`/accedi?next=${encodeURIComponent(nextPath)}`);
@@ -34,4 +35,4 @@ export async function requireStaffOrReviewer(nextPath = "/admin/documenti") {
   const reviewer = authorize(actor, "document:review");
   if (!staff.allow && !reviewer.allow) redirect("/area");
   return { session, actor };
-}
+});

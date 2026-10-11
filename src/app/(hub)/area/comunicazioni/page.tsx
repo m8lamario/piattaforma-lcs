@@ -1,4 +1,5 @@
 import { auth } from "@/auth";
+import { after } from "next/server";
 import { redirect } from "next/navigation";
 import { listNotifications, markNotificationsRead } from "@/features/notifications/data/notifications";
 import { EmptyState } from "@/shared/ui/EmptyState";
@@ -10,7 +11,7 @@ export default async function CommunicationsPage() {
   const session = await auth();
   if (!session?.user?.id) redirect("/accedi?next=/area/comunicazioni");
   const items = await listNotifications(session.user.id);
-  await markNotificationsRead(session.user.id);
+  after(() => markNotificationsRead(session.user.id));
 
   return (
     <main className={styles.main}>

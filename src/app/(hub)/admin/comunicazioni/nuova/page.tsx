@@ -13,15 +13,17 @@ type Props = {
 };
 
 export default async function AdminEmailNewPage({ searchParams }: Props) {
-  const { actor } = await requireStaff("/admin/comunicazioni/nuova");
-  const query = await searchParams;
+  const [{ actor }, query] = await Promise.all([
+    requireStaff("/admin/comunicazioni/nuova"),
+    searchParams,
+  ]);
   const q = query.q?.trim() ?? "";
   const [recipients, selected] = await Promise.all([
     q.length >= 2 ? searchEmailRecipients(q) : Promise.resolve([]),
     query.userId ? getEmailRecipient(query.userId) : Promise.resolve(null),
   ]);
   return (
-    <AdminFrame path="/admin/comunicazioni/nuova">
+    <AdminFrame path="/admin/comunicazioni/nuova" actor={actor}>
       <p>
         <Link href="/admin/comunicazioni">{it.adminEmailBack}</Link>
       </p>

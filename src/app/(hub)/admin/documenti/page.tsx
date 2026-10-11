@@ -5,6 +5,7 @@ import {
 } from "@/features/documents/data/documents";
 import { filterOptions } from "@/features/admin/data/catalog";
 import { AdminFrame } from "@/features/admin/ui/AdminFrame";
+import { requireStaffOrReviewer } from "@/shared/authz/requireStaff";
 import { PageHeader } from "@/shared/ui/PageHeader";
 import { StatusChip, type StatusTone } from "@/shared/ui/StatusChip";
 import { Button } from "@/shared/ui/Button";
@@ -35,14 +36,15 @@ type Props = {
 
 export default async function AdminDocumentsPage({ searchParams }: Props) {
   const query = await searchParams;
-  const [pending, recent, options] = await Promise.all([
+  const [{ actor }, pending, recent, options] = await Promise.all([
+    requireStaffOrReviewer("/admin/documenti"),
     listPendingMedicalDocuments({ teamId: query.teamId, q: query.q?.trim() || undefined }),
     listRecentReviewedMedicalDocuments(),
     filterOptions(),
   ]);
 
   return (
-    <AdminFrame path="/admin/documenti" allowReviewer>
+    <AdminFrame path="/admin/documenti" allowReviewer actor={actor}>
       <PageHeader title={it.adminDocumentsTitle} description={it.adminDocumentsHelp} />
       <form className={styles.filters} method="get">
         <div className={styles.filtersRow}>

@@ -15,17 +15,19 @@ import fields from "@/shared/ui/form.module.css";
 type Props = { params: Promise<{ id: string }>; searchParams: Promise<{ done?: string }> };
 
 export default async function AdminUserDetailPage({ params, searchParams }: Props) {
-  const { actor } = await requireStaff("/admin/utenti");
+  const [{ actor }, { id }, query] = await Promise.all([
+    requireStaff("/admin/utenti"),
+    params,
+    searchParams,
+  ]);
   if (!authorize(actor, "platform:admin").allow) redirect("/admin");
-  const { id } = await params;
   const user = await getUserAdmin(id);
   if (!user) notFound();
-  const query = await searchParams;
   const canDelete = authorize(actor, "user:delete", { ownerUserId: user.id }).allow;
   const canAnonymize = authorize(actor, "user:anonymize", { ownerUserId: user.id }).allow;
 
   return (
-    <AdminFrame path={`/admin/utenti/${id}`}>
+    <AdminFrame path={`/admin/utenti/${id}`} actor={actor}>
       <PageHeader
         kicker={it.lifecycleUsersTitle}
         title={user.name ?? user.email}

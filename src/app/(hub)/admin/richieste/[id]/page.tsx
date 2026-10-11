@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { getSchoolAccessRequest } from "@/features/school-access/data/requests";
 import { AdminRequestActions } from "@/features/school-access/ui/AdminRequestActions";
 import { AdminFrame } from "@/features/admin/ui/AdminFrame";
+import { requireStaff } from "@/shared/authz/requireStaff";
 import { PageHeader } from "@/shared/ui/PageHeader";
 import { StatusChip, type StatusTone } from "@/shared/ui/StatusChip";
 import { it } from "@/shared/i18n/it";
@@ -35,13 +36,16 @@ type Props = { params: Promise<{ id: string }> };
 
 export default async function AdminSchoolRequestDetailPage({ params }: Props) {
   const { id } = await params;
-  const request = await getSchoolAccessRequest(id);
+  const [{ actor }, request] = await Promise.all([
+    requireStaff(`/admin/richieste/${id}`),
+    getSchoolAccessRequest(id),
+  ]);
   if (!request) notFound();
 
   const canResend = request.status === "APPROVED" && !request.activatedAt && !request.user?.passwordHash;
 
   return (
-    <AdminFrame path={`/admin/richieste/${id}`}>
+    <AdminFrame path={`/admin/richieste/${id}`} actor={actor}>
       <PageHeader
         kicker={`${request.edition.competition.name} · ${request.edition.name}`}
         title={request.schoolName}

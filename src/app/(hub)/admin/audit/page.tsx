@@ -1,13 +1,14 @@
 import { listAuditLogs } from "@/features/admin/data/catalog";
 import { AdminFrame } from "@/features/admin/ui/AdminFrame";
+import { requireStaff } from "@/shared/authz/requireStaff";
 import { PageHeader } from "@/shared/ui/PageHeader";
 import { it } from "@/shared/i18n/it";
 import styles from "@/features/admin/ui/admin.module.css";
 
 export default async function AdminAuditPage() {
-  const rows = await listAuditLogs();
+  const [{ actor }, rows] = await Promise.all([requireStaff("/admin/audit"), listAuditLogs()]);
   return (
-    <AdminFrame path="/admin/audit">
+    <AdminFrame path="/admin/audit" actor={actor}>
       <PageHeader title={it.navAdminAudit} description={it.adminAuditHelp} />
       {rows.length === 0 ? (
         <p className={styles.empty}>{it.adminAuditEmpty}</p>

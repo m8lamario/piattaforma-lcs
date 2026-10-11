@@ -19,9 +19,11 @@ type Props = {
 
 export default async function AdminEmailDetailPage({ params }: Props) {
   const { id } = await params;
-  const { session, actor } = await requireStaff(`/admin/comunicazioni/${id}`);
+  const [{ session, actor }, message] = await Promise.all([
+    requireStaff(`/admin/comunicazioni/${id}`),
+    getEmailMessage(id),
+  ]);
   if (!authorize(actor, "email:read").allow) notFound();
-  const message = await getEmailMessage(id);
   if (!message) notFound();
   await writeAuditLog({
     actorUserId: session.user.id,
@@ -32,7 +34,7 @@ export default async function AdminEmailDetailPage({ params }: Props) {
   const retryable = canRetryEmail(message);
 
   return (
-    <AdminFrame path={`/admin/comunicazioni/${id}`}>
+    <AdminFrame path={`/admin/comunicazioni/${id}`} actor={actor}>
       <p>
         <Link href="/admin/comunicazioni">{it.adminEmailBack}</Link>
       </p>

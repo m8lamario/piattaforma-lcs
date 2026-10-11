@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { after } from "next/server";
 import { auth } from "@/auth";
 import { maybeSendC1Reminder } from "@/features/consents/data/tokens";
 import { boxesFor, isBoxActive, latestChoices, revocableCodes } from "@/features/consents/domain/boxes";
@@ -14,7 +15,7 @@ export default async function ConsentsPage() {
   if (!session?.user?.id) redirect("/accedi?next=/area/consensi");
   const workspace = await loadPlayerWorkspace(session.user.id);
   if (!workspace) redirect("/area");
-  void maybeSendC1Reminder(workspace.registration.id).catch(() => undefined);
+  after(() => maybeSendC1Reminder(workspace.registration.id).catch(() => undefined));
 
   const map = latestChoices(workspace.choices);
   const revocable = new Set(

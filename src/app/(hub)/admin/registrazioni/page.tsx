@@ -4,6 +4,7 @@ import {
   listRegistrationsAdmin,
 } from "@/features/admin/data/catalog";
 import { AdminFrame } from "@/features/admin/ui/AdminFrame";
+import { requireStaff } from "@/shared/authz/requireStaff";
 import { PageHeader } from "@/shared/ui/PageHeader";
 import { StatusChip } from "@/shared/ui/StatusChip";
 import { Button } from "@/shared/ui/Button";
@@ -31,7 +32,8 @@ type Props = {
 export default async function AdminRegistrationsPage({ searchParams }: Props) {
   const query = await searchParams;
   const status = query.status && query.status in STATUS_COPY ? (query.status as RegistrationStatus) : undefined;
-  const [rows, options] = await Promise.all([
+  const [{ actor }, rows, options] = await Promise.all([
+    requireStaff("/admin/registrazioni"),
     listRegistrationsAdmin({
       editionId: query.editionId,
       teamId: query.teamId,
@@ -42,7 +44,7 @@ export default async function AdminRegistrationsPage({ searchParams }: Props) {
   ]);
 
   return (
-    <AdminFrame path="/admin/registrazioni">
+    <AdminFrame path="/admin/registrazioni" actor={actor}>
       <PageHeader title={it.navAdminRegistrations} description={it.adminRegistrationsHelp} />
       <form className={styles.filters} method="get">
         <div className={styles.filtersRow}>

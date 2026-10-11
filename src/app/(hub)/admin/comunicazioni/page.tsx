@@ -4,6 +4,7 @@ import { EMAIL_PURPOSE_KEYS, isEmailTemplateKey } from "@/features/emails/domain
 import { EMAIL_STATUSES, isEmailStatus } from "@/features/emails/domain/status";
 import { emailPurposeLabel, emailStatusLabel, emailStatusTone, formatEmailWhen } from "@/features/emails/ui/labels";
 import { AdminFrame } from "@/features/admin/ui/AdminFrame";
+import { requireStaff } from "@/shared/authz/requireStaff";
 import { PageHeader } from "@/shared/ui/PageHeader";
 import { StatusChip } from "@/shared/ui/StatusChip";
 import { Button, ButtonLink } from "@/shared/ui/Button";
@@ -37,7 +38,8 @@ export default async function AdminEmailsPage({ searchParams }: Props) {
   const sort =
     query.sort === "lastEventAt" || query.sort === "subject" || query.sort === "queuedAt" ? query.sort : "queuedAt";
   const page = Number(query.page ?? "1") || 1;
-  const [stats, list] = await Promise.all([
+  const [{ actor }, stats, list] = await Promise.all([
+    requireStaff("/admin/comunicazioni"),
     emailDashboardStats(),
     listEmailMessages({
       q: query.q?.trim() || undefined,
@@ -66,7 +68,7 @@ export default async function AdminEmailsPage({ searchParams }: Props) {
   }
 
   return (
-    <AdminFrame path="/admin/comunicazioni">
+    <AdminFrame path="/admin/comunicazioni" actor={actor}>
       <PageHeader
         kicker={it.navAdmin}
         title={it.navAdminEmails}

@@ -1,9 +1,10 @@
+import { cache } from "react";
 import { getActorByUserId, isStaff, isMedicalReviewer, representativeTeamIds } from "@/shared/authz/getActor";
 import { countUnreadNotifications } from "@/features/notifications/data/notifications";
 import { prisma } from "@/shared/lib/prisma";
 import { shellNavFlags } from "./shellNav";
 
-export async function loadAppShell(userId: string) {
+export const loadAppShell = cache(async (userId: string) => {
   const [actor, unreadCount, profile] = await Promise.all([
     getActorByUserId(userId),
     countUnreadNotifications(userId),
@@ -31,4 +32,4 @@ export async function loadAppShell(userId: string) {
     ...flags,
     unreadCount,
   };
-}
+});

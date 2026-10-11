@@ -1,15 +1,19 @@
 import Link from "next/link";
 import { listCompetitionsWithEditions } from "@/features/admin/data/catalog";
 import { AdminFrame } from "@/features/admin/ui/AdminFrame";
+import { requireStaff } from "@/shared/authz/requireStaff";
 import { EditionForm } from "@/features/admin/ui/EditionForm";
 import { PageHeader } from "@/shared/ui/PageHeader";
 import { it } from "@/shared/i18n/it";
 import styles from "@/features/admin/ui/admin.module.css";
 
 export default async function AdminEditionsPage() {
-  const competitions = await listCompetitionsWithEditions();
+  const [{ actor }, competitions] = await Promise.all([
+    requireStaff("/admin/edizioni"),
+    listCompetitionsWithEditions(),
+  ]);
   return (
-    <AdminFrame path="/admin/edizioni">
+    <AdminFrame path="/admin/edizioni" actor={actor}>
       <PageHeader title={it.navAdminEditions} description={it.adminEditionsHelp} />
       <div className={styles.twoColGrid}>
         <section className={styles.colMain}>

@@ -1,15 +1,20 @@
 import Link from "next/link";
 import { filterOptions, listTeamsAdmin } from "@/features/admin/data/catalog";
 import { AdminFrame } from "@/features/admin/ui/AdminFrame";
+import { requireStaff } from "@/shared/authz/requireStaff";
 import { TeamCreateForm } from "@/features/admin/ui/TeamCreateForm";
 import { PageHeader } from "@/shared/ui/PageHeader";
 import { it } from "@/shared/i18n/it";
 import styles from "@/features/admin/ui/admin.module.css";
 
 export default async function AdminTeamsPage() {
-  const [teams, options] = await Promise.all([listTeamsAdmin(), filterOptions()]);
+  const [{ actor }, teams, options] = await Promise.all([
+    requireStaff("/admin/squadre"),
+    listTeamsAdmin(),
+    filterOptions(),
+  ]);
   return (
-    <AdminFrame path="/admin/squadre">
+    <AdminFrame path="/admin/squadre" actor={actor}>
       <PageHeader title={it.navAdminTeams} description={it.adminTeamsHelp} />
       <div className={styles.twoColGrid}>
         <section className={styles.colMain}>

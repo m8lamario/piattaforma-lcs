@@ -12,15 +12,18 @@ import styles from "../comunicazioni/page.module.css";
 export default async function PlayerTeamPage() {
   const session = await auth();
   if (!session?.user?.id) redirect("/accedi?next=/area/squadra");
-  const [shell, workspace] = await Promise.all([
-    loadAppShell(session.user.id),
-    loadPlayerWorkspace(session.user.id),
-  ]);
+  const shellPromise = loadAppShell(session.user.id);
+  const workspacePromise = loadPlayerWorkspace(session.user.id);
+  const shell = await shellPromise;
   if (shell.showTeam) redirect("/squadra");
-  const teamId = workspace?.registration.teamId ?? shell.actor?.membershipTeamIds[0];
+  const membershipTeamId = shell.actor?.membershipTeamIds[0];
+  const teammatesPromise = membershipTeamId ? listTeammates(membershipTeamId) : null;
+  const workspace = await workspacePromise;
+  const teamId = workspace?.registration.teamId ?? membershipTeamId;
   if (!teamId || !shell.actor) redirect("/area");
   if (!authorize(shell.actor, "team:read", { teamId }).allow) redirect("/area");
-  const rows = await listTeammates(teamId);
+  const rows =
+    teammatesPromise && teamId === membershipTeamId ? await teammatesPromise : await listTeammates(teamId);
 
   return (
     <main className={styles.main}>

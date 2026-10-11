@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { SchoolRegistrationStatus } from "@generated/client";
 import { listSchoolAccessRequests } from "@/features/school-access/data/requests";
 import { AdminFrame } from "@/features/admin/ui/AdminFrame";
+import { requireStaff } from "@/shared/authz/requireStaff";
 import { PageHeader } from "@/shared/ui/PageHeader";
 import { StatusChip, type StatusTone } from "@/shared/ui/StatusChip";
 import { Button } from "@/shared/ui/Button";
@@ -32,10 +33,13 @@ export default async function AdminSchoolRequestsPage({ searchParams }: Props) {
   const status = STATUSES.includes(query.status as SchoolRegistrationStatus)
     ? (query.status as SchoolRegistrationStatus)
     : "PENDING";
-  const rows = await listSchoolAccessRequests(status);
+  const [{ actor }, rows] = await Promise.all([
+    requireStaff("/admin/richieste"),
+    listSchoolAccessRequests(status),
+  ]);
 
   return (
-    <AdminFrame path="/admin/richieste">
+    <AdminFrame path="/admin/richieste" actor={actor}>
       <PageHeader title={it.navAdminSchoolRequests} description={it.adminSchoolRequestsHelp} />
       <form className={styles.filters} method="get">
         <div className={styles.filtersRow}>

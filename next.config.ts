@@ -8,6 +8,11 @@ const generatedClient = "./generated/client.ts";
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  experimental: {
+    staleTimes: {
+      dynamic: 30,
+    },
+  },
   turbopack: {
     resolveAlias: {
       "@generated/client": generatedClient,

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ComponentProps } from "react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { logoutAction } from "@/features/auth/actions";
@@ -26,6 +26,15 @@ type Props = {
   showSchool?: boolean;
   unreadCount?: number;
 };
+
+function NavLink(props: ComponentProps<typeof Link>) {
+  return (
+    <Link
+      {...props}
+      {...({ unstable_dynamicOnHover: true } as unknown as ComponentProps<typeof Link>)}
+    />
+  );
+}
 
 function pathAndQuery(href: string) {
   const [path, query] = href.split("?");
@@ -132,7 +141,7 @@ export function AppNav({
         <nav id="app-nav" className={styles.nav} aria-label="Principale">
           {links.map((link) => (
             <div key={link.href + link.label} className={link.children ? styles.navGroup : undefined}>
-              <Link
+              <NavLink
                 href={link.href}
                 className={
                   (link.children ? isGroupActive(link, pathname) : isActive(link.href, pathname, search))
@@ -151,9 +160,9 @@ export function AppNav({
                     {link.badge}
                   </span>
                 ) : null}
-              </Link>
+              </NavLink>
               {link.children?.map((child) => (
-                <Link
+                <NavLink
                   key={child.href}
                   href={child.href}
                   className={`${styles.navChild} ${isActive(child.href, pathname, search) ? styles.navActive : ""}`}
@@ -161,7 +170,7 @@ export function AppNav({
                   onClick={() => setOpen(false)}
                 >
                   {child.label}
-                </Link>
+                </NavLink>
               ))}
             </div>
           ))}

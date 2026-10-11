@@ -1,15 +1,16 @@
 import { listPaymentsAdmin } from "@/features/admin/data/catalog";
 import { decimalText } from "@/features/admin/domain/format";
 import { AdminFrame } from "@/features/admin/ui/AdminFrame";
+import { requireStaff } from "@/shared/authz/requireStaff";
 import { PageHeader } from "@/shared/ui/PageHeader";
 import { StatusChip } from "@/shared/ui/StatusChip";
 import { it } from "@/shared/i18n/it";
 import styles from "@/features/admin/ui/admin.module.css";
 
 export default async function AdminPaymentsPage() {
-  const payments = await listPaymentsAdmin();
+  const [{ actor }, payments] = await Promise.all([requireStaff("/admin/pagamenti"), listPaymentsAdmin()]);
   return (
-    <AdminFrame path="/admin/pagamenti">
+    <AdminFrame path="/admin/pagamenti" actor={actor}>
       <PageHeader title={it.navAdminPayments} description={it.adminPaymentsHelp} />
       {payments.length === 0 ? (
         <p className={styles.empty}>{it.adminPaymentsEmpty}</p>

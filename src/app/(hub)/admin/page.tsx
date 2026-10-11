@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { adminHubStats } from "@/features/admin/data/catalog";
 import { AdminFrame } from "@/features/admin/ui/AdminFrame";
+import { requireStaffOrReviewer } from "@/shared/authz/requireStaff";
 import { PageHeader } from "@/shared/ui/PageHeader";
 import { it } from "@/shared/i18n/it";
 import styles from "@/features/admin/ui/admin.module.css";
@@ -18,9 +19,9 @@ const HUB_SECTIONS = [
 ] as const;
 
 export default async function AdminHubPage() {
-  const stats = await adminHubStats();
+  const [{ actor }, stats] = await Promise.all([requireStaffOrReviewer("/admin"), adminHubStats()]);
   return (
-    <AdminFrame path="/admin" allowReviewer>
+    <AdminFrame path="/admin" allowReviewer actor={actor}>
       <PageHeader kicker={it.navAdmin} title={it.adminHubTitle} description={it.adminHubHelp} />
       <div className={styles.stats}>
         <p className={styles.stat}>
