@@ -6,24 +6,24 @@ import {
   ADOBE_FONTS_ORIGINS,
   CONSENT_COOKIE_NAME,
   RETIRED_COOKIE_NAMES,
+  VERCEL_SCRIPTS_ORIGIN,
   optionalTechnologies,
 } from "@/shared/cookies/inventory";
 
 const protectedPrefixes = ["/area", "/squadra", "/admin"];
 
 function csp(nonce: string) {
-  const scriptSrc =
-    process.env.NODE_ENV === "development"
-      ? `'self' 'nonce-${nonce}' 'unsafe-eval'`
-      : `'self' 'nonce-${nonce}'`;
+  const isDev = process.env.NODE_ENV === "development";
+  const scriptSrc = isDev ? `'self' 'nonce-${nonce}' 'unsafe-eval'` : `'self' 'nonce-${nonce}'`;
   const fontSources = ADOBE_FONTS_ORIGINS.join(" ");
+  const vercelScripts = isDev ? ` ${VERCEL_SCRIPTS_ORIGIN}` : "";
   return [
     "default-src 'self'",
     "img-src 'self' data: blob:",
     `style-src 'self' 'unsafe-inline' ${fontSources}`,
-    `script-src ${scriptSrc}`,
+    `script-src ${scriptSrc}${vercelScripts}`,
     `font-src 'self' ${fontSources}`,
-    "connect-src 'self'",
+    `connect-src 'self'${vercelScripts}`,
     "frame-src 'none'",
     "frame-ancestors 'none'",
     "base-uri 'self'",

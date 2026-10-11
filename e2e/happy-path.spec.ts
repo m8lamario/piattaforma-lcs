@@ -1,5 +1,6 @@
 import { test, expect, type Browser, type Page } from "@playwright/test";
 import { fiscalCodeControlChar } from "../src/features/players/domain/fiscalCode";
+import { rejectOptionalCookies } from "./cookies";
 import { guardianAuthorizeEmailQueued, markEmailVerified, replaceGuardianAuthorizeToken, clearRateLimits, ensureRepPassword, ensureE2eTeam } from "./db";
 
 async function readLegalDocuments(page: Page) {
@@ -37,6 +38,7 @@ async function redeemInvite(page: Page, browser: Browser) {
   await clearRateLimits("login");
   await ensureRepPassword();
   await ensureE2eTeam();
+  await rejectOptionalCookies(page.context());
   await page.goto("/accedi");
   await page.getByLabel("Email").fill("rep@gmail.com");
   await page.getByLabel("Password").fill("CiaoCiao");
@@ -48,6 +50,7 @@ async function redeemInvite(page: Page, browser: Browser) {
   expect(redeemUrl).toContain("/iscrizione/");
 
   const playerContext = await browser.newContext();
+  await rejectOptionalCookies(playerContext);
   const player = await playerContext.newPage();
   return { player, redeemUrl };
 }
@@ -146,6 +149,7 @@ test("minore: verifica email, tutore, attesa genitore e link di autorizzazione",
   const token = await replaceGuardianAuthorizeToken(email);
 
   const guardian = await browser.newPage();
+  await rejectOptionalCookies(guardian.context());
   await guardian.goto(`/autorizzazione-genitore/${token}`);
   await expect(guardian.getByRole("heading", { name: "Autorizzazione del genitore o tutore" })).toBeVisible();
   await expect(guardian.getByText("Luca Test")).toBeVisible();

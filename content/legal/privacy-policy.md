@@ -8,7 +8,7 @@ Testo del **Modulo 1** LCS 2026-27, compilato con i dati forniti da European Stu
 
 ## Come funziona su questa piattaforma
 
-L’account è del giocatore. Il nome pubblico della piattaforma è **ESL Player Hub**. L’iscrizione è ammessa dai 14 anni compiuti. Oltre ai dati del Modulo 1 tratta anche: hash della password, verifica email, cookie di sessione, ruoli, audit, inviti di squadra (il token in chiaro non è conservato), caselle di consenso una per una.
+L’account è del giocatore. Il nome pubblico della piattaforma è **ESL Player Hub**. L’iscrizione è ammessa dai 14 anni compiuti. Oltre ai dati del Modulo 1 tratta anche: hash della password, verifica email, cookie di sessione, ruoli, audit, inviti di squadra (il token in chiaro non è conservato), caselle di consenso una per una. Se accetti le statistiche dalla [pagina Cookie](/cookie), Vercel riceve percorsi di pagina (con i parametri dinamici mascherati) e metriche di prestazione, senza cookie di identificazione.
 
 **Certificato medico.** Si carica un file (PDF, JPEG o PNG): certificato di idoneità sportiva agonistica per il calcio. European Students League S.r.l. ne conserva la copia per verificare l’idoneità e la scadenza, con accesso limitato al personale autorizzato, fino a 90 giorni dopo la conclusione del torneo locale. Dettaglio: [informativa documenti](/privacy/documenti).
 

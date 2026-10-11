@@ -19,6 +19,18 @@ export async function CookiePreferences() {
     <section className={styles.panel} aria-labelledby="cookie-controls-title">
       <h2 id="cookie-controls-title">{it.cookiePanelTitle}</h2>
       <p>{optional.length === 0 ? it.cookieNoOptional : it.cookieOptionalIntro}</p>
+      {optional.length > 0 ? (
+        <>
+          <p>{it.cookieOptionalTools}</p>
+          <ul>
+            {optional.map((item) => (
+              <li key={item.id}>
+                {item.name} ({item.provider}): {item.purpose}
+              </li>
+            ))}
+          </ul>
+        </>
+      ) : null}
       <table className={styles.table}>
         <caption>{it.cookieTableCaption}</caption>
         <thead>

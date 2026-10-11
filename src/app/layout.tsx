@@ -5,6 +5,7 @@ import localFont from "next/font/local";
 import "@/shared/ui/tokens.css";
 import "./globals.css";
 import { CookieBanner } from "@/features/cookies/ui/CookieBanner";
+import { VercelInsights } from "@/features/cookies/ui/VercelInsights";
 import { ADOBE_FONTS_ORIGINS, ADOBE_FONTS_STYLESHEET } from "@/shared/cookies/inventory";
 import { it } from "@/shared/i18n/it";
 import { DEFAULT_THEME, THEME_BOOTSTRAP_SCRIPT } from "@/shared/ui/theme";
@@ -36,6 +37,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
       </head>
       <body>
         {children}
+        <VercelInsights />
         <CookieBanner />
       </body>
     </html>

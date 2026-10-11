@@ -96,6 +96,21 @@ export const FIRST_PARTY_COOKIES: readonly FirstPartyCookie[] = [
     secure: "https-only",
     setWhen: "Solo dopo la selezione esplicita di una squadra. Cancellato all’uscita dall’account.",
   },
+  {
+    id: "consent",
+    name: "eph-cookie-consent",
+    productionName: "eph-cookie-consent",
+    provider: "ESL Player Hub (prima parte)",
+    purpose: "Ricordare Accetta, Rifiuta o le categorie di statistica scelte",
+    category: "necessary",
+    durationSeconds: CONSENT_MAX_AGE_SECONDS,
+    durationLabel: "180 giorni",
+    path: "/",
+    httpOnly: true,
+    sameSite: "lax",
+    secure: "https-only",
+    setWhen: "Solo dopo Accetta, Rifiuta o Salva le preferenze.",
+  },
 ];
 
 export type OptionalTechnology = {
@@ -106,8 +121,22 @@ export type OptionalTechnology = {
   purpose: string;
 };
 
-/** Vuoto di proposito: nessun analytics, marketing o profilazione è previsto. */
-export const OPTIONAL_TECHNOLOGIES: readonly OptionalTechnology[] = [];
+export const OPTIONAL_TECHNOLOGIES: readonly OptionalTechnology[] = [
+  {
+    id: "vercel-analytics",
+    name: "Vercel Web Analytics",
+    provider: "Vercel Inc.",
+    category: "analytics",
+    purpose: "Misurare le visite alle pagine, senza cookie di identificazione",
+  },
+  {
+    id: "vercel-speed-insights",
+    name: "Vercel Speed Insights",
+    provider: "Vercel Inc.",
+    category: "analytics",
+    purpose: "Misurare le prestazioni delle pagine (Web Vitals), senza cookie di identificazione",
+  },
+];
 
 export function optionalTechnologies() {
   return OPTIONAL_TECHNOLOGIES;
@@ -143,3 +172,7 @@ export const BROWSER_COOKIE_HELP = [
 export const STRIPE_COOKIE_POLICY_URL = "https://stripe.com/it/legal/cookies-policy";
 export const STRIPE_PRIVACY_POLICY_URL = "https://stripe.com/it/privacy";
 export const ADOBE_FONTS_PRIVACY_URL = "https://www.adobe.com/privacy/policies/adobe-fonts.html";
+export const VERCEL_PRIVACY_POLICY_URL = "https://vercel.com/legal/privacy-policy";
+export const VERCEL_SCRIPTS_ORIGIN = "https://va.vercel-scripts.com";
+export const VERCEL_INSIGHTS_PATH = "/_vercel/insights";
+export const VERCEL_SPEED_INSIGHTS_PATH = "/_vercel/speed-insights";

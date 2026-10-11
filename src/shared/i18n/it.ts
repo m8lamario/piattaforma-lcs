@@ -278,12 +278,13 @@ export const it = {
     "In questa versione sono attivi solo cookie tecnici. Non ci sono strumenti di statistica, marketing o profilazione: non viene chiesta una scelta e non viene salvato un cookie di consenso.",
   cookieOptionalIntro:
     "Puoi accettare, rifiutare o scegliere le categorie non necessarie. Finché non c’è una scelta, restano spente. Puoi cambiare idea da questa pagina.",
+  cookieOptionalTools: "Strumenti di statistica, solo se li accetti:",
   cookieTableCaption: "Cookie di prima parte previsti dal codice",
   cookieColName: "Nome",
   cookieColPurpose: "Finalità",
   cookieColDuration: "Durata",
   cookieTechnicalNote:
-    "Servono all’accesso, alla protezione del login e, per il rappresentante, alla squadra selezionata.",
+    "Servono all’accesso, alla protezione del login, alla squadra selezionata per il rappresentante e a ricordare la scelta sulle statistiche.",
   cookieLogoutNote:
     "Uscire dall’account chiude la sessione e cancella la squadra selezionata su questo browser.",
   cookieBrowserNote: "Puoi eliminarli anche dalle impostazioni del browser.",
