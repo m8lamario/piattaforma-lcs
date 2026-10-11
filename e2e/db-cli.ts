@@ -33,6 +33,103 @@ async function main() {
       process.stdout.write(String(count > 0));
       return;
     }
+    if (command === "ensure-rep-password") {
+      const { hashPassword, verifyPassword } = await import("../src/features/auth/domain/password");
+      const passwordHash = await hashPassword("CiaoCiao");
+      const user = await prisma.user.update({
+        where: { email: value },
+        data: { passwordHash },
+        select: { passwordHash: true },
+      });
+      const seedMatches = user.passwordHash
+        ? await verifyPassword("CiaoCiao", user.passwordHash)
+        : false;
+      process.stdout.write(seedMatches ? "ok" : "mismatch");
+      return;
+    }
+    if (command === "ensure-e2e-team") {
+      const user = await prisma.user.findUnique({ where: { email: value }, select: { id: true } });
+      if (!user) throw new Error("Utente rappresentante assente");
+
+      const competition = await prisma.competition.upsert({
+        where: { slug: "e2e-playwright" },
+        update: { name: "E2E Playwright Cup" },
+        create: { slug: "e2e-playwright", name: "E2E Playwright Cup" },
+      });
+      const edition = await prisma.edition.upsert({
+        where: {
+          competitionId_year_name: {
+            competitionId: competition.id,
+            year: 2026,
+            name: "E2E",
+          },
+        },
+        update: {
+          isActive: true,
+          paymentMode: "PLAYER",
+          playerFeeAmount: 40,
+          registrationOpensAt: new Date(Date.now() - 86_400_000),
+          registrationClosesAt: new Date(Date.now() + 365 * 86_400_000),
+        },
+        create: {
+          competitionId: competition.id,
+          name: "E2E",
+          year: 2026,
+          paymentMode: "PLAYER",
+          playerFeeAmount: 40,
+          teamFeeAmount: 200,
+          isActive: true,
+          registrationOpensAt: new Date(Date.now() - 86_400_000),
+          registrationClosesAt: new Date(Date.now() + 365 * 86_400_000),
+        },
+      });
+      await prisma.editionRequirement.createMany({
+        data: [
+          { editionId: edition.id, code: "PERSONAL_DATA", required: true, appliesTo: "ALL" },
+          { editionId: edition.id, code: "GUARDIAN_IF_MINOR", required: true, appliesTo: "MINOR" },
+          { editionId: edition.id, code: "MEDICAL_CERT", required: true, appliesTo: "ALL" },
+          { editionId: edition.id, code: "PRIVACY", required: true, appliesTo: "ALL" },
+          { editionId: edition.id, code: "MEDIA_RELEASE", required: true, appliesTo: "ALL" },
+          { editionId: edition.id, code: "PAYMENT", required: true, appliesTo: "ALL" },
+        ],
+        skipDuplicates: true,
+      });
+      const school = await prisma.school.upsert({
+        where: { id: "e2e-school-demo" },
+        update: { name: "E2E Scuola" },
+        create: { id: "e2e-school-demo", name: "E2E Scuola", city: "Torino" },
+      });
+      let team = await prisma.team.findFirst({
+        where: { name: "E2E Squadra", editionId: edition.id },
+      });
+      if (!team) {
+        team = await prisma.team.create({
+          data: {
+            editionId: edition.id,
+            schoolId: school.id,
+            name: "E2E Squadra",
+            inviteCode: `T-${randomBytes(4).toString("hex").toUpperCase()}`,
+            registrationToken: randomBytes(32).toString("base64url"),
+            representativeUserId: user.id,
+          },
+        });
+      } else if (team.representativeUserId !== user.id) {
+        team = await prisma.team.update({
+          where: { id: team.id },
+          data: { representativeUserId: user.id },
+        });
+      }
+      const role = await prisma.userRole.findFirst({
+        where: { userId: user.id, role: "TEAM_REPRESENTATIVE", teamId: team.id },
+      });
+      if (!role) {
+        await prisma.userRole.create({
+          data: { userId: user.id, role: "TEAM_REPRESENTATIVE", teamId: team.id },
+        });
+      }
+      process.stdout.write(team.id);
+      return;
+    }
     if (command === "clear-rate-limits") {
       await prisma.rateLimitHit.deleteMany({ where: { key: { startsWith: value } } });
       process.stdout.write("ok");

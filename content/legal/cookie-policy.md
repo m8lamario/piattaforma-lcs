@@ -1,6 +1,6 @@
-**Fonte operativa:** cookie e risorse esterne effettivamente usati da questa piattaforma di iscrizione. I moduli LCS 2026-27 (checklist) chiedono un banner con rifiuto in prima schermata e nessun tracciamento prima del consenso. **Nel codice non ci sono analytics, pixel pubblicitari o plugin social.** Il banner Accetta / Rifiuta / Preferenze è implementato ma **resta nascosto** finché non esiste uno strumento non necessario. **Non è un parere legale e non è un testo firmato.**
+**Fonte operativa:** cookie e risorse esterne effettivamente usati da questa piattaforma di iscrizione. I moduli LCS 2026-27 (checklist) chiedono un banner con rifiuto in prima schermata e nessun tracciamento prima del consenso. **Nel codice ci sono Vercel Web Analytics e Vercel Speed Insights, senza cookie di identificazione e spenti finché non registri una scelta.** Il banner Accetta / Rifiuta / Preferenze compare finché quella scelta manca. **Non è un parere legale e non è un testo firmato.**
 
-**Mole Cup, Leonessa Cup, Colosseo Cup, Ferrea Cup, Olympius e Turas Cup**, versione 1.0 del 5 ottobre 2026. Data di entrata in vigore su questa piattaforma: **5 ottobre 2026**.
+**Mole Cup, Leonessa Cup, Colosseo Cup, Ferrea Cup, Olympius e Turas Cup**, versione 1.1 del 11 ottobre 2026. Data di entrata in vigore su questa piattaforma: **11 ottobre 2026**.
 
 Questo documento **non** è un passo del wizard e **non** viene registrato come consenso versionato. Non copre i cookie dei siti delle coppe locali.
 
@@ -25,7 +25,7 @@ I nomi Auth.js hanno il prefisso `__Secure-` o `__Host-` quando il sito è servi
 | Ritorno dopo il login. Produzione: `__Secure-authjs.callback-url`. Sviluppo HTTP: `authjs.callback-url` | cookie HttpOnly, SameSite=Lax, Path=/, Secure su HTTPS | tornare alla pagina richiesta dopo il login | sessione del browser (nessun Max-Age) | prima parte | tecnico |
 | `eph-team` | cookie HttpOnly, SameSite=Lax, Path=/, Secure su HTTPS | ricordare la squadra selezionata dal rappresentante, tra quelle già autorizzate. Un valore non autorizzato viene ignorato. Si cancella all’uscita dall’account | 365 giorni | prima parte | tecnico, per la funzione di selezione squadra |
 | Checkout Stripe, solo dopo il redirect e solo se i pagamenti Stripe sono attivi | dominio del fornitore, non su questo sito. Stripe.js non è caricato qui | pagamento della quota | secondo l’[informativa cookie di Stripe](https://stripe.com/it/legal/cookies-policy) | terza parte | da confermare sull’informativa del fornitore |
-| `eph-cookie-consent` | cookie HttpOnly di prima parte, previsto solo se esistono strumenti non necessari | ricordare Accetta, Rifiuta o le singole categorie | 180 giorni, **non impostato** nella versione attuale | prima parte | tecnico di gestione del consenso, oggi assente |
+| `eph-cookie-consent` | cookie HttpOnly di prima parte | ricordare Accetta, Rifiuta o le categorie di statistica | 180 giorni, impostato solo dopo una scelta | prima parte | tecnico di gestione del consenso |
 
 Tema grafico: segue `prefers-color-scheme` del dispositivo. Lo script in pagina **non** usa cookie, `localStorage` o `sessionStorage`. Se il browser ha ancora un cookie residuo `eph-theme`, la piattaforma lo cancella.
 
@@ -33,7 +33,7 @@ Tema grafico: segue `prefers-color-scheme` del dispositivo. Lo script in pagina 
 
 Non risultano nel codice applicativo: Google Analytics, Matomo, Plausible, PostHog, Sentry; pixel Meta, TikTok o LinkedIn; widget social; captcha di terze parti; video embed. I cookie Auth.js di PKCE, state, nonce e WebAuthn non vengono usati: l’unico accesso è email e password.
 
-L’app chiede al browser di non usare fotocamera, microfono, geolocalizzazione e Payment Request API. La policy di sicurezza della pagina consente script e connessioni solo verso questa origine, oltre ai fogli e ai font Adobe indicati sotto.
+L’app chiede al browser di non usare fotocamera, microfono, geolocalizzazione e Payment Request API. In produzione la policy di sicurezza della pagina consente script e connessioni solo verso questa origine, oltre ai fogli e ai font Adobe indicati sotto. In sviluppo gli script di debug di Vercel Analytics e Speed Insights partono da `va.vercel-scripts.com`.
 
 ### Risorsa esterna caricata subito
 
@@ -41,15 +41,19 @@ Adobe Fonts, kit `ajb7nmd` (`https://use.typekit.net/ajb7nmd.css`), fornisce Hel
 
 Una richiesta diretta al foglio di stile, al ping e a un file del font **non** ha restituito l’header `Set-Cookie`. Il codice di questa piattaforma non imposta cookie Adobe. Se il browser ha già una sessione Adobe, il comportamento resta **da confermare**. La richiesta parte al primo caricamento di ogni pagina, prima di qualunque scelta, perché i font fanno parte dell’interfaccia e non esiste uno strumento di tracciamento da bloccare. Informativa del fornitore: [Adobe Fonts privacy](https://www.adobe.com/privacy/policies/adobe-fonts.html). Il trasferimento verso Adobe (Stati Uniti) e l’eventuale accordo art. 28 sono **da confermare**: Adobe non è nell’elenco fornitori del modulo F.
 
+### Statistiche, solo dopo consenso
+
+Vercel Web Analytics (`/_vercel/insights`) e Vercel Speed Insights (`/_vercel/speed-insights`). Fornitore: Vercel Inc. Script e invio dati sulla stessa origine. **Non** impostano cookie, `localStorage` o `sessionStorage`. Trasmettono percorso di pagina (i segmenti dinamici, ad esempio un token di invito, sono sostituiti dal pattern di rotta), referrer, user agent e metriche di prestazione (Web Vitals). Restano spenti finché non scegli Accetta o la categoria Statistiche. Informativa del fornitore: [Vercel Privacy Policy](https://vercel.com/legal/privacy-policy).
+
 ---
 
 ## 3. Base giuridica e banner
 
-I quattro cookie di questa piattaforma (sessione di accesso, protezione del login, ritorno dopo il login e memorizzazione della squadra selezionata dal rappresentante) sono esclusivamente funzionali al funzionamento e alla sicurezza del servizio. Non ci sono cookie di statistica, profilazione o pubblicità. L’organizzazione li qualifica come cookie tecnici strettamente necessari. Il banner di consenso resta disattivato.
+I cookie di questa piattaforma (sessione di accesso, protezione del login, ritorno dopo il login, memorizzazione della squadra selezionata dal rappresentante e memorizzazione della scelta sulle statistiche) sono funzionali al funzionamento, alla sicurezza o alla gestione del consenso. Non ci sono cookie di statistica, profilazione o pubblicità. L’organizzazione li qualifica come cookie tecnici.
 
-Non ci sono cookie non tecnici. Se ne venissero aggiunti, restano spenti finché la persona non registra una scelta.
+Vercel Web Analytics e Speed Insights non usano cookie, ma restano strumenti di statistica non necessari. Il banner Accetta / Rifiuta / Preferenze compare finché non registri una scelta. Senza scelta, o dopo Rifiuta, gli script non partono.
 
-La scelta, quando servirà, si modifica o si revoca da questa pagina. Revocare riporta allo stato «nessuna scelta» e rispegne gli strumenti non necessari. Uscire dall’account non è la revoca di un consenso cookie: chiude la sessione e cancella `eph-team`.
+La scelta si modifica o si revoca da questa pagina. Revocare riporta allo stato «nessuna scelta» e rispegne gli strumenti non necessari. Uscire dall’account non è la revoca di un consenso cookie: chiude la sessione e cancella `eph-team`.
 
 ---
 
@@ -65,7 +69,7 @@ La scelta, quando servirà, si modifica o si revoca da questa pagina. Revocare r
 
 Checkout: se attivo, cookie e dati sul dominio Stripe seguono la sua [informativa cookie](https://stripe.com/it/legal/cookies-policy) e la sua [informativa privacy](https://stripe.com/it/privacy). Il pagamento si apre sul sito di Stripe solo quando la persona avvia il checkout.
 
-Email e storage file non impostano cookie di tracciamento in questa app. Le email usano HTML di presentazione (logo e stile) e un fallback testuale; non includono pixel di apertura. I certificati sono letti dal server e consegnati da questa piattaforma (`/api/documents/file`), non dal dominio dello storage nel browser. Confermato nel codice dell’app: Resend invia HTML + testo, senza pixel di apertura; i file non sono aperti dal browser sul dominio R2. Tracking nel pannello Resend e cookie aggiunti dall’hosting Vercel restano fuori da questo codice. Trasferimenti extra-UE: vedi [informativa privacy](/privacy). Adobe Fonts: vedi la sezione 2.
+Email e storage file non impostano cookie di tracciamento in questa app. Le email usano HTML di presentazione (logo e stile) e un fallback testuale; non includono pixel di apertura. I certificati sono letti dal server e consegnati da questa piattaforma (`/api/documents/file`), non dal dominio dello storage nel browser. Confermato nel codice dell’app: Resend invia HTML + testo, senza pixel di apertura; i file non sono aperti dal browser sul dominio R2. Tracking nel pannello Resend resta fuori da questo codice. Vercel Web Analytics e Speed Insights, se accettati, inviano dati a Vercel dalla stessa origine. Trasferimenti extra-UE: vedi [informativa privacy](/privacy). Adobe Fonts: vedi la sezione 2.
 
 ---
 

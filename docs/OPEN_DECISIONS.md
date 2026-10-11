@@ -173,12 +173,12 @@ Già coperti: no PWA in M0; scan OD-021.
 
 ## OD-027 Cookie banner, analytics e tracciamenti
 
-- **Problema:** Esistono cookie tecnici Auth.js e `eph-team`. Nel codice non ci sono analytics né pixel. Il tema UI segue `prefers-color-scheme` e non usa cookie. Adobe Fonts è caricato su ogni pagina (font dell’interfaccia; le risposte verificate non impostano `Set-Cookie`).
+- **Problema:** Esistono cookie tecnici Auth.js, `eph-team` e, dopo una scelta, `eph-cookie-consent`. Il tema UI segue `prefers-color-scheme` e non usa cookie. Adobe Fonts è caricato su ogni pagina (font dell’interfaccia; le risposte verificate non impostano `Set-Cookie`).
 - **Opzioni:** solo cookie tecnici senza banner; banner se si aggiungono analitici; niente terze parti.
-- **Decisione tecnica (codice):** niente analytics/pixel. Durata sessione fissata a 30 giorni. `eph-team` Secure su HTTPS e cancellato al logout. Il banner Accetta / Rifiuta / Preferenze esiste ma non viene mostrato finché l’elenco degli strumenti non necessari è vuoto. Quegli strumenti restano spenti senza una scelta registrata. Il cookie di scelta non viene scritto finché l’elenco è vuoto.
-- **Decisione dell’organizzazione (6 ottobre 2026):** i quattro cookie (sessione, protezione del login, ritorno dopo il login, squadra selezionata) sono tecnici strettamente necessari. Niente cookie di statistica, profilazione o pubblicità. Il banner resta disattivato. Prima di introdurre analytics o pixel: aggiornare `cookie-policy` e l’inventario.
+- **Decisione tecnica (codice, 11 ottobre 2026):** Vercel Web Analytics e Speed Insights sono in `OPTIONAL_TECHNOLOGIES` (categoria `analytics`). Non impostano cookie propri; restano spenti senza una scelta. Il banner Accetta / Rifiuta / Preferenze viene mostrato. `eph-cookie-consent` (180 giorni) memorizza la scelta. Durata sessione 30 giorni. `eph-team` Secure su HTTPS e cancellato al logout.
+- **Decisione dell’organizzazione (6 ottobre 2026):** i cookie di piattaforma (sessione, protezione del login, ritorno dopo il login, squadra selezionata) sono tecnici strettamente necessari. Niente cookie di statistica, profilazione o pubblicità. Prima di introdurre analytics o pixel: aggiornare `cookie-policy` e l’inventario. Gli SDK Vercel sono cookieless e passano dal blocco del consenso, come richiesto dai moduli LCS e da `cookie-policy` §6.
 - **Conseguenze:** un nuovo consenso cookie non è un `ConsentRecord` del wizard.
-- **Impatto:** pagina `/cookie` con inventario. Il banner non viene mostrato finché l’elenco degli strumenti non necessari è vuoto.
+- **Impatto:** pagina `/cookie` con inventario. Il banner resta visibile finché manca una scelta.
 
 ## OD-028 Condizioni di iscrizione (`terms`) nel wizard
 

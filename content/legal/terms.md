@@ -71,7 +71,17 @@ Se l’edizione lo prevede, la quota è di **40 euro per partecipante** e si pag
 
 A seguito del pagamento, la piattaforma invia una conferma elettronica all’email dell’iscrizione, con almeno importo, data, stato e identificativo della transazione.
 
-Il rimborso può essere richiesto fino a 5 mesi prima dell’inizio del torneo locale. Decorso quel termine la quota non è rimborsabile, salvo i casi previsti dalla legge o da questi Termini. La documentazione fiscale della quota segue gli obblighi applicabili, previa verifica con il commercialista.
+Il rimborso può essere richiesto fino a 5 mesi prima dell’inizio del torneo locale. Decorso quel termine la quota non è rimborsabile, salvo i casi previsti dalla legge o da questi Termini.
+
+Restano in ogni caso ammessi, previa adeguata certificazione medica e verifica da parte dell’organizzazione, i **rimborsi integrali** della quota nei casi seguenti:
+
+- **condizioni di salute certificate nel corso del 2027** che impediscano la partecipazione alla competizione per la quale è stata versata la quota;
+- **infortunio certificato** almeno **quarantacinque (45) giorni** prima dell’inizio del torneo locale;
+- **altre condizioni di salute** che impediscano la partecipazione alla competizione, qualora la documentazione medica sia adeguata a comprovare l’impedimento.
+
+La richiesta di rimborso per i casi di cui sopra va presentata secondo le modalità indicate dall’organizzazione (contatti al punto 15), con la documentazione medica idonea. L’organizzazione valuta la richiesta nei limiti di questi Termini.
+
+La documentazione fiscale della quota segue gli obblighi applicabili, previa verifica con il commercialista.
 
 ---
 

@@ -7,13 +7,18 @@ export default defineConfig({
   fullyParallel: false,
   retries: process.env.CI ? 1 : 0,
   use: {
-    baseURL: process.env.AUTH_URL ?? "http://localhost:3000",
+    baseURL: "http://localhost:3000",
     ...devices["Desktop Chrome"],
   },
   webServer: {
     command: "npm run start",
-    url: process.env.AUTH_URL ?? "http://localhost:3000",
+    url: "http://localhost:3000",
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
+    env: {
+      ...process.env,
+      PAYMENT_DRIVER: "stub",
+      AUTH_URL: "http://localhost:3000",
+    },
   },
 });
