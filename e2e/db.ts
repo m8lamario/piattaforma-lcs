@@ -14,6 +14,14 @@ function run(command: string, value: string) {
   return lines[lines.length - 1] ?? "";
 }
 
+export async function ensureRepPassword() {
+  run("ensure-rep-password", "rep@gmail.com");
+}
+
+export async function ensureE2eTeam() {
+  run("ensure-e2e-team", "rep@gmail.com");
+}
+
 export async function markEmailVerified(email: string) {
   run("verify-email", email);
 }

@@ -1,6 +1,6 @@
 import { test, expect, type Browser, type Page } from "@playwright/test";
 import { fiscalCodeControlChar } from "../src/features/players/domain/fiscalCode";
-import { guardianAuthorizeEmailQueued, markEmailVerified, replaceGuardianAuthorizeToken, clearRateLimits } from "./db";
+import { guardianAuthorizeEmailQueued, markEmailVerified, replaceGuardianAuthorizeToken, clearRateLimits, ensureRepPassword, ensureE2eTeam } from "./db";
 
 async function readLegalDocuments(page: Page) {
   const open = page.getByRole("button", { name: "Leggi l’informativa" });
@@ -35,6 +35,8 @@ async function checkConsentBoxes(page: Page) {
 async function redeemInvite(page: Page, browser: Browser) {
   await clearRateLimits("redeem");
   await clearRateLimits("login");
+  await ensureRepPassword();
+  await ensureE2eTeam();
   await page.goto("/accedi");
   await page.getByLabel("Email").fill("rep@gmail.com");
   await page.getByLabel("Password").fill("CiaoCiao");

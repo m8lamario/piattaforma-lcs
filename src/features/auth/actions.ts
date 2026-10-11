@@ -46,7 +46,28 @@ export async function loginAction(_prev: ActionFailure | undefined, formData: Fo
   }
 
   const loginKey = await clientKey("login");
-  if (!(await consumeRateLimit(loginKey, RATE_LIMITS.login.limit, RATE_LIMITS.login.windowMs))) {
+  const rateOk = await consumeRateLimit(loginKey, RATE_LIMITS.login.limit, RATE_LIMITS.login.windowMs);
+  // #region agent log
+  fetch("http://127.0.0.1:7693/ingest/5c6b6d7d-171d-41fc-8f12-2fa6a7b3b82d", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "9b8024" },
+    body: JSON.stringify({
+      sessionId: "9b8024",
+      runId: "pre-fix",
+      hypothesisId: "C",
+      location: "src/features/auth/actions.ts:loginAction",
+      message: "login action after parse",
+      data: {
+        passwordLen: parsed.data.password.length,
+        emailLen: parsed.data.email.length,
+        rateOk,
+        loginKeyPrefix: loginKey.split(":")[0],
+      },
+      timestamp: Date.now(),
+    }),
+  }).catch(() => {});
+  // #endregion
+  if (!rateOk) {
     return fail("AUTH_RATE_LIMITED");
   }
 
