@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { logoutAction } from "@/features/auth/actions";
-import { WithdrawForm } from "@/features/registrations/ui/WithdrawForm";
 import { it } from "@/shared/i18n/it";
 import { Button } from "./Button";
 import { Icon, type IconName } from "./Icon";
@@ -26,7 +25,6 @@ type Props = {
   showConsents?: boolean;
   showSchool?: boolean;
   unreadCount?: number;
-  withdrawRegistrationId?: string | null;
 };
 
 function pathAndQuery(href: string) {
@@ -72,7 +70,6 @@ export function AppNav({
   showConsents = false,
   showSchool,
   unreadCount = 0,
-  withdrawRegistrationId = null,
 }: Props) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -176,7 +173,6 @@ export function AppNav({
               {it.logout}
             </Button>
           </form>
-          {withdrawRegistrationId ? <WithdrawForm registrationId={withdrawRegistrationId} quiet /> : null}
         </div>
       </div>
     </>
