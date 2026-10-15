@@ -5,7 +5,12 @@ import { redirect } from "next/navigation";
 import { AuthError } from "next-auth";
 import { auth, signIn, signOut } from "@/auth";
 import { loginSchema } from "@/features/auth/schemas/login";
-import { changePasswordSchema, requestResetSchema, resetPasswordSchema } from "@/features/auth/schemas/account";
+import {
+  changePasswordSchema,
+  changeUnverifiedEmailSchema,
+  requestResetSchema,
+  resetPasswordSchema,
+} from "@/features/auth/schemas/account";
 import { hashPassword, verifyPassword } from "@/features/auth/domain/password";
 import { createInviteToken, isWellFormedInviteToken } from "@/features/teams/domain/token";
 import { fail, failValidation, type ActionFailure, type ActionState } from "@/shared/errors";
@@ -14,7 +19,11 @@ import {
   createPasswordResetToken,
   findPasswordResetByToken,
 } from "@/features/auth/data/passwordReset";
-import { confirmEmailVerificationCode, sendEmailVerification } from "@/features/auth/data/emailVerification";
+import {
+  changeUnverifiedEmail,
+  confirmEmailVerificationCode,
+  sendEmailVerification,
+} from "@/features/auth/data/emailVerification";
 import {
   emailVerificationPath,
   normalizeEmailVerifyCode,
@@ -255,6 +264,41 @@ export async function resendEmailVerificationAction(): Promise<ActionFailure | {
     const sent = await sendEmailVerification({ userId: user.id, email: user.email });
     if (!sent.sent) return fail("AUTH_EMAIL_CODE_COOLDOWN");
     return { sent: true };
+  } catch {
+    return fail("SYSTEM_UNEXPECTED");
+  }
+}
+
+export async function changeUnverifiedEmailAction(
+  _prev: ActionFailure | { changed?: true; unchanged?: true } | undefined,
+  formData: FormData,
+): Promise<ActionFailure | { changed: true } | { unchanged: true }> {
+  const session = await auth();
+  if (!session?.user?.id) redirect("/accedi?next=/verifica-email");
+
+  const parsed = changeUnverifiedEmailSchema.safeParse({ email: formData.get("email") });
+  if (!parsed.success) return failValidation(parsed.error.issues[0]?.message);
+
+  const rateKey = await clientKey(`email-change:${session.user.id}`);
+  if (!(await consumeRateLimit(rateKey, RATE_LIMITS.emailChange.limit, RATE_LIMITS.emailChange.windowMs))) {
+    return fail("AUTH_RATE_LIMITED");
+  }
+
+  try {
+    const result = await changeUnverifiedEmail({ userId: session.user.id, nextEmail: parsed.data.email });
+    if (!result.ok) {
+      if (result.reason === "verified") return fail("AUTH_EMAIL_CHANGE_FORBIDDEN");
+      if (result.reason === "missing") return fail("AUTH_ACCOUNT_MISSING");
+      return fail("AUTH_EMAIL_CHANGE_UNAVAILABLE");
+    }
+    if (result.unchanged) return { unchanged: true };
+    await writeAuditLog({
+      actorUserId: session.user.id,
+      action: "EMAIL_CHANGE",
+      entityType: "User",
+      entityId: session.user.id,
+    });
+    return { changed: true };
   } catch {
     return fail("SYSTEM_UNEXPECTED");
   }

@@ -4,7 +4,6 @@ import { getEmailVerificationChallenge } from "@/features/auth/data/emailVerific
 import {
   emailVerificationPath,
   EMAIL_VERIFY_RESEND_SECONDS,
-  maskEmailAddress,
   pathAfterEmailVerification,
 } from "@/features/auth/domain/verify";
 import { EmailCodeForm } from "@/features/auth/ui/EmailVerifyForm";
@@ -47,7 +46,7 @@ export default async function VerifyEmailPage({ searchParams }: Props) {
       <main className={styles.main}>
         <section className={styles.auth}>
           <EmailCodeForm
-            sentTo={maskEmailAddress(user.email)}
+            currentEmail={user.email}
             nextPath={destination}
             active={challenge.active}
             expiresLabel={challenge.expiresAt ? it.emailVerifyExpires.replace("{when}", formatExpiry(challenge.expiresAt)) : null}

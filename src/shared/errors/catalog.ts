@@ -79,6 +79,10 @@ export const ERROR_CATALOG: Record<ErrorCode, ErrorDefinition> = {
   AUTH_EMAIL_CODE_COOLDOWN: def("AUTH", "Reinvio del codice verifica ancora in cooldown.", 429, "wait", {
     severity: "warning",
   }),
+  AUTH_EMAIL_CHANGE_FORBIDDEN: def("AUTH", "Cambio email rifiutato su account già verificato.", 403, "none"),
+  AUTH_EMAIL_CHANGE_UNAVAILABLE: def("AUTH", "Nuova email assente, già usata o non ammessa.", 409, "correct_input", {
+    retrySafe: true,
+  }),
 
   FORBIDDEN_RESOURCE: def("AUTHZ", "authorize ha negato l’azione sulla risorsa.", 403, "none"),
   FORBIDDEN_REGISTRATION_WRITE: def("AUTHZ", "registration:write denied.", 403, "none"),

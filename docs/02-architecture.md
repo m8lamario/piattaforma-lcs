@@ -192,7 +192,7 @@ Principio cardine:
 | ADR-008 | Next.js 16 `proxy.ts` per le route autenticate |
 | ADR-009 | Token invito in chiaro solo in URL/email; in DB solo SHA-256 |
 | ADR-010 | Redeem di email già registrata richiede login: il token non resetta la password |
-| ADR-011 | L’email si conferma con un codice numerico a 6 cifre, con scadenza, cooldown di reinvio e limite di tentativi. Il riscatto di un invito o l’attivazione account non marca `emailVerified` |
+| ADR-011 | L’email si conferma con un codice numerico a 6 cifre, con scadenza, cooldown di reinvio e limite di tentativi. Il riscatto di un invito o l’attivazione account non marca `emailVerified`. Finché `emailVerified` è assente, l’utente autenticato può correggere l’indirizzo: i codici precedenti si invalidano e se ne invia uno solo al nuovo indirizzo |
 | ADR-012 | Attach membership non degrada un ruolo squadra già presente |
 | ADR-013 | Wizard a passi con flag `implemented` per sbloccare M3–M5 senza riscrivere il percorso |
 | ADR-014 | File medici: token HMAC legato a `documentId`+`userId`+scadenza; stream interno; mai storage key in URL |
