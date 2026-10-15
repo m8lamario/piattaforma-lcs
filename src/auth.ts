@@ -54,17 +54,19 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (token.sub) {
         const row = await prisma.user.findUnique({
           where: { id: token.sub },
-          select: { lifecycleStatus: true },
+          select: { lifecycleStatus: true, email: true },
         });
         if (!row || row.lifecycleStatus !== "ACTIVE") {
           return {};
         }
+        token.email = row.email;
       }
       return token;
     },
     session({ session, token }) {
       if (session.user && token.sub) {
         session.user.id = token.sub;
+        if (typeof token.email === "string") session.user.email = token.email;
       }
       return session;
     },

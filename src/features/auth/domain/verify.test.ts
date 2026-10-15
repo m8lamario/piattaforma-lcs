@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   createEmailVerifyCode,
+  decideUnverifiedEmailChange,
   emailCodeHashesMatch,
   emailVerificationPath,
   emailVerifyIdentifier,
@@ -8,6 +9,7 @@ import {
   hashEmailVerifyCode,
   judgeEmailVerifyCode,
   maskEmailAddress,
+  normalizeAccountEmail,
   normalizeEmailVerifyCode,
   pathAfterEmailVerification,
   safeInternalPath,
@@ -69,5 +71,37 @@ describe("codice di verifica email", () => {
     expect(pathAfterEmailVerification("/squadra")).toBe("/squadra");
     expect(pathAfterEmailVerification("/verifica-email?next=%2Farea")).toBe("/area");
     expect(pathAfterEmailVerification(null)).toBe("/area");
+  });
+
+  it("consente il cambio email solo se l’account non è ancora verificato", () => {
+    expect(normalizeAccountEmail(" Mario.M8la@Gmail.com ")).toBe("mario.m8la@gmail.com");
+    expect(
+      decideUnverifiedEmailChange({
+        currentEmail: "mario.m8la@gmal.com",
+        nextEmail: "mario.m8la@gmail.com",
+        verified: false,
+      }),
+    ).toBe("ok");
+    expect(
+      decideUnverifiedEmailChange({
+        currentEmail: "mario.m8la@gmail.com",
+        nextEmail: "Mario.M8la@gmail.com",
+        verified: false,
+      }),
+    ).toBe("noop");
+    expect(
+      decideUnverifiedEmailChange({
+        currentEmail: "mario.m8la@gmal.com",
+        nextEmail: "mario.m8la@gmail.com",
+        verified: true,
+      }),
+    ).toBe("verified");
+    expect(
+      decideUnverifiedEmailChange({
+        currentEmail: "mario.m8la@gmal.com",
+        nextEmail: "",
+        verified: false,
+      }),
+    ).toBe("invalid");
   });
 });

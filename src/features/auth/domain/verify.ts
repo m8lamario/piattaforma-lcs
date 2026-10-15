@@ -87,3 +87,22 @@ export function pathAfterEmailVerification(nextPath: string | null | undefined) 
   }
   return next;
 }
+
+export function normalizeAccountEmail(email: string) {
+  return email.trim().toLowerCase();
+}
+
+export type UnverifiedEmailChangeDecision = "noop" | "ok" | "verified" | "invalid";
+
+export function decideUnverifiedEmailChange(input: {
+  currentEmail: string;
+  nextEmail: string;
+  verified: boolean;
+}): UnverifiedEmailChangeDecision {
+  const current = normalizeAccountEmail(input.currentEmail);
+  const next = normalizeAccountEmail(input.nextEmail);
+  if (!next || !next.includes("@")) return "invalid";
+  if (input.verified) return "verified";
+  if (current === next) return "noop";
+  return "ok";
+}

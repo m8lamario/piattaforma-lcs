@@ -2,11 +2,13 @@ import { randomBytes } from "node:crypto";
 import { prisma } from "@/shared/lib/prisma";
 import {
   createEmailVerifyCode,
+  decideUnverifiedEmailChange,
   emailCodeHashesMatch,
   emailVerifyIdentifier,
   emailVerifyResendDelayMs,
   hashEmailVerifyCode,
   judgeEmailVerifyCode,
+  normalizeAccountEmail,
   normalizeEmailVerifyCode,
 } from "@/features/auth/domain/verify";
 import { EMAIL_VERIFY_HOURS, appOrigin } from "@/shared/config/app";
@@ -186,4 +188,66 @@ export async function confirmEmailVerificationCode(input: { userId: string; emai
 
     return { ok: false as const, reason: "invalid" as const };
   });
+}
+
+function isUniqueConflict(error: unknown) {
+  return typeof error === "object" && error !== null && "code" in error && Reflect.get(error, "code") === "P2002";
+}
+
+export async function changeUnverifiedEmail(input: { userId: string; nextEmail: string }) {
+  const nextEmail = normalizeAccountEmail(input.nextEmail);
+  const user = await prisma.user.findUnique({
+    where: { id: input.userId },
+    select: { email: true, emailVerified: true, lifecycleStatus: true },
+  });
+  if (!user || user.lifecycleStatus !== "ACTIVE") {
+    return { ok: false as const, reason: "missing" as const };
+  }
+
+  const decision = decideUnverifiedEmailChange({
+    currentEmail: user.email,
+    nextEmail,
+    verified: Boolean(user.emailVerified),
+  });
+  if (decision === "invalid") return { ok: false as const, reason: "invalid" as const };
+  if (decision === "verified") return { ok: false as const, reason: "verified" as const };
+  if (decision === "noop") return { ok: true as const, unchanged: true as const, email: user.email };
+
+  const taken = await prisma.user.findUnique({
+    where: { email: nextEmail },
+    select: { id: true },
+  });
+  if (taken) return { ok: false as const, reason: "taken" as const };
+
+  const previousEmail = user.email;
+  const previousIdentifier = emailVerifyIdentifier(previousEmail);
+  const previousAttempts = attemptKey(previousEmail);
+
+  try {
+    await prisma.$transaction(async (tx) => {
+      await tx.user.update({
+        where: { id: input.userId },
+        data: { email: nextEmail, emailVerified: null },
+      });
+      await tx.verificationToken.deleteMany({ where: { identifier: previousIdentifier } });
+      await tx.rateLimitHit.deleteMany({ where: { key: previousAttempts } });
+      await tx.schoolRegistrationRequest.updateMany({
+        where: { userId: input.userId },
+        data: { email: nextEmail },
+      });
+      await tx.team.updateMany({
+        where: { representativeUserId: input.userId, contactEmail: previousEmail },
+        data: { contactEmail: nextEmail },
+      });
+    });
+  } catch (error) {
+    if (isUniqueConflict(error)) return { ok: false as const, reason: "taken" as const };
+    throw error;
+  }
+
+  const sent = await sendEmailVerification({ userId: input.userId, email: nextEmail });
+  if (!sent.sent && sent.reason === "cooldown") {
+    return { ok: true as const, unchanged: false as const, email: nextEmail, sent: false as const };
+  }
+  return { ok: true as const, unchanged: false as const, email: nextEmail, sent: true as const };
 }

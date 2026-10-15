@@ -15,6 +15,10 @@ export const requestResetSchema = z.object({
   email: z.string().trim().email("Inserisci un'email valida.").transform((value) => value.toLowerCase()),
 });
 
+export const changeUnverifiedEmailSchema = z.object({
+  email: z.string().trim().email("Inserisci un'email valida.").transform((value) => value.toLowerCase()),
+});
+
 export const resetPasswordSchema = z
   .object({
     token: z.string().min(20, "Link non valido."),

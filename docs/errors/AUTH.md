@@ -15,5 +15,7 @@
 | AUTH_EMAIL_CODE_EXPIRED | AUTH | Codice verifica scaduto | Oltre la validità | Il codice è scaduto. Richiedine uno nuovo | Riprova | `verifyEmailCodeAction` |
 | AUTH_EMAIL_CODE_LOCKED | AUTH | Tentativi del codice esauriti | Troppi inserimenti | Troppi tentativi. Richiedi un nuovo codice | Riprova | `verifyEmailCodeAction` |
 | AUTH_EMAIL_CODE_COOLDOWN | AUTH | Reinvio ancora in cooldown | Richiesta troppo ravvicinata | Attendi un momento prima di richiedere un nuovo codice | Attendi | `resendEmailVerificationAction` |
+| AUTH_EMAIL_CHANGE_FORBIDDEN | AUTH | Cambio email su account già verificato | emailVerified presente | L’indirizzo è già confermato. Non puoi cambiarlo da qui | Nessuno | `changeUnverifiedEmailAction` |
+| AUTH_EMAIL_CHANGE_UNAVAILABLE | AUTH | Nuova email non usabile | Occupata, assente o non valida | Non possiamo usare questo indirizzo. Controlla e riprova | Correggi | `changeUnverifiedEmailAction` |
 
 Login su account `DELETED` / `ANONYMIZED`: stesso fail `AUTH_INVALID_CREDENTIALS` (anti-enumerazione). Non si rivela se l’email esiste o è chiusa. I codici `LIFECYCLE_ACCOUNT_*` sono per admin e catalogo, non per la pagina di accesso.
