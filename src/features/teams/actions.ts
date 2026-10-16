@@ -373,6 +373,27 @@ export async function joinTeamAction(
   _prev: ActionFailure | undefined,
   formData: FormData,
 ) {
+  const categoryRaw = formData.get("category");
+  // #region agent log
+  fetch("http://127.0.0.1:7693/ingest/5c6b6d7d-171d-41fc-8f12-2fa6a7b3b82d", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "3862ef" },
+    body: JSON.stringify({
+      sessionId: "3862ef",
+      runId: "pre-fix",
+      hypothesisId: "A",
+      location: "src/features/teams/actions.ts:joinTeamAction",
+      message: "joinTeamAction received form fields",
+      data: {
+        hasCategory: typeof categoryRaw === "string" && categoryRaw.length > 0,
+        category: typeof categoryRaw === "string" ? categoryRaw : String(categoryRaw),
+        hasEmail: Boolean(formData.get("email")),
+        hasToken: Boolean(formData.get("token")),
+      },
+      timestamp: Date.now(),
+    }),
+  }).catch(() => undefined);
+  // #endregion
   const parsed = joinTeamSchema.safeParse({
     token: formData.get("token"),
     email: formData.get("email"),
@@ -382,6 +403,24 @@ export async function joinTeamAction(
   });
   if (!parsed.success) {
     const categoryIssue = parsed.error.issues.some((issue) => issue.path.includes("category"));
+    // #region agent log
+    fetch("http://127.0.0.1:7693/ingest/5c6b6d7d-171d-41fc-8f12-2fa6a7b3b82d", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "3862ef" },
+      body: JSON.stringify({
+        sessionId: "3862ef",
+        runId: "pre-fix",
+        hypothesisId: "A",
+        location: "src/features/teams/actions.ts:joinTeamAction:parseFail",
+        message: "joinTeamSchema rejected input",
+        data: {
+          categoryIssue,
+          issuePaths: parsed.error.issues.map((issue) => issue.path.join(".")),
+        },
+        timestamp: Date.now(),
+      }),
+    }).catch(() => undefined);
+    // #endregion
     return failValidation(
       categoryIssue
         ? "Scegli se partecipi come giocatore o come staff tecnico."
@@ -441,6 +480,24 @@ export async function joinTeamAction(
 
     const status = await ensureEmailVerification({ userId: result.user.id, email: result.user.email });
     const destination = status.verified ? "/area" : emailVerificationPath("/area");
+    // #region agent log
+    fetch("http://127.0.0.1:7693/ingest/5c6b6d7d-171d-41fc-8f12-2fa6a7b3b82d", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "3862ef" },
+      body: JSON.stringify({
+        sessionId: "3862ef",
+        runId: "pre-fix",
+        hypothesisId: "D",
+        location: "src/features/teams/actions.ts:joinTeamAction:signIn",
+        message: "joinTeamAction about to signIn",
+        data: {
+          destinationHasVerify: destination.includes("verifica-email"),
+          category: parsed.data.category,
+        },
+        timestamp: Date.now(),
+      }),
+    }).catch(() => undefined);
+    // #endregion
 
     await signIn("credentials", {
       email: result.user.email,

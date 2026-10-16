@@ -21,7 +21,29 @@ export function TeamJoinForm({ token, teamName }: { token: string; teamName: str
       className={fields.form}
       noValidate
       aria-busy={pending}
-      onSubmit={passwords.onSubmit}
+      onSubmit={(event) => {
+        const selected = new FormData(event.currentTarget).get("category");
+        // #region agent log
+        fetch("http://127.0.0.1:7693/ingest/5c6b6d7d-171d-41fc-8f12-2fa6a7b3b82d", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "3862ef" },
+          body: JSON.stringify({
+            sessionId: "3862ef",
+            runId: "pre-fix",
+            hypothesisId: "B",
+            location: "src/features/teams/ui/TeamJoinForm.tsx:onSubmit",
+            message: "TeamJoinForm submit category",
+            data: {
+              hasCategory: typeof selected === "string" && selected.length > 0,
+              category: typeof selected === "string" ? selected : String(selected),
+              noValidate: true,
+            },
+            timestamp: Date.now(),
+          }),
+        }).catch(() => undefined);
+        // #endregion
+        passwords.onSubmit(event);
+      }}
       onChange={passwords.onChange}
     >
       <input type="hidden" name="token" value={token} />

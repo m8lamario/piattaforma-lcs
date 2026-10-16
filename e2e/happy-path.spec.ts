@@ -1,7 +1,7 @@
 import { test, expect, type Browser, type Page } from "@playwright/test";
 import { fiscalCodeControlChar } from "../src/features/players/domain/fiscalCode";
 import { rejectOptionalCookies } from "./cookies";
-import { guardianAuthorizeEmailQueued, markEmailVerified, replaceGuardianAuthorizeToken, clearRateLimits, ensureRepPassword, ensureE2eTeam } from "./db";
+import { guardianAuthorizeEmailQueued, markEmailVerified, replaceGuardianAuthorizeToken, clearRateLimits, ensureRepPassword, ensureE2eTeam, userExists } from "./db";
 
 async function readLegalDocuments(page: Page) {
   const open = page.getByRole("button", { name: "Leggi l’informativa" });
@@ -55,6 +55,61 @@ async function redeemInvite(page: Page, browser: Browser) {
   return { player, redeemUrl };
 }
 
+function debugJoinLog(message: string, data: Record<string, unknown>) {
+  // #region agent log
+  fetch("http://127.0.0.1:7693/ingest/5c6b6d7d-171d-41fc-8f12-2fa6a7b3b82d", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "3862ef" },
+    body: JSON.stringify({
+      sessionId: "3862ef",
+      runId: "post-fix",
+      hypothesisId: "F",
+      location: "e2e/happy-path.spec.ts:debugJoinLog",
+      message,
+      data,
+      timestamp: Date.now(),
+    }),
+  }).catch(() => undefined);
+  // #endregion
+}
+
+async function fillJoinAsPlayer(player: Page, email: string, password: string, testId: string) {
+  await expect(player.locator("#email")).toBeVisible();
+  await player.getByRole("radio", { name: /^Giocatore/ }).check();
+  await player.locator("#email").fill(email);
+  await player.locator("#password").fill(password);
+  await player.locator("#confirmPassword").fill(password);
+  const emailValue = await player.locator("#email").inputValue();
+  debugJoinLog("join form before submit", {
+    testId,
+    emailStartsE2e: emailValue.startsWith("e2e."),
+    emailLength: emailValue.length,
+    categoryChecked: await player.getByRole("radio", { name: /^Giocatore/ }).isChecked(),
+  });
+  await player.getByRole("button", { name: "Crea account e continua" }).click();
+  const outcome = await Promise.race([
+    player.waitForURL(/\/verifica-email/, { timeout: 15_000 }).then(() => "navigated" as const),
+    player.locator('div[role="alert"] code').waitFor({ state: "visible", timeout: 15_000 }).then(() => "error" as const),
+  ]).catch(() => "timeout" as const);
+  const url = player.url();
+  const alertText = (await player.getByRole("alert").allTextContents()).join(" | ").slice(0, 240);
+  const shown = (await player.locator("strong").first().textContent().catch(() => "")) ?? "";
+  const stamp = email.split(".")[1]?.split("@")[0] ?? "";
+  debugJoinLog("join form after submit", {
+    testId,
+    outcome,
+    pathname: new URL(url).pathname,
+    hasVerificaInUrl: url.includes("verifica-email"),
+    heading: (await player.locator("h1").first().textContent()) ?? "",
+    alertText,
+    shownStartsE2e: shown.startsWith("e2e."),
+    shownLength: shown.length,
+    shownHasAt: shown.includes("@"),
+    shownIncludesStamp: stamp.length > 0 && shown.includes(stamp),
+    userExists: userExists(email),
+  });
+}
+
 test("happy path: invito, redeem, wizard minimo, pagamento stub", async ({ page, browser }) => {
   const stamp = String(Date.now());
   const email = `e2e.${stamp}@example.test`;
@@ -64,11 +119,7 @@ test("happy path: invito, redeem, wizard minimo, pagamento stub", async ({ page,
 
   const { player, redeemUrl } = await redeemInvite(page, browser);
   await player.goto(redeemUrl);
-  await expect(player.locator("#email")).toBeVisible();
-  await player.locator("#email").fill(email);
-  await player.locator("#password").fill(password);
-  await player.locator("#confirmPassword").fill(password);
-  await player.getByRole("button", { name: "Crea account e continua" }).click();
+  await fillJoinAsPlayer(player, email, password, "adult");
   await expect(player).toHaveURL(/\/verifica-email/);
   await expect(player.getByLabel("Codice di verifica")).toBeVisible();
 
@@ -113,11 +164,7 @@ test("minore: verifica email, tutore, attesa genitore e link di autorizzazione",
 
   const { player, redeemUrl } = await redeemInvite(page, browser);
   await player.goto(redeemUrl);
-  await expect(player.locator("#email")).toBeVisible();
-  await player.locator("#email").fill(email);
-  await player.locator("#password").fill(password);
-  await player.locator("#confirmPassword").fill(password);
-  await player.getByRole("button", { name: "Crea account e continua" }).click();
+  await fillJoinAsPlayer(player, email, password, "minor");
   await expect(player).toHaveURL(/\/verifica-email/);
   await expect(player.getByRole("heading", { name: "Verifica email" })).toBeVisible();
   await expect(player.getByLabel("Codice di verifica")).toBeVisible();

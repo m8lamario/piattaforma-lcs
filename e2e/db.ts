@@ -26,6 +26,10 @@ export async function markEmailVerified(email: string) {
   run("verify-email", email);
 }
 
+export function userExists(email: string) {
+  return run("user-exists", email) === "yes";
+}
+
 export async function replaceGuardianAuthorizeToken(playerEmail: string) {
   return run("replace-guardian-token", playerEmail);
 }
