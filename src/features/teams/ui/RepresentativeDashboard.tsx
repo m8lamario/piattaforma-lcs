@@ -8,11 +8,14 @@ import type { PlayerWorkspace } from "@/features/registrations/data/workspace";
 import type { EditionWindow } from "@/features/registrations/domain/window";
 import { representativeNowActions } from "@/features/teams/domain/representativeActions";
 import type { RosterCounts, RosterRow } from "@/features/teams/domain/roster";
+import { JoinAsStaffForm } from "@/features/teams/ui/JoinAsStaffForm";
+import { STAFF_SLOT_LIMIT } from "@/features/teams/domain/staff";
 import { PageHeader } from "@/shared/ui/PageHeader";
 import { it } from "@/shared/i18n/it";
 import styles from "./RepresentativeDashboard.module.css";
 
 const ACTION_COPY: Record<string, string> = {
+  coach: it.areaNowCoach,
   attention: it.areaNowAttention,
   invited: it.areaNowInvited,
   inProgress: it.areaNowProgress,
@@ -42,6 +45,11 @@ type Props = {
   unreadCount: number;
   unread: UnreadItem[];
   workspace: PlayerWorkspace | null;
+  staffUsed: number;
+  coachMissing: boolean;
+  coachName: string | null;
+  showStaffJoin: boolean;
+  staffPlayerConflict: boolean;
 };
 
 export function RepresentativeDashboard({
@@ -61,6 +69,11 @@ export function RepresentativeDashboard({
   unreadCount,
   unread,
   workspace,
+  staffUsed,
+  coachMissing,
+  coachName,
+  showStaffJoin,
+  staffPlayerConflict,
 }: Props) {
   const distinctTeam = teamName.trim().toLowerCase() !== schoolName.trim().toLowerCase();
   const actions = representativeNowActions({
@@ -68,6 +81,7 @@ export function RepresentativeDashboard({
     rows: roster,
     unreadCount,
     teamPaymentDue,
+    coachMissing,
   });
   const location = schoolCity ? `${schoolName} · ${schoolCity}` : schoolName;
 
@@ -84,6 +98,13 @@ export function RepresentativeDashboard({
       <section className={styles.section}>
         <h2>{it.areaTeamStatus}</h2>
         <RosterStrip counts={counts} />
+        <p className={styles.note}>
+          {it.staffCapacity.replace("{used}", String(staffUsed)).replace("{limit}", String(STAFF_SLOT_LIMIT))}
+          {coachName ? ` · ${it.coachCurrent}: ${coachName}` : ""}
+          {coachMissing ? ` · ${it.coachMissing}` : ""}
+        </p>
+        {staffPlayerConflict ? <p className={styles.note}>{it.repStaffPlayerConflict}</p> : null}
+        {showStaffJoin ? <JoinAsStaffForm teamId={teamId} /> : null}
       </section>
 
       <section className={styles.section}>
@@ -147,6 +168,7 @@ export function RepresentativeDashboard({
           status={workspace.projectedStatus}
           checklist={workspace.checklist}
           medicalStatus={workspace.evidence.medicalStatus}
+          category={workspace.registration.category}
           publication={workspace.publication}
         />
       ) : null}

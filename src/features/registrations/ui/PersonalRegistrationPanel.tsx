@@ -44,10 +44,17 @@ type Props = {
   status: RegistrationStatus;
   checklist: ChecklistItem[];
   medicalStatus: MedicalEvidence;
+  category?: "PLAYER" | "STAFF";
   publication?: PublicationFlags | null;
 };
 
-export function PersonalRegistrationPanel({ status, checklist, medicalStatus, publication }: Props) {
+export function PersonalRegistrationPanel({
+  status,
+  checklist,
+  medicalStatus,
+  category = "PLAYER",
+  publication,
+}: Props) {
   const hero = nextHero(checklist);
   const missing = checklist.find((item) => item.status === "attention" || (item.required && item.status === "todo"));
   const settled = hero.code === "DONE" || status === "APPROVED" || status === "WITHDRAWN" || status === "REMOVED";
@@ -58,9 +65,12 @@ export function PersonalRegistrationPanel({ status, checklist, medicalStatus, pu
       <h2>{it.areaPersonalTitle}</h2>
       <div className={styles.personalChips}>
         <StatusChip tone={STATUS_TONE[status]}>{STATUS_COPY[status]}</StatusChip>
-        <StatusChip tone={medicalStatus === "approved" ? "complete" : medicalStatus === "none" ? "todo" : "attention"}>
-          {MEDICAL[medicalStatus]}
-        </StatusChip>
+        <StatusChip tone="neutral">{category === "STAFF" ? it.categoryStaff : it.categoryPlayer}</StatusChip>
+        {category === "STAFF" ? null : (
+          <StatusChip tone={medicalStatus === "approved" ? "complete" : medicalStatus === "none" ? "todo" : "attention"}>
+            {MEDICAL[medicalStatus]}
+          </StatusChip>
+        )}
         {publication ? <PublicationChips flags={publication} compact /> : null}
       </div>
       {missing && !settled ? (

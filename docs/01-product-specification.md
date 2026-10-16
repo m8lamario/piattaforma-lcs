@@ -48,6 +48,9 @@ Il giocatore entra **solo con il link della propria squadra**, indica la propria
 - Condividere l’unico link di iscrizione della squadra dalla panoramica e da `/squadra/inviti`. L’email del giocatore si raccoglie nel form, non in un invito separato.
 - Vedere la rosa con stato di registrazione, pubblicabilità e **stato** del certificato (caricato / in revisione / approvato / rifiutato / scaduto), **mai il file**.
 - Se è anche giocatore, completare la propria iscrizione e i consensi da una sezione distinta; altrimenti quelle voci non stanno nel menu.
+- Vedere lo staff tecnico (massimo 5, referente compreso se partecipa) con stato iscrizione, consensi e pagamento, mai un certificato.
+- Designare un allenatore tra lo staff della propria squadra. Senza allenatore idoneo la squadra è incompleta.
+- Partecipare lui stesso come staff tecnico, sullo stesso account, con quota e liberatorie e senza certificato medico.
 - Non vedere codice fiscale, telefono, email completa dei compagni oltre quanto strettamente necessario al roster (vedi ruoli).
 
 ## 7. Capacità organizzazione
@@ -78,6 +81,7 @@ Campi **non** mostrati ai compagni di squadra: CF, email, telefono, data di nasc
 
 Sistema documentale, non un’immagine di profilo.
 
+- Obbligatorio per i giocatori. Lo staff tecnico non lo carica e non lo vede in checklist.
 - Upload, validazione formato, limite dimensione.
 - Metadata in DB: tipo, storage key, MIME, size, hash, stato, date, scadenza, revisore, motivo rifiuto.
 - Blob su storage privato; accesso solo via signed URL breve + audit.

@@ -58,6 +58,7 @@ export async function uploadMedicalCertificateAction(
     teamId: workspace.registration.teamId,
   });
   if (!allowed.allow) return fail("FORBIDDEN_REGISTRATION_WRITE");
+  if (workspace.registration.category === "STAFF") return fail("STAFF_MEDICAL_NOT_REQUIRED");
   const windowCode = workspaceWriteCode(workspace.registration);
   if (windowCode) return fail(windowCode);
 

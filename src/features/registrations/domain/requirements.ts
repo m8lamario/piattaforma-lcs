@@ -1,5 +1,6 @@
 import type { MediaDecision } from "@/features/consents/domain/pack";
 import { isMediaComplete } from "@/features/consents/domain/pack";
+import type { ParticipantCategory } from "@/features/teams/domain/staff";
 
 export const REQUIREMENT_CODES = [
   "PERSONAL_DATA",
@@ -48,7 +49,10 @@ export type PaymentEvidence = {
   teamSucceeded: boolean;
 };
 
+export type { ParticipantCategory };
+
 export type RegistrationEvidence = {
+  category: ParticipantCategory;
   hasAccount: boolean;
   hasPersonalData: boolean;
   isMinor: boolean;
@@ -84,6 +88,11 @@ function applies(requirement: EditionRequirement, isMinorPlayer: boolean) {
   return !isMinorPlayer;
 }
 
+function requirementApplies(requirement: EditionRequirement, evidence: RegistrationEvidence) {
+  if (requirement.code === "MEDICAL_CERT" && evidence.category === "STAFF") return false;
+  return applies(requirement, evidence.isMinor);
+}
+
 export function isPaymentCovered(payment: PaymentEvidence) {
   if (payment.teamSucceeded) return true;
   if (payment.mode === "TEAM") return false;
@@ -94,7 +103,7 @@ function statusFor(
   requirement: EditionRequirement,
   evidence: RegistrationEvidence,
 ): ChecklistItemStatus {
-  if (!applies(requirement, evidence.isMinor)) return "not_applicable";
+  if (!requirementApplies(requirement, evidence)) return "not_applicable";
 
   switch (requirement.code) {
     case "PERSONAL_DATA":
@@ -134,7 +143,7 @@ export function projectChecklist(
 ): ChecklistItem[] {
   return requirements.map((requirement) => ({
     code: requirement.code,
-    required: requirement.required && applies(requirement, evidence.isMinor),
+    required: requirement.required && requirementApplies(requirement, evidence),
     status: statusFor(requirement, evidence),
   }));
 }
@@ -160,7 +169,10 @@ export function projectRegistrationStatus(
   if (!evidence.hasAccount) return "INVITED";
   if (!evidence.hasPersonalData) return "ACCOUNT_CREATED";
 
-  if (evidence.medicalStatus === "rejected" || evidence.medicalStatus === "expired") {
+  const medicalItem = checklist.find((item) => item.code === "MEDICAL_CERT");
+  const medicalRequired = Boolean(medicalItem && medicalItem.required && medicalItem.status !== "not_applicable");
+
+  if (medicalRequired && (evidence.medicalStatus === "rejected" || evidence.medicalStatus === "expired")) {
     return "CHANGES_REQUESTED";
   }
 
@@ -169,7 +181,11 @@ export function projectRegistrationStatus(
   const others = blocking.filter((item) => item.code !== "PAYMENT");
 
   if (others.length === 0 && payment) return "PAYMENT_PENDING";
-  if (evidence.medicalStatus === "pending" && others.every((item) => item.code === "MEDICAL_CERT")) {
+  if (
+    medicalRequired &&
+    evidence.medicalStatus === "pending" &&
+    others.every((item) => item.code === "MEDICAL_CERT")
+  ) {
     return "PENDING_REVIEW";
   }
   if (others.length > 0) return "IN_PROGRESS";

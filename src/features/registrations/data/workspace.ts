@@ -80,7 +80,7 @@ export async function loadPlayerWorkspace(userId: string) {
     prisma.registration.findFirst({
       where: { playerProfile: { userId } },
       orderBy: { createdAt: "desc" },
-      select: { id: true, status: true, teamId: true, editionId: true },
+      select: { id: true, status: true, teamId: true, editionId: true, category: true },
     }),
   ]);
 
@@ -117,6 +117,7 @@ export async function loadPlayerWorkspace(userId: string) {
         currency: true,
         playerFeeAmount: true,
         teamFeeAmount: true,
+        staffFeeAmount: true,
         isActive: true,
         registrationOpensAt: true,
         registrationClosesAt: true,
@@ -254,7 +255,7 @@ export async function loadPlayerWorkspace(userId: string) {
   const needsAgreement = profile.birthDate ? needsMediaAgreement(profile.birthDate) : false;
   const privacyAccepted =
     isPrivacyPackComplete(isMinorPlayer, consents) &&
-    privacyBoxesComplete(isMinorPlayer, partnersPublished, choiceMap);
+    privacyBoxesComplete(isMinorPlayer, partnersPublished, choiceMap, registration.category);
   const mediaRecorded = mediaBoxesRecorded(isMinorPlayer, choiceMap);
   const mediaDecision: "none" | "submitted" =
     mediaRecorded || mediaDecisionFrom(consents) === "submitted" ? "submitted" : "none";
@@ -277,14 +278,16 @@ export async function loadPlayerWorkspace(userId: string) {
           ? "pending"
           : "none";
 
+  const isStaff = registration.category === "STAFF";
   const evidence: RegistrationEvidence = {
+    category: registration.category,
     hasAccount: true,
     hasPersonalData: hasCompletePersonalData(profile),
     isMinor: isMinorPlayer,
     hasGuardian: guardianAuthorization === "authorized",
     hasGuardianContact: contactComplete,
     guardianAuthorization,
-    medicalStatus: medicalFromStatus(medicalRow?.status, medicalRow?.expiresAt),
+    medicalStatus: isStaff ? "none" : medicalFromStatus(medicalRow?.status, medicalRow?.expiresAt),
     privacyAccepted,
     mediaDecision,
     payment: {
@@ -357,7 +360,9 @@ export async function loadPlayerWorkspace(userId: string) {
       competitionName: competition.name,
       paymentMode: edition.paymentMode,
       currency: edition.currency,
+      category: registration.category,
       playerFeeAmount: edition.playerFeeAmount,
+      staffFeeAmount: edition.staffFeeAmount,
       teamFeeAmount: edition.teamFeeAmount,
       isActive: edition.isActive,
       registrationOpensAt: edition.registrationOpensAt,
@@ -366,7 +371,9 @@ export async function loadPlayerWorkspace(userId: string) {
     evidence,
     checklist,
     projectedStatus: projected,
-    medicalDocument: medicalRow
+    medicalDocument: isStaff
+      ? null
+      : medicalRow
       ? {
           id: medicalRow.id,
           status: medicalRow.status,

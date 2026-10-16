@@ -110,7 +110,8 @@ export default async function AdminRegistrationsPage({ searchParams }: Props) {
                     {row.playerProfile.firstName} {row.playerProfile.lastName}
                   </strong>
                   <span className={styles.meta}>
-                    {row.edition.competition.name} · {row.edition.name} · {row.team.name}
+                    {row.category === "STAFF" ? it.categoryStaff : it.categoryPlayer} · {row.edition.competition.name} ·{" "}
+                    {row.edition.name} · {row.team.name}
                   </span>
                 </span>
                 <StatusChip tone={row.status === "APPROVED" ? "complete" : row.status === "WITHDRAWN" ? "neutral" : "attention"}>

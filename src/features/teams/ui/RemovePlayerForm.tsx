@@ -12,9 +12,10 @@ type Props = {
   teamId: string;
   membershipId: string;
   lastName: string;
+  successLabel?: string;
 };
 
-export function RemovePlayerForm({ teamId, membershipId, lastName }: Props) {
+export function RemovePlayerForm({ teamId, membershipId, lastName, successLabel }: Props) {
   const [open, setOpen] = useState(false);
   const [state, action, pending] = useActionState(removePlayerAction, undefined);
   const expected = lastName.trim() || it.lifecycleRemoveConfirmWord;
@@ -22,7 +23,7 @@ export function RemovePlayerForm({ teamId, membershipId, lastName }: Props) {
   if (state && "ok" in state && state.ok) {
     return (
       <p className={fields.bannerOk} role="status">
-        {it.lifecycleRemoveSuccess}
+        {successLabel ?? it.lifecycleRemoveSuccess}
       </p>
     );
   }

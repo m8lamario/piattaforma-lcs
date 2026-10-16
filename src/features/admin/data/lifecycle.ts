@@ -277,6 +277,20 @@ export async function deleteUserAccount(input: {
         emailVerified: null,
         lifecycleStatus: "DELETED",
         deletedAt: new Date(),
+        stripeCustomerId: null,
+      },
+    });
+    await tx.payment.updateMany({
+      where: { payerUserId: decision.plan.userId },
+      data: {
+        billingName: null,
+        billingEmail: null,
+        billingLine1: null,
+        billingLine2: null,
+        billingPostalCode: null,
+        billingCity: null,
+        billingState: null,
+        billingCountry: null,
       },
     });
     await tx.auditLog.create({
@@ -335,6 +349,7 @@ export async function anonymizeUserAccount(input: {
         lifecycleStatus: "ANONYMIZED",
         anonymizedAt: new Date(),
         deletedAt: new Date(),
+        stripeCustomerId: null,
       },
     });
     if (current.playerProfile) {
@@ -350,6 +365,19 @@ export async function anonymizeUserAccount(input: {
         },
       });
     }
+    await tx.payment.updateMany({
+      where: { payerUserId: decision.plan.userId },
+      data: {
+        billingName: null,
+        billingEmail: null,
+        billingLine1: null,
+        billingLine2: null,
+        billingPostalCode: null,
+        billingCity: null,
+        billingState: null,
+        billingCountry: null,
+      },
+    });
     for (const guardianId of decision.plan.anonymizeGuardianIds) {
       await tx.guardian.update({
         where: { id: guardianId },

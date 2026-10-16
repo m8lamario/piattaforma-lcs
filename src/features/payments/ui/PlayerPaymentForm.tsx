@@ -13,9 +13,10 @@ type Props = {
   teamOnly: boolean;
   amount: number | null;
   currency: string;
+  developmentNote?: boolean;
 };
 
-export function PlayerPaymentForm({ covered, teamOnly, amount, currency }: Props) {
+export function PlayerPaymentForm({ covered, teamOnly, amount, currency, developmentNote = true }: Props) {
   const [state, action, pending] = useActionState(async () => startPlayerCheckoutAction(), undefined);
 
   if (covered) {
@@ -50,7 +51,7 @@ export function PlayerPaymentForm({ covered, teamOnly, amount, currency }: Props
         </strong>
       </p>
       <p className={fields.help}>{it.paymentHelp}</p>
-      <p className={fields.help}>{it.paymentPlaceholderFee}</p>
+      <p className={fields.help}>{developmentNote ? it.paymentPlaceholderFee : it.staffFeeNote}</p>
       {state?.error ? <ActionError error={state.error} code={state.code} /> : null}
       <div className={`${fields.actions} ${fields.sticky}`}>
         <Button type="submit" variant="success" icon="payment" disabled={pending} aria-busy={pending}>

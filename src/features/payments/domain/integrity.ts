@@ -30,6 +30,7 @@ export function webhookApplyDecision(input: {
   if (input.otherSucceededWithSameProviderId) return "duplicate";
   if (!input.current) return "not_found";
   if (input.current.status === input.incomingStatus) return "idempotent";
+  if (input.current.status === "SUCCEEDED" && input.incomingStatus === "REFUNDED") return "apply";
   if (input.current.status === "PENDING" || input.current.status === "FAILED") return "apply";
   return "conflict";
 }

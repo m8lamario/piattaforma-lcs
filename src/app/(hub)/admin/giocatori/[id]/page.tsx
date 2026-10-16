@@ -39,7 +39,7 @@ export default async function AdminPlayerPage({ params }: Props) {
   return (
     <AdminFrame path={`/admin/giocatori/${id}`} actor={actor}>
       <PageHeader
-        kicker={it.adminPlayer}
+        kicker={registration?.category === "STAFF" ? it.categoryStaff : it.adminPlayer}
         title={`${profile.firstName} ${profile.lastName}`}
         aside={
           registration ? (
@@ -135,7 +135,12 @@ export default async function AdminPlayerPage({ params }: Props) {
 
         {/* Side Column: Document review, Registration withdraw, Account lifecycle */}
         <aside className={styles.colSide}>
-          {document ? (
+          {registration?.category === "STAFF" ? (
+            <div className={styles.sideCard}>
+              <h2 className={styles.sectionTitle}>{it.stepCertificato}</h2>
+              <p className={styles.meta}>{it.staffNoMedical}</p>
+            </div>
+          ) : document ? (
             <div className={styles.sideCard}>
               <h2 className={styles.sectionTitle}>{it.adminDocumentTitle}</h2>
               <p className={styles.meta}>

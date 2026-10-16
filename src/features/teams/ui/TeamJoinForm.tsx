@@ -7,6 +7,7 @@ import { Button } from "@/shared/ui/Button";
 import { ActionError } from "@/shared/ui/ActionError";
 import { PasswordFields } from "@/shared/ui/PasswordFields";
 import { usePasswordConfirmation } from "@/shared/ui/usePasswordConfirmation";
+import { ParticipantCategoryField } from "@/features/teams/ui/ParticipantCategoryField";
 import { it } from "@/shared/i18n/it";
 import fields from "@/shared/ui/form.module.css";
 
@@ -25,6 +26,7 @@ export function TeamJoinForm({ token, teamName }: { token: string; teamName: str
     >
       <input type="hidden" name="token" value={token} />
       <p className={fields.help}>{it.teamJoinLead.replace("{team}", teamName)}</p>
+      <ParticipantCategoryField />
       {state?.error ? <ActionError error={state.error} code={state.code} /> : null}
       <div className={fields.field}>
         <label className={fields.label} htmlFor="email">

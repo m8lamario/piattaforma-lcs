@@ -63,6 +63,13 @@ describe("authorize deny-by-default", () => {
     expect(authorize(otherRep, "document:read_status", ownDoc).allow).toBe(false);
   });
 
+  it("nega al referente di un'altra squadra file medico, registrazione e rosa", () => {
+    expect(authorize(otherRep, "document:read_file", ownDoc).allow).toBe(false);
+    expect(authorize(otherRep, "registration:read", ownDoc).allow).toBe(false);
+    expect(authorize(otherRep, "team:read", { teamId: "team-1" }).allow).toBe(false);
+    expect(authorize(rep, "document:read_file", { ownerUserId: "player-2", teamId: "team-1" }).allow).toBe(false);
+  });
+
   it("consente all'org admin la console ma non il file medico", () => {
     expect(authorize(orgAdmin, "admin:manage").allow).toBe(true);
     expect(authorize(orgAdmin, "document:review", ownDoc).allow).toBe(false);

@@ -8,7 +8,10 @@ import { TEAM_COOKIE } from "@/shared/config/app";
 import { teamCheckoutAmount } from "@/features/payments/domain/amounts";
 import { TeamPaymentForm } from "@/features/payments/ui/TeamPaymentForm";
 import { listTeamRoster, listTeamsByIds } from "@/features/teams/data/roster";
-import { filterRoster, parseRosterFilter, summarizeRoster } from "@/features/teams/domain/roster";
+import { filterRoster, parseRosterFilter, splitRoster, summarizeRoster } from "@/features/teams/domain/roster";
+import { STAFF_SLOT_LIMIT, teamCoachCompleteness } from "@/features/teams/domain/staff";
+import { CoachForm } from "@/features/teams/ui/CoachForm";
+import { LiveRefresh } from "@/features/teams/ui/LiveRefresh";
 import { resolveSelectedTeamId } from "@/features/teams/domain/selection";
 import { TeamRoster } from "@/features/teams/ui/TeamRoster";
 import { TeamSwitcher } from "@/features/teams/ui/TeamSwitcher";
@@ -57,10 +60,20 @@ export default async function TeamPage({ searchParams }: Props) {
     registrationOpensAt: team.edition.registrationOpensAt,
     registrationClosesAt: team.edition.registrationClosesAt,
   };
-  const visible = filterRoster(roster, filter);
+  const parts = splitRoster(roster);
+  const visible = filterRoster(parts.players, filter);
+  const coach = teamCoachCompleteness({
+    teamId: team.id,
+    coachRegistrationId: team.coachRegistrationId,
+    coach: team.coachRegistration,
+  });
+  const coachName = coach.complete
+    ? `${team.coachRegistration?.playerProfile.firstName ?? ""} ${team.coachRegistration?.playerProfile.lastName ?? ""}`.trim()
+    : null;
 
   return (
     <main className={styles.main}>
+      <LiveRefresh />
       <PageHeader
         kicker={`${team.edition.competition.name} · ${team.edition.name}`}
         title={team.name}
@@ -69,7 +82,7 @@ export default async function TeamPage({ searchParams }: Props) {
       <TeamSubnav current={filter === "open" ? "status" : "dashboard"} />
       <TeamSwitcher teams={teams} selectedId={teamId} />
       <WindowNotice edition={editionWindow} />
-      <RosterStrip counts={summarizeRoster(roster)} current={filter} />
+      <RosterStrip counts={summarizeRoster(parts.players)} current={filter} />
 
       <div className={styles.teamGrid}>
         <section className={styles.rosterSection}>
@@ -78,6 +91,17 @@ export default async function TeamPage({ searchParams }: Props) {
             rows={visible}
             emptyLabel={filter ? it.rosterFilterEmpty : undefined}
             emptyHref={filter ? "/squadra" : undefined}
+          />
+          <TeamRoster teamId={teamId} rows={parts.staff} variant="staff" canEditRoster />
+          <p className={styles.capacity}>
+            {it.staffCapacity.replace("{used}", String(parts.staffUsed)).replace("{limit}", String(STAFF_SLOT_LIMIT))}
+          </p>
+          <CoachForm
+            teamId={teamId}
+            rows={parts.staff}
+            coachRegistrationId={coach.complete ? team.coachRegistrationId : null}
+            incomplete={!coach.complete}
+            coachName={coachName}
           />
         </section>
 

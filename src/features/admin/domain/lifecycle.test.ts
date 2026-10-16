@@ -100,6 +100,16 @@ describe("decideRemoveFromTeam", () => {
     expect(decision.plan.retain.medicalBlobs).toBe("retain");
   });
 
+  it("rimuove un componente dello staff senza chiudere l’account", () => {
+    const decision = decideRemoveFromTeam(
+      removeInput({ membership: { ...playerMembership, role: "STAFF" } }),
+    );
+    expect(decision.ok).toBe(true);
+    if (!decision.ok) return;
+    expect(decision.plan.retain.userRow).toBe("retain");
+    expect(decision.plan.retain.payments).toBe("retain");
+  });
+
   it("rifiuta un rappresentante in rosa", () => {
     const decision = decideRemoveFromTeam(
       removeInput({ membership: { ...playerMembership, role: "REPRESENTATIVE" } }),

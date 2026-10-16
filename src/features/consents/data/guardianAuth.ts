@@ -3,7 +3,7 @@ import { appendBoxSet } from "@/features/consents/data/choices";
 import { getCurrentLegalVersions, recordConsent } from "@/features/consents/data/legal";
 import { privacySlugsFor, MEDIA_RELEASE_SLUG } from "@/features/consents/domain/pack";
 import {
-  ENROLLMENT_REQUIRED_CODES,
+  enrollmentRequiredCodes,
   enrollmentBoxCodes,
   inspectGuardianLink,
   isOpenAuthorizationStatus,
@@ -329,14 +329,17 @@ export async function submitGuardianAuthorization(input: {
 
   const playerUserId = found.registration.playerProfile.userId;
   const partnersPublished = await isPartnerBoxVisible();
+  const category = found.registration.category;
   const allowedCodes = new Set(
-    expectedType === "PUBLICATION" ? publicationBoxCodes(partnersPublished) : enrollmentBoxCodes(partnersPublished),
+    expectedType === "PUBLICATION"
+      ? publicationBoxCodes(partnersPublished)
+      : enrollmentBoxCodes(partnersPublished, category),
   );
   const submitted = input.boxes.filter((box) => allowedCodes.has(box.code));
 
   if (!input.refuse && expectedType === "ENROLLMENT") {
     const accepted = new Map(submitted.map((box) => [box.code, box.accepted]));
-    if (ENROLLMENT_REQUIRED_CODES.some((code) => !accepted.get(code))) {
+    if (enrollmentRequiredCodes(category).some((code) => !accepted.get(code))) {
       return { ok: false as const, reason: "required" as const };
     }
   }

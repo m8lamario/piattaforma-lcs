@@ -29,6 +29,7 @@ type Props = {
     year: number;
     paymentMode: string;
     playerFeeAmount: string | null;
+    staffFeeAmount: string | null;
     teamFeeAmount: string | null;
     isActive: boolean;
     registrationOpensAt: string;
@@ -87,6 +88,18 @@ export function EditionForm({ mode, edition }: Props) {
             {it.adminPlayerFee}
           </label>
           <input id="playerFeeAmount" name="playerFeeAmount" className={fields.input} defaultValue={edition?.playerFeeAmount ?? ""} />
+        </div>
+        <div className={fields.field}>
+          <label className={fields.label} htmlFor="staffFeeAmount">
+            {it.adminStaffFee}
+          </label>
+          <input
+            id="staffFeeAmount"
+            name="staffFeeAmount"
+            className={fields.input}
+            inputMode="decimal"
+            defaultValue={edition?.staffFeeAmount ?? "5"}
+          />
         </div>
         <div className={fields.field}>
           <label className={fields.label} htmlFor="teamFeeAmount">

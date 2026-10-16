@@ -41,6 +41,7 @@ export async function POST(request: Request) {
     paymentId: payment.id,
     providerPaymentId: event.providerPaymentId,
     status: event.status,
+    billing: event.billing,
   });
   if (!applied.ok) {
     const code = applied.reason === "duplicate" ? "PAYMENT_WEBHOOK_DUPLICATE" : "PAYMENT_WEBHOOK_CONFLICT";

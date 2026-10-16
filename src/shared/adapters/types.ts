@@ -58,6 +58,11 @@ export type PaymentCheckoutInput = {
   reference: string;
   successUrl: string;
   cancelUrl: string;
+  customer?: {
+    email?: string | null;
+    name?: string | null;
+    stripeCustomerId?: string | null;
+  };
 };
 
 export type PaymentWebhookEvent = {
@@ -66,12 +71,22 @@ export type PaymentWebhookEvent = {
   providerPaymentId: string;
   status: "PENDING" | "SUCCEEDED" | "FAILED" | "REFUNDED";
   paymentId?: string;
+  billing?: {
+    billingName: string | null;
+    billingEmail: string | null;
+    line1: string | null;
+    line2: string | null;
+    postalCode: string | null;
+    city: string | null;
+    state: string | null;
+    country: string | null;
+  } | null;
 };
 
 export interface PaymentAdapter {
   createCheckout(
     input: PaymentCheckoutInput,
-  ): Promise<{ providerRef: string; redirectUrl: string }>;
+  ): Promise<{ providerRef: string; redirectUrl: string; stripeCustomerId?: string | null }>;
   parseWebhook(input: {
     headers: Headers;
     rawBody: string;

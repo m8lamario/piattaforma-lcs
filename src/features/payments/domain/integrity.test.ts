@@ -48,6 +48,23 @@ describe("duplicate webhook", () => {
     ).toBe("apply");
   });
 
+  it("applica SUCCEEDED → REFUNDED e non riapre un rimborso", () => {
+    expect(
+      webhookApplyDecision({
+        current: { id: "pay-1", status: "SUCCEEDED" },
+        incomingStatus: "REFUNDED",
+        otherSucceededWithSameProviderId: false,
+      }),
+    ).toBe("apply");
+    expect(
+      webhookApplyDecision({
+        current: { id: "pay-1", status: "REFUNDED" },
+        incomingStatus: "REFUNDED",
+        otherSucceededWithSameProviderId: false,
+      }),
+    ).toBe("idempotent");
+  });
+
   it("confligge se lo stato non è avanzabile", () => {
     expect(
       webhookApplyDecision({

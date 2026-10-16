@@ -14,7 +14,7 @@ import {
 } from "@/features/registrations/domain/wizard";
 import { getCurrentLegalVersions } from "@/features/consents/data/legal";
 import { MEDIA_RELEASE_SLUG, privacySlugsFor } from "@/features/consents/domain/pack";
-import { CONSENT_BOXES, mediaFormBoxes, privacyExtraBoxes } from "@/features/consents/domain/boxes";
+import { CONSENT_BOXES, mediaFormBoxes, privacyExtraBoxes, withoutHealthConsent } from "@/features/consents/domain/boxes";
 import { maybeSendC1Reminder } from "@/features/consents/data/tokens";
 import { maybeSendGuardianReminder } from "@/features/consents/data/guardianAuth";
 import { MediaConsentForm } from "@/features/consents/ui/MediaConsentForm";
@@ -22,7 +22,7 @@ import { PrivacyConsentForm } from "@/features/consents/ui/PrivacyConsentForm";
 import { GuardianWaitingView } from "@/features/consents/ui/GuardianWaitingView";
 import { EmailVerifyNotice } from "@/features/auth/ui/EmailVerifyNotice";
 import { MedicalUploadForm } from "@/features/documents/ui/MedicalUploadForm";
-import { playerCheckoutAmount } from "@/features/payments/domain/amounts";
+import { participantCheckoutAmount } from "@/features/payments/domain/amounts";
 import { PlayerPaymentForm } from "@/features/payments/ui/PlayerPaymentForm";
 import { isPaymentCovered } from "@/features/registrations/domain/requirements";
 import { PlaceholderStep } from "@/features/registrations/ui/PlaceholderStep";
@@ -127,12 +127,19 @@ export default async function WizardStepPage({ params }: Props) {
       const documents = privacySlugs
         .map(toView)
         .filter((item): item is NonNullable<ReturnType<typeof toView>> => item !== null);
-      const extraBoxes = privacyExtraBoxes(workspace.evidence.isMinor, workspace.partnersPublished);
+      const extraBoxes = privacyExtraBoxes(
+        workspace.evidence.isMinor,
+        workspace.partnersPublished,
+        workspace.registration.category,
+      );
       const currentBoxes = Object.fromEntries(workspace.choices.map((row) => [row.code, row.accepted]));
       if (workspace.evidence.isMinor) {
-        const waitBoxes = CONSENT_BOXES.filter(
-          (box) => box.path !== "adult" && (box.step === "privacy" || box.step === "guardian"),
-        ).filter((box) => !box.partnersOnly || workspace.partnersPublished);
+        const waitBoxes = withoutHealthConsent(
+          CONSENT_BOXES.filter(
+            (box) => box.path !== "adult" && (box.step === "privacy" || box.step === "guardian"),
+          ).filter((box) => !box.partnersOnly || workspace.partnersPublished),
+          workspace.registration.category,
+        );
         body =
           documents.length === privacySlugs.length ? (
             <GuardianWaitingView
@@ -200,10 +207,13 @@ export default async function WizardStepPage({ params }: Props) {
         <PlayerPaymentForm
           covered={isPaymentCovered(workspace.evidence.payment)}
           teamOnly={workspace.registration.paymentMode === "TEAM"}
-          amount={playerCheckoutAmount({
+          amount={participantCheckoutAmount({
+            category: workspace.registration.category,
             paymentMode: workspace.registration.paymentMode,
             playerFeeAmount: workspace.registration.playerFeeAmount,
+            staffFeeAmount: workspace.registration.staffFeeAmount,
           })}
+          developmentNote={workspace.registration.category !== "STAFF"}
           currency={workspace.registration.currency}
         />
       );

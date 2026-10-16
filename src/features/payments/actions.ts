@@ -3,8 +3,9 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { paymentAdapter } from "@/shared/adapters";
-import { claimCheckoutPayment } from "@/features/payments/data/payments";
-import { playerCheckoutAmount, teamCheckoutAmount } from "@/features/payments/domain/amounts";
+import { claimCheckoutPayment, rememberStripeCustomer } from "@/features/payments/data/payments";
+import { participantCheckoutAmount, teamCheckoutAmount } from "@/features/payments/domain/amounts";
+import { checkoutCustomerPrefill } from "@/features/payments/domain/billing";
 import { playerCheckoutBlocker, teamCheckoutBlocker } from "@/features/payments/domain/integrity";
 import { loadPlayerWorkspace } from "@/features/registrations/data/workspace";
 import { isPaymentCovered } from "@/features/registrations/domain/requirements";
@@ -40,16 +41,18 @@ export async function startPlayerCheckoutAction(): Promise<ActionFailure | void>
 
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: { emailVerified: true },
+    select: { email: true, emailVerified: true, stripeCustomerId: true },
   });
   if (!user?.emailVerified) return fail("AUTH_EMAIL_NOT_VERIFIED");
   if (workspace.evidence.isMinor && workspace.evidence.guardianAuthorization !== "authorized") {
     return fail("PAYMENT_GUARDIAN_REQUIRED");
   }
 
-  const amount = playerCheckoutAmount({
+  const amount = participantCheckoutAmount({
+    category: workspace.registration.category,
     paymentMode: workspace.registration.paymentMode,
     playerFeeAmount: workspace.registration.playerFeeAmount,
+    staffFeeAmount: workspace.registration.staffFeeAmount,
   });
   const blocked = playerCheckoutBlocker({
     covered: isPaymentCovered(workspace.evidence.payment),
@@ -69,13 +72,20 @@ export async function startPlayerCheckoutAction(): Promise<ActionFailure | void>
     return fail(claimed.reason === "scope" ? "PAYMENT_SCOPE_MISMATCH" : "PAYMENT_ALREADY_COMPLETED");
   }
 
+  const prefill = checkoutCustomerPrefill({
+    email: user.email,
+    firstName: workspace.profile.firstName,
+    lastName: workspace.profile.lastName,
+  });
   const checkout = await paymentAdapter.createCheckout({
     amount: Math.round(amount * 100),
     currency: workspace.registration.currency,
     reference: claimed.payment.id,
     successUrl: `${appOrigin()}/area/pagamento/esito?paymentId=${claimed.payment.id}`,
     cancelUrl: `${appOrigin()}/area/registrazione/pagamento`,
+    customer: { ...prefill, stripeCustomerId: user.stripeCustomerId },
   });
+  await rememberStripeCustomer(session.user.id, checkout.stripeCustomerId);
 
   await prisma.payment.update({
     where: { id: claimed.payment.id },
@@ -88,7 +98,12 @@ export async function startPlayerCheckoutAction(): Promise<ActionFailure | void>
     action: "PAYMENT_CHECKOUT",
     entityType: "Payment",
     entityId: claimed.payment.id,
-    metadata: { amount, currency: workspace.registration.currency, reused: claimed.reused },
+    metadata: {
+      amount,
+      currency: workspace.registration.currency,
+      category: workspace.registration.category,
+      reused: claimed.reused,
+    },
     ...trace,
   });
 
@@ -146,13 +161,24 @@ export async function startTeamCheckoutAction(teamId: string): Promise<ActionFai
     return fail(claimed.reason === "scope" ? "PAYMENT_SCOPE_MISMATCH" : "PAYMENT_ALREADY_COMPLETED");
   }
 
+  const payer = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { email: true, stripeCustomerId: true, playerProfile: { select: { firstName: true, lastName: true } } },
+  });
+  const teamPrefill = checkoutCustomerPrefill({
+    email: payer?.email,
+    firstName: payer?.playerProfile?.firstName,
+    lastName: payer?.playerProfile?.lastName,
+  });
   const checkout = await paymentAdapter.createCheckout({
     amount: Math.round(amount * 100),
     currency: team.edition.currency,
     reference: claimed.payment.id,
     successUrl: `${appOrigin()}/area/pagamento/esito?paymentId=${claimed.payment.id}`,
     cancelUrl: `${appOrigin()}/squadra`,
+    customer: { ...teamPrefill, stripeCustomerId: payer?.stripeCustomerId },
   });
+  await rememberStripeCustomer(session.user.id, checkout.stripeCustomerId);
 
   await prisma.payment.update({
     where: { id: claimed.payment.id },

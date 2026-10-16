@@ -119,6 +119,7 @@ export async function listRegistrationsAdmin(filters: {
     select: {
       id: true,
       status: true,
+      category: true,
       updatedAt: true,
       playerProfile: {
         select: { id: true, firstName: true, lastName: true, userId: true },
@@ -214,6 +215,7 @@ export async function createCompetitionWithEdition(input: {
   year: number;
   paymentMode: PaymentMode;
   playerFeeAmount: number | null;
+  staffFeeAmount: number | null;
   teamFeeAmount: number | null;
   isActive: boolean;
   registrationOpensAt: Date | null;
@@ -231,6 +233,7 @@ export async function createCompetitionWithEdition(input: {
           year: input.year,
           paymentMode: input.paymentMode,
           playerFeeAmount: input.playerFeeAmount,
+          staffFeeAmount: input.staffFeeAmount ?? 5,
           teamFeeAmount: input.teamFeeAmount,
           isActive: input.isActive,
           registrationOpensAt: input.registrationOpensAt,
@@ -249,6 +252,7 @@ export async function updateEditionAdmin(input: {
   year: number;
   paymentMode: PaymentMode;
   playerFeeAmount: number | null;
+  staffFeeAmount: number | null;
   teamFeeAmount: number | null;
   isActive: boolean;
   registrationOpensAt: Date | null;
@@ -263,6 +267,7 @@ export async function updateEditionAdmin(input: {
         year: input.year,
         paymentMode: input.paymentMode,
         playerFeeAmount: input.playerFeeAmount,
+        staffFeeAmount: input.staffFeeAmount ?? 5,
         teamFeeAmount: input.teamFeeAmount,
         isActive: input.isActive,
         registrationOpensAt: input.registrationOpensAt,

@@ -1,10 +1,24 @@
 import { prisma } from "@/shared/lib/prisma";
 import { isMinor, needsMediaAgreement } from "@/features/players/domain/age";
 import { latestChoices, publicationFlags } from "@/features/consents/domain/boxes";
+import { isPaymentCovered } from "@/features/registrations/domain/requirements";
+import { staffOccupiesSlot } from "@/features/teams/domain/staff";
 import { toRosterRow, toTeammateRow } from "@/features/teams/domain/roster";
 
 export async function listTeamRoster(teamId: string) {
-  const [registrations, memberships] = await Promise.all([
+  const [team, registrations, memberships] = await Promise.all([
+    prisma.team.findUnique({
+      where: { id: teamId },
+      select: {
+        coachRegistrationId: true,
+        edition: { select: { paymentMode: true } },
+        payments: {
+          where: { registrationId: null, status: "SUCCEEDED" },
+          select: { id: true },
+          take: 1,
+        },
+      },
+    }),
     prisma.registration.findMany({
       where: { teamId },
       orderBy: { createdAt: "asc" },
@@ -16,6 +30,7 @@ export async function listTeamRoster(teamId: string) {
           take: 1,
           orderBy: { uploadedAt: "desc" },
         },
+        payments: { select: { status: true } },
         consentChoices: { select: { code: true, accepted: true, value: true, createdAt: true } },
       },
     }),
@@ -37,17 +52,33 @@ export async function listTeamRoster(teamId: string) {
           createdAt: row.createdAt.getTime(),
         })),
       );
+      const isStaff = registration.category === "STAFF";
       return toRosterRow({
         registrationId: registration.id,
         userId: registration.playerProfile.userId,
         membershipId: membership?.id,
         membershipRole: membership?.role,
+        category: registration.category,
         firstName: registration.playerProfile.firstName,
         lastName: registration.playerProfile.lastName,
         jerseyNumber: membership?.jerseyNumber,
         rosterRole: membership?.rosterRole,
         registrationStatus: registration.status,
-        medicalStatus: registration.documents[0]?.status,
+        medicalStatus: isStaff ? null : registration.documents[0]?.status,
+        paymentCovered: isPaymentCovered({
+          mode: team?.edition.paymentMode ?? "PLAYER",
+          playerSucceeded: registration.payments.some((payment) => payment.status === "SUCCEEDED"),
+          teamSucceeded: Boolean(team?.payments.length),
+        }),
+        consentDue:
+          isStaff &&
+          (registration.status === "INVITED" ||
+            registration.status === "ACCOUNT_CREATED" ||
+            registration.status === "IN_PROGRESS"),
+        isCoach:
+          isStaff &&
+          registration.id === team?.coachRegistrationId &&
+          staffOccupiesSlot(registration.status),
         publication: publicationFlags({
           isMinor: isMinorPlayer,
           needsAgreement: birthDate ? needsMediaAgreement(birthDate) : false,

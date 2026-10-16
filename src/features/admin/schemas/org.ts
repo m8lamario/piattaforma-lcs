@@ -15,6 +15,7 @@ export const editionFormSchema = z.object({
   year: z.coerce.number().int().min(2000).max(2100),
   paymentMode: z.enum(["PLAYER", "TEAM", "BOTH"]),
   playerFeeAmount: z.string().optional(),
+  staffFeeAmount: z.string().optional(),
   teamFeeAmount: z.string().optional(),
   isActive: z.string().optional(),
   registrationOpensAt: z.string().optional(),

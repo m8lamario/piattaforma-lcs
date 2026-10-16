@@ -43,13 +43,26 @@ type Props = {
   canEditRoster?: boolean;
   emptyLabel?: string;
   emptyHref?: string;
+  title?: string;
+  help?: string;
+  variant?: "player" | "staff";
 };
 
-export function TeamRoster({ teamId, rows, canEditRoster = true, emptyLabel, emptyHref }: Props) {
+export function TeamRoster({
+  teamId,
+  rows,
+  canEditRoster = true,
+  emptyLabel,
+  emptyHref,
+  title,
+  help,
+  variant = "player",
+}: Props) {
+  const staff = variant === "staff";
   return (
     <section className={styles.wrap}>
-      <h2>{it.rosterTitle}</h2>
-      <p className={styles.help}>{it.rosterHelp}</p>
+      <h2>{title ?? (staff ? it.staffRosterTitle : it.rosterTitle)}</h2>
+      <p className={styles.help}>{help ?? (staff ? it.staffRosterHelp : it.rosterHelp)}</p>
       {rows.length === 0 ? (
         <p className={styles.empty}>
           {emptyLabel ?? it.rosterEmpty}
@@ -72,12 +85,25 @@ export function TeamRoster({ teamId, rows, canEditRoster = true, emptyLabel, emp
                 </strong>
                 <span className={styles.chips}>
                   <StatusChip tone="neutral">{REG_COPY[row.registrationStatus] ?? row.registrationStatus}</StatusChip>
-                  <StatusChip tone={MEDICAL_TONE[row.medicalStatus]}>{MEDICAL[row.medicalStatus]}</StatusChip>
-                  {row.publication ? <PublicationChips flags={row.publication} compact /> : null}
+                  {staff && row.isCoach ? <StatusChip tone="complete">{it.categoryCoach}</StatusChip> : null}
+                  {staff && row.registrationStatus !== "WITHDRAWN" && row.registrationStatus !== "REMOVED" ? (
+                    <StatusChip tone={row.consentDue ? "attention" : "complete"}>
+                      {row.consentDue ? it.staffConsentDue : it.staffConsentOk}
+                    </StatusChip>
+                  ) : null}
+                  {!staff ? (
+                    <StatusChip tone={MEDICAL_TONE[row.medicalStatus]}>{MEDICAL[row.medicalStatus]}</StatusChip>
+                  ) : null}
+                  {staff && row.registrationStatus !== "WITHDRAWN" && row.registrationStatus !== "REMOVED" ? (
+                    <StatusChip tone={row.paymentCovered ? "complete" : "todo"}>
+                      {row.paymentCovered ? it.staffPaymentOk : it.staffPaymentDue}
+                    </StatusChip>
+                  ) : null}
+                  {!staff && row.publication ? <PublicationChips flags={row.publication} compact /> : null}
                 </span>
               </div>
               <div className={styles.itemRight}>
-                {canEditRoster && row.membershipId ? (
+                {canEditRoster && row.membershipId && !staff ? (
                   <form action={updateRosterRowAction} className={styles.rosterForm}>
                     <input type="hidden" name="teamId" value={teamId} />
                     <input type="hidden" name="membershipId" value={row.membershipId} />
@@ -106,7 +132,12 @@ export function TeamRoster({ teamId, rows, canEditRoster = true, emptyLabel, emp
                   </form>
                 ) : null}
                 {canEditRoster && row.membershipId && row.membershipRole !== "REPRESENTATIVE" ? (
-                  <RemovePlayerForm teamId={teamId} membershipId={row.membershipId} lastName={row.lastName} />
+                  <RemovePlayerForm
+                    teamId={teamId}
+                    membershipId={row.membershipId}
+                    lastName={row.lastName}
+                    successLabel={staff ? it.lifecycleRemoveSuccessStaff : undefined}
+                  />
                 ) : null}
               </div>
             </li>

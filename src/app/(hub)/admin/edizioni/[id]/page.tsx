@@ -34,6 +34,7 @@ export default async function AdminEditionDetailPage({ params }: Props) {
           year: edition.year,
           paymentMode: edition.paymentMode,
           playerFeeAmount: decimalText(edition.playerFeeAmount),
+          staffFeeAmount: decimalText(edition.staffFeeAmount),
           teamFeeAmount: decimalText(edition.teamFeeAmount),
           isActive: edition.isActive,
           registrationOpensAt: toDatetimeLocalValue(edition.registrationOpensAt),
