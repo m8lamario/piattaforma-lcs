@@ -74,6 +74,7 @@ type Props = {
   registrationId: string;
   editionWindow: EditionWindow;
   identityConflict?: { code: string } | null;
+  category?: "PLAYER" | "STAFF";
 };
 
 export function RegistrationDashboard({
@@ -86,6 +87,7 @@ export function RegistrationDashboard({
   registrationId,
   editionWindow,
   identityConflict,
+  category = "PLAYER",
 }: Props) {
   const hero = nextHero(checklist);
   const hrefStep = hero.code === "DONE" ? "riepilogo" : (REQUIREMENT_STEP[hero.code] ?? "dati");
@@ -115,8 +117,8 @@ export function RegistrationDashboard({
       <header className={styles.header}>
         <PageHeader
           kicker={`${competitionName} · ${editionName}`}
-          title={it.areaTitle}
-          description={`${it.teamTitle}: ${teamName}`}
+          title={category === "STAFF" ? it.staffAreaTitle : it.areaTitle}
+          description={`${category === "STAFF" ? it.categoryStaff : it.categoryPlayer} · ${it.teamTitle}: ${teamName}`}
           aside={<StatusChip tone={STATUS_TONE[status]}>{STATUS_COPY[status]}</StatusChip>}
         />
       </header>

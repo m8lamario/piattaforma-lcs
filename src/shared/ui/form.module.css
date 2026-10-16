@@ -119,6 +119,11 @@
   flex-shrink: 0;
 }
 
+.choiceCopy {
+  display: grid;
+  gap: var(--space-1);
+}
+
 .secretPair {
   display: grid;
   gap: var(--space-4);

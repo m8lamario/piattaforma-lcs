@@ -4,6 +4,7 @@ import { gateWizardStep, nextHero, nextIncompleteAfter, nextIncompleteStep, next
 
 function evidence(overrides: Partial<RegistrationEvidence> = {}): RegistrationEvidence {
   return {
+    category: "PLAYER",
     hasAccount: true,
     hasPersonalData: false,
     isMinor: false,
@@ -55,6 +56,17 @@ describe("wizard", () => {
       evidence({ hasPersonalData: true }),
     );
     expect(nextIncompleteAfter("certificato", checklist)).toBe("privacy");
+  });
+
+  it("per lo staff salta il certificato e continua con privacy e pagamento", () => {
+    const checklist = projectChecklist(
+      DEFAULT_EDITION_REQUIREMENTS,
+      evidence({ category: "STAFF", hasPersonalData: true }),
+    );
+    expect(visibleWizardSteps(checklist)).not.toContain("certificato");
+    expect(nextStepAfter("dati", checklist)).toBe("privacy");
+    expect(nextHero(checklist).code).not.toBe("MEDICAL_CERT");
+    expect(gateWizardStep("certificato", checklist)).not.toBe("certificato");
   });
 
   it("dopo i dati di un adulto va al certificato", () => {

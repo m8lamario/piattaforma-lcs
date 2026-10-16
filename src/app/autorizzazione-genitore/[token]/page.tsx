@@ -50,7 +50,10 @@ export default async function GuardianAuthorizePage({ params }: Props) {
   const purpose = found ? "AUTHORIZE" : "PUBLICATION";
   await openGuardianLinkAction(token, purpose);
   const partnersPublished = await isPartnerBoxVisible();
-  const codes = purpose === "PUBLICATION" ? publicationBoxCodes(partnersPublished) : enrollmentBoxCodes(partnersPublished);
+  const codes =
+    purpose === "PUBLICATION"
+      ? publicationBoxCodes(partnersPublished)
+      : enrollmentBoxCodes(partnersPublished, row.registration.category);
   const boxes = CONSENT_BOXES.filter((box) => codes.includes(box.code));
   const slugs = purpose === "PUBLICATION" ? [MEDIA_RELEASE_SLUG] : [...privacySlugsFor(true), MEDIA_RELEASE_SLUG];
   const versions = await getCurrentLegalVersions(slugs);

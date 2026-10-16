@@ -47,7 +47,7 @@ export type RemoveInput = {
     id: string;
     teamId: string;
     userId: string;
-    role: "PLAYER" | "REPRESENTATIVE";
+    role: "PLAYER" | "REPRESENTATIVE" | "STAFF";
   } | null;
   lastName: string;
   confirm: string;
@@ -212,7 +212,7 @@ export function decideRemoveFromTeam(input: RemoveInput): LifecycleResult<Remove
   if (input.targetLifecycleStatus !== "ACTIVE") {
     return { ok: false, code: LIFECYCLE_CODES.LIFECYCLE_TARGET_NOT_ACTIVE };
   }
-  if (input.membership.role !== "PLAYER") {
+  if (input.membership.role === "REPRESENTATIVE") {
     return { ok: false, code: LIFECYCLE_CODES.LIFECYCLE_REMOVE_NOT_PLAYER };
   }
   const expected = removeConfirmExpected(input.lastName);

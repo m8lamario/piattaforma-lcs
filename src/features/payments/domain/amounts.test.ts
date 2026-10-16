@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { playerCheckoutAmount, teamCheckoutAmount } from "./amounts";
+import { participantCheckoutAmount, playerCheckoutAmount, staffCheckoutAmount, teamCheckoutAmount } from "./amounts";
 import { isPaymentCovered } from "@/features/registrations/domain/requirements";
 
 describe("payment amounts and cover", () => {
@@ -10,6 +10,28 @@ describe("payment amounts and cover", () => {
 
   it("usa 40 EUR placeholder se l’importo edizione manca (OD-008)", () => {
     expect(playerCheckoutAmount({ paymentMode: "PLAYER", playerFeeAmount: null })).toBe(40);
+  });
+
+  it("applica allo staff la quota di edizione, 5 EUR se manca, e non quella del giocatore", () => {
+    expect(staffCheckoutAmount({ paymentMode: "PLAYER", staffFeeAmount: 5 })).toBe(5);
+    expect(staffCheckoutAmount({ paymentMode: "PLAYER", staffFeeAmount: null })).toBe(5);
+    expect(staffCheckoutAmount({ paymentMode: "TEAM", staffFeeAmount: 5 })).toBeNull();
+    expect(
+      participantCheckoutAmount({
+        category: "STAFF",
+        paymentMode: "PLAYER",
+        playerFeeAmount: 40,
+        staffFeeAmount: 5,
+      }),
+    ).toBe(5);
+    expect(
+      participantCheckoutAmount({
+        category: "PLAYER",
+        paymentMode: "PLAYER",
+        playerFeeAmount: 40,
+        staffFeeAmount: 5,
+      }),
+    ).toBe(40);
   });
 
   it("il primo SUCCEEDED utile copre, anche in modalità BOTH", () => {

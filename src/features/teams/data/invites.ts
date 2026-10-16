@@ -1,9 +1,29 @@
+import type { Prisma } from "@generated/client";
 import { INVITE_TTL_DAYS } from "@/shared/config/app";
 import { prisma } from "@/shared/lib/prisma";
 import { hashPassword } from "@/features/auth/domain/password";
 import { displayNameFromEmail, namesFromEmail } from "@/features/teams/domain/emailName";
+import {
+  coachSelectionBlocker,
+  profileNamesFromUser,
+  staffAdmission,
+  type ParticipantCategory,
+} from "@/features/teams/domain/staff";
 import { inspectInvite, type InviteRecord } from "../domain/invite";
 import { createInviteToken, hashInviteToken } from "../domain/token";
+
+type DbTransaction = Prisma.TransactionClient;
+
+const OPEN_REGISTRATION = { notIn: ["WITHDRAWN", "REMOVED"] as ("WITHDRAWN" | "REMOVED")[] };
+
+export function isConstraintError(error: unknown, marker: string) {
+  const parts: string[] = [];
+  if (error instanceof Error) parts.push(error.message);
+  if (error && typeof error === "object" && "meta" in error) {
+    parts.push(JSON.stringify((error as { meta?: unknown }).meta));
+  }
+  return parts.join(" ").includes(marker);
+}
 
 function toInviteRecord(invite: {
   status: InviteRecord["status"];
@@ -334,21 +354,20 @@ export async function findTeamByRegistrationToken(token: string) {
   });
 }
 
+async function lockTeamRow(tx: DbTransaction, teamId: string) {
+  await tx.$queryRaw`SELECT "id" FROM "Team" WHERE "id" = ${teamId} FOR UPDATE`;
+}
+
 async function linkPlayerToTeam(
-  tx: Parameters<Parameters<typeof prisma.$transaction>[0]>[0],
+  tx: DbTransaction,
   input: {
     userId: string;
     profileId: string;
     teamId: string;
     editionId: string;
+    category: ParticipantCategory;
   },
 ) {
-  await tx.teamMembership.upsert({
-    where: { teamId_userId: { teamId: input.teamId, userId: input.userId } },
-    update: { role: "PLAYER" },
-    create: { teamId: input.teamId, userId: input.userId, role: "PLAYER" },
-  });
-
   const existingRegistration = await tx.registration.findUnique({
     where: {
       playerProfileId_editionId: {
@@ -357,37 +376,78 @@ async function linkPlayerToTeam(
       },
     },
   });
+  const occupying =
+    existingRegistration != null &&
+    existingRegistration.status !== "WITHDRAWN" &&
+    existingRegistration.status !== "REMOVED";
+  if (occupying && existingRegistration.teamId === input.teamId && existingRegistration.category !== input.category) {
+    return { ok: false as const, reason: "category_conflict" as const };
+  }
+  if (occupying && existingRegistration.teamId === input.teamId) {
+    return { ok: false as const, reason: "already_on_team" as const };
+  }
+  if (existingRegistration && existingRegistration.teamId !== input.teamId) {
+    return { ok: false as const, reason: "edition_conflict" as const };
+  }
+
+  if (input.category === "STAFF") {
+    await lockTeamRow(tx, input.teamId);
+    const occupied = await tx.registration.count({
+      where: {
+        teamId: input.teamId,
+        category: "STAFF",
+        status: OPEN_REGISTRATION,
+        ...(existingRegistration ? { id: { not: existingRegistration.id } } : {}),
+      },
+    });
+    if (!staffAdmission(occupied).ok) {
+      return { ok: false as const, reason: "staff_limit" as const };
+    }
+  }
+
+  const existingMembership = await tx.teamMembership.findUnique({
+    where: { teamId_userId: { teamId: input.teamId, userId: input.userId } },
+  });
+  if (!existingMembership) {
+    await tx.teamMembership.create({
+      data: {
+        teamId: input.teamId,
+        userId: input.userId,
+        role: input.category === "STAFF" ? "STAFF" : "PLAYER",
+      },
+    });
+  } else if (existingMembership.role !== "REPRESENTATIVE") {
+    await tx.teamMembership.update({
+      where: { id: existingMembership.id },
+      data: { role: input.category === "STAFF" ? "STAFF" : "PLAYER" },
+    });
+  }
+
   if (!existingRegistration) {
     await tx.registration.create({
       data: {
         playerProfileId: input.profileId,
         teamId: input.teamId,
         editionId: input.editionId,
+        category: input.category,
         status: "ACCOUNT_CREATED",
       },
     });
     return { ok: true as const };
   }
-  if (
-    existingRegistration.teamId === input.teamId &&
-    (existingRegistration.status === "REMOVED" || existingRegistration.status === "WITHDRAWN")
-  ) {
-    await tx.registration.update({
-      where: { id: existingRegistration.id },
-      data: { status: "ACCOUNT_CREATED", teamId: input.teamId },
-    });
-    return { ok: true as const };
-  }
-  if (existingRegistration.teamId === input.teamId) {
-    return { ok: false as const, reason: "already_on_team" as const };
-  }
-  return { ok: false as const, reason: "edition_conflict" as const };
+
+  await tx.registration.update({
+    where: { id: existingRegistration.id },
+    data: { status: "ACCOUNT_CREATED", teamId: input.teamId, category: input.category },
+  });
+  return { ok: true as const };
 }
 
 export async function createAccountFromTeamLink(input: {
   token: string;
   email: string;
   password: string;
+  category: ParticipantCategory;
 }) {
   const email = input.email.toLowerCase();
   return prisma.$transaction(async (tx) => {
@@ -419,6 +479,7 @@ export async function createAccountFromTeamLink(input: {
       profileId: user.playerProfile.id,
       teamId: team.id,
       editionId: team.editionId,
+      category: input.category,
     });
     if (!linked.ok) return linked;
 
@@ -435,6 +496,7 @@ export async function attachExistingUserToTeamLink(input: {
   token: string;
   userId: string;
   email: string;
+  category: ParticipantCategory;
 }) {
   return prisma.$transaction(async (tx) => {
     const team = await tx.team.findUnique({ where: { registrationToken: input.token } });
@@ -466,9 +528,53 @@ export async function attachExistingUserToTeamLink(input: {
       profileId: profile.id,
       teamId: team.id,
       editionId: team.editionId,
+      category: input.category,
     });
     if (!linked.ok) return linked;
     return { ok: true as const, teamId: team.id, teamName: team.name };
+  });
+}
+
+export async function enrollRepresentativeAsStaff(input: { userId: string; teamId: string }) {
+  return prisma.$transaction(async (tx) => {
+    const team = await tx.team.findUnique({ where: { id: input.teamId } });
+    if (!team) return { ok: false as const, reason: "not_found" as const };
+    const user = await tx.user.findUnique({
+      where: { id: input.userId },
+      include: { playerProfile: true },
+    });
+    if (!user || user.lifecycleStatus !== "ACTIVE") {
+      return { ok: false as const, reason: "invalid" as const };
+    }
+    const profile =
+      user.playerProfile ??
+      (await tx.playerProfile.create({
+        data: { userId: user.id, ...profileNamesFromUser(user) },
+      }));
+    return linkPlayerToTeam(tx, {
+      userId: user.id,
+      profileId: profile.id,
+      teamId: team.id,
+      editionId: team.editionId,
+      category: "STAFF",
+    });
+  });
+}
+
+export async function designateTeamCoach(input: { teamId: string; registrationId: string }) {
+  return prisma.$transaction(async (tx) => {
+    await lockTeamRow(tx, input.teamId);
+    const registration = await tx.registration.findFirst({
+      where: { id: input.registrationId, teamId: input.teamId },
+      select: { id: true, teamId: true, category: true, status: true },
+    });
+    const blocker = coachSelectionBlocker({ teamId: input.teamId, registration });
+    if (blocker) return { ok: false as const, reason: blocker };
+    await tx.team.update({
+      where: { id: input.teamId },
+      data: { coachRegistrationId: input.registrationId },
+    });
+    return { ok: true as const };
   });
 }
 
@@ -478,6 +584,15 @@ export async function getTeamForActor(teamId: string) {
     include: {
       edition: { include: { competition: true } },
       school: true,
+      coachRegistration: {
+        select: {
+          id: true,
+          teamId: true,
+          category: true,
+          status: true,
+          playerProfile: { select: { firstName: true, lastName: true } },
+        },
+      },
     },
   });
 }

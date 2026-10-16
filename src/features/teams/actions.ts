@@ -40,6 +40,9 @@ import {
   attachExistingUserToTeamLink,
   createAccountFromInvite,
   createAccountFromTeamLink,
+  designateTeamCoach,
+  enrollRepresentativeAsStaff,
+  isConstraintError,
   createPlayerInvite,
   findInviteByPlainToken,
   findTeamByRegistrationToken,
@@ -49,9 +52,28 @@ import {
   revokePlayerInvite,
 } from "@/features/teams/data/invites";
 import { updateMembershipRoster } from "@/features/teams/data/roster";
-import { createInviteSchema, joinTeamSchema, redeemInviteSchema } from "@/features/teams/schemas/invite";
+import { createInviteSchema, joinTeamSchema, participantCategorySchema, redeemInviteSchema } from "@/features/teams/schemas/invite";
 import { removePlayerFromTeam } from "@/features/admin/data/lifecycle";
 import { removePlayerSchema } from "@/features/admin/schemas/lifecycle";
+
+function joinFailureCode(reason: string) {
+  switch (reason) {
+    case "staff_limit":
+      return "TEAM_STAFF_LIMIT" as const;
+    case "category_conflict":
+      return "TEAM_STAFF_CATEGORY_CONFLICT" as const;
+    case "already_on_team":
+      return "INVITE_ALREADY_ON_TEAM" as const;
+    case "edition_conflict":
+      return "INVITE_EDITION_CONFLICT" as const;
+    case "login_required":
+      return "INVITE_LOGIN_REQUIRED" as const;
+    case "wrong_session_email":
+      return "INVITE_WRONG_SESSION" as const;
+    default:
+      return inviteOutcomeCode(reason);
+  }
+}
 
 function originFromHeaders(headerList: Headers) {
   const host = headerList.get("x-forwarded-host") ?? headerList.get("host");
@@ -351,14 +373,59 @@ export async function joinTeamAction(
   _prev: ActionFailure | undefined,
   formData: FormData,
 ) {
+  const categoryRaw = formData.get("category");
+  // #region agent log
+  fetch("http://127.0.0.1:7693/ingest/5c6b6d7d-171d-41fc-8f12-2fa6a7b3b82d", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "3862ef" },
+    body: JSON.stringify({
+      sessionId: "3862ef",
+      runId: "pre-fix",
+      hypothesisId: "A",
+      location: "src/features/teams/actions.ts:joinTeamAction",
+      message: "joinTeamAction received form fields",
+      data: {
+        hasCategory: typeof categoryRaw === "string" && categoryRaw.length > 0,
+        category: typeof categoryRaw === "string" ? categoryRaw : String(categoryRaw),
+        hasEmail: Boolean(formData.get("email")),
+        hasToken: Boolean(formData.get("token")),
+      },
+      timestamp: Date.now(),
+    }),
+  }).catch(() => undefined);
+  // #endregion
   const parsed = joinTeamSchema.safeParse({
     token: formData.get("token"),
     email: formData.get("email"),
     password: formData.get("password"),
     confirmPassword: formData.get("confirmPassword"),
+    category: formData.get("category"),
   });
   if (!parsed.success) {
-    return failValidation(parsed.error.issues[0]?.message);
+    const categoryIssue = parsed.error.issues.some((issue) => issue.path.includes("category"));
+    // #region agent log
+    fetch("http://127.0.0.1:7693/ingest/5c6b6d7d-171d-41fc-8f12-2fa6a7b3b82d", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "3862ef" },
+      body: JSON.stringify({
+        sessionId: "3862ef",
+        runId: "pre-fix",
+        hypothesisId: "A",
+        location: "src/features/teams/actions.ts:joinTeamAction:parseFail",
+        message: "joinTeamSchema rejected input",
+        data: {
+          categoryIssue,
+          issuePaths: parsed.error.issues.map((issue) => issue.path.join(".")),
+        },
+        timestamp: Date.now(),
+      }),
+    }).catch(() => undefined);
+    // #endregion
+    return failValidation(
+      categoryIssue
+        ? "Scegli se partecipi come giocatore o come staff tecnico."
+        : parsed.error.issues[0]?.message,
+    );
   }
   if (!isWellFormedInviteToken(parsed.data.token)) {
     return fail("INVITE_INVALID");
@@ -399,7 +466,7 @@ export async function joinTeamAction(
 
   try {
     const result = await createAccountFromTeamLink(parsed.data);
-    if (!result.ok) return fail(inviteOutcomeCode(result.reason));
+    if (!result.ok) return fail(joinFailureCode(result.reason));
 
     const trace = await userAgentAndIp();
     await writeAuditLog({
@@ -407,12 +474,30 @@ export async function joinTeamAction(
       action: "TEAM_LINK_JOIN",
       entityType: "Team",
       entityId: result.teamId,
-      metadata: { teamName: result.teamName },
+      metadata: { teamName: result.teamName, category: parsed.data.category },
       ...trace,
     });
 
     const status = await ensureEmailVerification({ userId: result.user.id, email: result.user.email });
     const destination = status.verified ? "/area" : emailVerificationPath("/area");
+    // #region agent log
+    fetch("http://127.0.0.1:7693/ingest/5c6b6d7d-171d-41fc-8f12-2fa6a7b3b82d", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "3862ef" },
+      body: JSON.stringify({
+        sessionId: "3862ef",
+        runId: "pre-fix",
+        hypothesisId: "D",
+        location: "src/features/teams/actions.ts:joinTeamAction:signIn",
+        message: "joinTeamAction about to signIn",
+        data: {
+          destinationHasVerify: destination.includes("verifica-email"),
+          category: parsed.data.category,
+        },
+        timestamp: Date.now(),
+      }),
+    }).catch(() => undefined);
+    // #endregion
 
     await signIn("credentials", {
       email: result.user.email,
@@ -421,6 +506,7 @@ export async function joinTeamAction(
     });
     return {};
   } catch (error) {
+    if (isConstraintError(error, "STAFF_LIMIT_REACHED")) return fail("TEAM_STAFF_LIMIT");
     if (error instanceof AuthError) {
       return fail("AUTH_ACCOUNT_CREATED_LOGIN_FAILED");
     }
@@ -468,12 +554,24 @@ export async function attachTeamLinkAction(formData: FormData) {
   }
   if (path.path !== "attach_existing") return fail(redeemPathCode(path.path));
 
-  const result = await attachExistingUserToTeamLink({
-    token,
-    userId: session.user.id,
-    email: session.user.email,
-  });
-  if (!result.ok) return fail(inviteOutcomeCode(result.reason));
+  const category = participantCategorySchema.safeParse(formData.get("category"));
+  if (!category.success) {
+    return failValidation("Scegli se partecipi come giocatore o come staff tecnico.");
+  }
+
+  let result: Awaited<ReturnType<typeof attachExistingUserToTeamLink>>;
+  try {
+    result = await attachExistingUserToTeamLink({
+      token,
+      userId: session.user.id,
+      email: session.user.email,
+      category: category.data,
+    });
+  } catch (error) {
+    if (isConstraintError(error, "STAFF_LIMIT_REACHED")) return fail("TEAM_STAFF_LIMIT");
+    throw error;
+  }
+  if (!result.ok) return fail(joinFailureCode(result.reason));
 
   const trace = await userAgentAndIp();
   await writeAuditLog({
@@ -481,7 +579,7 @@ export async function attachTeamLinkAction(formData: FormData) {
     action: "TEAM_LINK_JOIN",
     entityType: "Team",
     entityId: result.teamId,
-    metadata: { teamName: result.teamName },
+    metadata: { teamName: result.teamName, category: category.data },
     ...trace,
   });
   const status = await ensureEmailVerification({ userId: session.user.id, email: session.user.email });
@@ -747,4 +845,85 @@ export async function removePlayerAction(
   revalidatePath("/area/squadra");
   revalidatePath("/admin/registrazioni");
   return { ok: true as const };
+}
+
+export async function joinRepresentativeAsStaffAction(
+  _prev: ActionFailure | { done: true } | undefined,
+  formData: FormData,
+): Promise<ActionFailure | { done: true }> {
+  const teamId = String(formData.get("teamId") ?? "");
+  const access = await requireTeamAction(teamId, "team:update_roster");
+  if (isDenied(access)) return access;
+  const team = await getTeamForActor(teamId);
+  if (!team) return fail("TEAM_NOT_FOUND");
+  if (
+    !isRegistrationWindowOpen({
+      isActive: team.edition.isActive,
+      registrationOpensAt: team.edition.registrationOpensAt,
+      registrationClosesAt: team.edition.registrationClosesAt,
+    })
+  ) {
+    return fail("REGISTRATION_WINDOW_CLOSED");
+  }
+
+  try {
+    const result = await enrollRepresentativeAsStaff({
+      userId: access.session.user!.id,
+      teamId: team.id,
+    });
+    if (!result.ok) {
+      if (result.reason === "not_found") return fail("TEAM_NOT_FOUND");
+      if (result.reason === "invalid") return fail("AUTH_ACCOUNT_MISSING");
+      return fail(joinFailureCode(result.reason));
+    }
+  } catch (error) {
+    if (isConstraintError(error, "STAFF_LIMIT_REACHED")) return fail("TEAM_STAFF_LIMIT");
+    throw error;
+  }
+
+  const trace = await userAgentAndIp();
+  await writeAuditLog({
+    actorUserId: access.session.user!.id,
+    action: "STAFF_SELF_JOIN",
+    entityType: "Team",
+    entityId: team.id,
+    metadata: { category: "STAFF" },
+    ...trace,
+  });
+  revalidatePath("/area");
+  revalidatePath("/squadra");
+  revalidatePath("/admin/registrazioni");
+  return { done: true };
+}
+
+export async function designateCoachAction(
+  _prev: ActionFailure | { done: true } | undefined,
+  formData: FormData,
+): Promise<ActionFailure | { done: true }> {
+  const teamId = String(formData.get("teamId") ?? "");
+  const registrationId = String(formData.get("registrationId") ?? "");
+  if (!registrationId) return fail("TEAM_COACH_INVALID");
+  const access = await requireTeamAction(teamId, "team:update_roster");
+  if (isDenied(access)) return access;
+
+  try {
+    const result = await designateTeamCoach({ teamId, registrationId });
+    if (!result.ok) return fail("TEAM_COACH_INVALID");
+  } catch (error) {
+    if (isConstraintError(error, "COACH_INVALID")) return fail("TEAM_COACH_INVALID");
+    throw error;
+  }
+
+  const trace = await userAgentAndIp();
+  await writeAuditLog({
+    actorUserId: access.session.user!.id,
+    action: "COACH_DESIGNATE",
+    entityType: "Team",
+    entityId: teamId,
+    metadata: { registrationId },
+    ...trace,
+  });
+  revalidatePath("/area");
+  revalidatePath("/squadra");
+  return { done: true };
 }

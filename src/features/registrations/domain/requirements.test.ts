@@ -11,6 +11,7 @@ const defaultRequirements: EditionRequirement[] = DEFAULT_EDITION_REQUIREMENTS;
 
 function evidence(overrides: Partial<RegistrationEvidence> = {}): RegistrationEvidence {
   return {
+    category: "PLAYER",
     hasAccount: true,
     hasPersonalData: true,
     isMinor: false,
@@ -96,6 +97,45 @@ describe("projectChecklist", () => {
     expect(pending.find((item) => item.code === "MEDICAL_CERT")?.status).toBe("attention");
     expect(rejected.find((item) => item.code === "MEDICAL_CERT")?.status).toBe("attention");
     expect(projectRegistrationStatus(evidence({ medicalStatus: "rejected" }), rejected)).toBe(
+      "CHANGES_REQUESTED",
+    );
+  });
+
+  it("obbliga il certificato al giocatore e lo esclude dallo staff", () => {
+    const player = projectChecklist(defaultRequirements, evidence({ medicalStatus: "none", mediaDecision: "submitted" }));
+    const staffEvidence = evidence({
+      category: "STAFF",
+      medicalStatus: "none",
+      mediaDecision: "submitted",
+      payment: { mode: "PLAYER", playerSucceeded: true, teamSucceeded: false },
+    });
+    const staff = projectChecklist(defaultRequirements, staffEvidence);
+    expect(player.find((item) => item.code === "MEDICAL_CERT")).toMatchObject({
+      required: true,
+      status: "todo",
+    });
+    expect(staff.find((item) => item.code === "MEDICAL_CERT")).toMatchObject({
+      required: false,
+      status: "not_applicable",
+    });
+    expect(projectRegistrationStatus(staffEvidence, staff)).toBe("APPROVED");
+    expect(projectRegistrationStatus(evidence({ medicalStatus: "none" }), player)).not.toBe("APPROVED");
+  });
+
+  it("per lo staff minore resta il consenso del genitore, senza certificato", () => {
+    const staff = projectChecklist(
+      defaultRequirements,
+      evidence({
+        category: "STAFF",
+        isMinor: true,
+        medicalStatus: "none",
+        guardianAuthorization: "pending",
+        hasGuardianContact: true,
+      }),
+    );
+    expect(staff.find((item) => item.code === "GUARDIAN_IF_MINOR")?.status).toBe("attention");
+    expect(staff.find((item) => item.code === "MEDICAL_CERT")?.status).toBe("not_applicable");
+    expect(projectRegistrationStatus(evidence({ category: "STAFF", isMinor: true, medicalStatus: "rejected" }), staff)).not.toBe(
       "CHANGES_REQUESTED",
     );
   });

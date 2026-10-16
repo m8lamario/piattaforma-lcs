@@ -23,6 +23,41 @@ async function main() {
       process.stdout.write("ok");
       return;
     }
+    if (command === "user-exists") {
+      const user = await prisma.user.findUnique({ where: { email: value }, select: { id: true } });
+      const e2eCount = await prisma.user.count({ where: { email: { startsWith: "e2e." } } });
+      const raw = process.env.DATABASE_URL ?? "";
+      let host = "missing";
+      try {
+        host = new URL(raw.replace(/^prisma\+/, "").replace(/^postgres(ql)?:/, "http:")).host;
+      } catch {
+        host = "parse-fail";
+      }
+      // #region agent log
+      fetch("http://127.0.0.1:7693/ingest/5c6b6d7d-171d-41fc-8f12-2fa6a7b3b82d", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "3862ef" },
+        body: JSON.stringify({
+          sessionId: "3862ef",
+          runId: "post-fix",
+          hypothesisId: "J",
+          location: "e2e/db-cli.ts:user-exists",
+          message: "db-cli user lookup",
+          data: {
+            found: Boolean(user),
+            emailLength: value.length,
+            emailStartsE2e: value.startsWith("e2e."),
+            e2eCount,
+            dbHost: host,
+            pooled: host.includes("pooler"),
+          },
+          timestamp: Date.now(),
+        }),
+      }).catch(() => undefined);
+      // #endregion
+      process.stdout.write(user ? "yes" : "no");
+      return;
+    }
     if (command === "guardian-email-queued") {
       const user = await prisma.user.findUnique({ where: { email: value }, select: { id: true } });
       const count = user

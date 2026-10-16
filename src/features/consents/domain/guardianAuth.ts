@@ -1,5 +1,6 @@
 import {
   MEDIA_USE_CODES,
+  isHealthConsent,
   type ConsentBoxCode,
 } from "@/features/consents/domain/boxes";
 
@@ -7,6 +8,11 @@ export const GUARDIAN_LINK_PURPOSES = ["AUTHORIZE", "REVOKE", "PUBLICATION"] as 
 export type GuardianLinkPurpose = (typeof GUARDIAN_LINK_PURPOSES)[number];
 
 export const ENROLLMENT_REQUIRED_CODES: ConsentBoxCode[] = ["G1", "T1", "G2", "G4"];
+
+export function enrollmentRequiredCodes(category: "PLAYER" | "STAFF" = "PLAYER"): ConsentBoxCode[] {
+  if (category === "STAFF") return ["G1", "T1", "G2"];
+  return ENROLLMENT_REQUIRED_CODES;
+}
 export const PUBLICATION_CONFIRM_CODE: ConsentBoxCode = "C1";
 
 export function normalizePersonName(value: string) {
@@ -33,7 +39,10 @@ export function selfAsGuardianReason(input: {
   return null;
 }
 
-export function enrollmentBoxCodes(partnersPublished: boolean): ConsentBoxCode[] {
+export function enrollmentBoxCodes(
+  partnersPublished: boolean,
+  category: "PLAYER" | "STAFF" = "PLAYER",
+): ConsentBoxCode[] {
   const boxes: ConsentBoxCode[] = [
     "G1",
     "T1",
@@ -46,7 +55,7 @@ export function enrollmentBoxCodes(partnersPublished: boolean): ConsentBoxCode[]
     "G8",
     ...MEDIA_USE_CODES.minor,
   ];
-  return boxes;
+  return category === "STAFF" ? boxes.filter((code) => !isHealthConsent(code)) : boxes;
 }
 
 export function publicationBoxCodes(partnersPublished: boolean): ConsentBoxCode[] {

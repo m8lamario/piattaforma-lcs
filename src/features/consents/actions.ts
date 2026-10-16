@@ -141,7 +141,11 @@ export async function savePrivacyConsentsAction(
 
   const requiredSlugs = privacySlugsFor(workspace.evidence.isMinor);
   const partnersPublished = await isPartnerBoxVisible();
-  const extra = privacyExtraBoxes(workspace.evidence.isMinor, partnersPublished);
+  const extra = privacyExtraBoxes(
+    workspace.evidence.isMinor,
+    partnersPublished,
+    workspace.registration.category,
+  );
   const extraSubmitted = submittedBoxesFrom(
     formData,
     extra.map((box) => box.code),
@@ -156,7 +160,13 @@ export async function savePrivacyConsentsAction(
     ...extraSubmitted,
   ];
 
-  const requiredCodes = new Set(requiredPrivacyBoxes(workspace.evidence.isMinor, partnersPublished).map((box) => box.code));
+  const requiredCodes = new Set(
+    requiredPrivacyBoxes(
+      workspace.evidence.isMinor,
+      partnersPublished,
+      workspace.registration.category,
+    ).map((box) => box.code),
+  );
   const acceptedByCode = new Map(boxes.map((box) => [box.code, box.accepted]));
   if ([...requiredCodes].some((code) => !acceptedByCode.get(code))) {
     return fail("CONSENT_BOX_REQUIRED");

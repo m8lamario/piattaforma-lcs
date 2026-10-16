@@ -131,9 +131,30 @@ export function g3Value(map: Map<string, ChoiceSnapshot>): G3Value | null {
   return null;
 }
 
-export function requiredPrivacyBoxes(isMinor: boolean, partnersPublished: boolean) {
-  return boxesFor({ isMinor, step: "privacy", partnersPublished }).filter(
-    (box) => box.kind === "required" || box.kind === "play",
+export type ConsentParticipantCategory = "PLAYER" | "STAFF";
+
+export function isHealthConsent(code: string) {
+  return code === HEALTH_CODE.adult || code === HEALTH_CODE.minor;
+}
+
+export function withoutHealthConsent<T extends { code: string }>(
+  boxes: T[],
+  category: ConsentParticipantCategory = "PLAYER",
+) {
+  if (category !== "STAFF") return boxes;
+  return boxes.filter((box) => !isHealthConsent(box.code));
+}
+
+export function requiredPrivacyBoxes(
+  isMinor: boolean,
+  partnersPublished: boolean,
+  category: ConsentParticipantCategory = "PLAYER",
+) {
+  return withoutHealthConsent(
+    boxesFor({ isMinor, step: "privacy", partnersPublished }).filter(
+      (box) => box.kind === "required" || box.kind === "play",
+    ),
+    category,
   );
 }
 
@@ -141,8 +162,9 @@ export function privacyBoxesComplete(
   isMinor: boolean,
   partnersPublished: boolean,
   map: Map<string, ChoiceSnapshot>,
+  category: ConsentParticipantCategory = "PLAYER",
 ) {
-  return requiredPrivacyBoxes(isMinor, partnersPublished).every((box) => latestAccepted(map, box.code));
+  return requiredPrivacyBoxes(isMinor, partnersPublished, category).every((box) => latestAccepted(map, box.code));
 }
 
 export function mediaBoxesRecorded(isMinor: boolean, map: Map<string, ChoiceSnapshot>) {
@@ -227,9 +249,16 @@ export function revocableCodes(isMinor: boolean, partnersPublished: boolean) {
   );
 }
 
-export function privacyExtraBoxes(isMinor: boolean, partnersPublished: boolean) {
-  return boxesFor({ isMinor, step: "privacy", partnersPublished }).filter(
-    (box) => box.code !== "T1" && box.code !== "M2" && box.code !== "G2",
+export function privacyExtraBoxes(
+  isMinor: boolean,
+  partnersPublished: boolean,
+  category: ConsentParticipantCategory = "PLAYER",
+) {
+  return withoutHealthConsent(
+    boxesFor({ isMinor, step: "privacy", partnersPublished }).filter(
+      (box) => box.code !== "T1" && box.code !== "M2" && box.code !== "G2",
+    ),
+    category,
   );
 }
 

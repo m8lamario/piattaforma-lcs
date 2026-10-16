@@ -1,6 +1,7 @@
 import { rosterFilterHref, unpublishedCount, type RosterCounts, type RosterRow } from "./roster";
 
 export type RepresentativeActionId =
+  | "coach"
   | "attention"
   | "invited"
   | "inProgress"
@@ -20,8 +21,12 @@ export function representativeNowActions(input: {
   rows: Pick<RosterRow, "publication">[];
   unreadCount: number;
   teamPaymentDue?: boolean;
+  coachMissing?: boolean;
 }): RepresentativeAction[] {
   const actions: RepresentativeAction[] = [];
+  if (input.coachMissing) {
+    actions.push({ id: "coach", href: "/squadra#allenatore", count: 1, urgency: "high" });
+  }
   if (input.counts.attention > 0) {
     actions.push({
       id: "attention",

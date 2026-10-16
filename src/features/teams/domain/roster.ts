@@ -1,10 +1,12 @@
 import type { PublicationFlags } from "@/features/consents/domain/boxes";
+import { staffOccupiesSlot } from "@/features/teams/domain/staff";
 
 export type RosterRow = {
   registrationId: string;
   userId?: string;
   membershipId?: string;
-  membershipRole?: "PLAYER" | "REPRESENTATIVE";
+  membershipRole?: "PLAYER" | "REPRESENTATIVE" | "STAFF";
+  category: "PLAYER" | "STAFF";
   firstName: string;
   lastName: string;
   jerseyNumber: string | null;
@@ -12,6 +14,9 @@ export type RosterRow = {
   registrationStatus: string;
   medicalStatus: "none" | "pending" | "approved" | "rejected" | "expired";
   publication?: PublicationFlags | null;
+  paymentCovered: boolean;
+  consentDue: boolean;
+  isCoach: boolean;
 };
 
 export type RosterCounts = {
@@ -87,7 +92,8 @@ export function toRosterRow(input: {
   registrationId: string;
   userId?: string;
   membershipId?: string;
-  membershipRole?: "PLAYER" | "REPRESENTATIVE";
+  membershipRole?: "PLAYER" | "REPRESENTATIVE" | "STAFF";
+  category?: "PLAYER" | "STAFF";
   firstName: string;
   lastName: string;
   jerseyNumber?: string | null;
@@ -95,6 +101,9 @@ export function toRosterRow(input: {
   registrationStatus: string;
   medicalStatus?: string | null;
   publication?: PublicationFlags | null;
+  paymentCovered?: boolean;
+  consentDue?: boolean;
+  isCoach?: boolean;
 }): RosterRow {
   const medical =
     input.medicalStatus === "APPROVED"
@@ -118,6 +127,22 @@ export function toRosterRow(input: {
     registrationStatus: input.registrationStatus,
     medicalStatus: medical,
     publication: input.publication ?? null,
+    category: input.category ?? "PLAYER",
+    paymentCovered: input.paymentCovered ?? false,
+    consentDue: input.consentDue ?? false,
+    isCoach: input.isCoach ?? false,
+  };
+}
+
+export function toStaffRosterView(row: RosterRow) {
+  return {
+    registrationId: row.registrationId,
+    firstName: row.firstName,
+    lastName: row.lastName,
+    registrationStatus: row.registrationStatus,
+    paymentCovered: row.paymentCovered,
+    consentDue: row.consentDue,
+    isCoach: row.isCoach,
   };
 }
 
@@ -142,6 +167,16 @@ export function toTeammateRow(input: {
     lastName: input.lastName,
     jerseyNumber: input.jerseyNumber ?? null,
     rosterRole: input.rosterRole ?? null,
+  };
+}
+
+export function splitRoster(rows: RosterRow[]) {
+  const players = rows.filter((row) => row.category !== "STAFF");
+  const staff = rows.filter((row) => row.category === "STAFF");
+  return {
+    players,
+    staff,
+    staffUsed: staff.filter((row) => staffOccupiesSlot(row.registrationStatus)).length,
   };
 }
 

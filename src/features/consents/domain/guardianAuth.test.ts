@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   enrollmentBoxCodes,
+  enrollmentRequiredCodes,
   guardianAuthorizationChecklistStatus,
   inspectGuardianLink,
   publicationBoxCodes,
@@ -56,6 +57,9 @@ describe("caselle del link genitore", () => {
     expect(codes).not.toContain("G7");
     expect(codes).not.toContain("G14");
     expect(enrollmentBoxCodes(true)).toContain("G7");
+    expect(enrollmentBoxCodes(false, "STAFF")).not.toContain("G4");
+    expect(enrollmentRequiredCodes("STAFF")).not.toContain("G4");
+    expect(enrollmentRequiredCodes("PLAYER")).toContain("G4");
   });
 
   it("limita il secondo genitore a C1, cognome e usi", () => {

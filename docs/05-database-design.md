@@ -57,7 +57,9 @@ Lo scope del rappresentante è la squadra: edizione e competition si leggono da 
 
 Un rappresentante che è anche giocatore ha `TEAM_REPRESENTATIVE` + membership `PLAYER` (e profilo).
 
-**TeamMembership** — presenza nel roster: `PLAYER` | `REPRESENTATIVE`. È il fatto anagrafico di squadra; `UserRole` è l’autorizzazione.
+**TeamMembership** — presenza nel roster: `PLAYER` | `REPRESENTATIVE` | `STAFF`. È il fatto anagrafico di squadra; `UserRole` è l’autorizzazione. `STAFF` qui non è un permesso: è la presenza di un componente dello staff tecnico che non è il referente. Il referente che partecipa come staff mantiene `REPRESENTATIVE` e una `Registration.category = STAFF`.
+
+`StaffInvite` resta l’invito personale per un altro referente. Non iscrive lo staff tecnico.
 
 ## 4. Giocatore e tutore
 
@@ -99,6 +101,7 @@ Un rappresentante che è anche giocatore ha `TEAM_REPRESENTATIVE` + membership `
 - `playerFeeAmount` Decimal, `currency` default `EUR`
 - `paymentMode` PLAYER | TEAM | BOTH
 - `teamFeeAmount` opzionale
+- `staffFeeAmount` Decimal, default `5`: quota individuale dello staff tecnico per quell’edizione. Il partecipante non la invia.
 - `isActive`
 
 **EditionRequirement**
@@ -112,6 +115,7 @@ Un rappresentante che è anche giocatore ha `TEAM_REPRESENTATIVE` + membership `
 
 - name, logoStorageKey nullable, inviteCode unique (codice interno), registrationToken unique (link pubblico `/iscrizione/[token]`, uno per squadra, non per giocatore)
 - contactName / contactEmail placeholder referente
+- `coachRegistrationId` opzionale: uno staff tecnico della stessa squadra, ancora in rosa. Se l’iscrizione diventa `WITHDRAWN` o `REMOVED`, o cambia squadra o categoria, il puntatore si azzera e la squadra risulta senza allenatore.
 
 **PlayerInvite** e **StaffInvite** — scope TEAM. Non hanno `editionId`: l’edizione è `team.editionId` e la competition è `team.edition.competitionId`. Il redeem usa solo il token; il client non sceglie la squadra.
 
@@ -132,7 +136,8 @@ Il token in chiaro sta solo nell’URL/email; in DB si salva **hash**.
 
 - playerProfileId, teamId, editionId
 - `status` proiezione persistita per query (ricalcolata dal motore, non editata dal giocatore)
-- unique `(playerProfileId, editionId)` — v1 una squadra/edizione alla volta. Resta corretto: la persona non ha due partecipazioni nella stessa edizione.
+- `category` `PLAYER` | `STAFF`. Non è un ruolo. Lo staff tecnico non ha il requisito `MEDICAL_CERT`. Al massimo 5 iscrizioni `STAFF` non `WITHDRAWN`/`REMOVED` per squadra: il conteggio è in transazione con lock sulla squadra e un trigger Postgres (`STAFF_LIMIT_REACHED`).
+- unique `(playerProfileId, editionId)` — v1 una squadra/edizione alla volta. Resta corretto: la persona non ha due partecipazioni nella stessa edizione. Un referente già giocatore non diventa staff con un secondo account.
 - unique `(id, editionId)` — bersaglio della foreign key composta dei pagamenti
 - submittedAt, reviewedAt nullable
 
@@ -190,6 +195,8 @@ Mai un flag denormalizzato `privacyAccepted` sul User come unica prova.
 - provider (stringa libera, es. `stub` | `stripe`)
 - providerPaymentId, providerSessionId
 - paidAt, failureCode, receiptUrl nullable
+- indirizzo di **fatturazione** (`billingName`, `billingEmail`, `billingLine1`, `billingLine2`, `billingPostalCode`, `billingCity`, `billingState`, `billingCountry`): solo ciò che Stripe conferma nel webhook di un pagamento riuscito. Non è la residenza. La residenza non è nel modulo di iscrizione e non si copia dalla fatturazione.
+- `User.stripeCustomerId` opzionale, per non chiedere di nuovo nome ed email già presenti in anagrafica
 - raw webhook **non** si salva intero se contiene PII; si salva event id + tipo
 
 `editionId` resta sulla riga perché lista e copertura si filtrano per edizione. Non è una seconda fonte libera:

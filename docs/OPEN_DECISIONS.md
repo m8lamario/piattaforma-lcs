@@ -4,6 +4,13 @@ Ogni voce: problema, opzioni, decisione necessaria, conseguenze, impatto sullo s
 
 ---
 
+## OD-047 Staff tecnico: testi e quota
+
+- **Problema:** non esiste un testo legale distinto per lo staff tecnico. Le caselle M3/G4 autorizzano la copia del certificato medico agonistico. Lo staff non carica quel documento.
+- **Workaround:** stessi placeholder di privacy, regolamento e liberatorie foto/video. M3/G4 non sono mostrate né richieste allo staff e al genitore di uno staff minore. Non si inventa un nuovo testo. `Edition.staffFeeAmount` default 5 EUR; l’organizzazione può cambiarlo per edizione. Il certificato resta obbligatorio solo per `PLAYER`.
+- **Decisione necessaria:** conferma che M3/G4 restano solo per i giocatori e che 5 EUR è la quota staff di ciascuna edizione attiva.
+- **Impatto:** se il legale vuole un’informativa staff, si versiona in `content/legal/` senza cambiare il motore consensi.
+
 ## OD-001 Testi legali ufficiali
 
 - **Problema:** I dati di `docs/pack-dati-da-compilare.md` (5 ottobre 2026, Pietro Filippo Turolla) sono stati copiati nei testi. Foro: Torino. Nessun medico esterno accede ai certificati. Cookie della piattaforma: tecnici strettamente necessari, banner disattivato. Neon: Francoforte. Cloudflare R2: giurisdizione UE. Resta da leggere nei DPA se Neon o Cloudflare trattano dati fuori da quella regione. Partner: nessuno al go-live. La cancellazione automatica della copia a 90 giorni non è ancora un job.
@@ -78,6 +85,12 @@ Ogni voce: problema, opzioni, decisione necessaria, conseguenze, impatto sullo s
 - **Opzioni:** campi Edition già in schema.
 - **Decisione necessaria:** organizzazione per ogni edizione.
 - **Impatto:** nessuno strutturale. Workaround: 0 / null = non richiesto se requirement PAYMENT required=false.
+
+## OD-048 Registro pagamenti e residenza
+
+- **Problema:** la SRL vuole un CSV dei paganti. Il modulo di iscrizione ha nome, cognome ed email, non l’indirizzo di residenza. Stripe può raccogliere l’indirizzo di fatturazione.
+- **Workaround:** nome, cognome ed email del CSV vengono dall’account LCS. L’indirizzo di fatturazione si salva solo dal webhook `checkout.session.completed` con `payment_status=paid` (o pagamento asincrono riuscito). Le colonne di residenza restano vuote. Un rimborso parziale non diventa «rimborsato». Nessuna fatturazione elettronica.
+- **Decisione necessaria:** se la residenza va raccolta nel modulo, è un campo nuovo da approvare. Fino ad allora non si inventa.
 
 ## OD-009 Ricevuta
 

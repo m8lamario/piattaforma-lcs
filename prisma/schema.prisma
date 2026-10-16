@@ -19,6 +19,12 @@ enum Role {
 enum MembershipRole {
   PLAYER
   REPRESENTATIVE
+  STAFF
+}
+
+enum ParticipantCategory {
+  PLAYER
+  STAFF
 }
 
 enum RegistrationStatus {
@@ -152,6 +158,7 @@ model User {
   id               String              @id @default(cuid())
   email            String              @unique
   emailVerified    DateTime?
+  stripeCustomerId String?             @unique
   passwordHash     String?
   name             String?
   image            String?
@@ -330,6 +337,7 @@ model Edition {
   endsAt          DateTime?
   playerFeeAmount Decimal?    @db.Decimal(10, 2)
   teamFeeAmount   Decimal?    @db.Decimal(10, 2)
+  staffFeeAmount  Decimal     @default(5) @db.Decimal(10, 2)
   currency        String      @default("EUR")
   paymentMode     PaymentMode @default(PLAYER)
   isActive        Boolean     @default(true)
@@ -388,12 +396,14 @@ model Team {
   contactName          String?
   contactEmail         String?
   representativeUserId String?
+  coachRegistrationId  String?  @unique
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
 
   edition        Edition          @relation(fields: [editionId], references: [id], onDelete: Restrict)
   school         School           @relation(fields: [schoolId], references: [id], onDelete: Restrict)
-  representative User?            @relation("TeamRepresentativeUser", fields: [representativeUserId], references: [id])
+  representative    User?            @relation("TeamRepresentativeUser", fields: [representativeUserId], references: [id])
+  coachRegistration Registration? @relation("TeamCoach", fields: [coachRegistrationId], references: [id], onDelete: SetNull)
   memberships    TeamMembership[]
   invites        PlayerInvite[]
   staffInvites   StaffInvite[]
@@ -514,6 +524,7 @@ model Registration {
   playerProfileId String
   teamId          String
   editionId       String
+  category        ParticipantCategory @default(PLAYER)
   status          RegistrationStatus  @default(INVITED)
   submittedAt     DateTime?
   reviewedAt      DateTime?
@@ -530,10 +541,12 @@ model Registration {
   authorizations GuardianAuthorization[]
   guardianTokens GuardianLinkToken[]
   payments       Payment[]
+  coachedTeam    Team?           @relation("TeamCoach")
 
   @@unique([playerProfileId, editionId])
   @@unique([id, editionId])
   @@index([teamId])
+  @@index([teamId, category, status])
   @@index([editionId, status])
 }
 
@@ -788,6 +801,14 @@ model Payment {
   paidAt            DateTime?
   failureCode       String?
   receiptUrl        String?
+  billingName       String?
+  billingEmail      String?
+  billingLine1      String?
+  billingLine2      String?
+  billingPostalCode String?
+  billingCity       String?
+  billingState      String?
+  billingCountry    String?
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
 

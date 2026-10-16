@@ -16,7 +16,9 @@ import { isRegistrationWindowOpen } from "@/features/registrations/domain/window
 import { teamCheckoutAmount } from "@/features/payments/domain/amounts";
 import { getTeamForActor } from "@/features/teams/data/invites";
 import { listTeamRoster, listTeamsByIds } from "@/features/teams/data/roster";
-import { summarizeRoster } from "@/features/teams/domain/roster";
+import { splitRoster, summarizeRoster } from "@/features/teams/domain/roster";
+import { staffOccupiesSlot, teamCoachCompleteness } from "@/features/teams/domain/staff";
+import { LiveRefresh } from "@/features/teams/ui/LiveRefresh";
 import { resolveSelectedTeamId } from "@/features/teams/domain/selection";
 import { RepresentativeDashboard } from "@/features/teams/ui/RepresentativeDashboard";
 import { authorize } from "@/shared/authz/authorize";
@@ -82,8 +84,17 @@ export default async function AreaPage() {
           paymentMode: team.edition.paymentMode,
           teamFeeAmount: team.edition.teamFeeAmount,
         });
+        const parts = splitRoster(roster);
+        const coach = teamCoachCompleteness({
+          teamId: team.id,
+          coachRegistrationId: team.coachRegistrationId,
+          coach: team.coachRegistration,
+        });
+        const own = roster.find((row) => row.userId === userId);
+        const activeOwn = own && staffOccupiesSlot(own.registrationStatus) ? own : null;
         return (
           <>
+            <LiveRefresh />
             {workspace && !workspace.user.emailVerified ? <EmailVerifyNotice /> : null}
             <RepresentativeDashboard
               schoolName={team.school.name}
@@ -95,13 +106,22 @@ export default async function AreaPage() {
               joinUrl={`${appOrigin()}/iscrizione/${team.registrationToken}`}
               windowOpen={isRegistrationWindowOpen(editionWindow)}
               editionWindow={editionWindow}
-              counts={summarizeRoster(roster)}
-              roster={roster}
+              counts={summarizeRoster(parts.players)}
+              roster={parts.players}
               teams={teams}
               teamPaymentDue={teamAmount !== null && !teamPayment}
               unreadCount={shell.unreadCount}
               unread={unread}
               workspace={workspace}
+              staffUsed={parts.staffUsed}
+              coachMissing={!coach.complete}
+              coachName={
+                coach.complete
+                  ? `${team.coachRegistration?.playerProfile.firstName ?? ""} ${team.coachRegistration?.playerProfile.lastName ?? ""}`.trim()
+                  : null
+              }
+              showStaffJoin={!activeOwn}
+              staffPlayerConflict={activeOwn?.category === "PLAYER"}
             />
           </>
         );
@@ -134,6 +154,7 @@ export default async function AreaPage() {
           teamName={workspace.registration.teamName}
           status={workspace.projectedStatus}
           checklist={workspace.checklist}
+          category={workspace.registration.category}
           medicalStatus={workspace.evidence.medicalStatus}
           registrationId={workspace.registration.id}
           editionWindow={{

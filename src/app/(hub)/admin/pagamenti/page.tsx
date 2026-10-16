@@ -3,6 +3,7 @@ import { decimalText } from "@/features/admin/domain/format";
 import { AdminFrame } from "@/features/admin/ui/AdminFrame";
 import { requireStaff } from "@/shared/authz/requireStaff";
 import { PageHeader } from "@/shared/ui/PageHeader";
+import { ButtonLink } from "@/shared/ui/Button";
 import { StatusChip } from "@/shared/ui/StatusChip";
 import { it } from "@/shared/i18n/it";
 import styles from "@/features/admin/ui/admin.module.css";
@@ -11,7 +12,11 @@ export default async function AdminPaymentsPage() {
   const [{ actor }, payments] = await Promise.all([requireStaff("/admin/pagamenti"), listPaymentsAdmin()]);
   return (
     <AdminFrame path="/admin/pagamenti" actor={actor}>
-      <PageHeader title={it.navAdminPayments} description={it.adminPaymentsHelp} />
+      <PageHeader
+        title={it.navAdminPayments}
+        description={it.adminPaymentsHelp}
+        aside={<ButtonLink href="/admin/pagamenti/export">{it.adminPaymentsExport}</ButtonLink>}
+      />
       {payments.length === 0 ? (
         <p className={styles.empty}>{it.adminPaymentsEmpty}</p>
       ) : (

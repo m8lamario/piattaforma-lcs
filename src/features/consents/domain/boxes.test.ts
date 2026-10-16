@@ -26,6 +26,8 @@ function mapOf(rows: Array<Partial<ChoiceSnapshot> & { code: string; accepted: b
 describe("caselle LCS 2026-27", () => {
   it("chiede T1, M1, M2, M3 all’adulto e non le caselle immagini", () => {
     expect(requiredPrivacyBoxes(false, false).map((box) => box.code)).toEqual(["T1", "M1", "M2", "M3"]);
+    expect(requiredPrivacyBoxes(false, false, "STAFF").map((box) => box.code)).not.toContain("M3");
+    expect(privacyExtraBoxes(false, false, "STAFF").map((box) => box.code)).not.toContain("M3");
   });
 
   it("completa la privacy adulto solo con le caselle obbligatorie e salute", () => {

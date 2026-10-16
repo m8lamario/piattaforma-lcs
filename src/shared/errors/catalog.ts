@@ -180,6 +180,12 @@ export const ERROR_CATALOG: Record<ErrorCode, ErrorDefinition> = {
   DOCUMENT_REJECT_REASON_REQUIRED: def("DOCUMENTS", "Review REJECTED senza reason trim.", 400, "correct_input", {
     retrySafe: true,
   }),
+  STAFF_MEDICAL_NOT_REQUIRED: def(
+    "DOCUMENTS",
+    "Upload certificato su Registration.category STAFF.",
+    400,
+    "none",
+  ),
 
   CONSENT_REQUIRED_UNCHECKED: def("CONSENTS", "Checkbox required non tutte confermate.", 400, "correct_input", {
     retrySafe: true,
@@ -235,6 +241,20 @@ export const ERROR_CATALOG: Record<ErrorCode, ErrorDefinition> = {
   TEAM_PLAYER_ALREADY_ON_TEAM: def("TEAMS", "inviteCreateBlocker already_on_team.", 409, "none", { severity: "info" }),
   TEAM_EDITION_CONFLICT: def("TEAMS", "inviteCreateBlocker edition_conflict.", 409, "none"),
   TEAM_BULK_RATE_LIMITED: def("TEAMS", "Rate limit CSV inviti.", 429, "wait", { severity: "warning" }),
+  TEAM_STAFF_LIMIT: def("TEAMS", "Più di 5 Registration STAFF attive sulla stessa squadra.", 409, "none"),
+  TEAM_STAFF_CATEGORY_CONFLICT: def(
+    "TEAMS",
+    "Registration PLAYER attiva sulla stessa edizione: niente seconda iscrizione STAFF.",
+    409,
+    "contact_org",
+  ),
+  TEAM_COACH_INVALID: def(
+    "TEAMS",
+    "coachRegistrationId non è uno STAFF attivo della stessa squadra.",
+    400,
+    "correct_input",
+    { retrySafe: true },
+  ),
 
   EDITION_NOT_FOUND: def("SYSTEM", "Edition id admin inesistente.", 404, "none"),
   GUARDIAN_SAVE_FAILED: def("REGISTRATION", "PlayerProfile assente in saveGuardian.", 500, "retry", { retrySafe: true }),

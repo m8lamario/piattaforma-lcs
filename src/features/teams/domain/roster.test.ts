@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { filterRoster, parseRosterFilter, rosterBucket, summarizeRoster, toRosterRow, toTeammateRow } from "./roster";
+import { filterRoster, parseRosterFilter, rosterBucket, summarizeRoster, toRosterRow, toStaffRosterView, toTeammateRow } from "./roster";
 
 describe("team roster projection", () => {
   it("espone solo nome, stato iscrizione e stato certificato", () => {
@@ -22,6 +22,10 @@ describe("team roster projection", () => {
       registrationStatus: "IN_PROGRESS",
       medicalStatus: "pending",
       publication: null,
+      category: "PLAYER",
+      paymentCovered: false,
+      consentDue: false,
+      isCoach: false,
     });
     expect(Object.keys(row)).not.toContain("fiscalCode");
     expect(Object.keys(row)).not.toContain("storageKey");
@@ -99,5 +103,33 @@ describe("team roster projection", () => {
     expect(Object.keys(row)).not.toContain("medicalStatus");
     expect(Object.keys(row)).not.toContain("fiscalCode");
     expect(Object.keys(row)).not.toContain("email");
+  });
+
+  it("la vista staff non espone stato medico, file o contatti", () => {
+    const view = toStaffRosterView(
+      toRosterRow({
+        registrationId: "s1",
+        category: "STAFF",
+        firstName: "Chiara",
+        lastName: "Neri",
+        registrationStatus: "PAYMENT_PENDING",
+        medicalStatus: "APPROVED",
+        paymentCovered: false,
+        consentDue: false,
+        isCoach: true,
+      }),
+    );
+    expect(view).toEqual({
+      registrationId: "s1",
+      firstName: "Chiara",
+      lastName: "Neri",
+      registrationStatus: "PAYMENT_PENDING",
+      paymentCovered: false,
+      consentDue: false,
+      isCoach: true,
+    });
+    expect(Object.keys(view)).not.toContain("medicalStatus");
+    expect(Object.keys(view)).not.toContain("fiscalCode");
+    expect(Object.keys(view)).not.toContain("email");
   });
 });

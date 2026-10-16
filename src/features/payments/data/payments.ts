@@ -1,5 +1,7 @@
 import { Prisma } from "@generated/client";
 import type { Prisma as PrismaTypes } from "@generated/client";
+import { billingFill, type BillingSnapshot } from "@/features/payments/domain/billing";
+import { webhookApplyDecision } from "@/features/payments/domain/integrity";
 import { paymentProviderName } from "@/shared/config/drivers";
 import { paymentScopeViolation } from "@/shared/domain/hierarchy";
 import { prisma } from "@/shared/lib/prisma";
@@ -111,32 +113,74 @@ export async function getPaymentById(id: string) {
   });
 }
 
+export async function rememberStripeCustomer(userId: string, stripeCustomerId: string | null | undefined) {
+  if (!stripeCustomerId) return;
+  await prisma.user.updateMany({
+    where: { id: userId, stripeCustomerId: null },
+    data: { stripeCustomerId },
+  });
+}
+
 export async function applyProviderResult(input: {
   paymentId: string;
   providerPaymentId: string;
   status: "PENDING" | "SUCCEEDED" | "FAILED" | "REFUNDED";
   receiptUrl?: string | null;
+  billing?: BillingSnapshot | null;
 }) {
-  const existing = await prisma.payment.findFirst({
-    where: { providerPaymentId: input.providerPaymentId, status: "SUCCEEDED" },
-  });
-  if (existing && existing.id !== input.paymentId) {
-    return { ok: false as const, reason: "duplicate" as const };
-  }
+  return prisma.$transaction(async (tx) => {
+    const current = await tx.payment.findUnique({ where: { id: input.paymentId } });
+    const other = await tx.payment.findFirst({
+      where: {
+        providerPaymentId: input.providerPaymentId,
+        status: "SUCCEEDED",
+        NOT: { id: input.paymentId },
+      },
+      select: { id: true },
+    });
+    const decision = webhookApplyDecision({
+      current: current ? { id: current.id, status: current.status } : null,
+      incomingStatus: input.status,
+      otherSucceededWithSameProviderId: Boolean(other),
+    });
+    if (decision === "duplicate") return { ok: false as const, reason: "duplicate" as const };
+    if (decision === "not_found" || decision === "conflict") {
+      return { ok: false as const, reason: "conflict" as const };
+    }
 
-  const updated = await prisma.payment.updateMany({
-    where: { id: input.paymentId, status: { in: ["PENDING", "FAILED"] } },
-    data: {
-      status: input.status,
-      providerPaymentId: input.providerPaymentId,
-      paidAt: input.status === "SUCCEEDED" ? new Date() : null,
-      receiptUrl: input.receiptUrl ?? null,
-    },
+    const patch = billingFill(current, input.billing);
+    if (decision === "idempotent") {
+      if (Object.keys(patch).length > 0) {
+        await tx.payment.update({ where: { id: input.paymentId }, data: patch });
+      }
+      return { ok: true as const, idempotent: true };
+    }
+
+    const updated = await tx.payment.updateMany({
+      where: {
+        id: input.paymentId,
+        status: input.status === "REFUNDED" ? "SUCCEEDED" : { in: ["PENDING", "FAILED"] },
+      },
+      data: {
+        status: input.status,
+        providerPaymentId: input.providerPaymentId,
+        ...(input.status === "SUCCEEDED" ? { paidAt: new Date() } : {}),
+        ...(input.status === "FAILED" ? { paidAt: null } : {}),
+        receiptUrl: input.receiptUrl ?? null,
+        ...patch,
+      },
+    });
+    if (updated.count === 0) {
+      const latest = await tx.payment.findUnique({ where: { id: input.paymentId } });
+      if (latest?.status === input.status) {
+        const latePatch = billingFill(latest, input.billing);
+        if (Object.keys(latePatch).length > 0) {
+          await tx.payment.update({ where: { id: input.paymentId }, data: latePatch });
+        }
+        return { ok: true as const, idempotent: true };
+      }
+      return { ok: false as const, reason: "conflict" as const };
+    }
+    return { ok: true as const, idempotent: false };
   });
-  if (updated.count === 0) {
-    const current = await prisma.payment.findUnique({ where: { id: input.paymentId } });
-    if (current?.status === input.status) return { ok: true as const, idempotent: true };
-    return { ok: false as const, reason: "conflict" as const };
-  }
-  return { ok: true as const, idempotent: false };
 }
