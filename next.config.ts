@@ -1,4 +1,8 @@
 import type { NextConfig } from "next";
+import {
+  UPLOAD_ACTION_BODY_LIMIT_BYTES,
+  UPLOAD_PROXY_BODY_LIMIT_BYTES,
+} from "./src/shared/config/app";
 
 /**
  * Project-relative. An absolute path is treated as a server-relative import
@@ -12,6 +16,10 @@ const nextConfig: NextConfig = {
     staleTimes: {
       dynamic: 30,
     },
+    serverActions: {
+      bodySizeLimit: UPLOAD_ACTION_BODY_LIMIT_BYTES,
+    },
+    proxyClientMaxBodySize: UPLOAD_PROXY_BODY_LIMIT_BYTES,
   },
   turbopack: {
     resolveAlias: {

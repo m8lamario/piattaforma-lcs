@@ -9,7 +9,7 @@ import { declaredMimeMatches, detectAllowedMime } from "@/features/documents/dom
 export async function ensureMedicalDocumentType() {
   return prisma.documentType.upsert({
     where: { code: "MEDICAL_CERTIFICATE" },
-    update: {},
+    update: { maxSizeBytes: MAX_UPLOAD_BYTES },
     create: {
       code: "MEDICAL_CERTIFICATE",
       name: "Certificato medico agonistico",

@@ -13,6 +13,23 @@ export const SIGNED_URL_TTL_SECONDS = Number(
 );
 export const MAX_UPLOAD_BYTES = Number(process.env.MAX_UPLOAD_BYTES ?? 10_485_760);
 
+/**
+ * Frammenti multipart oltre i byte del file: boundary, header delle parti,
+ * id dell’action e gli altri campi del form.
+ */
+export const UPLOAD_MULTIPART_OVERHEAD_BYTES = 64 * 1024;
+
+/** Limite del body della Server Action: file massimo più il framing multipart. */
+export const UPLOAD_ACTION_BODY_LIMIT_BYTES = MAX_UPLOAD_BYTES + UPLOAD_MULTIPART_OVERHEAD_BYTES;
+
+/**
+ * Il proxy bufferizza il body e, superato questo tetto, lo tronca senza
+ * rispondere 413. Resta un megabyte sopra il limite dell’action, più di un
+ * chunk di lettura, così un file troppo grande viene rifiutato e non salvato
+ * a metà.
+ */
+export const UPLOAD_PROXY_BODY_LIMIT_BYTES = UPLOAD_ACTION_BODY_LIMIT_BYTES + 1024 * 1024;
+
 export const ALLOWED_DOCUMENT_MIME = [
   "application/pdf",
   "image/jpeg",

@@ -5,6 +5,7 @@ import { PrismaClient } from "../generated/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { hashPassword } from "../src/features/auth/domain/password";
 import { LEGAL_CATALOG } from "../src/features/consents/domain/catalog";
+import { MAX_UPLOAD_BYTES } from "../src/shared/config/app";
 
 const connectionString = process.env.DATABASE_URL;
 if (!connectionString) {
@@ -140,12 +141,12 @@ async function main() {
 
   await prisma.documentType.upsert({
     where: { code: "MEDICAL_CERTIFICATE" },
-    update: {},
+    update: { maxSizeBytes: MAX_UPLOAD_BYTES },
     create: {
       code: "MEDICAL_CERTIFICATE",
       name: "Certificato medico agonistico",
       allowedMime: ["application/pdf", "image/jpeg", "image/png"],
-      maxSizeBytes: 10_485_760,
+      maxSizeBytes: MAX_UPLOAD_BYTES,
       requiresExpiry: false,
     },
   });

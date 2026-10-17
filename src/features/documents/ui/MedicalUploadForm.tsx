@@ -57,6 +57,7 @@ export function MedicalUploadForm({ document }: Props) {
         label={mustUpload ? it.uploadFile : it.replaceFile}
         help={`${it.medicalAccept} ${maxMb} MB.`}
         accept="application/pdf,image/jpeg,image/png,.pdf,.jpg,.jpeg,.png"
+        maxBytes={MAX_UPLOAD_BYTES}
         required={mustUpload}
         disabled={pending}
         uploading={pending}
