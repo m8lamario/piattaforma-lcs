@@ -13,6 +13,7 @@ type Props = {
   label: string;
   help?: string;
   accept: string;
+  maxBytes?: number;
   required?: boolean;
   disabled?: boolean;
   uploading?: boolean;
@@ -27,6 +28,7 @@ export function FileDropzone({
   label,
   help,
   accept,
+  maxBytes,
   required = false,
   disabled = false,
   uploading = false,
@@ -58,6 +60,11 @@ export function FileDropzone({
     if (!acceptsFile(file, accept)) {
       assignFile(null);
       setLocalError(it.fileDropInvalidType);
+      return;
+    }
+    if (maxBytes !== undefined && file.size > maxBytes) {
+      assignFile(null);
+      setLocalError(it.fileDropTooLarge);
       return;
     }
     setLocalError(null);

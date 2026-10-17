@@ -676,6 +676,7 @@ export const it = {
   fileExisting: "File già caricato",
   fileUploading: "Invio del file in corso…",
   fileDropInvalidType: "Formato non ammesso. Usa PDF, JPEG o PNG.",
+  fileDropTooLarge: "Il file supera la dimensione massima consentita.",
 
   // --- errors (agent1) ---
   errorRefLabel: "Riferimento",
