@@ -116,4 +116,4 @@ Pagine pubbliche con il contenuto della **versione corrente** del file in `conte
 
 Visibili: nome squadra, logo, competizione, edizione, nome referente (se previsto), elenco compagni con **nome e cognome** + eventuale ruolo/numero maglia.
 
-Non visibili: email, telefono, CF, età esatta, documenti, **stato certificato**, pagamenti altrui, consensi altrui. Lo stato medico resta sulla rosa del rappresentante (`/squadra`), non sulla vista compagni.
+Non visibili: email, telefono, CF, età esatta, taglia maglia, documenti, **stato certificato**, pagamenti altrui, consensi altrui. Taglia e numero maglia dei giocatori stanno sulla rosa del rappresentante (`/squadra`), non sulla vista compagni. Lo stato medico resta lì.

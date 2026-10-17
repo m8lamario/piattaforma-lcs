@@ -100,6 +100,7 @@ export default async function WizardStepPage({ params }: Props) {
           defaults={workspace.profile}
           registrationId={workspace.registration.id}
           identityConflict={workspace.identityConflict}
+          requireShirtSize={workspace.registration.category === "PLAYER"}
         />
       );
       break;

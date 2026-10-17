@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { PublicationChips } from "@/features/consents/ui/PublicationChips";
+import { shirtSizeLabel } from "@/features/players/domain/shirtSize";
 import { it } from "@/shared/i18n/it";
 import type { RosterRow } from "@/features/teams/domain/roster";
 import { nudgeRegistrationAction, updateRosterRowAction } from "@/features/teams/actions";
@@ -85,6 +86,13 @@ export function TeamRoster({
                 </strong>
                 <span className={styles.chips}>
                   <StatusChip tone="neutral">{REG_COPY[row.registrationStatus] ?? row.registrationStatus}</StatusChip>
+                  {!staff ? (
+                    <StatusChip tone={row.shirtSize ? "complete" : "attention"}>
+                      {row.shirtSize
+                        ? `${it.rosterShirtSize} ${shirtSizeLabel(row.shirtSize) ?? row.shirtSize}`
+                        : it.rosterShirtSizeMissing}
+                    </StatusChip>
+                  ) : null}
                   {staff && row.isCoach ? <StatusChip tone="complete">{it.categoryCoach}</StatusChip> : null}
                   {staff && row.registrationStatus !== "WITHDRAWN" && row.registrationStatus !== "REMOVED" ? (
                     <StatusChip tone={row.consentDue ? "attention" : "complete"}>

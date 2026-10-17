@@ -268,6 +268,7 @@ model PlayerProfile {
   birthDate   DateTime? @db.Date
   fiscalCode  String?   @unique
   phone       String?
+  shirtSize   String?
   metadata    Json?
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt

@@ -131,6 +131,7 @@ test("happy path: invito, redeem, wizard minimo, pagamento stub", async ({ page,
   await player.locator("#birthDate").fill("1980-01-01");
   await player.locator("#fiscalCode").fill(fiscalCode);
   await player.locator("#phone").fill("3331234567");
+  await player.locator("#shirtSize").selectOption("M");
   await player.getByRole("button", { name: "Salva e continua" }).click();
 
   await expect(player).toHaveURL(/\/area\/registrazione\/certificato/);
@@ -177,6 +178,7 @@ test("minore: verifica email, tutore, attesa genitore e link di autorizzazione",
   await player.locator("#birthDate").fill("2010-06-15");
   await player.locator("#fiscalCode").fill(fiscalCode);
   await player.locator("#phone").fill("3331234567");
+  await player.locator("#shirtSize").selectOption("M");
   await player.getByRole("button", { name: "Salva e continua" }).click();
 
   await expect(player).toHaveURL(/\/area\/registrazione\/tutore/);

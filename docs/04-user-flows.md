@@ -71,7 +71,7 @@ Passi guidati, uno schermo alla volta, salvataggio per passo. L’account si cre
 ### Maggiorenne
 
 1. Verifica email
-2. Dati personali e controllo età
+2. Dati personali e controllo età (per i giocatori anche taglia maglia; il numero lo assegna il rappresentante)
 3. Informative e condizioni necessarie (T1, presa visione, casella salute M3)
 4. Upload del certificato
 5. Revisione del file da `MEDICAL_REVIEWER` (o Super Admin)
@@ -83,7 +83,7 @@ Passi guidati, uno schermo alla volta, salvataggio per passo. L’account si cre
 ### Minorenne (account del minore)
 
 1. Verifica email
-2. Dati personali e controllo età
+2. Dati personali e controllo età (per i giocatori anche taglia maglia; il numero lo assegna il rappresentante)
 3. Contatti del genitore (nome, cognome, email, telefono; altro genitore o unico esercente come **dato inserito**, non come autorizzazione)
 4. Lettura delle informative (senza chiudere gli atti riservati al genitore)
 5. Upload del certificato (la revisione resta allo staff)

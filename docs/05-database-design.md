@@ -65,7 +65,7 @@ Un rappresentante che è anche giocatore ha `TEAM_REPRESENTATIVE` + membership `
 
 **PlayerProfile** (1:1 User)
 
-- firstName, lastName, birthDate, fiscalCode (unique, nullable finché incompleto), phone
+- firstName, lastName, birthDate, fiscalCode (unique, nullable finché incompleto), phone, shirtSize (nullable; obbligatorio in dominio solo per `Registration.category = PLAYER`; taglie OD-049)
 - `metadata Json` per extra futuri
 - `isMinor` **non** è persistito come fonte di verità: si calcola da `birthDate`. Si può materializzare in cache solo se documentato; in M0 si calcola.
 

@@ -19,6 +19,7 @@ describe("team roster projection", () => {
       lastName: "Rossi",
       jerseyNumber: null,
       rosterRole: null,
+      shirtSize: null,
       registrationStatus: "IN_PROGRESS",
       medicalStatus: "pending",
       publication: null,
@@ -30,6 +31,27 @@ describe("team roster projection", () => {
     expect(Object.keys(row)).not.toContain("fiscalCode");
     expect(Object.keys(row)).not.toContain("storageKey");
     expect(Object.keys(row)).not.toContain("email");
+  });
+
+  it("espone la taglia al rappresentante solo per i giocatori", () => {
+    const player = toRosterRow({
+      registrationId: "r-size",
+      firstName: "Eva",
+      lastName: "Test",
+      registrationStatus: "APPROVED",
+      shirtSize: "M",
+    });
+    const staff = toRosterRow({
+      registrationId: "s-size",
+      category: "STAFF",
+      firstName: "Ada",
+      lastName: "Coach",
+      registrationStatus: "APPROVED",
+      shirtSize: "M",
+    });
+    expect(player.shirtSize).toBe("M");
+    expect(staff.shirtSize).toBeNull();
+    expect(Object.keys(toStaffRosterView(staff))).not.toContain("shirtSize");
   });
 
   it("mappa CHANGES_REQUESTED come certificato da ricaricare, senza motivo", () => {
@@ -103,6 +125,7 @@ describe("team roster projection", () => {
     expect(Object.keys(row)).not.toContain("medicalStatus");
     expect(Object.keys(row)).not.toContain("fiscalCode");
     expect(Object.keys(row)).not.toContain("email");
+    expect(Object.keys(row)).not.toContain("shirtSize");
   });
 
   it("la vista staff non espone stato medico, file o contatti", () => {

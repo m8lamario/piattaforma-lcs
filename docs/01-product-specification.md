@@ -48,7 +48,7 @@ Il giocatore entra **solo con il link della propria squadra**, indica la propria
 - Condividere l’unico link di iscrizione della squadra dalla panoramica e da `/squadra/inviti`. L’email del giocatore si raccoglie nel form, non in un invito separato.
 - Vedere la rosa con stato di registrazione, pubblicabilità e **stato** del certificato (caricato / in revisione / approvato / rifiutato / scaduto), **mai il file**.
 - Se è anche giocatore, completare la propria iscrizione e i consensi da una sezione distinta; altrimenti quelle voci non stanno nel menu.
-- Vedere lo staff tecnico (massimo 5, referente compreso se partecipa) con stato iscrizione, consensi e pagamento, mai un certificato.
+- Vedere lo staff tecnico (massimo 5, referente compreso se partecipa) con stato iscrizione, consensi e pagamento, mai un certificato e mai la taglia maglia.
 - Designare un allenatore tra lo staff della propria squadra. Senza allenatore idoneo la squadra è incompleta.
 - Partecipare lui stesso come staff tecnico, sullo stesso account, con quota e liberatorie e senza certificato medico.
 - Non vedere codice fiscale, telefono, email completa dei compagni oltre quanto strettamente necessario al roster (vedi ruoli).
@@ -65,9 +65,12 @@ Il giocatore entra **solo con il link della propria squadra**, indica la propria
 ## 8. Dati giocatore (minimi)
 
 - Nome, cognome, data di nascita, codice fiscale, email obbligatoria, telefono.
+- Taglia maglia obbligatoria **solo per i giocatori** (`PLAYER`). Lo staff tecnico non la vede né la compila. Elenco taglie: OD-049.
+- Numero di maglia: lo assegna e lo modifica solo il rappresentante di squadra (`TeamMembership.jerseyNumber`). Non è un campo di registrazione del giocatore.
 - Estensione futura: colonna `metadata Json` su `PlayerProfile` + eventuali colonne tipizzate. Non si riscrive l’architettura per un campo nuovo.
+- Giocatori già iscritti senza `shirtSize`: al prossimo accesso `PERSONAL_DATA` torna da completare (avviso in dashboard, wizard bloccato su `dati`) senza toccare pagamenti, consensi o certificato. Chi ha già una taglia valida non la reinserisce.
 
-Campi **non** mostrati ai compagni di squadra: CF, email, telefono, data di nascita completa, documenti, consensi.
+Campi **non** mostrati ai compagni di squadra: CF, email, telefono, data di nascita completa, taglia maglia, documenti, consensi.
 
 ## 9. Minori
 

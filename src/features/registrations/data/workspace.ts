@@ -12,7 +12,12 @@ import {
   writeIdentityConflict,
 } from "@/features/players/domain/identity";
 import { normalizeFiscalCode } from "@/features/players/domain/fiscalCode";
-import { hasCompletePersonalData, hasMinorGuardianRequirement } from "@/features/players/domain/personal";
+import {
+  hasCompletePersonalData,
+  hasIdentityPersonalData,
+  hasMinorGuardianRequirement,
+} from "@/features/players/domain/personal";
+import { isValidShirtSize } from "@/features/players/domain/shirtSize";
 import {
   DEFAULT_EDITION_REQUIREMENTS,
   isTerminalRegistrationStatus,
@@ -74,6 +79,7 @@ export async function loadPlayerWorkspace(userId: string) {
         birthDate: true,
         fiscalCode: true,
         phone: true,
+        shirtSize: true,
         metadata: true,
       },
     }),
@@ -279,10 +285,12 @@ export async function loadPlayerWorkspace(userId: string) {
           : "none";
 
   const isStaff = registration.category === "STAFF";
+  const shirtSizeDue = !isStaff && !isValidShirtSize(profile.shirtSize);
+  const shirtSizeOnlyGap = shirtSizeDue && hasIdentityPersonalData(profile);
   const evidence: RegistrationEvidence = {
     category: registration.category,
     hasAccount: true,
-    hasPersonalData: hasCompletePersonalData(profile),
+    hasPersonalData: hasCompletePersonalData(profile, { requireShirtSize: !isStaff }),
     isMinor: isMinorPlayer,
     hasGuardian: guardianAuthorization === "authorized",
     hasGuardianContact: contactComplete,
@@ -311,7 +319,10 @@ export async function loadPlayerWorkspace(userId: string) {
       birthDate: profile.birthDate,
       fiscalCode: profile.fiscalCode,
       phone: profile.phone,
+      shirtSize: profile.shirtSize,
     },
+    shirtSizeDue,
+    shirtSizeOnlyGap,
     identityConflict: workspaceIdentityBlock({
       fiscalCode: profile.fiscalCode,
       metadata: profile.metadata,
@@ -433,6 +444,7 @@ export async function savePersonalProfile(
     birthDate: Date;
     fiscalCode: string;
     phone: string;
+    shirtSize?: string | null;
   },
 ) {
   const fiscalCode = normalizeFiscalCode(input.fiscalCode);
@@ -504,6 +516,7 @@ export async function savePersonalProfile(
         birthDate: input.birthDate,
         fiscalCode,
         phone: input.phone,
+        ...(input.shirtSize !== undefined ? { shirtSize: input.shirtSize } : {}),
         metadata: clearIdentityConflict(current.metadata) as Prisma.InputJsonValue,
       },
     });

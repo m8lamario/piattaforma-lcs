@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { parseDateOnly } from "@/features/players/domain/dates";
 import { guardianSchema } from "@/features/players/schemas/guardian";
-import { personalDataSchema } from "@/features/players/schemas/personal";
+import { personalDataSchema, staffPersonalDataSchema, type PersonalDataInput } from "@/features/players/schemas/personal";
 import { loadPlayerWorkspace, persistRegistrationStatus, saveGuardianProfile, savePersonalProfile } from "@/features/registrations/data/workspace";
 import { requestEnrollmentAuthorization } from "@/features/consents/data/guardianAuth";
 import { selfAsGuardianReason } from "@/features/consents/domain/guardianAuth";
@@ -68,12 +68,14 @@ export async function savePersonalDataAction(
     return access.failure ?? fail("FORBIDDEN_REGISTRATION_WRITE");
   }
 
-  const parsed = personalDataSchema.safeParse({
+  const isStaff = access.workspace.registration.category === "STAFF";
+  const parsed = (isStaff ? staffPersonalDataSchema : personalDataSchema).safeParse({
     firstName: formData.get("firstName"),
     lastName: formData.get("lastName"),
     birthDate: formData.get("birthDate"),
     fiscalCode: formData.get("fiscalCode"),
     phone: formData.get("phone"),
+    shirtSize: formData.get("shirtSize"),
     intent: formData.get("intent") || "continue",
   });
   if (!parsed.success) {
@@ -96,6 +98,7 @@ export async function savePersonalDataAction(
     birthDate,
     fiscalCode: parsed.data.fiscalCode,
     phone: parsed.data.phone,
+    shirtSize: isStaff ? undefined : (parsed.data as PersonalDataInput).shirtSize,
   });
   if (!saved.ok) {
     if (saved.reason === "identity_conflict") {

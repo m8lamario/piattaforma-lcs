@@ -140,6 +140,23 @@ describe("projectChecklist", () => {
     );
   });
 
+  it("senza dati personali (anche solo taglia mancante) non approva e lascia intatti gli altri requisiti", () => {
+    const data = evidence({
+      hasPersonalData: false,
+      medicalStatus: "approved",
+      privacyAccepted: true,
+      mediaDecision: "submitted",
+      payment: { mode: "PLAYER", playerSucceeded: true, teamSucceeded: false },
+    });
+    const checklist = projectChecklist(defaultRequirements, data);
+    expect(checklist.find((item) => item.code === "PERSONAL_DATA")?.status).toBe("todo");
+    expect(checklist.find((item) => item.code === "MEDICAL_CERT")?.status).toBe("complete");
+    expect(checklist.find((item) => item.code === "PRIVACY")?.status).toBe("complete");
+    expect(checklist.find((item) => item.code === "MEDIA_RELEASE")?.status).toBe("complete");
+    expect(checklist.find((item) => item.code === "PAYMENT")?.status).toBe("complete");
+    expect(projectRegistrationStatus(data, checklist)).toBe("ACCOUNT_CREATED");
+  });
+
   it("considera coperto il pagamento giocatore se la squadra ha già pagato", () => {
     const data = evidence({
       payment: { mode: "BOTH", playerSucceeded: false, teamSucceeded: true },

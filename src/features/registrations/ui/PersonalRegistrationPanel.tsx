@@ -46,6 +46,7 @@ type Props = {
   medicalStatus: MedicalEvidence;
   category?: "PLAYER" | "STAFF";
   publication?: PublicationFlags | null;
+  shirtSizeDue?: boolean;
 };
 
 export function PersonalRegistrationPanel({
@@ -54,6 +55,7 @@ export function PersonalRegistrationPanel({
   medicalStatus,
   category = "PLAYER",
   publication,
+  shirtSizeDue = false,
 }: Props) {
   const hero = nextHero(checklist);
   const missing = checklist.find((item) => item.status === "attention" || (item.required && item.status === "todo"));
@@ -73,7 +75,9 @@ export function PersonalRegistrationPanel({
         )}
         {publication ? <PublicationChips flags={publication} compact /> : null}
       </div>
-      {missing && !settled ? (
+      {shirtSizeDue && !settled ? (
+        <p className={styles.personalMeta}>{it.shirtSizeBanner}</p>
+      ) : missing && !settled ? (
         <p className={styles.personalMeta}>{it.areaPersonalMissing.replace("{step}", requirementLabel(missing.code))}</p>
       ) : (
         <p className={styles.personalMeta}>{it.areaPersonalDone}</p>

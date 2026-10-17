@@ -115,6 +115,7 @@ Ogni task: obiettivo, requisiti, dipendenze, acceptance criteria, test. I task M
   - niente un’unica card con tutti i campi;
   - minorenne → passo tutore obbligatorio; maggiorenne → passo assente (`not_applicable`);
   - Salva e continua / Salva ed esci;
+  - taglia maglia obbligatoria per i giocatori (non per lo staff); numero maglia solo dal rappresentante;
   - CF duplicato su altro account rifiutato;
   - `registration:write` solo sul proprio profilo (deny-by-default);
   - i passi certificato/privacy/liberatorie/pagamento esistono nel percorso ma **non** si completano in M2 (placeholder onesto).

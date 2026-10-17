@@ -77,7 +77,7 @@ Non è un elenco legale chiuso. Serve al compilatore dei testi. Dettaglio nelle 
 | Area | Dati | Note di accesso |
 |---|---|---|
 | Account | email, password hash, emailVerified, name, ruoli, sessione Auth.js | login |
-| Anagrafica | nome, cognome, data di nascita, CF, telefono, metadata JSON | solo il giocatore (e staff) |
+| Anagrafica | nome, cognome, data di nascita, CF, telefono, taglia maglia (solo giocatori), metadata JSON | solo il giocatore; il rappresentante vede la taglia in rosa, non CF/telefono; lo staff tecnico non ha taglia |
 | Tutore | nome, cognome, rapporto, email, telefono | obbligatorio se minore; il rep **non** vede i dettagli |
 | Invito | email, nome/cognome opzionali, hash token, scadenza | creatore + staff; CF **non** precompilato dal rep |
 | Iscrizione | squadra, edizione, stato checklist | rep: stato, non dossier |
