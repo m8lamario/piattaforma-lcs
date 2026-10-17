@@ -41,6 +41,22 @@ describe("wizard", () => {
     expect(gateWizardStep("tutore", checklist)).toBe("dati");
   });
 
+  it("un giocatore già iscritto senza taglia resta bloccato sul passo dati", () => {
+    const checklist = projectChecklist(
+      DEFAULT_EDITION_REQUIREMENTS,
+      evidence({
+        hasPersonalData: false,
+        medicalStatus: "approved",
+        privacyAccepted: true,
+        mediaDecision: "submitted",
+        payment: { mode: "PLAYER", playerSucceeded: true, teamSucceeded: false },
+      }),
+    );
+    expect(gateWizardStep("riepilogo", checklist)).toBe("dati");
+    expect(gateWizardStep("pagamento", checklist)).toBe("dati");
+    expect(nextHero(checklist).code).toBe("PERSONAL_DATA");
+  });
+
   it("dopo i dati consente di aprire privacy anche se il certificato è ancora da fare", () => {
     const checklist = projectChecklist(
       DEFAULT_EDITION_REQUIREMENTS,

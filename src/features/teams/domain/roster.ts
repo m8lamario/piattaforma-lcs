@@ -11,6 +11,7 @@ export type RosterRow = {
   lastName: string;
   jerseyNumber: string | null;
   rosterRole: string | null;
+  shirtSize: string | null;
   registrationStatus: string;
   medicalStatus: "none" | "pending" | "approved" | "rejected" | "expired";
   publication?: PublicationFlags | null;
@@ -98,6 +99,7 @@ export function toRosterRow(input: {
   lastName: string;
   jerseyNumber?: string | null;
   rosterRole?: string | null;
+  shirtSize?: string | null;
   registrationStatus: string;
   medicalStatus?: string | null;
   publication?: PublicationFlags | null;
@@ -124,6 +126,7 @@ export function toRosterRow(input: {
     lastName: input.lastName,
     jerseyNumber: input.jerseyNumber ?? null,
     rosterRole: input.rosterRole ?? null,
+    shirtSize: input.category === "STAFF" ? null : (input.shirtSize ?? null),
     registrationStatus: input.registrationStatus,
     medicalStatus: medical,
     publication: input.publication ?? null,

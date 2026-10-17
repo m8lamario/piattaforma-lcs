@@ -3,11 +3,14 @@ import { ageOn } from "@/features/players/domain/age";
 import { isBirthDateAcceptable, parseDateOnly } from "@/features/players/domain/dates";
 import { fiscalCodeMatchesBirthDate, isValidFiscalCode, normalizeFiscalCode } from "@/features/players/domain/fiscalCode";
 import { isValidItalianPhone, normalizePhone } from "@/features/players/domain/phone";
+import { PLAYER_SHIRT_SIZE_VALUES } from "@/features/players/domain/shirtSize";
 import { MIN_REGISTRATION_AGE } from "@/shared/config/app";
 
 export const saveIntentSchema = z.enum(["continue", "exit"]);
 
-export const personalDataSchema = z.object({
+export const shirtSizeSchema = z.enum(PLAYER_SHIRT_SIZE_VALUES, { message: "Scegli la taglia della maglia." });
+
+const identityFields = {
   firstName: z.string().trim().min(1, "Inserisci il nome.").max(80, "Nome troppo lungo."),
   lastName: z.string().trim().min(1, "Inserisci il cognome.").max(80, "Cognome troppo lungo."),
   birthDate: z.string().trim().min(1, "Inserisci la data di nascita."),
@@ -24,7 +27,12 @@ export const personalDataSchema = z.object({
     .refine(isValidItalianPhone, "Inserisci un telefono italiano valido.")
     .transform(normalizePhone),
   intent: saveIntentSchema,
-}).superRefine((value, context) => {
+};
+
+function refineBirthAndFiscal<T extends { birthDate: string; fiscalCode: string }>(
+  value: T,
+  context: z.RefinementCtx,
+) {
   const birthDate = parseDateOnly(value.birthDate);
   if (!birthDate) {
     context.addIssue({
@@ -56,6 +64,16 @@ export const personalDataSchema = z.object({
       message: "Il codice fiscale non corrisponde alla data di nascita.",
     });
   }
-});
+}
+
+export const staffPersonalDataSchema = z.object(identityFields).superRefine(refineBirthAndFiscal);
+
+export const personalDataSchema = z
+  .object({
+    ...identityFields,
+    shirtSize: shirtSizeSchema,
+  })
+  .superRefine(refineBirthAndFiscal);
 
 export type PersonalDataInput = z.infer<typeof personalDataSchema>;
+export type StaffPersonalDataInput = z.infer<typeof staffPersonalDataSchema>;

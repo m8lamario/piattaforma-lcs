@@ -23,7 +23,7 @@ export async function listTeamRoster(teamId: string) {
       where: { teamId },
       orderBy: { createdAt: "asc" },
       include: {
-        playerProfile: { select: { firstName: true, lastName: true, userId: true, birthDate: true } },
+        playerProfile: { select: { firstName: true, lastName: true, userId: true, birthDate: true, shirtSize: true } },
         documents: {
           where: { status: { not: "REPLACED" }, type: { code: "MEDICAL_CERTIFICATE" } },
           select: { status: true },
@@ -63,6 +63,7 @@ export async function listTeamRoster(teamId: string) {
         lastName: registration.playerProfile.lastName,
         jerseyNumber: membership?.jerseyNumber,
         rosterRole: membership?.rosterRole,
+        shirtSize: isStaff ? null : registration.playerProfile.shirtSize,
         registrationStatus: registration.status,
         medicalStatus: isStaff ? null : registration.documents[0]?.status,
         paymentCovered: isPaymentCovered({
@@ -117,11 +118,17 @@ export async function updateMembershipRoster(input: {
   jerseyNumber: string | null;
   rosterRole: string | null;
 }) {
+  const membership = await prisma.teamMembership.findFirst({
+    where: { id: input.membershipId, teamId: input.teamId },
+    select: { role: true },
+  });
+  if (!membership) return false;
+  const staff = membership.role === "STAFF";
   const result = await prisma.teamMembership.updateMany({
     where: { id: input.membershipId, teamId: input.teamId },
     data: {
-      jerseyNumber: input.jerseyNumber,
-      rosterRole: input.rosterRole,
+      jerseyNumber: staff ? null : input.jerseyNumber,
+      rosterRole: staff ? null : input.rosterRole,
     },
   });
   return result.count === 1;

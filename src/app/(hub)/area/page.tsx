@@ -163,6 +163,7 @@ export default async function AreaPage() {
             registrationClosesAt: workspace.registration.registrationClosesAt,
           }}
           identityConflict={workspace.identityConflict}
+          shirtSizeDue={workspace.shirtSizeOnlyGap}
         />
       </>
     );

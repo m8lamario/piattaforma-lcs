@@ -5,7 +5,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { savePersonalDataAction } from "@/features/players/actions";
 import { formatDateOnly } from "@/features/players/domain/dates";
-import { personalDataSchema } from "@/features/players/schemas/personal";
+import { PLAYER_SHIRT_SIZE_OPTIONS } from "@/features/players/domain/shirtSize";
+import { personalDataSchema, staffPersonalDataSchema } from "@/features/players/schemas/personal";
 import { Button } from "@/shared/ui/Button";
 import { WizardLaterButton } from "@/features/registrations/ui/WizardShell";
 import { ActionError } from "@/shared/ui/ActionError";
@@ -22,14 +23,16 @@ type Values = {
   birthDate: string;
   fiscalCode: string;
   phone: string;
+  shirtSize?: string;
   intent: "continue" | "exit";
 };
 
-const FIELD_ORDER = ["firstName", "lastName", "birthDate", "fiscalCode", "phone"] as const;
+const IDENTITY_FIELDS = ["firstName", "lastName", "birthDate", "fiscalCode", "phone"] as const;
 
 type Props = {
   email: string;
   registrationId: string;
+  requireShirtSize?: boolean;
   identityConflict?: { code: ErrorCode } | null;
   defaults: {
     firstName: string;
@@ -37,13 +40,22 @@ type Props = {
     birthDate: Date | null;
     fiscalCode: string | null;
     phone: string | null;
+    shirtSize?: string | null;
   };
 };
 
-export function PersonalDataForm({ email, defaults, registrationId, identityConflict }: Props) {
+export function PersonalDataForm({
+  email,
+  defaults,
+  registrationId,
+  identityConflict,
+  requireShirtSize = true,
+}: Props) {
   const [state, action, pending] = useActionState(savePersonalDataAction, undefined);
+  const schema = requireShirtSize ? personalDataSchema : staffPersonalDataSchema;
+  const fieldOrder = requireShirtSize ? [...IDENTITY_FIELDS, "shirtSize"] : [...IDENTITY_FIELDS];
   const form = useForm<Values>({
-    resolver: zodResolver(personalDataSchema),
+    resolver: zodResolver(schema),
     mode: "onBlur",
     defaultValues: {
       firstName: defaults.firstName,
@@ -51,12 +63,13 @@ export function PersonalDataForm({ email, defaults, registrationId, identityConf
       birthDate: defaults.birthDate ? formatDateOnly(defaults.birthDate) : "",
       fiscalCode: defaults.fiscalCode ?? "",
       phone: defaults.phone ?? "",
+      shirtSize: defaults.shirtSize ?? "",
       intent: "continue",
     },
   });
 
   function focusFirstError(errors: typeof form.formState.errors) {
-    const first = FIELD_ORDER.find((name) => errors[name]);
+    const first = fieldOrder.find((name) => errors[name as keyof typeof errors]);
     if (first) document.getElementById(first)?.focus();
   }
 
@@ -69,6 +82,7 @@ export function PersonalDataForm({ email, defaults, registrationId, identityConf
         data.set("birthDate", values.birthDate);
         data.set("fiscalCode", values.fiscalCode);
         data.set("phone", values.phone);
+        if (requireShirtSize && values.shirtSize) data.set("shirtSize", values.shirtSize);
         data.set("intent", intent);
         startTransition(() => {
           action(data);
@@ -202,6 +216,40 @@ export function PersonalDataForm({ email, defaults, registrationId, identityConf
           ) : null}
         </div>
       </fieldset>
+
+      {requireShirtSize ? (
+        <fieldset className={fields.group}>
+          <legend className={fields.legend}>{it.fieldGroupShirt}</legend>
+          <div className={fields.field}>
+            <label className={fields.label} htmlFor="shirtSize">
+              {it.shirtSize}
+            </label>
+            <select
+              id="shirtSize"
+              className={fields.select}
+              aria-invalid={Boolean(errors.shirtSize)}
+              aria-describedby={errors.shirtSize ? "shirtSize-error" : "shirtSize-help"}
+              {...form.register("shirtSize")}
+            >
+              <option value="">{it.shirtSizePlaceholder}</option>
+              {PLAYER_SHIRT_SIZE_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+            {errors.shirtSize?.message ? (
+              <FieldStatus id="shirtSize-error" tone="danger">
+                {errors.shirtSize.message}
+              </FieldStatus>
+            ) : (
+              <p id="shirtSize-help" className={fields.help}>
+                {it.shirtSizeHelp}
+              </p>
+            )}
+          </div>
+        </fieldset>
+      ) : null}
 
       {stuckWithoutIdentity ? (
         <IdentityConflictPanel registrationId={registrationId} showFormHint={false} section="recovery" />

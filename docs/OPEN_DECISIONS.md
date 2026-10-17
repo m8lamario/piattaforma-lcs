@@ -4,6 +4,13 @@ Ogni voce: problema, opzioni, decisione necessaria, conseguenze, impatto sullo s
 
 ---
 
+## OD-049 Elenco taglie maglia
+
+- **Problema:** l’organizzazione deve definire le taglie da gioco. Non c’è un listino firmato in `docs/`.
+- **Workaround operativo:** taglie `XS S M L XL XXL`, salvate in `PlayerProfile.shirtSize`. Campo obbligatorio solo per `PLAYER`; `NULL` = da inserire al prossimo accesso. Lo staff tecnico non lo usa. Taglie già salvate fuori elenco (es. numeri ragazzo o `3XL`) non sono più valide: il giocatore deve scegliere una taglia ammessa.
+- **Decisione necessaria:** conferma (o sostituzione) dell’elenco da parte dell’organizzazione.
+- **Impatto:** se l’elenco cambia si aggiorna il dominio `shirtSize.ts`, non lo schema.
+
 ## OD-047 Staff tecnico: testi e quota
 
 - **Problema:** non esiste un testo legale distinto per lo staff tecnico. Le caselle M3/G4 autorizzano la copia del certificato medico agonistico. Lo staff non carica quel documento.

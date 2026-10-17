@@ -361,6 +361,7 @@ export async function anonymizeUserAccount(input: {
           birthDate: null,
           fiscalCode: null,
           phone: null,
+          shirtSize: null,
           metadata: { anonymized: true },
         },
       });

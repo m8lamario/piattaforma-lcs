@@ -11,6 +11,7 @@ import { StatusChip } from "@/shared/ui/StatusChip";
 import { WithdrawForm } from "@/features/registrations/ui/WithdrawForm";
 import { authorize } from "@/shared/authz/authorize";
 import { requireStaff } from "@/shared/authz/requireStaff";
+import { shirtSizeLabel } from "@/features/players/domain/shirtSize";
 import { it } from "@/shared/i18n/it";
 import styles from "@/features/admin/ui/admin.module.css";
 
@@ -64,6 +65,11 @@ export default async function AdminPlayerPage({ params }: Props) {
             <p className={styles.meta}>
               {it.phone}: <strong>{profile.phone ?? "—"}</strong>
             </p>
+            {registration?.category === "STAFF" ? null : (
+              <p className={styles.meta}>
+                {it.shirtSize}: <strong>{shirtSizeLabel(profile.shirtSize) ?? profile.shirtSize ?? "—"}</strong>
+              </p>
+            )}
             {profile.guardians[0] ? (
               <p className={styles.meta}>
                 {it.guardianTitle}: <strong>{profile.guardians[0].firstName} {profile.guardians[0].lastName}</strong> · {profile.guardians[0].email}

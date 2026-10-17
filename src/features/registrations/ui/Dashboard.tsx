@@ -13,6 +13,7 @@ import { WindowNotice } from "@/features/registrations/ui/WindowNotice";
 import type { EditionWindow } from "@/features/registrations/domain/window";
 import { ChecklistLinks } from "./ChecklistLinks";
 import { REQUIREMENT_STEP } from "./wizardCopy";
+import fields from "@/shared/ui/form.module.css";
 import styles from "./Dashboard.module.css";
 
 const STATUS_COPY: Record<RegistrationStatus, string> = {
@@ -75,6 +76,7 @@ type Props = {
   editionWindow: EditionWindow;
   identityConflict?: { code: string } | null;
   category?: "PLAYER" | "STAFF";
+  shirtSizeDue?: boolean;
 };
 
 export function RegistrationDashboard({
@@ -88,6 +90,7 @@ export function RegistrationDashboard({
   editionWindow,
   identityConflict,
   category = "PLAYER",
+  shirtSizeDue = false,
 }: Props) {
   const hero = nextHero(checklist);
   const hrefStep = hero.code === "DONE" ? "riepilogo" : (REQUIREMENT_STEP[hero.code] ?? "dati");
@@ -108,9 +111,11 @@ export function RegistrationDashboard({
         ? it.heroRemoved
         : status === "APPROVED"
           ? it.heroApproved
-          : hero.code === "DONE"
-            ? it.heroPendingNow
-            : heroText(hero, medicalStatus);
+          : shirtSizeDue
+            ? it.heroShirtSize
+            : hero.code === "DONE"
+              ? it.heroPendingNow
+              : heroText(hero, medicalStatus);
 
   return (
     <div className={styles.canvas}>
@@ -126,6 +131,11 @@ export function RegistrationDashboard({
       <WindowNotice edition={editionWindow} />
 
       {blocked ? <IdentityConflictPanel registrationId={registrationId} /> : null}
+      {shirtSizeDue && !blocked ? (
+        <p className={`${fields.banner} ${fields.bannerWarn}`} role="status">
+          {it.shirtSizeBanner}
+        </p>
+      ) : null}
 
       <div className={styles.grid}>
         <section className={styles.mainStage}>

@@ -170,6 +170,7 @@ export function RepresentativeDashboard({
           medicalStatus={workspace.evidence.medicalStatus}
           category={workspace.registration.category}
           publication={workspace.publication}
+          shirtSizeDue={workspace.shirtSizeOnlyGap}
         />
       ) : null}
     </div>

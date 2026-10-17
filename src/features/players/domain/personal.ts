@@ -1,12 +1,15 @@
+import { isValidShirtSize } from "@/features/players/domain/shirtSize";
+
 export type PersonalDataSnapshot = {
   firstName: string | null;
   lastName: string | null;
   birthDate: Date | null;
   fiscalCode: string | null;
   phone: string | null;
+  shirtSize?: string | null;
 };
 
-export function hasCompletePersonalData(profile: PersonalDataSnapshot) {
+export function hasIdentityPersonalData(profile: PersonalDataSnapshot) {
   return Boolean(
     profile.firstName?.trim() &&
       profile.lastName?.trim() &&
@@ -14,6 +17,15 @@ export function hasCompletePersonalData(profile: PersonalDataSnapshot) {
       profile.fiscalCode?.trim() &&
       profile.phone?.trim(),
   );
+}
+
+export function hasCompletePersonalData(
+  profile: PersonalDataSnapshot,
+  options: { requireShirtSize?: boolean } = {},
+) {
+  if (!hasIdentityPersonalData(profile)) return false;
+  if (options.requireShirtSize === false) return true;
+  return isValidShirtSize(profile.shirtSize);
 }
 
 export function hasCompleteGuardian(guardian: {
