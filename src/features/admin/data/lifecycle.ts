@@ -226,6 +226,10 @@ async function applyAccessRevocation(
   if (plan.revokeRoleIds.length > 0) {
     await tx.userRole.deleteMany({ where: { id: { in: plan.revokeRoleIds } } });
   }
+  await tx.mediaPartnerAccount.updateMany({
+    where: { userId: plan.userId },
+    data: { status: "SUSPENDED", activationTokenHash: null, activationExpiresAt: null },
+  });
   await tx.verificationToken.deleteMany({
     where: {
       OR: [{ identifier: oldEmail }, { identifier: passwordResetIdentifier(oldEmail) }],

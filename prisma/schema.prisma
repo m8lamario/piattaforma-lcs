@@ -14,6 +14,12 @@ enum Role {
   MEDICAL_REVIEWER
   SUPER_ADMIN
   COMPETITION_ORGANIZER
+  MEDIA_PARTNER
+}
+
+enum MediaPartnerStatus {
+  ACTIVE
+  SUSPENDED
 }
 
 enum MembershipRole {
@@ -189,6 +195,7 @@ model User {
   emailTemplateEdits     EmailTemplateOverride[] @relation("EmailTemplateEditor")
   schoolAccessReviews    SchoolRegistrationRequest[] @relation("SchoolRequestReviewer")
   schoolAccessAccount    SchoolRegistrationRequest[] @relation("SchoolRequestAccount")
+  mediaPartnerAccount    MediaPartnerAccount?
 
   @@index([lifecycleStatus])
 }
@@ -241,6 +248,7 @@ model VerificationToken {
 /// Scope: PLAYER e gli admin di piattaforma non hanno FK.
 /// TEAM_REPRESENTATIVE richiede teamId (l'edizione si legge da Team, non si duplica).
 /// COMPETITION_ORGANIZER richiede competitionId e copre tutte le Edition di quella Competition.
+/// MEDIA_PARTNER non usa teamId/competitionId: le coppe stanno su MediaPartnerCompetition.
 /// Non c'è editionId: un ruolo per edizione duplicherebbe Team.editionId e potrebbe divergere.
 model UserRole {
   id            String   @id @default(cuid())
@@ -323,8 +331,54 @@ model Competition {
   children            Competition[] @relation("CompetitionTree")
   editions  Edition[]
   userRoles UserRole[]
+  mediaPartnerCompetitions MediaPartnerCompetition[]
 
   @@index([parentId])
+}
+
+model MediaPartner {
+  id        String             @id @default(cuid())
+  name      String
+  status    MediaPartnerStatus @default(ACTIVE)
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+
+  accounts     MediaPartnerAccount[]
+  competitions MediaPartnerCompetition[]
+
+  @@index([status])
+  @@index([name])
+}
+
+model MediaPartnerAccount {
+  id                   String             @id @default(cuid())
+  userId               String             @unique
+  mediaPartnerId       String
+  status               MediaPartnerStatus @default(ACTIVE)
+  activationTokenHash  String?            @unique
+  activationExpiresAt  DateTime?
+  activatedAt          DateTime?
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization MediaPartner @relation(fields: [mediaPartnerId], references: [id], onDelete: Cascade)
+
+  @@index([mediaPartnerId])
+}
+
+model MediaPartnerCompetition {
+  id             String   @id @default(cuid())
+  mediaPartnerId String
+  competitionId  String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization MediaPartner @relation(fields: [mediaPartnerId], references: [id], onDelete: Cascade)
+  competition  Competition  @relation(fields: [competitionId], references: [id], onDelete: Cascade)
+
+  @@unique([mediaPartnerId, competitionId])
+  @@index([competitionId])
 }
 
 model Edition {

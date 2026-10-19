@@ -16,6 +16,9 @@ describe("shellNavFlags", () => {
       showSchool: true,
       showPlayerTeam: false,
       showConsents: false,
+      showMedia: false,
+      mediaUnderAdmin: false,
+      showArea: true,
     });
   });
 
@@ -28,6 +31,45 @@ describe("shellNavFlags", () => {
     });
     expect(flags.showConsents).toBe(true);
     expect(flags.showPlayerTeam).toBe(false);
+  });
+
+  it("per il media partner mostra solo la verifica se non ha altri ruoli", () => {
+    expect(
+      shellNavFlags({
+        isRepresentative: false,
+        isStaffOrReviewer: false,
+        hasMembership: false,
+        hasPlayerRegistration: false,
+        canVerifyMedia: true,
+      }),
+    ).toMatchObject({
+      showMedia: true,
+      showArea: false,
+      showAdmin: false,
+      showTeam: false,
+    });
+  });
+
+  it("per il super admin nasconde area personale e annida verifica media sotto organizzazione", () => {
+    expect(
+      shellNavFlags({
+        isRepresentative: false,
+        isStaffOrReviewer: true,
+        hasMembership: false,
+        hasPlayerRegistration: false,
+        canVerifyMedia: true,
+        isSuperAdmin: true,
+      }),
+    ).toEqual({
+      showTeam: false,
+      showAdmin: true,
+      showSchool: false,
+      showPlayerTeam: false,
+      showConsents: false,
+      showMedia: true,
+      mediaUnderAdmin: true,
+      showArea: false,
+    });
   });
 
   it("per il solo giocatore mostra consensi e compagni", () => {

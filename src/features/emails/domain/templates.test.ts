@@ -157,6 +157,12 @@ describe("template email", () => {
         summary: "Liceo Demo · Brescia",
         link: "https://hub.test/admin/richieste/abc",
       },
+      MEDIA_PARTNER_ACTIVATE: {
+        firstName: "Giulia",
+        title: "Testata Demo",
+        activateUrl: "https://hub.test/attiva-media/token",
+        scadenza: "21 ottobre 2026, 18:00",
+      },
       MANUAL: { title: "Avviso", body: "Testo operativo", link: "https://hub.test/area" },
     };
 

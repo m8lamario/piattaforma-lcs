@@ -18,6 +18,8 @@ export const RATE_LIMITS = {
   emailSend: { limit: 30, windowMs: 60 * 60 * 1000 },
   schoolAccessRequest: { limit: 5, windowMs: 60 * 60 * 1000 },
   schoolAccessActivate: { limit: 10, windowMs: 60 * 60 * 1000 },
+  mediaSearch: { limit: 60, windowMs: 15 * 60 * 1000 },
+  mediaVerify: { limit: 40, windowMs: 15 * 60 * 1000 },
 } as const;
 
 export async function clientKey(prefix: string) {

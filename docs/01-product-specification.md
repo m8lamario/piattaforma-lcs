@@ -13,6 +13,7 @@ Oggi le iscrizioni a coppe studentesche locali sono frammentate. ESL/LCS opera a
 | Rappresentante di squadra | Costruire il roster e vedere chi è in regola | Vedere dati sanitari che non gli spettano |
 | Organization Admin | Revisionare e sbloccare le iscrizioni | Documenti sparsi, nessuna traccia |
 | Super Admin | Configurare piattaforma, ruoli, informative | Errori di configurazione su dati sensibili |
+| Media Partner | Verificare in campo se un giocatore è autorizzato a foto, video e social | Vedere dati non necessari o coppe non assegnate |
 
 ## 3. Promessa v1
 
@@ -56,11 +57,20 @@ Il giocatore entra **solo con il link della propria squadra**, indica la propria
 ## 7. Capacità organizzazione
 
 - CRUD competizioni, edizioni, istituti, squadre, requisiti.
+- Nella scheda edizione: elenco delle squadre iscritte e export CSV (scuola, squadra, account giocatore avviati, registrazioni completate). I conteggi usano lo stato in database: account avviato da `ACCOUNT_CREATED` in poi, registrazione completata solo `APPROVED`. Staff, inviti non accettati e rimossi non entrano nei due conteggi.
 - Revisionare documenti: approvare, rifiutare con motivazione, richiedere nuovo caricamento.
 - Consultare consensi (versione, timestamp, tipo).
 - Vedere pagamenti (stato, id transazione, importo) senza dati carta.
 - Pubblicare versioni di informative.
 - Audit log.
+- Creare, modificare, sospendere e riattivare organizzazioni e account Media Partner (solo Super Admin).
+
+## 7.1 Capacità Media Partner
+
+- Accedere a `/media` dopo attivazione account.
+- Cercare per nome o cognome i giocatori (e lo staff tecnico) delle sole competizioni autorizzate.
+- Vedere nome, cognome, squadra, competizione, edizione, fascia età e lo stato degli usi della liberatoria già previsti in registrazione.
+- Non aprire certificati, testi delle liberatorie, recapiti, CF, tutori, né esportare elenchi.
 
 ## 8. Dati giocatore (minimi)
 

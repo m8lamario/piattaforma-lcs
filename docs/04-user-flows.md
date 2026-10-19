@@ -33,6 +33,22 @@ sequenceDiagram
   TR->>Sys: /attiva-account/[token] imposta la password
 ```
 
+## 1b. Media partner
+
+```mermaid
+sequenceDiagram
+  participant SA as SuperAdmin
+  participant MP as MediaPartner
+  participant Sys as Hub
+  SA->>Sys: crea MediaPartner e grant su Competition
+  SA->>Sys: crea account senza password
+  Sys->>MP: email attiva account
+  MP->>Sys: /attiva-media/[token]
+  MP->>Sys: /media cerca nome
+  Sys->>Sys: where competitionId in grant
+  Sys->>MP: stati usi liberatoria, senza dossier
+```
+
 ## 2. Link di iscrizione della squadra (ingresso unico v1)
 
 ```mermaid

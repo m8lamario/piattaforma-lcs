@@ -8,6 +8,7 @@
 | Giocatore | Player | `/area` | sì |
 | Rappresentante | Team Representative | `/area` (console) e `/squadra` | sì + ruolo |
 | Organizzazione | Org Admin / Super Admin | `/admin` | sì + ruolo |
+| Media partner | Media Partner | `/media` | sì + ruolo + org attiva |
 
 Un utente può avere più ruoli (es. rappresentante che è anche giocatore). La navigazione mostra solo le aree per cui è autorizzato.
 
@@ -55,6 +56,7 @@ Un utente può avere più ruoli (es. rappresentante che è anche giocatore). La 
 /admin/squadre/[id]
 /admin/edizioni
 /admin/edizioni/[id]
+/admin/edizioni/[id]/export     CSV scuole/squadre dell’edizione (`admin:manage`)
 /admin/informative             versioni correnti; avviso a chi ha una versione superata (azione confermata)
 /admin/comunicazioni           storico invii, filtri, retry
 /admin/comunicazioni/nuova     invio manuale a un User esistente
@@ -64,6 +66,11 @@ Un utente può avere più ruoli (es. rappresentante che è anche giocatore). La 
 /admin/utenti                  Super Admin: chiusura / anonimizzazione account
 /admin/utenti/[id]
 /admin/audit
+/admin/media-partner
+/admin/media-partner/[id]
+
+/media                         verifica liberatorie (media partner)
+/attiva-media/[token]          password del media partner
 ```
 
 M0: `/`, `/accedi`, layout token, shell autenticata.

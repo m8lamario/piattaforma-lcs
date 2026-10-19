@@ -10,7 +10,7 @@ Proteggere identità, dati anagrafici, dati di minori, documenti sanitari, conse
 - Cookie `eph-team`: httpOnly, SameSite=Lax, Secure su HTTPS, cancellato al logout. Non autorizza da solo: ogni action ricalcola il permesso.
 - Password: hash (Argon2id o bcrypt, scelta in foundation: Argon2 se disponibile, altrimenti bcrypt).
 - Verifica email prima di upload documenti e consensi vincolanti.
-- Rate limit su `/accedi`, redeem invito, reset password, upload, richiesta accesso scuola, attivazione account.
+- Rate limit su `/accedi`, redeem invito, reset password, upload, richiesta accesso scuola, attivazione account, ricerca e verifica media partner.
 - `AUTH_SECRET` e DB URL solo in env. Nessun secret in client bundle.
 
 ## 3. Autorizzazione
@@ -38,6 +38,7 @@ Vedi [06-roles-and-permissions.md](06-roles-and-permissions.md). Sempre server-s
 - Mai URL pubbliche o path statici `/uploads`.
 - Signed URL TTL breve (default 60 secondi).
 - Ogni `DOCUMENT_VIEW` e `DOCUMENT_DOWNLOAD` in AuditLog.
+- Export CSV organizzazione (`PAYMENT_EXPORT`, `EDITION_TEAMS_EXPORT`) solo con `admin:manage`, audit append-only, senza PII medica.
 - Il rappresentante non ottiene la key.
 
 ## 7. CSRF / XSS / sessioni

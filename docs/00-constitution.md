@@ -43,6 +43,7 @@ Leonessa Cup e altri siti locali **non** vengono modificati da questo repository
 - **Organization Admin** — gestisce giocatori, squadre, consensi, pagamenti e registrazioni a livello ESL/LCS. Vede lo **stato** dei certificati, non il file.
 - **Medical Reviewer** — unico ruolo di piattaforma (oltre Super Admin) che apre e revisiona i file dei certificati, con audit di ogni accesso.
 - **Super Admin** — gestione completa della piattaforma, incluso il file medico quando necessario.
+- **Media Partner** — verifica le autorizzazioni foto/video/social dei giocatori delle competizioni assegnate. Non vede liberatorie complete, certificati, contatti o altri dati non necessari.
 
 Ruolo previsto nel modello permessi, non nella UI v1: **Competition Organizer** (scope `competitionId`). Non riceve il file medico.
 
