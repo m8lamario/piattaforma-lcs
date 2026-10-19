@@ -24,6 +24,25 @@ export const requireAction = cache(async (nextPath: string, action: Action) => {
   return { session, actor };
 });
 
+export const requireMediaPartner = cache(async (nextPath = "/media") => {
+  const session = await auth();
+  if (!session?.user?.id) {
+    redirect(`/accedi?next=${encodeURIComponent(nextPath)}`);
+  }
+
+  const actor = await getActorByUserId(session.user.id);
+  if (!actor) redirect("/accedi");
+
+  const allowed = authorize(actor, "media:verify");
+  if (allowed.allow) return { session, actor, suspended: false as const };
+
+  if (actor.mediaPartner) {
+    return { session, actor, suspended: true as const };
+  }
+
+  redirect("/area");
+});
+
 export const requireStaffOrReviewer = cache(async (nextPath = "/admin/documenti") => {
   const session = await auth();
   if (!session?.user?.id) {

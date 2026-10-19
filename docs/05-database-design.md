@@ -10,6 +10,10 @@ I file binari **non** stanno nel database.
 erDiagram
   User ||--o| PlayerProfile : has
   User ||--o{ UserRole : grants
+  User ||--o| MediaPartnerAccount : media
+  MediaPartner ||--o{ MediaPartnerAccount : employs
+  MediaPartner ||--o{ MediaPartnerCompetition : covers
+  Competition ||--o{ MediaPartnerCompetition : grants
   User ||--o{ TeamMembership : member
   PlayerProfile ||--o{ Guardian : has
   PlayerProfile ||--o{ Registration : files
@@ -52,8 +56,9 @@ Tabelle `User`, `Account`, `Session`, `VerificationToken` secondo Auth.js Prisma
 | MEDICAL_REVIEWER | null | null |
 | SUPER_ADMIN | null | null |
 | COMPETITION_ORGANIZER | null | required |
+| MEDIA_PARTNER | null | null (le coppe stanno su `MediaPartnerCompetition`) |
 
-Lo scope del rappresentante è la squadra: edizione e competition si leggono da `Team`, senza un `editionId` sul ruolo. L’organizer copre tutte le edizioni della propria competition. `ORGANIZATION_ADMIN` e `SUPER_ADMIN` restano di piattaforma (ESL/LCS), non di una singola coppa.
+Lo scope del rappresentante è la squadra: edizione e competition si leggono da `Team`, senza un `editionId` sul ruolo. L’organizer copre tutte le edizioni della propria competition. `ORGANIZATION_ADMIN` e `SUPER_ADMIN` restano di piattaforma (ESL/LCS), non di una singola coppa. Il media partner è scoped all’organizzazione: `MediaPartner` + `MediaPartnerAccount` + `MediaPartnerCompetition`. Account o organizzazione `SUSPENDED` toglie le grant.
 
 Un rappresentante che è anche giocatore ha `TEAM_REPRESENTATIVE` + membership `PLAYER` (e profilo).
 

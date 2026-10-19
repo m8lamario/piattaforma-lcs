@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { adminHubStats } from "@/features/admin/data/catalog";
 import { AdminFrame } from "@/features/admin/ui/AdminFrame";
+import { authorize } from "@/shared/authz/authorize";
 import { requireStaffOrReviewer } from "@/shared/authz/requireStaff";
 import { PageHeader } from "@/shared/ui/PageHeader";
 import { it } from "@/shared/i18n/it";
@@ -16,6 +17,11 @@ const HUB_SECTIONS = [
   { href: "/admin/comunicazioni", titleKey: "navAdminEmails", descKey: "adminEmailsHelp" },
   { href: "/admin/audit", titleKey: "navAdminAudit", descKey: "adminAuditHelp" },
   { href: "/admin/informative", titleKey: "navAdminLegal", descKey: "adminLegalHelp" },
+] as const;
+
+const SUPER_SECTIONS = [
+  { href: "/media", titleKey: "navMedia", descKey: "mediaDashboardLead" },
+  { href: "/admin/media-partner", titleKey: "navAdminMediaPartners", descKey: "adminMediaPartnersHelp" },
 ] as const;
 
 export default async function AdminHubPage() {
@@ -47,7 +53,7 @@ export default async function AdminHubPage() {
       </div>
 
       <nav className={styles.hubNavGrid} aria-label={it.adminHubTitle}>
-        {HUB_SECTIONS.map((sec) => (
+        {[...HUB_SECTIONS, ...(authorize(actor, "media:manage").allow ? SUPER_SECTIONS : [])].map((sec) => (
           <Link key={sec.href} href={sec.href} className={styles.hubTile}>
             <strong>{it[sec.titleKey]}</strong>
             <span>{it[sec.descKey]}</span>

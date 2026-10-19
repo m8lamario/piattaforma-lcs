@@ -27,6 +27,7 @@ const CATEGORIES: ErrorCategory[] = [
   "LIFECYCLE",
   "EMAILS",
   "SCHOOL_ACCESS",
+  "MEDIA_PARTNER",
 ];
 
 describe("error catalog", () => {

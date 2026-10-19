@@ -24,6 +24,9 @@ type Props = {
   showPlayerTeam?: boolean;
   showConsents?: boolean;
   showSchool?: boolean;
+  showMedia?: boolean;
+  mediaUnderAdmin?: boolean;
+  showArea?: boolean;
   unreadCount?: number;
 };
 
@@ -68,6 +71,9 @@ function isGroupActive(item: NavItem, pathname: string) {
   if (item.href === "/squadra") {
     return pathname === "/squadra" || pathname.startsWith("/squadra/inviti");
   }
+  if (item.href === "/admin" && item.children?.length) {
+    return pathname === "/admin" || pathname.startsWith("/admin/") || pathname.startsWith("/media");
+  }
   return isActive(item.href, pathname, "");
 }
 
@@ -78,6 +84,9 @@ export function AppNav({
   showPlayerTeam,
   showConsents = false,
   showSchool,
+  showMedia,
+  mediaUnderAdmin = false,
+  showArea = true,
   unreadCount = 0,
 }: Props) {
   const pathname = usePathname();
@@ -99,7 +108,8 @@ export function AppNav({
   }, []);
 
   const links: NavItem[] = [
-    { href: "/area", label: showTeam ? it.navOverview : it.navArea, icon: "area" },
+    ...(showMedia && !mediaUnderAdmin ? [{ href: "/media", label: it.navMedia, icon: "camera" as const }] : []),
+    ...(showArea ? [{ href: "/area", label: showTeam ? it.navOverview : it.navArea, icon: "area" as const }] : []),
     ...(showConsents && !showTeam ? [{ href: "/area/consensi", label: it.navConsents, icon: "privacy" as const }] : []),
     ...(showTeam
       ? [
@@ -116,7 +126,16 @@ export function AppNav({
         ]
       : []),
     ...(showPlayerTeam ? [{ href: "/area/squadra", label: it.navPlayerTeam, icon: "users" as const }] : []),
-    ...(showAdmin ? [{ href: "/admin", label: it.navAdmin, icon: "org" as const }] : []),
+    ...(showAdmin
+      ? [
+          {
+            href: "/admin",
+            label: it.navAdmin,
+            icon: "org" as const,
+            ...(mediaUnderAdmin ? { children: [{ href: "/media", label: it.navMedia }] } : {}),
+          },
+        ]
+      : []),
     { href: "/area/comunicazioni", label: it.navCommunications, icon: "inbox", badge: unreadCount },
     ...(showSchool ? [{ href: "/squadra/scuola", label: it.navSchool, icon: "org" as const }] : []),
     ...(showConsents && showTeam ? [{ href: "/area/consensi", label: it.navConsents, icon: "privacy" as const }] : []),

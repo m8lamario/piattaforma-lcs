@@ -25,6 +25,9 @@ export async function AuthenticatedShell({ children }: Props) {
       showPlayerTeam={shell.showPlayerTeam}
       showConsents={shell.showConsents}
       showSchool={shell.showSchool}
+      showMedia={shell.showMedia}
+      mediaUnderAdmin={shell.mediaUnderAdmin}
+      showArea={shell.showArea}
       unreadCount={shell.unreadCount}
     >
       {children}

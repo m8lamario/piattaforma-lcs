@@ -190,6 +190,60 @@ describe("authorize deny-by-default", () => {
     expect(authorize(superAdmin, "email:compose").allow).toBe(true);
   });
 
+  it("riserva media:manage al super admin e media:verify al partner sulla propria coppa", () => {
+    const partner: Actor = {
+      userId: "media-1",
+      roles: [{ role: "MEDIA_PARTNER" }],
+      membershipTeamIds: [],
+      mediaPartner: {
+        accountId: "mpa-1",
+        organizationId: "org-1",
+        organizationName: "Testata",
+        accountStatus: "ACTIVE",
+        organizationStatus: "ACTIVE",
+        competitionIds: ["competition-a"],
+      },
+    };
+    const suspended: Actor = {
+      ...partner,
+      userId: "media-suspended",
+      mediaPartner: {
+        ...partner.mediaPartner!,
+        accountStatus: "SUSPENDED",
+        competitionIds: [],
+      },
+    };
+    const suspendedOrg: Actor = {
+      ...partner,
+      userId: "media-org-suspended",
+      mediaPartner: {
+        ...partner.mediaPartner!,
+        organizationStatus: "SUSPENDED",
+        competitionIds: [],
+      },
+    };
+
+    expect(authorize(partner, "media:verify").allow).toBe(true);
+    expect(authorize(partner, "media:verify", { competitionId: "competition-a" }).allow).toBe(true);
+    expect(authorize(partner, "media:verify", { competitionId: "competition-b" }).allow).toBe(false);
+    expect(authorize(partner, "media:manage").allow).toBe(false);
+    expect(authorize(partner, "admin:manage").allow).toBe(false);
+    expect(authorize(partner, "document:read_file", ownDoc).allow).toBe(false);
+    expect(authorize(partner, "registration:read", ownDoc).allow).toBe(false);
+
+    expect(authorize(suspended, "media:verify").allow).toBe(false);
+    expect(authorize(suspended, "media:verify", { competitionId: "competition-a" }).allow).toBe(false);
+    expect(authorize(suspendedOrg, "media:verify", { competitionId: "competition-a" }).allow).toBe(false);
+
+    expect(authorize(orgAdmin, "media:manage").allow).toBe(false);
+    expect(authorize(orgAdmin, "media:verify").allow).toBe(false);
+    expect(authorize(orgAdmin, "media:verify", { competitionId: "competition-a" }).allow).toBe(false);
+    expect(authorize(player, "media:verify", { competitionId: "competition-a" }).allow).toBe(false);
+    expect(authorize(rep, "media:verify", { competitionId: "competition-a" }).allow).toBe(false);
+    expect(authorize(superAdmin, "media:manage").allow).toBe(true);
+    expect(authorize(superAdmin, "media:verify", { competitionId: "competition-b" }).allow).toBe(true);
+  });
+
   it("riserva la gestione email allo staff e il corpo libero al super admin", () => {
     expect(authorize(player, "email:read").allow).toBe(false);
     expect(authorize(rep, "email:send").allow).toBe(false);

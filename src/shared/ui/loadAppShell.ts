@@ -1,5 +1,12 @@
 import { cache } from "react";
-import { getActorByUserId, isStaff, isMedicalReviewer, representativeTeamIds } from "@/shared/authz/getActor";
+import { authorize } from "@/shared/authz/authorize";
+import {
+  getActorByUserId,
+  isStaff,
+  isMedicalReviewer,
+  isSuperAdmin,
+  representativeTeamIds,
+} from "@/shared/authz/getActor";
 import { countUnreadNotifications } from "@/features/notifications/data/notifications";
 import { prisma } from "@/shared/lib/prisma";
 import { shellNavFlags } from "./shellNav";
@@ -25,6 +32,8 @@ export const loadAppShell = cache(async (userId: string) => {
     isStaffOrReviewer: actor ? isStaff(actor) || isMedicalReviewer(actor) : false,
     hasMembership: Boolean(actor && actor.membershipTeamIds.length > 0),
     hasPlayerRegistration: Boolean(registration),
+    canVerifyMedia: actor ? authorize(actor, "media:verify").allow : false,
+    isSuperAdmin: actor ? isSuperAdmin(actor) : false,
   });
 
   return {

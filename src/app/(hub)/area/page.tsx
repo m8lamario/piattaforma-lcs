@@ -54,6 +54,12 @@ export default async function AreaPage() {
   const workspacePromise = loadPlayerWorkspace(userId);
 
   const shell = await shellPromise;
+  if (!shell.showArea && shell.showAdmin) {
+    redirect("/admin");
+  }
+  if (shell.showMedia && !shell.showArea) {
+    redirect("/media");
+  }
   if (shell.showTeam && shell.actor) {
     const teamIds = representativeTeamIds(shell.actor);
     const jar = await cookies();
@@ -166,6 +172,14 @@ export default async function AreaPage() {
           shirtSizeDue={workspace.shirtSizeOnlyGap}
         />
       </>
+    );
+  }
+
+  if (shell.actor?.mediaPartner && !shell.showMedia) {
+    return (
+      <EmptyState icon="camera" title={it.mediaSuspendedTitle}>
+        <p>{it.mediaSuspendedLead}</p>
+      </EmptyState>
     );
   }
 

@@ -14,7 +14,8 @@ export type ErrorCategory =
   | "VALIDATION"
   | "LIFECYCLE"
   | "EMAILS"
-  | "SCHOOL_ACCESS";
+  | "SCHOOL_ACCESS"
+  | "MEDIA_PARTNER";
 
 export type ErrorSeverity = "info" | "warning" | "error" | "critical";
 
@@ -342,6 +343,47 @@ export const ERROR_CATALOG: Record<ErrorCode, ErrorDefinition> = {
     "SCHOOL_ACCESS",
     "Reinvio attivazione solo se APPROVED e account senza password.",
     409,
+    "none",
+  ),
+
+  MEDIA_PARTNER_FORBIDDEN: def("MEDIA_PARTNER", "Attore senza media:verify o media:manage.", 403, "none"),
+  MEDIA_PARTNER_NOT_FOUND: def("MEDIA_PARTNER", "Organizzazione o account media partner assente.", 404, "none"),
+  MEDIA_PARTNER_EMAIL_TAKEN: def(
+    "MEDIA_PARTNER",
+    "User.email già presente: niente nuovo account media partner.",
+    409,
+    "correct_input",
+  ),
+  MEDIA_PARTNER_ACCOUNT_EXISTS: def(
+    "MEDIA_PARTNER",
+    "L’utente ha già un MediaPartnerAccount.",
+    409,
+    "correct_input",
+  ),
+  MEDIA_PARTNER_COMPETITION_REQUIRED: def(
+    "MEDIA_PARTNER",
+    "Nessuna competitionId valida selezionata.",
+    400,
+    "correct_input",
+  ),
+  MEDIA_PARTNER_TOKEN_INVALID: def("MEDIA_PARTNER", "Token attivazione sconosciuto o malformato.", 400, "contact_org"),
+  MEDIA_PARTNER_TOKEN_EXPIRED: def("MEDIA_PARTNER", "activationExpiresAt superato.", 410, "contact_org"),
+  MEDIA_PARTNER_TOKEN_USED: def("MEDIA_PARTNER", "Token già consumato (activatedAt).", 409, "login"),
+  MEDIA_PARTNER_ALREADY_ACTIVATED: def("MEDIA_PARTNER", "User già con passwordHash.", 409, "login"),
+  MEDIA_PARTNER_RATE_LIMITED: def("MEDIA_PARTNER", "Rate limit ricerca, verifica o attivazione.", 429, "wait", {
+    severity: "warning",
+  }),
+  MEDIA_PARTNER_RESEND_NOT_ALLOWED: def(
+    "MEDIA_PARTNER",
+    "Reinvio attivazione solo se account attivo senza password.",
+    409,
+    "none",
+  ),
+  MEDIA_PARTNER_SUSPENDED: def("MEDIA_PARTNER", "Account o organizzazione media partner sospesi.", 403, "contact_org"),
+  MEDIA_PARTNER_PLAYER_NOT_FOUND: def(
+    "MEDIA_PARTNER",
+    "Registration assente, ritirata o fuori dalle competition autorizzate.",
+    404,
     "none",
   ),
 

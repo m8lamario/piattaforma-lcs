@@ -33,6 +33,7 @@ Le categorie sono file separati: si può aggiungere un file nuovo (es. `LIFECYCL
 | [LIFECYCLE.md](LIFECYCLE.md) | Rimozione rosa, chiusura e anonimizzazione account |
 | [EMAILS.md](EMAILS.md) | Invio, storico, webhook Resend |
 | [SCHOOL_ACCESS.md](SCHOOL_ACCESS.md) | Richiesta accesso scuole, approvazione, attivazione |
+| [MEDIA_PARTNER.md](MEDIA_PARTNER.md) | Account media partner e verifica liberatorie |
 
 
 ## Principi

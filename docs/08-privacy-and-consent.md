@@ -89,6 +89,7 @@ Non è un elenco legale chiuso. Serve al compilatore dei testi. Dettaglio nelle 
 | Squadra / scuola | nome squadra, logo key, istituto, maglia/ruolo | compagni: nome e maglia, non PII extra |
 | Tema UI | `prefers-color-scheme`, nessun cookie | visitatori inclusi |
 | Media | **nessun album in DB**; solo la decisione di liberatoria | usi esterni da descrivere nel testo ufficiale |
+| Verifica media partner | nome, cognome, squadra, competizione, edizione, fascia età, stati degli usi M7–M11 / G9–G13 | solo competition grant; mai testo liberatoria, CF, recapiti, tutori, certificato; audit `MEDIA_VERIFY` senza nome né query |
 
 Categorie particolari (sanitarie): file certificato e possibile contenuto del PDF/immagine. Trattamento descritto in `document-processing.md` con placeholder sulla base giuridica. Casella esplicita M3/G4 nel passo privacy: necessaria per giocare, distinta dalla presa visione.
 

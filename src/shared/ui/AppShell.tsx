@@ -11,6 +11,9 @@ type Props = {
   showPlayerTeam?: boolean;
   showConsents?: boolean;
   showSchool?: boolean;
+  showMedia?: boolean;
+  mediaUnderAdmin?: boolean;
+  showArea?: boolean;
   unreadCount?: number;
   children: ReactNode;
 };
@@ -22,6 +25,9 @@ export function AppShell({
   showPlayerTeam,
   showConsents,
   showSchool,
+  showMedia,
+  mediaUnderAdmin = false,
+  showArea = true,
   unreadCount,
   children,
 }: Props) {
@@ -31,7 +37,16 @@ export function AppShell({
         {it.skipToContent}
       </a>
       <header className={styles.header}>
-        <BrandMark href="/area" compact />
+        <BrandMark
+          href={
+            showMedia && !showArea && !mediaUnderAdmin
+              ? "/media"
+              : !showArea && showAdmin
+                ? "/admin"
+                : "/area"
+          }
+          compact
+        />
         <Suspense>
           <AppNav
             email={email}
@@ -40,6 +55,9 @@ export function AppShell({
             showPlayerTeam={showPlayerTeam}
             showConsents={showConsents}
             showSchool={showSchool}
+            showMedia={showMedia}
+            mediaUnderAdmin={mediaUnderAdmin}
+            showArea={showArea}
             unreadCount={unreadCount}
           />
         </Suspense>

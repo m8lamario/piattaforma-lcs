@@ -38,8 +38,22 @@ function isCompetitionOrganizerFor(actor: Actor, competitionId?: string) {
   );
 }
 
-const SUPER_ONLY: Action[] = ["platform:admin", "user:delete", "user:anonymize", "email:compose"];
-const ORG_ADMIN_DENIED: Action[] = [...SUPER_ONLY, "document:read_file", "document:review"];
+export function isActiveMediaPartner(actor: Actor) {
+  const partner = actor.mediaPartner;
+  if (!partner) return false;
+  if (partner.accountStatus !== "ACTIVE" || partner.organizationStatus !== "ACTIVE") return false;
+  if (!actor.roles.some((role) => role.role === "MEDIA_PARTNER")) return false;
+  return partner.competitionIds.length > 0;
+}
+
+function canMediaVerify(actor: Actor, competitionId?: string) {
+  if (!isActiveMediaPartner(actor) || !actor.mediaPartner) return false;
+  if (!competitionId) return true;
+  return actor.mediaPartner.competitionIds.includes(competitionId);
+}
+
+const SUPER_ONLY: Action[] = ["platform:admin", "user:delete", "user:anonymize", "email:compose", "media:manage"];
+const ORG_ADMIN_DENIED: Action[] = [...SUPER_ONLY, "document:read_file", "document:review", "media:verify"];
 
 export function authorize(
   actor: Actor,
@@ -87,7 +101,12 @@ export function authorize(
     case "email:compose":
     case "user:delete":
     case "user:anonymize":
+    case "media:manage":
       return deny("Permesso negato.");
+    case "media:verify":
+      return canMediaVerify(actor, resource.competitionId)
+        ? { allow: true }
+        : deny("Non puoi verificare questo giocatore.");
     case "team:invite":
     case "team:update_roster":
     case "team:remove_player":

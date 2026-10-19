@@ -5,6 +5,7 @@ export const ROLES = [
   "MEDICAL_REVIEWER",
   "SUPER_ADMIN",
   "COMPETITION_ORGANIZER",
+  "MEDIA_PARTNER",
 ] as const;
 
 export type Role = (typeof ROLES)[number];
@@ -31,6 +32,8 @@ export const ACTIONS = [
   "email:read",
   "email:send",
   "email:compose",
+  "media:manage",
+  "media:verify",
 ] as const;
 
 export type Action = (typeof ACTIONS)[number];
@@ -41,10 +44,20 @@ export type ActorRole = {
   competitionId?: string | null;
 };
 
+export type ActorMediaPartner = {
+  accountId: string;
+  organizationId: string;
+  organizationName: string;
+  accountStatus: "ACTIVE" | "SUSPENDED";
+  organizationStatus: "ACTIVE" | "SUSPENDED";
+  competitionIds: string[];
+};
+
 export type Actor = {
   userId: string;
   roles: ActorRole[];
   membershipTeamIds: string[];
+  mediaPartner?: ActorMediaPartner | null;
 };
 
 export type Resource = {

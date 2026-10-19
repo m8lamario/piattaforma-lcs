@@ -113,6 +113,11 @@ export function defaultEmailTemplates(): Record<EmailTemplateKey, EmailTemplateS
       subject: it.emailSchoolAccessInternalSubject,
       textBody: it.emailSchoolAccessInternalText,
     },
+    MEDIA_PARTNER_ACTIVATE: {
+      key: "MEDIA_PARTNER_ACTIVATE",
+      subject: it.emailMediaPartnerActivateSubject,
+      textBody: it.emailMediaPartnerActivateText,
+    },
     MANUAL: {
       key: "MANUAL",
       subject: it.emailManualSubject,

@@ -12,6 +12,7 @@ Principio: **deny by default**. Se un controllo non è esplicito, la risposta è
 | MEDICAL_REVIEWER | globale, solo certificati | Super Admin |
 | SUPER_ADMIN | globale | bootstrap |
 | COMPETITION_ORGANIZER | competitionId | schema pronto, UI non in v1 |
+| MEDIA_PARTNER | competitionId[] via organizzazione | Super Admin |
 
 Lo staff tecnico non è un ruolo di questa tabella. È `Registration.category = STAFF`. Il referente che vi partecipa tiene `TEAM_REPRESENTATIVE` e lo stesso account. L’allenatore è una designazione sulla squadra, non un permesso. Chi non è referente usa il permesso già esistente sulla propria iscrizione.
 
@@ -43,6 +44,10 @@ Lo scope dell’organizer è la competition intera, non una singola edition. `au
 | Corpo libero / override template (`email:compose`) | no | no | no | no | sì |
 | Gestire ruoli e adapter | no | no | no | no | sì |
 | Audit log | no | no | lettura | no | lettura + config retention |
+| Gestire account media partner (`media:manage`) | no | no | no | no | sì |
+| Verificare liberatorie (`media:verify`) | no | no | no | no | supporto: sì; il partner solo sulle coppe grant |
+
+Il Media Partner non compare nella matrice delle azioni interne (rosa, certificati, pagamenti): tutte deny, tranne `media:verify` sulla propria organizzazione attiva. Un consenso mancante non è un’autorizzazione. Fuori dalle competition grant: 404 uniforme.
 
 ## 3. IDOR
 
@@ -91,7 +96,9 @@ type Action =
   | "audit:delete"
   | "email:read"
   | "email:send"
-  | "email:compose";
+  | "email:compose"
+  | "media:manage"
+  | "media:verify";
 
 function authorize(actor: Actor, action: Action, resource: Resource): Decision
 ```
@@ -104,7 +111,8 @@ Nessun bypass `if (role === SUPER_ADMIN) return true` sparso nelle pagine: il su
 - Il form `/richiedi-accesso` non concede ruoli. Approvare o rifiutare richiede `admin:manage`. Il richiedente non può auto-approvarsi né ricevere `ORGANIZATION_ADMIN` / `SUPER_ADMIN`.
 - Il codice invito giocatore non concede admin né ruolo rappresentante.
 - Le API admin vivono sotto `/admin` **e** sotto check ruolo, entrambi necessari.
-- `staff:invite` e `admin:manage` per Org/Super Admin; `platform:admin`, `user:delete`, `user:anonymize`, `email:compose` solo Super Admin.
+- `staff:invite` e `admin:manage` per Org/Super Admin; `platform:admin`, `user:delete`, `user:anonymize`, `email:compose`, `media:manage` solo Super Admin.
+- `media:verify` per account Media Partner attivo sulla competition della risorsa; Super Admin per supporto. Org Admin, revisore, rappresentante e giocatore: no.
 - `document:read_file` e `document:review` per il titolare (proprio file), `MEDICAL_REVIEWER` e Super Admin. Org Admin e rappresentante: solo `document:read_status`.
 - `email:read` e `email:send` allo staff (Org Admin / Super Admin). Rep, giocatore, organizer e revisore certificati no.
 - `team:remove_player` scoped a `teamId`: il rappresentante non tocca altre squadre né account altrui.

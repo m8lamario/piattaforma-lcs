@@ -11,6 +11,8 @@ const LINKS = [
   { href: "/admin/richieste", labelKey: "navAdminSchoolRequests" },
   { href: "/admin/pagamenti", labelKey: "navAdminPayments" },
   { href: "/admin/comunicazioni", labelKey: "navAdminEmails" },
+  { href: "/media", labelKey: "navMedia", superOnly: true },
+  { href: "/admin/media-partner", labelKey: "navAdminMediaPartners", superOnly: true },
   { href: "/admin/utenti", labelKey: "navAdminUsers", superOnly: true },
   { href: "/admin/audit", labelKey: "navAdminAudit" },
   { href: "/admin/informative", labelKey: "navAdminLegal" },
