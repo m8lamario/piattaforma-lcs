@@ -62,7 +62,7 @@ Lo scope del rappresentante è la squadra: edizione e competition si leggono da 
 
 Un rappresentante che è anche giocatore ha `TEAM_REPRESENTATIVE` + membership `PLAYER` (e profilo).
 
-**TeamMembership** — presenza nel roster: `PLAYER` | `REPRESENTATIVE` | `STAFF`. È il fatto anagrafico di squadra; `UserRole` è l’autorizzazione. `STAFF` qui non è un permesso: è la presenza di un componente dello staff tecnico che non è il referente. Il referente che partecipa come staff mantiene `REPRESENTATIVE` e una `Registration.category = STAFF`.
+**TeamMembership** — presenza nel roster: `PLAYER` | `REPRESENTATIVE` | `STAFF`. È il fatto anagrafico di squadra; `UserRole` è l’autorizzazione. `STAFF` qui non è un permesso: è la presenza di un componente dello staff tecnico che non è il referente. Il referente che partecipa come giocatore o come staff mantiene `REPRESENTATIVE` e una sola `Registration` (`category` `PLAYER` **oppure** `STAFF`) per edizione.
 
 `StaffInvite` resta l’invito personale per un altro referente. Non iscrive lo staff tecnico.
 

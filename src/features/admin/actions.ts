@@ -1,6 +1,5 @@
 "use server";
 
-import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { AuthError } from "next-auth";
@@ -32,13 +31,7 @@ import { emailVerificationPath } from "@/features/auth/domain/verify";
 import { fail, failValidation, type ActionFailure, type ActionState } from "@/shared/errors";
 import { anonymizeUserAccount, deleteUserAccount } from "@/features/admin/data/lifecycle";
 import { anonymizeAccountSchema, deleteAccountSchema } from "@/features/admin/schemas/lifecycle";
-
-function originFromHeaders(headerList: Headers) {
-  const host = headerList.get("x-forwarded-host") ?? headerList.get("host");
-  const proto = headerList.get("x-forwarded-proto") ?? "http";
-  if (host) return `${proto}://${host}`;
-  return process.env.AUTH_URL ?? "http://localhost:3000";
-}
+import { appOrigin } from "@/shared/config/app";
 
 function parseOptionalDate(value?: string) {
   if (!value?.trim()) return null;
@@ -191,11 +184,10 @@ export async function createStaffInviteAction(
   if (!(await consumeRateLimit(rateKey, RATE_LIMITS.inviteCreate.limit, RATE_LIMITS.inviteCreate.windowMs))) {
     return fail("INVITE_RATE_LIMITED");
   }
-  const headerList = await headers();
   const { invite, redeemUrl } = await createStaffInvite({
     ...parsed.data,
     invitedByUserId: session.user.id,
-    origin: originFromHeaders(headerList),
+    origin: appOrigin(),
   });
   await dispatchOutboundEmail({
     idempotencyKey: `staff-invite:${invite.id}:create`,

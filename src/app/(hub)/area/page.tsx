@@ -126,8 +126,8 @@ export default async function AreaPage() {
                   ? `${team.coachRegistration?.playerProfile.firstName ?? ""} ${team.coachRegistration?.playerProfile.lastName ?? ""}`.trim()
                   : null
               }
-              showStaffJoin={!activeOwn}
-              staffPlayerConflict={activeOwn?.category === "PLAYER"}
+              canChooseRole={!activeOwn && isRegistrationWindowOpen(editionWindow)}
+              activeCategory={activeOwn?.category ?? null}
             />
           </>
         );

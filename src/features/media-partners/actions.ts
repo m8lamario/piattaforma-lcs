@@ -1,6 +1,5 @@
 "use server";
 
-import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
@@ -36,13 +35,7 @@ import {
   mediaSearchSchema,
 } from "@/features/media-partners/schemas/partners";
 import type { MediaPlayerCard, MediaSearchHit } from "@/features/media-partners/domain/verify";
-
-function originFromHeaders(headerList: Headers) {
-  const host = headerList.get("x-forwarded-host") ?? headerList.get("host");
-  const proto = headerList.get("x-forwarded-proto") ?? "http";
-  if (host) return `${proto}://${host}`;
-  return process.env.AUTH_URL ?? "http://localhost:3000";
-}
+import { appOrigin } from "@/shared/config/app";
 
 function formatExpiry(value: Date) {
   return value.toLocaleString("it-IT", { dateStyle: "long", timeStyle: "short" });
@@ -156,10 +149,9 @@ export async function createMediaPartnerAccountAction(_prev: ActionFailure | und
   });
   if (!parsed.success) return failValidation(parsed.error.issues[0]?.message);
 
-  const headerList = await headers();
   const result = await createMediaPartnerAccount({
     ...parsed.data,
-    origin: originFromHeaders(headerList),
+    origin: appOrigin(),
   });
   if (!result.ok) return fail(result.code);
 
@@ -221,8 +213,7 @@ export async function resendMediaPartnerActivationAction(_prev: ActionFailure | 
   const id = String(formData.get("id") ?? "");
   if (!id) return fail("MEDIA_PARTNER_NOT_FOUND");
 
-  const headerList = await headers();
-  const result = await issueMediaPartnerActivation({ id, origin: originFromHeaders(headerList) });
+  const result = await issueMediaPartnerActivation({ id, origin: appOrigin() });
   if (!result.ok) return fail(result.code);
 
   await dispatchOutboundEmail({

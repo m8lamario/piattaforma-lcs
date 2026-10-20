@@ -48,10 +48,10 @@ Il giocatore entra **solo con il link della propria squadra**, indica la propria
 - All’accesso, in `/area`, capire squadra e competizione, avanzamento iscrizioni, urgenze e come copiare il link.
 - Condividere l’unico link di iscrizione della squadra dalla panoramica e da `/squadra/inviti`. L’email del giocatore si raccoglie nel form, non in un invito separato.
 - Vedere la rosa con stato di registrazione, pubblicabilità e **stato** del certificato (caricato / in revisione / approvato / rifiutato / scaduto), **mai il file**.
-- Se è anche giocatore, completare la propria iscrizione e i consensi da una sezione distinta; altrimenti quelle voci non stanno nel menu.
+- Scegliere in dashboard se restare **solo referente**, oppure aggiungere **un solo** ruolo tra giocatore e staff tecnico, sullo stesso account. Non può essere giocatore e staff insieme finché l’iscrizione è attiva; per cambiare deve ritirarla o farla rimuovere.
+- Se è anche giocatore, completare la propria iscrizione e i consensi da una sezione distinta (dati, certificato, taglia, pagamento previsto). Se è anche staff tecnico, completa liberatorie e quota senza certificato e conta nel limite di 5. Altrimenti quelle voci non stanno nel menu.
 - Vedere lo staff tecnico (massimo 5, referente compreso se partecipa) con stato iscrizione, consensi e pagamento, mai un certificato e mai la taglia maglia.
 - Designare un allenatore tra lo staff della propria squadra. Senza allenatore idoneo la squadra è incompleta.
-- Partecipare lui stesso come staff tecnico, sullo stesso account, con quota e liberatorie e senza certificato medico.
 - Non vedere codice fiscale, telefono, email completa dei compagni oltre quanto strettamente necessario al roster (vedi ruoli).
 
 ## 7. Capacità organizzazione

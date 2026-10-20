@@ -1,10 +1,10 @@
-import { cookies, headers } from "next/headers";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { TeamLinkPanel } from "@/features/teams/ui/TeamLinkPanel";
 import { getTeamForActor } from "@/features/teams/data/invites";
 import { requireRepresentativeTeamId } from "@/features/teams/actions";
 import { authorize } from "@/shared/authz/authorize";
-import { TEAM_COOKIE } from "@/shared/config/app";
+import { TEAM_COOKIE, appOrigin } from "@/shared/config/app";
 import { listTeamsByIds } from "@/features/teams/data/roster";
 import { resolveSelectedTeamId } from "@/features/teams/domain/selection";
 import { isRegistrationWindowOpen } from "@/features/registrations/domain/window";
@@ -14,13 +14,6 @@ import { WindowNotice } from "@/features/registrations/ui/WindowNotice";
 import { PageHeader } from "@/shared/ui/PageHeader";
 import { it } from "@/shared/i18n/it";
 import styles from "../page.module.css";
-
-function originFromHeaders(headerList: Headers) {
-  const host = headerList.get("x-forwarded-host") ?? headerList.get("host");
-  const proto = headerList.get("x-forwarded-proto") ?? "http";
-  if (host) return `${proto}://${host}`;
-  return process.env.AUTH_URL ?? "http://localhost:3000";
-}
 
 export default async function TeamInvitesPage() {
   const { actor, teamIds } = await requireRepresentativeTeamId();
@@ -41,8 +34,7 @@ export default async function TeamInvitesPage() {
     registrationClosesAt: team.edition.registrationClosesAt,
   };
   const windowOpen = isRegistrationWindowOpen(editionWindow);
-  const headerList = await headers();
-  const joinUrl = `${originFromHeaders(headerList)}/iscrizione/${team.registrationToken}`;
+  const joinUrl = `${appOrigin()}/iscrizione/${team.registrationToken}`;
 
   return (
     <main className={styles.main}>

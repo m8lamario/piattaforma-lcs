@@ -78,7 +78,7 @@ Regole:
 
 ## 2b. Console del rappresentante
 
-All’accesso `/area` è la panoramica operativa, non un’area giocatore vuota. Mostra scuola, competizione, conteggi rosa cliccabili, copia del link `/iscrizione/{token}`, azioni richieste (incompleta, attenzione, non pubblicabili, comunicazioni non lette) e, solo se esiste una `Registration` dell’utente, lo stato della propria iscrizione. La rosa resta in `/squadra` con gli stessi bucket; i filtri `?stato=` non ricalcolano gli stati.
+All’accesso `/area` è la panoramica operativa, non un’area giocatore vuota. Mostra scuola, competizione, conteggi rosa cliccabili, copia del link `/iscrizione/{token}` e le azioni richieste. Il referente sceglie un solo ruolo aggiuntivo, giocatore **oppure** staff: la scelta si registra subito e non si cambia finché l’iscrizione è attiva. Subito dopo compare il modulo dei dati. Si può interrompere: modulo e passi escono dalla dashboard e ricompaiono solo con “Riprendi iscrizione”. La rosa resta in `/squadra`.
 
 ## 3. Percorso giocatore (post-M0)
 

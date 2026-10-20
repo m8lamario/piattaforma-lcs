@@ -112,6 +112,59 @@ async function ensureEmptyCup(name: string, slug: string) {
   return competition;
 }
 
+const SEED_REP_SCHOOL_ID = "seed-school-rep-demo";
+const SEED_REP_TEAM_ID = "seed-team-rep-demo";
+const SEED_REP_REGISTRATION_TOKEN = "seed-rep-demo-registration-token-valid01";
+
+async function ensureRepDemoTeam(input: { userId: string; email: string; editionId: string }) {
+  const school = await prisma.school.upsert({
+    where: { id: SEED_REP_SCHOOL_ID },
+    update: { name: "Liceo Demo Seed", city: "Torino" },
+    create: { id: SEED_REP_SCHOOL_ID, name: "Liceo Demo Seed", city: "Torino" },
+  });
+
+  const team = await prisma.team.upsert({
+    where: { id: SEED_REP_TEAM_ID },
+    update: {
+      editionId: input.editionId,
+      schoolId: school.id,
+      name: "Squadra Demo Rappresentante",
+      representativeUserId: input.userId,
+      contactName: "Rappresentante Demo",
+      contactEmail: input.email,
+      registrationToken: SEED_REP_REGISTRATION_TOKEN,
+    },
+    create: {
+      id: SEED_REP_TEAM_ID,
+      editionId: input.editionId,
+      schoolId: school.id,
+      name: "Squadra Demo Rappresentante",
+      inviteCode: "SEED-REP01",
+      registrationToken: SEED_REP_REGISTRATION_TOKEN,
+      representativeUserId: input.userId,
+      contactName: "Rappresentante Demo",
+      contactEmail: input.email,
+    },
+  });
+
+  const repRole = await prisma.userRole.findFirst({
+    where: { userId: input.userId, role: "TEAM_REPRESENTATIVE", teamId: team.id },
+  });
+  if (!repRole) {
+    await prisma.userRole.create({
+      data: { userId: input.userId, role: "TEAM_REPRESENTATIVE", teamId: team.id },
+    });
+  }
+
+  await prisma.teamMembership.upsert({
+    where: { teamId_userId: { teamId: team.id, userId: input.userId } },
+    update: { role: "REPRESENTATIVE" },
+    create: { teamId: team.id, userId: input.userId, role: "REPRESENTATIVE" },
+  });
+
+  return team;
+}
+
 async function main() {
   const superAdmin = await upsertUser(
     "it@estudentsleague.it",
@@ -138,6 +191,19 @@ async function main() {
   for (const cup of CUPS) {
     cups.push(await ensureEmptyCup(cup.name, cup.slug));
   }
+
+  const leonessaEdition = await prisma.edition.findFirst({
+    where: { year: 2026, competition: { slug: "leonessa-cup" } },
+    select: { id: true },
+  });
+  if (!leonessaEdition) {
+    throw new Error("Edizione Leonessa Cup 2026 non trovata dopo il seed delle coppe.");
+  }
+  const repTeam = await ensureRepDemoTeam({
+    userId: rep.id,
+    email: rep.email,
+    editionId: leonessaEdition.id,
+  });
 
   await prisma.documentType.upsert({
     where: { code: "MEDICAL_CERTIFICATE" },
@@ -182,7 +248,7 @@ async function main() {
   console.info("Seed completato.");
   console.info("Super Admin:", superAdmin.email);
   console.info("Organization Admin:", orgAdmin.email);
-  console.info("Rappresentante (senza squadra):", rep.email);
+  console.info("Rappresentante:", rep.email, "→", repTeam.name, "(Leonessa Cup 2026)");
   console.info("Coppe:", cups.map((cup) => cup.name).join(", "));
 }
 

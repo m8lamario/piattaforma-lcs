@@ -245,9 +245,9 @@ export const ERROR_CATALOG: Record<ErrorCode, ErrorDefinition> = {
   TEAM_STAFF_LIMIT: def("TEAMS", "Più di 5 Registration STAFF attive sulla stessa squadra.", 409, "none"),
   TEAM_STAFF_CATEGORY_CONFLICT: def(
     "TEAMS",
-    "Registration PLAYER attiva sulla stessa edizione: niente seconda iscrizione STAFF.",
+    "Registration PLAYER o STAFF già attiva sulla stessa edizione: niente seconda categoria.",
     409,
-    "contact_org",
+    "none",
   ),
   TEAM_COACH_INVALID: def(
     "TEAMS",

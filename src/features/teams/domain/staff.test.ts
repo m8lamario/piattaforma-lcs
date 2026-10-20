@@ -3,7 +3,7 @@ import {
   STAFF_SLOT_LIMIT,
   coachSelectionBlocker,
   countStaffSlots,
-  decideRepresentativeStaffJoin,
+  decideRepresentativeJoin,
   staffAdmission,
   teamCoachCompleteness,
   type StaffRegistrationRef,
@@ -64,47 +64,89 @@ describe("limite staff", () => {
   });
 });
 
-describe("referente come staff", () => {
-  it("riusa lo stesso utente e non apre una seconda iscrizione", () => {
-    const decision = decideRepresentativeStaffJoin({
-      userId: "rep-1",
-      teamId: "team-1",
-      editionId: "edition-1",
-      occupiedStaff: 1,
-      registration: null,
-    });
-    expect(decision).toEqual({ ok: true, action: "create" });
+describe("ruolo aggiuntivo del referente", () => {
+  const base = {
+    userId: "rep-1",
+    teamId: "team-1",
+    editionId: "edition-1",
+    occupiedStaff: 1,
+  };
 
-    const already = decideRepresentativeStaffJoin({
-      userId: "rep-1",
-      teamId: "team-1",
-      editionId: "edition-1",
-      occupiedStaff: 1,
-      registration: staffRegistration({ userId: "rep-1", id: "reg-rep" }),
+  it("crea un’iscrizione giocatore o staff sullo stesso account", () => {
+    expect(decideRepresentativeJoin({ ...base, category: "PLAYER", registration: null })).toEqual({
+      ok: true,
+      action: "create",
     });
-    expect(already).toEqual({ ok: true, action: "already", registrationId: "reg-rep" });
+    expect(decideRepresentativeJoin({ ...base, category: "STAFF", registration: null })).toEqual({
+      ok: true,
+      action: "create",
+    });
   });
 
-  it("blocca il referente che è già giocatore senza creare un altro account", () => {
-    const decision = decideRepresentativeStaffJoin({
-      userId: "rep-1",
-      teamId: "team-1",
-      editionId: "edition-1",
-      occupiedStaff: 0,
-      registration: playerRegistration({ userId: "rep-1" }),
-    });
-    expect(decision).toEqual({ ok: false, reason: "category_conflict" });
+  it("riusa l’iscrizione già attiva della stessa categoria", () => {
+    expect(
+      decideRepresentativeJoin({
+        ...base,
+        category: "STAFF",
+        registration: staffRegistration({ userId: "rep-1", id: "reg-rep" }),
+      }),
+    ).toEqual({ ok: true, action: "already", registrationId: "reg-rep" });
+    expect(
+      decideRepresentativeJoin({
+        ...base,
+        category: "PLAYER",
+        registration: playerRegistration({ userId: "rep-1", id: "reg-player" }),
+      }),
+    ).toEqual({ ok: true, action: "already", registrationId: "reg-player" });
+  });
+
+  it("impedisce di essere giocatore e staff insieme", () => {
+    expect(
+      decideRepresentativeJoin({
+        ...base,
+        occupiedStaff: 0,
+        category: "STAFF",
+        registration: playerRegistration({ userId: "rep-1" }),
+      }),
+    ).toEqual({ ok: false, reason: "category_conflict" });
+    expect(
+      decideRepresentativeJoin({
+        ...base,
+        occupiedStaff: 0,
+        category: "PLAYER",
+        registration: staffRegistration({ userId: "rep-1" }),
+      }),
+    ).toEqual({ ok: false, reason: "category_conflict" });
+  });
+
+  it("riapre dopo ritiro e non conta lo slot staff per il giocatore", () => {
+    expect(
+      decideRepresentativeJoin({
+        ...base,
+        occupiedStaff: 5,
+        category: "PLAYER",
+        registration: playerRegistration({ userId: "rep-1", status: "WITHDRAWN" }),
+      }),
+    ).toEqual({ ok: true, action: "reopen", registrationId: "reg-player" });
+    expect(
+      decideRepresentativeJoin({
+        ...base,
+        occupiedStaff: 5,
+        category: "STAFF",
+        registration: null,
+      }),
+    ).toEqual({ ok: false, reason: "staff_limit" });
   });
 
   it("non assegna un’iscrizione di un altro utente", () => {
-    const decision = decideRepresentativeStaffJoin({
-      userId: "rep-1",
-      teamId: "team-1",
-      editionId: "edition-1",
-      occupiedStaff: 0,
-      registration: staffRegistration({ userId: "other" }),
-    });
-    expect(decision).toEqual({ ok: false, reason: "identity_conflict" });
+    expect(
+      decideRepresentativeJoin({
+        ...base,
+        occupiedStaff: 0,
+        category: "STAFF",
+        registration: staffRegistration({ userId: "other" }),
+      }),
+    ).toEqual({ ok: false, reason: "identity_conflict" });
   });
 });
 

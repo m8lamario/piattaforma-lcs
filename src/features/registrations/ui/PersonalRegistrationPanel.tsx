@@ -1,12 +1,11 @@
 import type { ChecklistItem, MedicalEvidence, RegistrationStatus } from "@/features/registrations/domain/requirements";
-import { nextHero } from "@/features/registrations/domain/wizard";
-import { requirementHref, requirementLabel } from "@/features/registrations/ui/wizardCopy";
 import type { PublicationFlags } from "@/features/consents/domain/boxes";
 import { PublicationChips } from "@/features/consents/ui/PublicationChips";
-import { ButtonLink } from "@/shared/ui/Button";
+import { ChecklistLinks } from "@/features/registrations/ui/ChecklistLinks";
 import { StatusChip, type StatusTone } from "@/shared/ui/StatusChip";
 import { it } from "@/shared/i18n/it";
 import styles from "@/features/teams/ui/RepresentativeDashboard.module.css";
+import progress from "@/features/registrations/ui/Dashboard.module.css";
 
 const STATUS_COPY: Record<RegistrationStatus, string> = {
   INVITED: it.statusINVITED,
@@ -40,6 +39,13 @@ const MEDICAL: Record<MedicalEvidence, string> = {
   expired: it.rosterMedicalExpired,
 };
 
+const SEG_CLASS: Record<ChecklistItem["status"], string | undefined> = {
+  complete: progress.seg_complete,
+  todo: progress.seg_todo,
+  attention: progress.seg_attention,
+  not_applicable: undefined,
+};
+
 type Props = {
   status: RegistrationStatus;
   checklist: ChecklistItem[];
@@ -57,14 +63,11 @@ export function PersonalRegistrationPanel({
   publication,
   shirtSizeDue = false,
 }: Props) {
-  const hero = nextHero(checklist);
-  const missing = checklist.find((item) => item.status === "attention" || (item.required && item.status === "todo"));
-  const settled = hero.code === "DONE" || status === "APPROVED" || status === "WITHDRAWN" || status === "REMOVED";
-  const href = hero.code === "DONE" ? "/area/registrazione/riepilogo" : requirementHref(hero.code);
-
+  const visible = checklist.filter((item) => item.status !== "not_applicable");
+  const doneCount = visible.filter((item) => item.status === "complete").length;
+  const settled = status === "APPROVED" || status === "WITHDRAWN" || status === "REMOVED";
   return (
-    <section className={styles.section}>
-      <h2>{it.areaPersonalTitle}</h2>
+    <div className={styles.section}>
       <div className={styles.personalChips}>
         <StatusChip tone={STATUS_TONE[status]}>{STATUS_COPY[status]}</StatusChip>
         <StatusChip tone="neutral">{category === "STAFF" ? it.categoryStaff : it.categoryPlayer}</StatusChip>
@@ -75,18 +78,23 @@ export function PersonalRegistrationPanel({
         )}
         {publication ? <PublicationChips flags={publication} compact /> : null}
       </div>
-      {shirtSizeDue && !settled ? (
-        <p className={styles.personalMeta}>{it.shirtSizeBanner}</p>
-      ) : missing && !settled ? (
-        <p className={styles.personalMeta}>{it.areaPersonalMissing.replace("{step}", requirementLabel(missing.code))}</p>
-      ) : (
-        <p className={styles.personalMeta}>{it.areaPersonalDone}</p>
-      )}
+      <p className={styles.personalMeta}>
+        {settled
+          ? it.areaPersonalDone
+          : shirtSizeDue
+            ? it.shirtSizeBanner
+            : it.checklistProgress.replace("{done}", String(doneCount)).replace("{total}", String(visible.length))}
+      </p>
       {settled ? null : (
-        <div className={styles.personalActions}>
-          <ButtonLink href={href}>{it.areaPersonalCta}</ButtonLink>
-        </div>
+        <>
+          <div className={progress.segments} aria-hidden="true">
+            {visible.map((item) => (
+              <span key={item.code} className={`${progress.segment} ${SEG_CLASS[item.status] ?? ""}`} />
+            ))}
+          </div>
+          <ChecklistLinks checklist={checklist} />
+        </>
       )}
-    </section>
+    </div>
   );
 }

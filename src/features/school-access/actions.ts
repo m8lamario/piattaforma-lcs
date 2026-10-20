@@ -1,6 +1,5 @@
 "use server";
 
-import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
@@ -30,13 +29,7 @@ import { deliverEmailVerification } from "@/features/auth/data/emailVerification
 import { emailVerificationPath } from "@/features/auth/domain/verify";
 import { fail, failValidation, type ActionFailure } from "@/shared/errors";
 import { it } from "@/shared/i18n/it";
-
-function originFromHeaders(headerList: Headers) {
-  const host = headerList.get("x-forwarded-host") ?? headerList.get("host");
-  const proto = headerList.get("x-forwarded-proto") ?? "http";
-  if (host) return `${proto}://${host}`;
-  return process.env.AUTH_URL ?? "http://localhost:3000";
-}
+import { appOrigin } from "@/shared/config/app";
 
 function formatExpiry(value: Date) {
   return value.toLocaleString("it-IT", { dateStyle: "long", timeStyle: "short" });
@@ -74,8 +67,7 @@ export async function submitSchoolAccessAction(_prev: ActionFailure | undefined,
   const created = await createSchoolAccessRequest(parsed.data);
   if (!created.ok) return fail(created.code);
 
-  const headerList = await headers();
-  const origin = originFromHeaders(headerList);
+  const origin = appOrigin();
   const trace = await userAgentAndIp();
   await writeAuditLog({
     actorKind: "SYSTEM",
@@ -99,8 +91,7 @@ export async function approveSchoolAccessAction(_prev: ActionFailure | undefined
   const id = String(formData.get("id") ?? "");
   if (!id) return fail("SCHOOL_ACCESS_NOT_FOUND");
 
-  const headerList = await headers();
-  const origin = originFromHeaders(headerList);
+  const origin = appOrigin();
   const result = await approveSchoolAccessRequest({
     id,
     reviewedByUserId: session.user.id,
@@ -195,8 +186,7 @@ export async function resendSchoolAccessActivationAction(_prev: ActionFailure | 
     return fail("SCHOOL_ACCESS_RATE_LIMITED");
   }
 
-  const headerList = await headers();
-  const result = await issueActivationToken({ id, origin: originFromHeaders(headerList) });
+  const result = await issueActivationToken({ id, origin: appOrigin() });
   if (!result.ok) return fail(result.code);
 
   await dispatchOutboundEmail({

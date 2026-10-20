@@ -46,7 +46,16 @@ async function redeemInvite(page: Page, browser: Browser) {
   await expect(page).toHaveURL(/\/(area|squadra)/);
 
   await page.goto("/squadra/inviti");
-  const redeemUrl = await page.locator("code").first().innerText();
+  const switcher = page.locator("#team-switch");
+  if (await switcher.isVisible()) {
+    const e2eOption = switcher.locator("option", { hasText: "E2E Squadra" });
+    const e2eId = await e2eOption.getAttribute("value");
+    if (e2eId && (await switcher.inputValue()) !== e2eId) {
+      await switcher.selectOption(e2eId);
+    }
+    await expect(page.locator("code").first()).not.toContainText("seed-rep-demo");
+  }
+  const redeemUrl = (await page.locator("code").first().innerText()).trim();
   expect(redeemUrl).toContain("/iscrizione/");
 
   const playerContext = await browser.newContext();
