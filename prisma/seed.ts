@@ -114,6 +114,7 @@ async function ensureEmptyCup(name: string, slug: string) {
 
 const SEED_REP_SCHOOL_ID = "seed-school-rep-demo";
 const SEED_REP_TEAM_ID = "seed-team-rep-demo";
+const SEED_REP_REGISTRATION_TOKEN = "seed-rep-demo-registration-token-valid01";
 
 async function ensureRepDemoTeam(input: { userId: string; email: string; editionId: string }) {
   const school = await prisma.school.upsert({
@@ -131,6 +132,7 @@ async function ensureRepDemoTeam(input: { userId: string; email: string; edition
       representativeUserId: input.userId,
       contactName: "Rappresentante Demo",
       contactEmail: input.email,
+      registrationToken: SEED_REP_REGISTRATION_TOKEN,
     },
     create: {
       id: SEED_REP_TEAM_ID,
@@ -138,7 +140,7 @@ async function ensureRepDemoTeam(input: { userId: string; email: string; edition
       schoolId: school.id,
       name: "Squadra Demo Rappresentante",
       inviteCode: "SEED-REP01",
-      registrationToken: "seed-rep-demo-registration-token",
+      registrationToken: SEED_REP_REGISTRATION_TOKEN,
       representativeUserId: input.userId,
       contactName: "Rappresentante Demo",
       contactEmail: input.email,
