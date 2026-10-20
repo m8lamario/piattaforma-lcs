@@ -6,6 +6,7 @@ import { ActionError } from "@/shared/ui/ActionError";
 import { Button } from "@/shared/ui/Button";
 import { it } from "@/shared/i18n/it";
 import fields from "@/shared/ui/form.module.css";
+import { writeRepresentativeFlow } from "./representativeFlow";
 
 type RoleChoice = "NONE" | "PLAYER" | "STAFF";
 
@@ -20,7 +21,7 @@ export function RepresentativeRoleForm({ teamId }: { teamId: string }) {
   useEffect(() => {
     if (choice === "NONE" || pending || submitted.current === choice) return;
     submitted.current = choice;
-    sessionStorage.setItem(`eph-rep-flow:${teamId}`, "open");
+    writeRepresentativeFlow(teamId, "open");
     formRef.current?.requestSubmit();
   }, [choice, pending, teamId]);
 

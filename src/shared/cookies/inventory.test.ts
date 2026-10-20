@@ -126,7 +126,11 @@ describe("inventario cookie", () => {
     for (const file of sources) {
       const src = readFileSync(file, "utf8").toLowerCase();
       const relative = file.replace(/\\/g, "/");
-      if (relative.endsWith("features/consents/ui/privacyDraft.ts")) {
+      const sessionStores = [
+        "features/consents/ui/privacyDraft.ts",
+        "features/teams/ui/representativeFlow.ts",
+      ];
+      if (sessionStores.some((allowed) => relative.endsWith(allowed))) {
         expect(src).toContain("sessionstorage");
         continue;
       }

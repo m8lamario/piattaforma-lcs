@@ -7,27 +7,13 @@ import type { PlayerWorkspace } from "@/features/registrations/data/workspace";
 import { Button } from "@/shared/ui/Button";
 import { it } from "@/shared/i18n/it";
 import styles from "./RepresentativeDashboard.module.css";
+import {
+  readRepresentativeFlowOpen,
+  subscribeRepresentativeFlow,
+  writeRepresentativeFlow,
+} from "./representativeFlow";
 
 type Category = "PLAYER" | "STAFF";
-
-function flowKey(teamId: string) {
-  return `eph-rep-flow:${teamId}`;
-}
-
-const flowListeners = new Set<() => void>();
-
-function subscribeFlow(onStoreChange: () => void) {
-  flowListeners.add(onStoreChange);
-  return () => flowListeners.delete(onStoreChange);
-}
-
-function emitFlow() {
-  flowListeners.forEach((listener) => listener());
-}
-
-function readFlowOpen(teamId: string) {
-  return sessionStorage.getItem(flowKey(teamId)) === "open";
-}
 
 type Props = {
   teamId: string;
@@ -40,20 +26,22 @@ export function RepresentativeRegistration({ teamId, category, workspace }: Prop
     workspace.projectedStatus === "APPROVED" ||
     workspace.projectedStatus === "WITHDRAWN" ||
     workspace.projectedStatus === "REMOVED";
-  const storedOpen = useSyncExternalStore(subscribeFlow, () => readFlowOpen(teamId), () => false);
+  const storedOpen = useSyncExternalStore(
+    subscribeRepresentativeFlow,
+    () => readRepresentativeFlowOpen(teamId),
+    () => false,
+  );
   const open = settled ? false : storedOpen;
   const personalOpen = workspace.checklist.some(
     (item) => item.code === "PERSONAL_DATA" && (item.status === "todo" || item.status === "attention"),
   );
 
   function pause() {
-    sessionStorage.setItem(flowKey(teamId), "paused");
-    emitFlow();
+    writeRepresentativeFlow(teamId, "paused");
   }
 
   function resume() {
-    sessionStorage.setItem(flowKey(teamId), "open");
-    emitFlow();
+    writeRepresentativeFlow(teamId, "open");
   }
 
   if (settled) {
