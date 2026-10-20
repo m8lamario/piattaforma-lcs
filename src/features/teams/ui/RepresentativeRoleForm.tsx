@@ -22,7 +22,7 @@ export function RepresentativeRoleForm({ teamId }: { teamId: string }) {
     submitted.current = choice;
     sessionStorage.setItem(`eph-rep-flow:${teamId}`, "open");
     formRef.current?.requestSubmit();
-  }, [choice, pending]);
+  }, [choice, pending, teamId]);
 
   return (
     <form ref={formRef} action={action} className={fields.form} noValidate aria-busy={pending}>

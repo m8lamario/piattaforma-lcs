@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 import { PersonalDataForm } from "@/features/players/ui/PersonalDataForm";
 import { PersonalRegistrationPanel } from "@/features/registrations/ui/PersonalRegistrationPanel";
 import type { PlayerWorkspace } from "@/features/registrations/data/workspace";
@@ -14,6 +14,21 @@ function flowKey(teamId: string) {
   return `eph-rep-flow:${teamId}`;
 }
 
+const flowListeners = new Set<() => void>();
+
+function subscribeFlow(onStoreChange: () => void) {
+  flowListeners.add(onStoreChange);
+  return () => flowListeners.delete(onStoreChange);
+}
+
+function emitFlow() {
+  flowListeners.forEach((listener) => listener());
+}
+
+function readFlowOpen(teamId: string) {
+  return sessionStorage.getItem(flowKey(teamId)) === "open";
+}
+
 type Props = {
   teamId: string;
   category: Category;
@@ -25,24 +40,20 @@ export function RepresentativeRegistration({ teamId, category, workspace }: Prop
     workspace.projectedStatus === "APPROVED" ||
     workspace.projectedStatus === "WITHDRAWN" ||
     workspace.projectedStatus === "REMOVED";
-  const [open, setOpen] = useState<boolean | null>(settled ? false : null);
+  const storedOpen = useSyncExternalStore(subscribeFlow, () => readFlowOpen(teamId), () => false);
+  const open = settled ? false : storedOpen;
   const personalOpen = workspace.checklist.some(
     (item) => item.code === "PERSONAL_DATA" && (item.status === "todo" || item.status === "attention"),
   );
 
-  useEffect(() => {
-    if (settled) return;
-    setOpen(sessionStorage.getItem(flowKey(teamId)) === "open");
-  }, [settled, teamId]);
-
   function pause() {
     sessionStorage.setItem(flowKey(teamId), "paused");
-    setOpen(false);
+    emitFlow();
   }
 
   function resume() {
     sessionStorage.setItem(flowKey(teamId), "open");
-    setOpen(true);
+    emitFlow();
   }
 
   if (settled) {
@@ -57,8 +68,6 @@ export function RepresentativeRegistration({ teamId, category, workspace }: Prop
       />
     );
   }
-
-  if (open === null) return null;
 
   if (!open) {
     return (
