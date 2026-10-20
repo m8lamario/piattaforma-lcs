@@ -5,6 +5,7 @@ import { hashPassword } from "@/features/auth/domain/password";
 import { displayNameFromEmail, namesFromEmail } from "@/features/teams/domain/emailName";
 import {
   coachSelectionBlocker,
+  decideRepresentativeJoin,
   profileNamesFromUser,
   staffAdmission,
   type ParticipantCategory,
@@ -535,7 +536,11 @@ export async function attachExistingUserToTeamLink(input: {
   });
 }
 
-export async function enrollRepresentativeAsStaff(input: { userId: string; teamId: string }) {
+export async function enrollRepresentativeOnTeam(input: {
+  userId: string;
+  teamId: string;
+  category: ParticipantCategory;
+}) {
   return prisma.$transaction(async (tx) => {
     const team = await tx.team.findUnique({ where: { id: input.teamId } });
     if (!team) return { ok: false as const, reason: "not_found" as const };
@@ -551,12 +556,64 @@ export async function enrollRepresentativeAsStaff(input: { userId: string; teamI
       (await tx.playerProfile.create({
         data: { userId: user.id, ...profileNamesFromUser(user) },
       }));
+
+    const existingRegistration = await tx.registration.findUnique({
+      where: {
+        playerProfileId_editionId: {
+          playerProfileId: profile.id,
+          editionId: team.editionId,
+        },
+      },
+    });
+
+    let occupiedStaff = 0;
+    if (input.category === "STAFF") {
+      await lockTeamRow(tx, team.id);
+      occupiedStaff = await tx.registration.count({
+        where: {
+          teamId: team.id,
+          category: "STAFF",
+          status: OPEN_REGISTRATION,
+          ...(existingRegistration ? { id: { not: existingRegistration.id } } : {}),
+        },
+      });
+    }
+
+    const decision = decideRepresentativeJoin({
+      userId: user.id,
+      teamId: team.id,
+      editionId: team.editionId,
+      category: input.category,
+      occupiedStaff,
+      registration: existingRegistration
+        ? {
+            id: existingRegistration.id,
+            userId: user.id,
+            teamId: existingRegistration.teamId,
+            editionId: existingRegistration.editionId,
+            category: existingRegistration.category,
+            status: existingRegistration.status,
+          }
+        : null,
+    });
+    if (!decision.ok) return decision;
+    if (decision.action === "already") return { ok: true as const };
+
+    if (input.category === "PLAYER") {
+      const playerRole = await tx.userRole.findFirst({
+        where: { userId: user.id, role: "PLAYER" },
+      });
+      if (!playerRole) {
+        await tx.userRole.create({ data: { userId: user.id, role: "PLAYER" } });
+      }
+    }
+
     return linkPlayerToTeam(tx, {
       userId: user.id,
       profileId: profile.id,
       teamId: team.id,
       editionId: team.editionId,
-      category: "STAFF",
+      category: input.category,
     });
   });
 }

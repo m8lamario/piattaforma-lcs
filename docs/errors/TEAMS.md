@@ -7,5 +7,5 @@
 | TEAM_EDITION_CONFLICT | TEAMS | Altra edizione attiva | OD-017 | Già iscritto a un’altra competizione | Nessuno | create/bulk invite |
 | TEAM_BULK_RATE_LIMITED | TEAMS | Rate limit CSV | Troppi elenchi | Troppi elenchi | Attendi | `bulkInviteAction` |
 | TEAM_STAFF_LIMIT | TEAMS | Oltre 5 staff attivi | Conteggio o trigger | Posti staff esauriti | Nessuno | iscrizione staff |
-| TEAM_STAFF_CATEGORY_CONFLICT | TEAMS | Già giocatore nella stessa edizione | Unique profilo+edizione | Nessun secondo account | Contatta l’organizzazione | opt-in referente / link |
+| TEAM_STAFF_CATEGORY_CONFLICT | TEAMS | Già giocatore o staff nella stessa edizione | Unique profilo+edizione | Nessun secondo ruolo aggiuntivo | Ritira o fai rimuovere l’iscrizione | opt-in referente / link |
 | TEAM_COACH_INVALID | TEAMS | Allenatore non valido | Non STAFF della squadra, o non più idoneo | Selezione rifiutata | Scegli un altro componente | `designateCoachAction` |

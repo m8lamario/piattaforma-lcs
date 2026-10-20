@@ -32,6 +32,11 @@ export const redeemInviteSchema = z
 
 export const participantCategorySchema = z.enum(["PLAYER", "STAFF"]);
 
+export const representativeJoinSchema = z.object({
+  teamId: z.string().min(1, "Squadra mancante."),
+  category: participantCategorySchema,
+});
+
 export const joinTeamSchema = z
   .object({
     token: z.string().min(20, "Link non valido."),

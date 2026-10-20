@@ -10,7 +10,7 @@ import { getActorByUserId, representativeTeamIds } from "@/shared/authz/getActor
 import { writeAuditLog } from "@/shared/lib/audit";
 import { logger } from "@/shared/lib/logger";
 import { dispatchOutboundEmail } from "@/features/emails/data/dispatch";
-import { BULK_INVITE_MAX, TEAM_COOKIE } from "@/shared/config/app";
+import { BULK_INVITE_MAX, TEAM_COOKIE, appOrigin } from "@/shared/config/app";
 import { shouldUseSecureCookie, teamCookieOptions } from "@/shared/cookies/options";
 import {
   RATE_LIMITS,
@@ -41,7 +41,7 @@ import {
   createAccountFromInvite,
   createAccountFromTeamLink,
   designateTeamCoach,
-  enrollRepresentativeAsStaff,
+  enrollRepresentativeOnTeam,
   isConstraintError,
   createPlayerInvite,
   findInviteByPlainToken,
@@ -52,7 +52,13 @@ import {
   revokePlayerInvite,
 } from "@/features/teams/data/invites";
 import { updateMembershipRoster } from "@/features/teams/data/roster";
-import { createInviteSchema, joinTeamSchema, participantCategorySchema, redeemInviteSchema } from "@/features/teams/schemas/invite";
+import {
+  createInviteSchema,
+  joinTeamSchema,
+  participantCategorySchema,
+  redeemInviteSchema,
+  representativeJoinSchema,
+} from "@/features/teams/schemas/invite";
 import { removePlayerFromTeam } from "@/features/admin/data/lifecycle";
 import { removePlayerSchema } from "@/features/admin/schemas/lifecycle";
 
@@ -66,6 +72,8 @@ function joinFailureCode(reason: string) {
       return "INVITE_ALREADY_ON_TEAM" as const;
     case "edition_conflict":
       return "INVITE_EDITION_CONFLICT" as const;
+    case "identity_conflict":
+      return "TEAM_STAFF_CATEGORY_CONFLICT" as const;
     case "login_required":
       return "INVITE_LOGIN_REQUIRED" as const;
     case "wrong_session_email":
@@ -73,13 +81,6 @@ function joinFailureCode(reason: string) {
     default:
       return inviteOutcomeCode(reason);
   }
-}
-
-function originFromHeaders(headerList: Headers) {
-  const host = headerList.get("x-forwarded-host") ?? headerList.get("host");
-  const proto = headerList.get("x-forwarded-proto") ?? "http";
-  if (host) return `${proto}://${host}`;
-  return process.env.AUTH_URL ?? "http://localhost:3000";
 }
 
 export async function createInviteAction(
@@ -146,11 +147,10 @@ export async function createInviteAction(
     return fail("INVITE_RATE_LIMITED");
   }
 
-  const headerList = await headers();
   const { invite, redeemUrl } = await createPlayerInvite({
     ...parsed.data,
     invitedByUserId: session.user.id,
-    origin: originFromHeaders(headerList),
+    origin: appOrigin(),
   });
 
   await dispatchOutboundEmail({
@@ -666,14 +666,13 @@ export async function resendInviteAction(
   if (!(await consumeRateLimit(rateKey, RATE_LIMITS.inviteCreate.limit, RATE_LIMITS.inviteCreate.windowMs))) {
     return fail("INVITE_RATE_LIMITED");
   }
-  const headerList = await headers();
   const { invite, redeemUrl } = await createPlayerInvite({
     teamId,
     email: existing.email,
     firstName: existing.firstName ?? undefined,
     lastName: existing.lastName ?? undefined,
     invitedByUserId: access.session!.user!.id,
-    origin: originFromHeaders(headerList),
+    origin: appOrigin(),
   });
   await dispatchOutboundEmail({
     idempotencyKey: `invite:${invite.id}:create`,
@@ -722,8 +721,7 @@ export async function bulkInviteAction(
     return fail("TEAM_BULK_RATE_LIMITED");
   }
   const parsed = parseBulkInviteCsv(csv, BULK_INVITE_MAX);
-  const headerList = await headers();
-  const origin = originFromHeaders(headerList);
+  const origin = appOrigin();
   let created = 0;
   const errors = [...parsed.errors];
   for (const row of parsed.rows) {
@@ -847,14 +845,20 @@ export async function removePlayerAction(
   return { ok: true as const };
 }
 
-export async function joinRepresentativeAsStaffAction(
+export async function joinRepresentativeAsParticipantAction(
   _prev: ActionFailure | { done: true } | undefined,
   formData: FormData,
 ): Promise<ActionFailure | { done: true }> {
-  const teamId = String(formData.get("teamId") ?? "");
-  const access = await requireTeamAction(teamId, "team:update_roster");
+  const parsed = representativeJoinSchema.safeParse({
+    teamId: formData.get("teamId"),
+    category: formData.get("category"),
+  });
+  if (!parsed.success) {
+    return failValidation(parsed.error.issues[0]?.message);
+  }
+  const access = await requireTeamAction(parsed.data.teamId, "team:update_roster");
   if (isDenied(access)) return access;
-  const team = await getTeamForActor(teamId);
+  const team = await getTeamForActor(parsed.data.teamId);
   if (!team) return fail("TEAM_NOT_FOUND");
   if (
     !isRegistrationWindowOpen({
@@ -867,9 +871,10 @@ export async function joinRepresentativeAsStaffAction(
   }
 
   try {
-    const result = await enrollRepresentativeAsStaff({
+    const result = await enrollRepresentativeOnTeam({
       userId: access.session.user!.id,
       teamId: team.id,
+      category: parsed.data.category,
     });
     if (!result.ok) {
       if (result.reason === "not_found") return fail("TEAM_NOT_FOUND");
@@ -884,13 +889,14 @@ export async function joinRepresentativeAsStaffAction(
   const trace = await userAgentAndIp();
   await writeAuditLog({
     actorUserId: access.session.user!.id,
-    action: "STAFF_SELF_JOIN",
+    action: parsed.data.category === "STAFF" ? "STAFF_SELF_JOIN" : "PLAYER_SELF_JOIN",
     entityType: "Team",
     entityId: team.id,
-    metadata: { category: "STAFF" },
+    metadata: { category: parsed.data.category },
     ...trace,
   });
   revalidatePath("/area");
+  revalidatePath("/area/consensi");
   revalidatePath("/squadra");
   revalidatePath("/admin/registrazioni");
   return { done: true };

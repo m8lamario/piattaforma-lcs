@@ -18,10 +18,7 @@ import { writeAuditLog } from "@/shared/lib/audit";
 import { getTeamForActor } from "@/features/teams/data/invites";
 import { prisma } from "@/shared/lib/prisma";
 import { userAgentAndIp } from "@/shared/lib/request-guard";
-
-function appOrigin() {
-  return process.env.AUTH_URL ?? "http://localhost:3000";
-}
+import { appOrigin } from "@/shared/config/app";
 
 export async function startPlayerCheckoutAction(): Promise<ActionFailure | void> {
   const session = await auth();

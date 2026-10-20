@@ -34,15 +34,8 @@ import { dispatchOutboundEmail } from "@/features/emails/data/dispatch";
 import { prisma } from "@/shared/lib/prisma";
 import { writeAuditLog } from "@/shared/lib/audit";
 import { RATE_LIMITS, clientKey, consumeRateLimit } from "@/shared/lib/request-guard";
-import { TEAM_COOKIE } from "@/shared/config/app";
+import { TEAM_COOKIE, appOrigin } from "@/shared/config/app";
 import { clearTeamCookieOptions, shouldUseSecureCookie } from "@/shared/cookies/options";
-
-function originFromHeaders(headerList: Headers) {
-  const host = headerList.get("x-forwarded-host") ?? headerList.get("host");
-  const proto = headerList.get("x-forwarded-proto") ?? "http";
-  if (host) return `${proto}://${host}`;
-  return process.env.AUTH_URL ?? "http://localhost:3000";
-}
 
 export async function loginAction(_prev: ActionFailure | undefined, formData: FormData) {
   const parsed = loginSchema.safeParse({
@@ -142,8 +135,7 @@ export async function requestPasswordResetAction(
   if (user?.passwordHash) {
     const token = createInviteToken();
     await createPasswordResetToken(parsed.data.email, token);
-    const headerList = await headers();
-    const resetUrl = `${originFromHeaders(headerList)}/recupera-password/${token}`;
+    const resetUrl = `${appOrigin()}/recupera-password/${token}`;
     const nonce = createInviteToken();
     await dispatchOutboundEmail({
       idempotencyKey: `password-reset:${user.id}:${nonce}`,

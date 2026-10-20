@@ -14,7 +14,7 @@ Principio: **deny by default**. Se un controllo non è esplicito, la risposta è
 | COMPETITION_ORGANIZER | competitionId | schema pronto, UI non in v1 |
 | MEDIA_PARTNER | competitionId[] via organizzazione | Super Admin |
 
-Lo staff tecnico non è un ruolo di questa tabella. È `Registration.category = STAFF`. Il referente che vi partecipa tiene `TEAM_REPRESENTATIVE` e lo stesso account. L’allenatore è una designazione sulla squadra, non un permesso. Chi non è referente usa il permesso già esistente sulla propria iscrizione.
+Lo staff tecnico non è un ruolo di questa tabella. È `Registration.category = STAFF`. Il referente che partecipa come giocatore o come staff tiene `TEAM_REPRESENTATIVE` e lo stesso account, con una sola `Registration` per edizione. L’allenatore è una designazione sulla squadra, non un permesso. Chi non è referente usa il permesso già esistente sulla propria iscrizione.
 
 Lo scope dell’organizer è la competition intera, non una singola edition. `authorize` consente `team:read` solo se `resource.competitionId` arriva dal record caricato e coincide col ruolo. Senza quell’id l’accesso è negato. Non riceve `admin:manage` né il file medico. Non c’è `editionId` sul ruolo: sarebbe una copia di `Team.editionId`.
 

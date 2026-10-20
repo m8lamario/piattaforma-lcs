@@ -3,12 +3,12 @@ import { TeamLinkPanel } from "@/features/teams/ui/TeamLinkPanel";
 import { TeamSwitcher } from "@/features/teams/ui/TeamSwitcher";
 import { RosterStrip } from "@/features/teams/ui/RosterStrip";
 import { WindowNotice } from "@/features/registrations/ui/WindowNotice";
-import { PersonalRegistrationPanel } from "@/features/registrations/ui/PersonalRegistrationPanel";
+import { RepresentativeRegistration } from "@/features/teams/ui/RepresentativeRegistration";
 import type { PlayerWorkspace } from "@/features/registrations/data/workspace";
 import type { EditionWindow } from "@/features/registrations/domain/window";
 import { representativeNowActions } from "@/features/teams/domain/representativeActions";
 import type { RosterCounts, RosterRow } from "@/features/teams/domain/roster";
-import { JoinAsStaffForm } from "@/features/teams/ui/JoinAsStaffForm";
+import { RepresentativeRoleForm } from "@/features/teams/ui/RepresentativeRoleForm";
 import { STAFF_SLOT_LIMIT } from "@/features/teams/domain/staff";
 import { PageHeader } from "@/shared/ui/PageHeader";
 import { it } from "@/shared/i18n/it";
@@ -48,8 +48,8 @@ type Props = {
   staffUsed: number;
   coachMissing: boolean;
   coachName: string | null;
-  showStaffJoin: boolean;
-  staffPlayerConflict: boolean;
+  canChooseRole: boolean;
+  activeCategory: "PLAYER" | "STAFF" | null;
 };
 
 export function RepresentativeDashboard({
@@ -72,8 +72,8 @@ export function RepresentativeDashboard({
   staffUsed,
   coachMissing,
   coachName,
-  showStaffJoin,
-  staffPlayerConflict,
+  canChooseRole,
+  activeCategory,
 }: Props) {
   const distinctTeam = teamName.trim().toLowerCase() !== schoolName.trim().toLowerCase();
   const actions = representativeNowActions({
@@ -84,6 +84,7 @@ export function RepresentativeDashboard({
     coachMissing,
   });
   const location = schoolCity ? `${schoolName} · ${schoolCity}` : schoolName;
+  const ownWorkspace = workspace && workspace.registration.teamId === teamId ? workspace : null;
 
   return (
     <div className={styles.canvas}>
@@ -96,6 +97,24 @@ export function RepresentativeDashboard({
       <WindowNotice edition={editionWindow} />
 
       <section className={styles.section}>
+        {canChooseRole ? <RepresentativeRoleForm teamId={teamId} /> : null}
+        {activeCategory && ownWorkspace ? (
+          <>
+            <h2>{it.repRoleTitle}</h2>
+            <p className={styles.lead}>
+              {activeCategory === "STAFF" ? it.repRoleActiveStaff : it.repRoleActivePlayer}
+            </p>
+            <RepresentativeRegistration teamId={teamId} category={activeCategory} workspace={ownWorkspace} />
+          </>
+        ) : canChooseRole ? null : (
+          <>
+            <h2>{it.repRoleTitle}</h2>
+            <p className={styles.lead}>{it.repRoleNoneHelp}</p>
+          </>
+        )}
+      </section>
+
+      <section className={styles.section}>
         <h2>{it.areaTeamStatus}</h2>
         <RosterStrip counts={counts} />
         <p className={styles.note}>
@@ -103,8 +122,6 @@ export function RepresentativeDashboard({
           {coachName ? ` · ${it.coachCurrent}: ${coachName}` : ""}
           {coachMissing ? ` · ${it.coachMissing}` : ""}
         </p>
-        {staffPlayerConflict ? <p className={styles.note}>{it.repStaffPlayerConflict}</p> : null}
-        {showStaffJoin ? <JoinAsStaffForm teamId={teamId} /> : null}
       </section>
 
       <section className={styles.section}>
@@ -161,17 +178,6 @@ export function RepresentativeDashboard({
             ))}
           </ul>
         </section>
-      ) : null}
-
-      {workspace ? (
-        <PersonalRegistrationPanel
-          status={workspace.projectedStatus}
-          checklist={workspace.checklist}
-          medicalStatus={workspace.evidence.medicalStatus}
-          category={workspace.registration.category}
-          publication={workspace.publication}
-          shirtSizeDue={workspace.shirtSizeOnlyGap}
-        />
       ) : null}
     </div>
   );

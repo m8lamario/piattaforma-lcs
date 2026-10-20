@@ -28,10 +28,11 @@ export type StaffRegistrationRef = {
   status: string;
 };
 
-export function decideRepresentativeStaffJoin(input: {
+export function decideRepresentativeJoin(input: {
   userId: string;
   teamId: string;
   editionId: string;
+  category: ParticipantCategory;
   occupiedStaff: number;
   registration: StaffRegistrationRef | null;
 }) {
@@ -42,18 +43,29 @@ export function decideRepresentativeStaffJoin(input: {
   if (row && staffOccupiesSlot(row.status) && (row.teamId !== input.teamId || row.editionId !== input.editionId)) {
     return { ok: false as const, reason: "edition_conflict" as const };
   }
-  if (row && row.teamId === input.teamId && row.category === "PLAYER" && staffOccupiesSlot(row.status)) {
+  if (row && row.teamId === input.teamId && staffOccupiesSlot(row.status) && row.category !== input.category) {
     return { ok: false as const, reason: "category_conflict" as const };
   }
-  if (row && row.teamId === input.teamId && row.category === "STAFF" && staffOccupiesSlot(row.status)) {
+  if (row && row.teamId === input.teamId && staffOccupiesSlot(row.status) && row.category === input.category) {
     return { ok: true as const, action: "already" as const, registrationId: row.id };
   }
-  const needsSlot = !row || row.category !== "STAFF" || !staffOccupiesSlot(row.status);
+  const needsSlot =
+    input.category === "STAFF" && (!row || row.category !== "STAFF" || !staffOccupiesSlot(row.status));
   if (needsSlot && !staffAdmission(input.occupiedStaff).ok) {
     return { ok: false as const, reason: "staff_limit" as const };
   }
   if (row) return { ok: true as const, action: "reopen" as const, registrationId: row.id };
   return { ok: true as const, action: "create" as const };
+}
+
+export function decideRepresentativeStaffJoin(input: {
+  userId: string;
+  teamId: string;
+  editionId: string;
+  occupiedStaff: number;
+  registration: StaffRegistrationRef | null;
+}) {
+  return decideRepresentativeJoin({ ...input, category: "STAFF" });
 }
 
 export type CoachRegistrationRef = {

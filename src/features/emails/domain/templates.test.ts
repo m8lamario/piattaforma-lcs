@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { appOrigin } from "@/shared/config/app";
 import { interpolateTemplate, invalidTemplateVariables, redactSecretVariables } from "./variables";
 import { EMAIL_TEMPLATE_KEYS } from "./catalog";
 import { defaultEmailTemplates, renderEmailContent } from "./templates";
@@ -197,5 +198,19 @@ describe("template email", () => {
     expect(custom.html).toContain(EMAIL_LOGO_PATH);
     expect(custom.html).toContain("Messaggio libero");
     expect(custom.html).toContain("https://hub.test/area");
+  });
+
+  it("senza origine esplicita usa appOrigin per logo e link legali", () => {
+    const origin = appOrigin();
+    const message = renderEmailContent({
+      template: defaultEmailTemplates().EMAIL_VERIFY,
+      variables: { codice: "482913", scadenza: "24 ore", areaUrl: `${origin}/verifica-email` },
+    });
+    expect(message.html).toContain(`${origin}${EMAIL_LOGO_PATH}`);
+    expect(message.html).toContain(`${origin}/privacy`);
+    expect(message.html).toContain(`${origin}/liberatorie`);
+    expect(message.html).toContain(`${origin}/termini`);
+    expect(message.html).toContain(`${origin}/cookie`);
+    expect(message.html).toContain(`${origin}/verifica-email`);
   });
 });

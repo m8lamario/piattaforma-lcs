@@ -38,6 +38,7 @@ export const ALLOWED_DOCUMENT_MIME = [
 
 export const APP_NAME = "ESL Player Hub";
 
+/** Origine pubblica: link email, checkout e inviti. In produzione AUTH_URL è l’URL canonico. */
 export function appOrigin() {
   return (process.env.AUTH_URL ?? "http://localhost:3000").replace(/\/$/, "");
 }

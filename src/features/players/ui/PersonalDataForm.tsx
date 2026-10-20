@@ -34,6 +34,8 @@ type Props = {
   registrationId: string;
   requireShirtSize?: boolean;
   identityConflict?: { code: ErrorCode } | null;
+  returnToArea?: boolean;
+  onPause?: () => void;
   defaults: {
     firstName: string;
     lastName: string;
@@ -50,6 +52,8 @@ export function PersonalDataForm({
   registrationId,
   identityConflict,
   requireShirtSize = true,
+  returnToArea = false,
+  onPause,
 }: Props) {
   const [state, action, pending] = useActionState(savePersonalDataAction, undefined);
   const schema = requireShirtSize ? personalDataSchema : staffPersonalDataSchema;
@@ -83,7 +87,7 @@ export function PersonalDataForm({
         data.set("fiscalCode", values.fiscalCode);
         data.set("phone", values.phone);
         if (requireShirtSize && values.shirtSize) data.set("shirtSize", values.shirtSize);
-        data.set("intent", intent);
+        data.set("intent", returnToArea ? "exit" : intent);
         startTransition(() => {
           action(data);
         });
@@ -259,10 +263,19 @@ export function PersonalDataForm({
         <Button type="button" disabled={pending} aria-busy={pending} onClick={() => submit("continue")}>
           {pending ? it.saving : it.saveContinue}
         </Button>
-        <Button type="button" variant="ghost" disabled={pending} onClick={() => submit("exit")}>
-          {it.saveExit}
-        </Button>
-        <WizardLaterButton />
+        {onPause ? (
+          <Button type="button" variant="ghost" disabled={pending} onClick={onPause}>
+            {it.repRolePause}
+          </Button>
+        ) : null}
+        {returnToArea ? null : (
+          <>
+            <Button type="button" variant="ghost" disabled={pending} onClick={() => submit("exit")}>
+              {it.saveExit}
+            </Button>
+            <WizardLaterButton />
+          </>
+        )}
       </div>
     </form>
   );
