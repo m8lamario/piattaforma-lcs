@@ -170,6 +170,7 @@ export async function listPaymentsAdmin() {
       provider: true,
       createdAt: true,
       paidAt: true,
+      bankTransfer: { select: { reference: true } },
       team: { select: { name: true } },
       edition: { select: { name: true, competition: { select: { name: true } } } },
       registration: {

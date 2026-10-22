@@ -231,6 +231,25 @@ export const ERROR_CATALOG: Record<ErrorCode, ErrorDefinition> = {
     409,
     "none",
   ),
+  PAYMENT_FEE_MISSING: def(
+    "PAYMENTS",
+    "Nessuna quota positiva: manca l’override squadra e la predefinita di edizione.",
+    400,
+    "none",
+  ),
+  PAYMENT_BANK_NOTHING_DUE: def(
+    "PAYMENTS",
+    "Bonifico rifiutato: la squadra non ha quote scoperte.",
+    409,
+    "none",
+    { severity: "info" },
+  ),
+  PAYMENT_BANK_DUPLICATE: def(
+    "PAYMENTS",
+    "Riferimento bonifico già registrato sulla stessa squadra.",
+    409,
+    "correct_input",
+  ),
   PAYMENT_GUARDIAN_REQUIRED: def(
     "PAYMENTS",
     "Checkout giocatore minore senza autorizzazione di iscrizione del genitore.",

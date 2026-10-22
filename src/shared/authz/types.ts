@@ -23,6 +23,8 @@ export const ACTIONS = [
   "staff:invite",
   "payment:create_player",
   "payment:create_team",
+  "payment:record_transfer",
+  "fee:manage",
   "admin:manage",
   "platform:admin",
   "team:remove_player",

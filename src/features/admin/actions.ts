@@ -32,6 +32,8 @@ import { fail, failValidation, type ActionFailure, type ActionState } from "@/sh
 import { anonymizeUserAccount, deleteUserAccount } from "@/features/admin/data/lifecycle";
 import { anonymizeAccountSchema, deleteAccountSchema } from "@/features/admin/schemas/lifecycle";
 import { appOrigin } from "@/shared/config/app";
+import { parseEuroToCents } from "@/features/payments/domain/fees";
+import { saveEditionDefaultFees, saveTeamFeeOverrides } from "@/features/admin/data/team-fees";
 
 function parseOptionalDate(value?: string) {
   if (!value?.trim()) return null;
@@ -43,6 +45,24 @@ function parseOptionalAmount(value?: string) {
   if (!value?.trim()) return null;
   const amount = Number(value.replace(",", "."));
   return Number.isFinite(amount) ? amount : null;
+}
+
+function decimalAmount(value: { toString(): string } | null | undefined) {
+  if (value == null) return null;
+  const amount = Number(value.toString());
+  return Number.isFinite(amount) ? amount : null;
+}
+
+function optionalFeeCents(raw: string) {
+  if (!raw.trim()) return { ok: true as const, cents: null };
+  const parsed = parseEuroToCents(raw);
+  return parsed.ok ? { ok: true as const, cents: parsed.cents } : { ok: false as const };
+}
+
+async function requireFeeActor() {
+  const access = await requireAdminActor();
+  if (!authorize(access.actor, "fee:manage").allow) return fail("FORBIDDEN_RESOURCE");
+  return access;
 }
 
 function requirementsFromForm(formData: FormData) {
@@ -62,7 +82,8 @@ async function requireAdminActor() {
 }
 
 export async function createEditionAction(_prev: ActionFailure | undefined, formData: FormData) {
-  const { session } = await requireAdminActor();
+  const { session, actor } = await requireAdminActor();
+  const canFees = authorize(actor, "fee:manage").allow;
   const parsed = editionFormSchema.safeParse({
     competitionName: formData.get("competitionName"),
     editionName: formData.get("editionName"),
@@ -80,9 +101,9 @@ export async function createEditionAction(_prev: ActionFailure | undefined, form
   }
   const created = await createCompetitionWithEdition({
     ...parsed.data,
-    playerFeeAmount: parseOptionalAmount(parsed.data.playerFeeAmount),
-    staffFeeAmount: parseOptionalAmount(parsed.data.staffFeeAmount) ?? 5,
-    teamFeeAmount: parseOptionalAmount(parsed.data.teamFeeAmount),
+    playerFeeAmount: canFees ? parseOptionalAmount(parsed.data.playerFeeAmount) : null,
+    staffFeeAmount: canFees ? (parseOptionalAmount(parsed.data.staffFeeAmount) ?? 5) : 5,
+    teamFeeAmount: canFees ? parseOptionalAmount(parsed.data.teamFeeAmount) : null,
     isActive: parsed.data.isActive === "on",
     registrationOpensAt: parseOptionalDate(parsed.data.registrationOpensAt),
     registrationClosesAt: parseOptionalDate(parsed.data.registrationClosesAt),
@@ -100,7 +121,8 @@ export async function createEditionAction(_prev: ActionFailure | undefined, form
 }
 
 export async function updateEditionAction(_prev: ActionFailure | undefined, formData: FormData) {
-  const { session } = await requireAdminActor();
+  const { session, actor } = await requireAdminActor();
+  const canFees = authorize(actor, "fee:manage").allow;
   const id = String(formData.get("id") ?? "");
   const existing = await getEditionAdmin(id);
   if (!existing) return fail("EDITION_NOT_FOUND");
@@ -124,9 +146,11 @@ export async function updateEditionAction(_prev: ActionFailure | undefined, form
     name: parsed.data.editionName,
     year: parsed.data.year,
     paymentMode: parsed.data.paymentMode,
-    playerFeeAmount: parseOptionalAmount(parsed.data.playerFeeAmount),
-    staffFeeAmount: parseOptionalAmount(parsed.data.staffFeeAmount) ?? 5,
-    teamFeeAmount: parseOptionalAmount(parsed.data.teamFeeAmount),
+    playerFeeAmount: canFees ? parseOptionalAmount(parsed.data.playerFeeAmount) : decimalAmount(existing.playerFeeAmount),
+    staffFeeAmount: canFees
+      ? (parseOptionalAmount(parsed.data.staffFeeAmount) ?? 5)
+      : (decimalAmount(existing.staffFeeAmount) ?? 5),
+    teamFeeAmount: canFees ? parseOptionalAmount(parsed.data.teamFeeAmount) : decimalAmount(existing.teamFeeAmount),
     isActive: parsed.data.isActive === "on",
     registrationOpensAt: parseOptionalDate(parsed.data.registrationOpensAt),
     registrationClosesAt: parseOptionalDate(parsed.data.registrationClosesAt),
@@ -359,4 +383,92 @@ export async function anonymizeAccountAction(
   revalidatePath(`/admin/utenti/${parsed.data.userId}`);
   revalidatePath("/admin/audit");
   redirect(`/admin/utenti/${parsed.data.userId}?done=anonymized`);
+}
+
+export async function saveEditionDefaultFeesAction(
+  _prev: ActionState<{ saved?: boolean }> | undefined,
+  formData: FormData,
+): Promise<ActionState<{ saved?: boolean }>> {
+  const access = await requireFeeActor();
+  if (!("session" in access)) return access;
+  if (formData.get("confirm") !== "yes") return failValidation(itFeeConfirm());
+  const editionId = String(formData.get("editionId") ?? "");
+  const player = optionalFeeCents(String(formData.get("playerFee") ?? ""));
+  const staff = parseEuroToCents(String(formData.get("staffFee") ?? ""));
+  const team = optionalFeeCents(String(formData.get("teamFee") ?? ""));
+  if (!player.ok || !staff.ok || !team.ok) return failValidation(itFeeInvalid());
+  const edition = await getEditionAdmin(editionId);
+  if (!edition) return fail("EDITION_NOT_FOUND");
+  await saveEditionDefaultFees({
+    editionId,
+    playerFeeCents: player.cents,
+    staffFeeCents: staff.cents,
+    teamFeeCents: team.cents,
+  });
+  await writeAuditLog({
+    actorUserId: access.session.user.id,
+    action: "EDITION_FEES_UPDATE",
+    entityType: "Edition",
+    entityId: editionId,
+    metadata: {
+      playerFeeCents: player.cents,
+      staffFeeCents: staff.cents,
+      teamFeeCents: team.cents,
+    },
+  });
+  revalidatePath(`/admin/edizioni/${editionId}`);
+  revalidatePath(`/admin/edizioni/${editionId}/quote`);
+  revalidatePath("/area");
+  revalidatePath("/squadra");
+  return { saved: true as const };
+}
+
+export async function saveTeamFeesAction(
+  _prev: ActionState<{ saved?: boolean }> | undefined,
+  formData: FormData,
+): Promise<ActionState<{ saved?: boolean }>> {
+  const access = await requireFeeActor();
+  if (!("session" in access)) return access;
+  if (formData.get("confirm") !== "yes") return failValidation(itFeeConfirm());
+  const editionId = String(formData.get("editionId") ?? "");
+  const teamId = String(formData.get("teamId") ?? "");
+  const player = optionalFeeCents(String(formData.get("playerFee") ?? ""));
+  const staff = optionalFeeCents(String(formData.get("staffFee") ?? ""));
+  const team = optionalFeeCents(String(formData.get("teamFee") ?? ""));
+  if (!player.ok || !staff.ok || !team.ok) return failValidation(itFeeInvalid());
+  const saved = await saveTeamFeeOverrides({
+    editionId,
+    teamId,
+    playerFeeCents: player.cents,
+    staffFeeCents: staff.cents,
+    teamFeeCents: team.cents,
+  });
+  if (!saved) return fail("TEAM_NOT_FOUND");
+  await writeAuditLog({
+    actorUserId: access.session.user.id,
+    action: "TEAM_FEES_UPDATE",
+    entityType: "Team",
+    entityId: teamId,
+    metadata: {
+      editionId,
+      playerFeeCents: player.cents,
+      staffFeeCents: staff.cents,
+      teamFeeCents: team.cents,
+      previousPlayerFeeCents: saved.previous.playerFeeCents,
+      previousStaffFeeCents: saved.previous.staffFeeCents,
+      previousTeamFeeCents: saved.previous.teamFeeCents,
+    },
+  });
+  revalidatePath(`/admin/edizioni/${editionId}/quote`);
+  revalidatePath("/area");
+  revalidatePath("/squadra");
+  return { saved: true as const };
+}
+
+function itFeeInvalid() {
+  return "Inserisci un importo in euro maggiore di zero, con al massimo due decimali.";
+}
+
+function itFeeConfirm() {
+  return "Conferma le modifiche prima di salvare le quote.";
 }

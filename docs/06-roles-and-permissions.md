@@ -88,6 +88,8 @@ type Action =
   | "staff:invite"
   | "payment:create_player"
   | "payment:create_team"
+  | "payment:record_transfer"
+  | "fee:manage"
   | "admin:manage"
   | "platform:admin"
   | "team:remove_player"
@@ -111,7 +113,7 @@ Nessun bypass `if (role === SUPER_ADMIN) return true` sparso nelle pagine: il su
 - Il form `/richiedi-accesso` non concede ruoli. Approvare o rifiutare richiede `admin:manage`. Il richiedente non può auto-approvarsi né ricevere `ORGANIZATION_ADMIN` / `SUPER_ADMIN`.
 - Il codice invito giocatore non concede admin né ruolo rappresentante.
 - Le API admin vivono sotto `/admin` **e** sotto check ruolo, entrambi necessari.
-- `staff:invite` e `admin:manage` per Org/Super Admin; `platform:admin`, `user:delete`, `user:anonymize`, `email:compose`, `media:manage` solo Super Admin.
+- `staff:invite` e `admin:manage` per Org/Super Admin; `platform:admin`, `user:delete`, `user:anonymize`, `email:compose`, `media:manage`, `fee:manage`, `payment:record_transfer` solo Super Admin. `fee:manage` crea e modifica le quote di edizione e di squadra. `payment:record_transfer` registra un bonifico di squadra.
 - `media:verify` per account Media Partner attivo sulla competition della risorsa; Super Admin per supporto. Org Admin, revisore, rappresentante e giocatore: no.
 - `document:read_file` e `document:review` per il titolare (proprio file), `MEDICAL_REVIEWER` e Super Admin. Org Admin e rappresentante: solo `document:read_status`.
 - `email:read` e `email:send` allo staff (Org Admin / Super Admin). Rep, giocatore, organizer e revisore certificati no.

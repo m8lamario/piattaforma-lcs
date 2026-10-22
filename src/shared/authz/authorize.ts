@@ -52,7 +52,7 @@ function canMediaVerify(actor: Actor, competitionId?: string) {
   return actor.mediaPartner.competitionIds.includes(competitionId);
 }
 
-const SUPER_ONLY: Action[] = ["platform:admin", "user:delete", "user:anonymize", "email:compose", "media:manage"];
+const SUPER_ONLY: Action[] = ["platform:admin", "user:delete", "user:anonymize", "email:compose", "media:manage", "fee:manage", "payment:record_transfer"];
 const ORG_ADMIN_DENIED: Action[] = [...SUPER_ONLY, "document:read_file", "document:review", "media:verify"];
 
 export function authorize(
@@ -94,6 +94,8 @@ export function authorize(
   switch (action) {
     case "platform:admin":
     case "admin:manage":
+    case "fee:manage":
+    case "payment:record_transfer":
     case "document:review":
     case "staff:invite":
     case "email:read":

@@ -27,6 +27,7 @@ const row = (overrides: Partial<PaymentRegisterRow> = {}): PaymentRegisterRow =>
   role: "Staff tecnico",
   status: "Riuscito",
   transactionId: "pi_1",
+  method: "Stripe",
   ...overrides,
 });
 
@@ -44,6 +45,8 @@ describe("registro pagamenti", () => {
     expect(columns[4]).toBe("");
     expect(columns[5]).toBe("");
     expect(columns[8]).toBe("Via Roma 1");
+    expect(csv).toContain("Metodo");
+    expect(csv).toContain("Stripe");
     expect(paymentRoleLabel({ category: "PLAYER", teamFee: false })).toBe("Giocatore");
     expect(paymentRoleLabel({ category: "STAFF", teamFee: false })).toBe("Staff tecnico");
     expect(paymentRoleLabel({ category: null, teamFee: true })).toBe("Quota squadra");

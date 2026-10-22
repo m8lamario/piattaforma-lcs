@@ -10,11 +10,12 @@ import fields from "@/shared/ui/form.module.css";
 type Props = {
   teamId: string;
   covered: boolean;
-  amount: number | null;
+  amountLabel: string | null;
+  missing: boolean;
   currency: string;
 };
 
-export function TeamPaymentForm({ teamId, covered, amount, currency }: Props) {
+export function TeamPaymentForm({ teamId, covered, amountLabel, missing, currency }: Props) {
   const [state, action, pending] = useActionState(async () => startTeamCheckoutAction(teamId), undefined);
 
   if (covered) {
@@ -24,8 +25,13 @@ export function TeamPaymentForm({ teamId, covered, amount, currency }: Props) {
       </p>
     );
   }
-  if (amount === null) {
-    return null;
+  if (missing || !amountLabel) {
+    return (
+      <div className={fields.form}>
+        <h2 className={fields.heading}>{it.paymentTeamTitle}</h2>
+        <p className={`${fields.banner} ${fields.bannerInfo}`}>{it.paymentFeeMissing}</p>
+      </div>
+    );
   }
 
   return (
@@ -35,10 +41,10 @@ export function TeamPaymentForm({ teamId, covered, amount, currency }: Props) {
       <p className={fields.amount}>
         <span>{it.paymentAmount}</span>
         <strong>
-          {amount} {currency}
+          {amountLabel} {currency}
         </strong>
       </p>
-      <p className={fields.help}>{it.paymentPlaceholderFee}</p>
+      <p className={fields.help}>{it.paymentFeeConfirm}</p>
       {state?.error ? <ActionError error={state.error} code={state.code} /> : null}
       <Button type="submit" variant="success" icon="payment" disabled={pending} aria-busy={pending}>
         {pending ? it.redirecting : it.paymentPay}

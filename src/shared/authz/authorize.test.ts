@@ -136,6 +136,10 @@ describe("authorize deny-by-default", () => {
 
   it("consente al super admin ogni azione", () => {
     expect(authorize(superAdmin, "platform:admin").allow).toBe(true);
+    expect(authorize(superAdmin, "fee:manage").allow).toBe(true);
+    expect(authorize(orgAdmin, "fee:manage").allow).toBe(false);
+    expect(authorize(superAdmin, "payment:record_transfer").allow).toBe(true);
+    expect(authorize(orgAdmin, "payment:record_transfer").allow).toBe(false);
     expect(authorize(superAdmin, "document:read_file", ownDoc).allow).toBe(true);
   });
 

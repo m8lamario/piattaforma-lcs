@@ -57,7 +57,7 @@
   padding: var(--space-5);
   display: grid;
   gap: var(--space-4);
-  position: sticky;
+  position: relative;
   top: calc(var(--space-4) + 1px);
 }
 
@@ -327,6 +327,19 @@
   .sideCard {
     position: static;
   }
+}
+
+.feeGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  gap: var(--space-3);
+}
+
+.confirmList {
+  margin: 0;
+  padding-left: 1.1rem;
+  display: grid;
+  gap: var(--space-2);
 }
 
 @media (max-width: 959px) {

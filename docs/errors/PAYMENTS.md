@@ -15,3 +15,6 @@ Doppio click / tab chiuso a metà: si **riusa** il Payment `PENDING` (nuovo chec
 | PAYMENT_NOT_FOUND | PAYMENTS | paymentId assente | URL | Pagamento non trovato | Nessuno | esito |
 | PAYMENT_SCOPE_MISMATCH | PAYMENTS | teamId o registrationId di un'altra edition | Scope incoerente | Pagamento non appartenente a squadra o edizione | Nessuno | claim checkout |
 | PAYMENT_GUARDIAN_REQUIRED | PAYMENTS | Checkout giocatore minore senza autorizzazione di iscrizione | Manca GuardianAuthorization AUTHORIZED | Il pagamento si apre dopo l’autorizzazione del genitore | Attendi | player checkout |
+| PAYMENT_FEE_MISSING | PAYMENTS | Nessuna quota positiva | Manca override squadra e predefinita edizione | Il pagamento non parte | Nessuno | checkout |
+| PAYMENT_BANK_NOTHING_DUE | PAYMENTS | Nessuna quota scoperta | Bonifico su squadra già saldata | Non c’è nulla da saldare | Nessuno | bonifico squadra |
+| PAYMENT_BANK_DUPLICATE | PAYMENTS | Riferimento già usato sulla squadra | Secondo invio dello stesso CRO | Riferimento già registrato | Correggi | bonifico squadra |

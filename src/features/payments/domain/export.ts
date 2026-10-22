@@ -18,6 +18,7 @@ export type PaymentRegisterRow = {
   role: string;
   status: string;
   transactionId: string;
+  method: string;
 };
 
 export const PAYMENT_REGISTER_HEADERS = [
@@ -40,7 +41,15 @@ export const PAYMENT_REGISTER_HEADERS = [
   "Ruolo",
   "Stato pagamento",
   "ID transazione",
+  "Metodo",
 ] as const;
+
+export function paymentMethodLabel(provider: string) {
+  if (provider === "bank_transfer") return "Bonifico";
+  if (provider === "stripe") return "Stripe";
+  if (provider === "stub") return "Simulazione";
+  return provider;
+}
 
 export function paymentRoleLabel(input: { category: "PLAYER" | "STAFF" | null; teamFee: boolean }) {
   if (input.category === "STAFF") return "Staff tecnico";
@@ -112,6 +121,7 @@ export function paymentsToCsv(rows: PaymentRegisterRow[]) {
         row.role,
         row.status,
         row.transactionId,
+        row.method,
       ]
         .map(csvCell)
         .join(";"),
