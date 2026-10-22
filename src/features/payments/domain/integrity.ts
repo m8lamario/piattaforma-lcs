@@ -1,3 +1,4 @@
+import type { FeeResolution } from "@/features/payments/domain/fees";
 import type { ErrorCode } from "@/shared/errors";
 
 export function playerCheckoutBlocker(input: {
@@ -15,6 +16,19 @@ export function teamCheckoutBlocker(input: {
 }): ErrorCode | null {
   if (input.covered) return "PAYMENT_ALREADY_COMPLETED";
   if (input.amount === null) return "PAYMENT_PLAYER_PAYS";
+  return null;
+}
+
+export function feeCheckoutBlocker(input: {
+  covered: boolean;
+  fee: FeeResolution;
+  channel: "player" | "team";
+}): ErrorCode | null {
+  if (input.covered) return "PAYMENT_ALREADY_COMPLETED";
+  if (input.fee.status === "not_due") {
+    return input.channel === "player" ? "PAYMENT_TEAM_PAYS" : "PAYMENT_PLAYER_PAYS";
+  }
+  if (input.fee.status === "missing") return "PAYMENT_FEE_MISSING";
   return null;
 }
 

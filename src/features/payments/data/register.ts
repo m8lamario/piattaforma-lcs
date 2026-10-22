@@ -2,6 +2,7 @@ import { prisma } from "@/shared/lib/prisma";
 import {
   exportIdentity,
   paymentDateLabel,
+  paymentMethodLabel,
   paymentRoleLabel,
   paymentStatusLabel,
   paymentsToCsv,
@@ -15,8 +16,10 @@ export async function buildPaymentRegisterCsv() {
       amount: true,
       currency: true,
       status: true,
+      provider: true,
       paidAt: true,
       providerPaymentId: true,
+      bankTransfer: { select: { reference: true } },
       billingName: true,
       billingEmail: true,
       billingLine1: true,
@@ -68,7 +71,8 @@ export async function buildPaymentRegisterCsv() {
         teamFee,
       }),
       status: paymentStatusLabel(payment.status),
-      transactionId: payment.providerPaymentId?.trim() ?? "",
+      transactionId: payment.providerPaymentId?.trim() || payment.bankTransfer?.reference?.trim() || "",
+      method: paymentMethodLabel(payment.provider),
     };
   });
 

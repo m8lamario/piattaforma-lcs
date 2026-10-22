@@ -4,6 +4,7 @@ import { getEditionAdmin } from "@/features/admin/data/catalog";
 import { listEditionTeamsAdmin } from "@/features/admin/data/edition-teams";
 import { decimalText, toDatetimeLocalValue } from "@/features/admin/domain/format";
 import { AdminFrame } from "@/features/admin/ui/AdminFrame";
+import { isSuperAdmin } from "@/shared/authz/getActor";
 import { requireStaff } from "@/shared/authz/requireStaff";
 import { EditionDeleteForm, EditionForm } from "@/features/admin/ui/EditionForm";
 import { ButtonLink } from "@/shared/ui/Button";
@@ -29,14 +30,27 @@ export default async function AdminEditionDetailPage({ params }: Props) {
         title={edition.name}
         description={`${it.adminTeamsCount}: ${edition._count.teams} · ${it.adminRegistrationsCount}: ${edition._count.registrations}`}
         aside={
-          <ButtonLink href={`/admin/edizioni/${id}/export`} variant="secondary" icon="download">
-            {it.adminEditionTeamsExport}
-          </ButtonLink>
+          <>
+            {isSuperAdmin(actor) ? (
+              <ButtonLink href={`/admin/edizioni/${id}/quote`} variant="secondary">
+                {it.adminFeesLink}
+              </ButtonLink>
+            ) : null}
+            {isSuperAdmin(actor) ? (
+              <ButtonLink href={`/admin/pagamenti/bonifico?editionId=${id}`} variant="secondary">
+                {it.adminBankLink}
+              </ButtonLink>
+            ) : null}
+            <ButtonLink href={`/admin/edizioni/${id}/export`} variant="secondary" icon="download">
+              {it.adminEditionTeamsExport}
+            </ButtonLink>
+          </>
         }
       />
       {edition._count.registrations > 0 ? <p className={styles.meta}>{it.adminEditionHasRegistrations}</p> : null}
       <EditionForm
         mode="edit"
+        canManageFees={isSuperAdmin(actor)}
         edition={{
           id: edition.id,
           name: edition.name,

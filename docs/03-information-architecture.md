@@ -57,12 +57,14 @@ Un utente può avere più ruoli (es. rappresentante che è anche giocatore). La 
 /admin/edizioni
 /admin/edizioni/[id]
 /admin/edizioni/[id]/export     CSV scuole/squadre dell’edizione (`admin:manage`)
+/admin/edizioni/[id]/quote      quote predefinite e per squadra (`fee:manage`, solo Super Admin)
 /admin/informative             versioni correnti; avviso a chi ha una versione superata (azione confermata)
 /admin/comunicazioni           storico invii, filtri, retry
 /admin/comunicazioni/nuova     invio manuale a un User esistente
 /admin/comunicazioni/template  lettura staff; modifica Super Admin
 /admin/comunicazioni/[id]      dettaglio, eventi, corpo redatto
 /admin/pagamenti
+/admin/pagamenti/bonifico    bonifico di squadra (`payment:record_transfer`, solo Super Admin)
 /admin/utenti                  Super Admin: chiusura / anonimizzazione account
 /admin/utenti/[id]
 /admin/audit

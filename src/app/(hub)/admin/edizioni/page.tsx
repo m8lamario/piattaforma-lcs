@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { listCompetitionsWithEditions } from "@/features/admin/data/catalog";
 import { AdminFrame } from "@/features/admin/ui/AdminFrame";
+import { isSuperAdmin } from "@/shared/authz/getActor";
 import { requireStaff } from "@/shared/authz/requireStaff";
 import { EditionForm } from "@/features/admin/ui/EditionForm";
 import { PageHeader } from "@/shared/ui/PageHeader";
@@ -39,7 +40,7 @@ export default async function AdminEditionsPage() {
         <aside className={styles.colSide}>
           <div className={styles.sideCard}>
             <h2 className={styles.sectionTitle}>{it.adminCreateEdition}</h2>
-            <EditionForm mode="create" />
+            <EditionForm mode="create" canManageFees={isSuperAdmin(actor)} />
           </div>
         </aside>
       </div>

@@ -1,51 +1,68 @@
-import { DEFAULT_STAFF_FEE_EUR, type ParticipantCategory } from "@/features/teams/domain/staff";
+import type { ParticipantCategory } from "@/features/teams/domain/staff";
+import { resolveParticipantFee, resolveTeamFee, type PaymentMode } from "./fees";
 
-export function demoFeeIfMissing(amount: { toString(): string } | number | null | undefined) {
-  if (amount === null || amount === undefined) return 40;
-  const value = typeof amount === "number" ? amount : Number(amount.toString());
-  if (!Number.isFinite(value) || value <= 0) return 40;
-  return value;
-}
+type Money = { toString(): string } | number | null | undefined;
 
 export function playerCheckoutAmount(input: {
-  paymentMode: "PLAYER" | "TEAM" | "BOTH";
-  playerFeeAmount: { toString(): string } | number | null | undefined;
+  paymentMode: PaymentMode;
+  playerFeeAmount: Money;
+  playerFeeCents?: number | null;
 }) {
-  if (input.paymentMode === "TEAM") return null;
-  return demoFeeIfMissing(input.playerFeeAmount);
+  const fee = resolveParticipantFee({
+    category: "PLAYER",
+    paymentMode: input.paymentMode,
+    teamPlayerFeeCents: input.playerFeeCents ?? null,
+    teamStaffFeeCents: null,
+    editionPlayerFee: input.playerFeeAmount,
+    editionStaffFee: null,
+  });
+  return fee.status === "ready" ? fee.cents : null;
 }
 
 export function teamCheckoutAmount(input: {
-  paymentMode: "PLAYER" | "TEAM" | "BOTH";
-  teamFeeAmount: { toString(): string } | number | null | undefined;
+  paymentMode: PaymentMode;
+  teamFeeAmount: Money;
+  teamFeeCents?: number | null;
 }) {
-  if (input.paymentMode === "PLAYER") return null;
-  return demoFeeIfMissing(input.teamFeeAmount);
-}
-
-function positiveAmount(amount: { toString(): string } | number | null | undefined) {
-  if (amount === null || amount === undefined) return null;
-  const value = typeof amount === "number" ? amount : Number(amount.toString());
-  if (!Number.isFinite(value) || value <= 0) return null;
-  return value;
+  const fee = resolveTeamFee({
+    paymentMode: input.paymentMode,
+    teamFeeCents: input.teamFeeCents ?? null,
+    editionTeamFee: input.teamFeeAmount,
+  });
+  return fee.status === "ready" ? fee.cents : null;
 }
 
 export function staffCheckoutAmount(input: {
-  paymentMode: "PLAYER" | "TEAM" | "BOTH";
-  staffFeeAmount: { toString(): string } | number | null | undefined;
+  paymentMode: PaymentMode;
+  staffFeeAmount: Money;
+  staffFeeCents?: number | null;
 }) {
-  if (input.paymentMode === "TEAM") return null;
-  return positiveAmount(input.staffFeeAmount) ?? DEFAULT_STAFF_FEE_EUR;
+  const fee = resolveParticipantFee({
+    category: "STAFF",
+    paymentMode: input.paymentMode,
+    teamPlayerFeeCents: null,
+    teamStaffFeeCents: input.staffFeeCents ?? null,
+    editionPlayerFee: null,
+    editionStaffFee: input.staffFeeAmount,
+  });
+  return fee.status === "ready" ? fee.cents : null;
 }
 
 export function participantCheckoutAmount(input: {
   category: ParticipantCategory;
-  paymentMode: "PLAYER" | "TEAM" | "BOTH";
-  playerFeeAmount: { toString(): string } | number | null | undefined;
-  staffFeeAmount: { toString(): string } | number | null | undefined;
+  paymentMode: PaymentMode;
+  playerFeeAmount: Money;
+  staffFeeAmount: Money;
+  playerFeeCents?: number | null;
+  staffFeeCents?: number | null;
 }) {
-  if (input.category === "STAFF") {
-    return staffCheckoutAmount({ paymentMode: input.paymentMode, staffFeeAmount: input.staffFeeAmount });
-  }
-  return playerCheckoutAmount({ paymentMode: input.paymentMode, playerFeeAmount: input.playerFeeAmount });
+  const fee = resolveParticipantFee({
+    category: input.category,
+    paymentMode: input.paymentMode,
+    teamPlayerFeeCents: input.playerFeeCents ?? null,
+    teamStaffFeeCents: input.staffFeeCents ?? null,
+    editionPlayerFee: input.playerFeeAmount,
+    editionStaffFee: input.staffFeeAmount,
+  });
+  return fee.status === "ready" ? fee.cents : null;
 }

@@ -11,12 +11,12 @@ import fields from "@/shared/ui/form.module.css";
 type Props = {
   covered: boolean;
   teamOnly: boolean;
-  amount: number | null;
+  amountLabel: string | null;
+  missing: boolean;
   currency: string;
-  developmentNote?: boolean;
 };
 
-export function PlayerPaymentForm({ covered, teamOnly, amount, currency, developmentNote = true }: Props) {
+export function PlayerPaymentForm({ covered, teamOnly, amountLabel, missing, currency }: Props) {
   const [state, action, pending] = useActionState(async () => startPlayerCheckoutAction(), undefined);
 
   if (covered) {
@@ -41,17 +41,27 @@ export function PlayerPaymentForm({ covered, teamOnly, amount, currency, develop
       </div>
     );
   }
+  if (missing || !amountLabel) {
+    return (
+      <div className={fields.form}>
+        <p className={`${fields.banner} ${fields.bannerInfo}`}>{it.paymentFeeMissing}</p>
+        <div className={`${fields.actions} ${fields.sticky}`}>
+          <ButtonLink href="/area/registrazione">{it.ctaContinue}</ButtonLink>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <form className={fields.form} action={action} aria-busy={pending}>
       <p className={fields.amount}>
         <span>{it.paymentAmount}</span>
         <strong>
-          {amount} {currency}
+          {amountLabel} {currency}
         </strong>
       </p>
       <p className={fields.help}>{it.paymentHelp}</p>
-      <p className={fields.help}>{developmentNote ? it.paymentPlaceholderFee : it.staffFeeNote}</p>
+      <p className={fields.help}>{it.paymentFeeConfirm}</p>
       {state?.error ? <ActionError error={state.error} code={state.code} /> : null}
       <div className={`${fields.actions} ${fields.sticky}`}>
         <Button type="submit" variant="success" icon="payment" disabled={pending} aria-busy={pending}>

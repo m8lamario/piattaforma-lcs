@@ -1,4 +1,5 @@
 import { Prisma } from "@generated/client";
+import { decimalToCents } from "@/features/payments/domain/fees";
 import { isMinor, needsMediaAgreement } from "@/features/players/domain/age";
 import { notifyRegistrationApproved } from "@/features/notifications/data/notifications";
 import {
@@ -114,7 +115,10 @@ export async function loadPlayerWorkspace(userId: string) {
     authorizations,
     partnersPublished,
   ] = await Promise.all([
-    prisma.team.findUnique({ where: { id: registration.teamId }, select: { id: true, name: true } }),
+    prisma.team.findUnique({
+      where: { id: registration.teamId },
+      select: { id: true, name: true, playerFeeCents: true, staffFeeCents: true, teamFeeCents: true },
+    }),
     prisma.edition.findUnique({
       where: { id: registration.editionId },
       select: {
@@ -178,7 +182,8 @@ export async function loadPlayerWorkspace(userId: string) {
     }),
     prisma.payment.findMany({
       where: { registrationId },
-      select: { status: true },
+      orderBy: { createdAt: "desc" },
+      select: { status: true, amount: true },
     }),
     prisma.consentRecord.findMany({
       where: { registrationId },
@@ -375,6 +380,10 @@ export async function loadPlayerWorkspace(userId: string) {
       playerFeeAmount: edition.playerFeeAmount,
       staffFeeAmount: edition.staffFeeAmount,
       teamFeeAmount: edition.teamFeeAmount,
+      playerFeeCents: team.playerFeeCents,
+      staffFeeCents: team.staffFeeCents,
+      teamFeeCents: team.teamFeeCents,
+      pendingPaymentCents: decimalToCents(payments.find((payment) => payment.status === "PENDING")?.amount),
       isActive: edition.isActive,
       registrationOpensAt: edition.registrationOpensAt,
       registrationClosesAt: edition.registrationClosesAt,

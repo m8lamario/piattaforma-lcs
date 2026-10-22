@@ -8,14 +8,16 @@ describe("payment amounts and cover", () => {
     expect(teamCheckoutAmount({ paymentMode: "PLAYER", teamFeeAmount: 200 })).toBeNull();
   });
 
-  it("usa 40 EUR placeholder se l’importo edizione manca (OD-008)", () => {
-    expect(playerCheckoutAmount({ paymentMode: "PLAYER", playerFeeAmount: null })).toBe(40);
+  it("non inventa un importo se la quota di edizione manca", () => {
+    expect(playerCheckoutAmount({ paymentMode: "PLAYER", playerFeeAmount: null })).toBeNull();
+    expect(teamCheckoutAmount({ paymentMode: "TEAM", teamFeeAmount: null })).toBeNull();
+    expect(staffCheckoutAmount({ paymentMode: "PLAYER", staffFeeAmount: null })).toBeNull();
   });
 
-  it("applica allo staff la quota di edizione, 5 EUR se manca, e non quella del giocatore", () => {
-    expect(staffCheckoutAmount({ paymentMode: "PLAYER", staffFeeAmount: 5 })).toBe(5);
-    expect(staffCheckoutAmount({ paymentMode: "PLAYER", staffFeeAmount: null })).toBe(5);
+  it("applica allo staff la quota staff e al giocatore la propria, in centesimi", () => {
+    expect(staffCheckoutAmount({ paymentMode: "PLAYER", staffFeeAmount: 5 })).toBe(500);
     expect(staffCheckoutAmount({ paymentMode: "TEAM", staffFeeAmount: 5 })).toBeNull();
+    expect(playerCheckoutAmount({ paymentMode: "PLAYER", playerFeeAmount: 40 })).toBe(4000);
     expect(
       participantCheckoutAmount({
         category: "STAFF",
@@ -23,15 +25,16 @@ describe("payment amounts and cover", () => {
         playerFeeAmount: 40,
         staffFeeAmount: 5,
       }),
-    ).toBe(5);
+    ).toBe(500);
     expect(
       participantCheckoutAmount({
         category: "PLAYER",
         paymentMode: "PLAYER",
         playerFeeAmount: 40,
         staffFeeAmount: 5,
+        playerFeeCents: 5500,
       }),
-    ).toBe(40);
+    ).toBe(5500);
   });
 
   it("il primo SUCCEEDED utile copre, anche in modalità BOTH", () => {

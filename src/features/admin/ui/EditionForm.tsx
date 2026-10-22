@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useActionState } from "react";
 import { createEditionAction, deleteEditionAction, updateEditionAction } from "@/features/admin/actions";
 import { REQUIREMENT_CODES } from "@/features/admin/schemas/org";
@@ -23,6 +24,7 @@ type Requirement = { code: string; required: boolean };
 
 type Props = {
   mode: "create" | "edit";
+  canManageFees?: boolean;
   edition?: {
     id: string;
     name: string;
@@ -40,7 +42,7 @@ type Props = {
   };
 };
 
-export function EditionForm({ mode, edition }: Props) {
+export function EditionForm({ mode, edition, canManageFees = false }: Props) {
   const action = mode === "create" ? createEditionAction : updateEditionAction;
   const [state, formAction, pending] = useActionState(action, undefined);
   const required = new Set(edition?.requirements.filter((item) => item.required).map((item) => item.code));
@@ -82,32 +84,41 @@ export function EditionForm({ mode, edition }: Props) {
           <option value="BOTH">{it.paymentModeBOTH}</option>
         </select>
       </div>
-      <div className={fields.pair}>
-        <div className={fields.field}>
-          <label className={fields.label} htmlFor="playerFeeAmount">
-            {it.adminPlayerFee}
-          </label>
-          <input id="playerFeeAmount" name="playerFeeAmount" className={fields.input} defaultValue={edition?.playerFeeAmount ?? ""} />
+      {canManageFees ? (
+        <div className={fields.pair}>
+          <div className={fields.field}>
+            <label className={fields.label} htmlFor="playerFeeAmount">
+              {it.adminPlayerFee}
+            </label>
+            <input id="playerFeeAmount" name="playerFeeAmount" className={fields.input} defaultValue={edition?.playerFeeAmount ?? ""} />
+          </div>
+          <div className={fields.field}>
+            <label className={fields.label} htmlFor="staffFeeAmount">
+              {it.adminStaffFee}
+            </label>
+            <input
+              id="staffFeeAmount"
+              name="staffFeeAmount"
+              className={fields.input}
+              inputMode="decimal"
+              defaultValue={edition?.staffFeeAmount ?? "5"}
+            />
+          </div>
+          <div className={fields.field}>
+            <label className={fields.label} htmlFor="teamFeeAmount">
+              {it.adminTeamFee}
+            </label>
+            <input id="teamFeeAmount" name="teamFeeAmount" className={fields.input} defaultValue={edition?.teamFeeAmount ?? ""} />
+          </div>
+          {edition ? (
+            <p className={fields.help}>
+              <Link href={`/admin/edizioni/${edition.id}/quote`}>{it.adminFeesLink}</Link>
+            </p>
+          ) : null}
         </div>
-        <div className={fields.field}>
-          <label className={fields.label} htmlFor="staffFeeAmount">
-            {it.adminStaffFee}
-          </label>
-          <input
-            id="staffFeeAmount"
-            name="staffFeeAmount"
-            className={fields.input}
-            inputMode="decimal"
-            defaultValue={edition?.staffFeeAmount ?? "5"}
-          />
-        </div>
-        <div className={fields.field}>
-          <label className={fields.label} htmlFor="teamFeeAmount">
-            {it.adminTeamFee}
-          </label>
-          <input id="teamFeeAmount" name="teamFeeAmount" className={fields.input} defaultValue={edition?.teamFeeAmount ?? ""} />
-        </div>
-      </div>
+      ) : (
+        <p className={fields.help}>{it.adminFeesLocked}</p>
+      )}
       <div className={fields.pair}>
         <div className={fields.field}>
           <label className={fields.label} htmlFor="registrationOpensAt">

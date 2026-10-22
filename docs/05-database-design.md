@@ -107,6 +107,7 @@ Un rappresentante che è anche giocatore ha `TEAM_REPRESENTATIVE` + membership `
 - `paymentMode` PLAYER | TEAM | BOTH
 - `teamFeeAmount` opzionale
 - `staffFeeAmount` Decimal, default `5`: quota individuale dello staff tecnico per quell’edizione. Il partecipante non la invia.
+- Queste tre quote sono la **predefinita dell’edizione**. Una squadra può sostituirle con `playerFeeCents`, `staffFeeCents`, `teamFeeCents` (interi, centesimi, null = usa la predefinita). Cambiare la predefinita non riscrive le quote già personalizzate. La risoluzione è: quota squadra, altrimenti quota edizione. Senza un importo positivo il checkout non parte.
 - `isActive`
 
 **EditionRequirement**
@@ -120,6 +121,7 @@ Un rappresentante che è anche giocatore ha `TEAM_REPRESENTATIVE` + membership `
 
 - name, logoStorageKey nullable, inviteCode unique (codice interno), registrationToken unique (link pubblico `/iscrizione/[token]`, uno per squadra, non per giocatore)
 - contactName / contactEmail placeholder referente
+- `playerFeeCents`, `staffFeeCents`, `teamFeeCents` opzionali: override in centesimi per quella squadra e quella edizione. Null segue la quota dell’edizione.
 - `coachRegistrationId` opzionale: uno staff tecnico della stessa squadra, ancora in rosa. Se l’iscrizione diventa `WITHDRAWN` o `REMOVED`, o cambia squadra o categoria, il puntatore si azzera e la squadra risulta senza allenatore.
 
 **PlayerInvite** e **StaffInvite** — scope TEAM. Non hanno `editionId`: l’edizione è `team.editionId` e la competition è `team.edition.competitionId`. Il redeem usa solo il token; il client non sceglie la squadra.
@@ -197,10 +199,11 @@ Mai un flag denormalizzato `privacyAccepted` sul User come unica prova.
 
 - registrationId nullable, teamId nullable, editionId
 - amount, currency, status PENDING|SUCCEEDED|FAILED|REFUNDED
-- provider (stringa libera, es. `stub` | `stripe`)
+- provider (stringa libera, es. `stub` | `stripe` | `bank_transfer`)
 - providerPaymentId, providerSessionId
 - paidAt, failureCode, receiptUrl nullable
 - indirizzo di **fatturazione** (`billingName`, `billingEmail`, `billingLine1`, `billingLine2`, `billingPostalCode`, `billingCity`, `billingState`, `billingCountry`): solo ciò che Stripe conferma nel webhook di un pagamento riuscito. Non è la residenza. La residenza non è nel modulo di iscrizione e non si copia dalla fatturazione.
+- `amount` è lo snapshot addebitato. Un cambio di quota non ricalcola i pagamenti già creati: un `PENDING` si riusa con il suo importo, un `SUCCEEDED` resta quello pagato.
 - `User.stripeCustomerId` opzionale, per non chiedere di nuovo nome ed email già presenti in anagrafica
 - raw webhook **non** si salva intero se contiene PII; si salva event id + tipo
 
@@ -210,6 +213,13 @@ Mai un flag denormalizzato `privacyAccepted` sul User come unica prova.
 - quota squadra: `teamId` valorizzato, `registrationId` nullo. FK `(teamId, editionId)` → `Team (id, editionId)`.
 - check `registrationId IS NOT NULL OR teamId IS NOT NULL`.
 - se entrambi sono valorizzati, il trigger `payment_scope_guard` esige che la registrazione appartenga a quella squadra e a quella edizione.
+
+**TeamBankTransfer** — bonifico confermato dal Super Admin, senza sessione Stripe.
+
+- teamId + editionId, con la stessa FK composta di Payment
+- `amount` è l’importo ricevuto; `expectedAmount` è il totale delle quote applicate al momento della conferma
+- reference unico per squadra, paidAt, recordedByUserId
+- I Payment collegati (`bankTransferId`, `recordedByUserId`) segnano la copertura: in modalità TEAM una riga di squadra con l’importo ricevuto; in modalità PLAYER o BOTH una riga per ogni giocatore e staff ancora scoperto, con la quota di quella persona. Un Payment `SUCCEEDED` già presente non si aggiorna.
 
 Documenti, consensi e token di consenso restano sulla Registration: edition e competition si raggiungono da lì, senza duplicare le FK. Notification è per utente. AuditLog è append-only (`entityType` + `entityId`), senza scope duplicato. School resta globale e riusabile tra edizioni. `Competition.parentId` è un sotto-torneo opzionale, non un’edizione.
 

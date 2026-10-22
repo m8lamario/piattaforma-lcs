@@ -189,6 +189,8 @@ model User {
   consentChoices         ConsentChoice[]
   auditLogs              AuditLog[]
   payments               Payment[]           @relation("PaymentPayer")
+  recordedPayments       Payment[]           @relation("PaymentRecordedBy")
+  recordedBankTransfers  TeamBankTransfer[]  @relation("BankTransferRecorder")
   representativeTeams    Team[]              @relation("TeamRepresentativeUser")
   emailMessagesReceived  EmailMessage[]      @relation("EmailRecipient")
   emailMessagesSent      EmailMessage[]      @relation("EmailActor")
@@ -404,6 +406,7 @@ model Edition {
   registrations Registration[]
   requirements EditionRequirement[]
   payments     Payment[]
+  bankTransfers TeamBankTransfer[]
   schoolAccessRequests SchoolRegistrationRequest[]
 
   @@unique([competitionId, year, name])
@@ -452,6 +455,9 @@ model Team {
   contactEmail         String?
   representativeUserId String?
   coachRegistrationId  String?  @unique
+  playerFeeCents       Int?
+  staffFeeCents        Int?
+  teamFeeCents         Int?
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
 
@@ -464,6 +470,7 @@ model Team {
   staffInvites   StaffInvite[]
   registrations  Registration[]
   payments       Payment[]
+  bankTransfers  TeamBankTransfer[]
   userRoles      UserRole[]
   registrationRequests SchoolRegistrationRequest[]
 
@@ -864,6 +871,8 @@ model Payment {
   billingCity       String?
   billingState      String?
   billingCountry    String?
+  bankTransferId    String?
+  recordedByUserId  String?
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
 
@@ -871,11 +880,39 @@ model Payment {
   team         Team?         @relation(fields: [teamId, editionId], references: [id, editionId], onDelete: Restrict, onUpdate: Restrict)
   edition      Edition       @relation(fields: [editionId], references: [id], onDelete: Restrict)
   payer        User?         @relation("PaymentPayer", fields: [payerUserId], references: [id], onDelete: SetNull)
+  recordedBy   User?         @relation("PaymentRecordedBy", fields: [recordedByUserId], references: [id], onDelete: Restrict)
+  bankTransfer TeamBankTransfer? @relation(fields: [bankTransferId], references: [id], onDelete: Restrict)
 
   @@index([editionId, status])
   @@index([registrationId])
   @@index([teamId])
   @@index([provider, providerPaymentId])
+  @@index([bankTransferId])
+  @@index([recordedByUserId])
+}
+
+// Bonifico di squadra confermato dal Super Admin. Non è una sessione Stripe.
+// amount è l'importo ricevuto; expectedAmount è il totale delle quote applicate in quel momento.
+model TeamBankTransfer {
+  id               String   @id @default(cuid())
+  editionId        String
+  teamId           String
+  amount           Decimal  @db.Decimal(10, 2)
+  expectedAmount   Decimal  @db.Decimal(10, 2)
+  currency         String   @default("EUR")
+  reference        String
+  paidAt           DateTime
+  recordedByUserId String
+  createdAt        DateTime @default(now())
+
+  edition    Edition   @relation(fields: [editionId], references: [id], onDelete: Restrict)
+  team       Team      @relation(fields: [teamId, editionId], references: [id, editionId], onDelete: Restrict, onUpdate: Restrict)
+  recordedBy User      @relation("BankTransferRecorder", fields: [recordedByUserId], references: [id], onDelete: Restrict)
+  payments   Payment[]
+
+  @@unique([teamId, reference])
+  @@index([editionId])
+  @@index([recordedByUserId])
 }
 
 model Notification {

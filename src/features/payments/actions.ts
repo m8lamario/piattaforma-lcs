@@ -4,9 +4,14 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { paymentAdapter } from "@/shared/adapters";
 import { claimCheckoutPayment, rememberStripeCustomer } from "@/features/payments/data/payments";
-import { participantCheckoutAmount, teamCheckoutAmount } from "@/features/payments/domain/amounts";
 import { checkoutCustomerPrefill } from "@/features/payments/domain/billing";
-import { playerCheckoutBlocker, teamCheckoutBlocker } from "@/features/payments/domain/integrity";
+import {
+  applyPendingSnapshot,
+  decimalToCents,
+  resolveParticipantFee,
+  resolveTeamFee,
+} from "@/features/payments/domain/fees";
+import { feeCheckoutBlocker } from "@/features/payments/domain/integrity";
 import { loadPlayerWorkspace } from "@/features/registrations/data/workspace";
 import { isPaymentCovered } from "@/features/registrations/domain/requirements";
 import { isRegistrationWindowOpen } from "@/features/registrations/domain/window";
@@ -45,29 +50,68 @@ export async function startPlayerCheckoutAction(): Promise<ActionFailure | void>
     return fail("PAYMENT_GUARDIAN_REQUIRED");
   }
 
-  const amount = participantCheckoutAmount({
-    category: workspace.registration.category,
-    paymentMode: workspace.registration.paymentMode,
-    playerFeeAmount: workspace.registration.playerFeeAmount,
-    staffFeeAmount: workspace.registration.staffFeeAmount,
+  const registration = await prisma.registration.findUnique({
+    where: { id: workspace.registration.id },
+    select: {
+      id: true,
+      editionId: true,
+      category: true,
+      team: {
+        select: {
+          editionId: true,
+          playerFeeCents: true,
+          staffFeeCents: true,
+          edition: {
+            select: {
+              paymentMode: true,
+              currency: true,
+              playerFeeAmount: true,
+              staffFeeAmount: true,
+            },
+          },
+        },
+      },
+    },
   });
-  const blocked = playerCheckoutBlocker({
+  if (!registration || registration.team.editionId !== registration.editionId) {
+    return fail("PAYMENT_SCOPE_MISMATCH");
+  }
+  const pending = await prisma.payment.findFirst({
+    where: { registrationId: registration.id, status: "PENDING" },
+    orderBy: { createdAt: "desc" },
+    select: { amount: true },
+  });
+  const presented = applyPendingSnapshot(
+    decimalToCents(pending?.amount),
+    resolveParticipantFee({
+      category: registration.category,
+      paymentMode: registration.team.edition.paymentMode,
+      teamPlayerFeeCents: registration.team.playerFeeCents,
+      teamStaffFeeCents: registration.team.staffFeeCents,
+      editionPlayerFee: registration.team.edition.playerFeeAmount,
+      editionStaffFee: registration.team.edition.staffFeeAmount,
+    }),
+  );
+  const blocked = feeCheckoutBlocker({
     covered: isPaymentCovered(workspace.evidence.payment),
-    amount,
+    fee: presented,
+    channel: "player",
   });
   if (blocked) return fail(blocked);
-  if (amount === null) return fail("PAYMENT_TEAM_PAYS");
+  if (presented.status !== "ready") return fail("PAYMENT_FEE_MISSING");
 
   const claimed = await claimCheckoutPayment({
-    editionId: workspace.registration.editionId,
-    registrationId: workspace.registration.id,
+    editionId: registration.editionId,
+    registrationId: registration.id,
     payerUserId: session.user.id,
-    amount,
-    currency: workspace.registration.currency,
+    amountCents: presented.cents,
+    currency: registration.team.edition.currency,
   });
   if (!claimed.ok) {
     return fail(claimed.reason === "scope" ? "PAYMENT_SCOPE_MISMATCH" : "PAYMENT_ALREADY_COMPLETED");
   }
+  const chargeCents = decimalToCents(claimed.payment.amount);
+  if (chargeCents === null) return fail("PAYMENT_FEE_MISSING");
 
   const prefill = checkoutCustomerPrefill({
     email: user.email,
@@ -75,8 +119,8 @@ export async function startPlayerCheckoutAction(): Promise<ActionFailure | void>
     lastName: workspace.profile.lastName,
   });
   const checkout = await paymentAdapter.createCheckout({
-    amount: Math.round(amount * 100),
-    currency: workspace.registration.currency,
+    amount: chargeCents,
+    currency: registration.team.edition.currency,
     reference: claimed.payment.id,
     successUrl: `${appOrigin()}/area/pagamento/esito?paymentId=${claimed.payment.id}`,
     cancelUrl: `${appOrigin()}/area/registrazione/pagamento`,
@@ -96,8 +140,8 @@ export async function startPlayerCheckoutAction(): Promise<ActionFailure | void>
     entityType: "Payment",
     entityId: claimed.payment.id,
     metadata: {
-      amount,
-      currency: workspace.registration.currency,
+      amountCents: chargeCents,
+      currency: registration.team.edition.currency,
       category: workspace.registration.category,
       reused: claimed.reused,
     },
@@ -136,27 +180,43 @@ export async function startTeamCheckoutAction(teamId: string): Promise<ActionFai
     return fail("REGISTRATION_WINDOW_CLOSED");
   }
 
-  const amount = teamCheckoutAmount({
-    paymentMode: team.edition.paymentMode,
-    teamFeeAmount: team.edition.teamFeeAmount,
+  const pending = await prisma.payment.findFirst({
+    where: { teamId: team.id, registrationId: null, status: "PENDING" },
+    orderBy: { createdAt: "desc" },
+    select: { amount: true },
   });
   const already = await prisma.payment.findFirst({
     where: { teamId: team.id, registrationId: null, status: "SUCCEEDED" },
+    select: { id: true },
   });
-  const blocked = teamCheckoutBlocker({ covered: Boolean(already), amount });
+  const presented = applyPendingSnapshot(
+    decimalToCents(pending?.amount),
+    resolveTeamFee({
+      paymentMode: team.edition.paymentMode,
+      teamFeeCents: team.teamFeeCents,
+      editionTeamFee: team.edition.teamFeeAmount,
+    }),
+  );
+  const blocked = feeCheckoutBlocker({
+    covered: Boolean(already),
+    fee: presented,
+    channel: "team",
+  });
   if (blocked) return fail(blocked);
-  if (amount === null) return fail("PAYMENT_PLAYER_PAYS");
+  if (presented.status !== "ready") return fail("PAYMENT_FEE_MISSING");
 
   const claimed = await claimCheckoutPayment({
     editionId: team.editionId,
-    teamId,
+    teamId: team.id,
     payerUserId: session.user.id,
-    amount,
+    amountCents: presented.cents,
     currency: team.edition.currency,
   });
   if (!claimed.ok) {
     return fail(claimed.reason === "scope" ? "PAYMENT_SCOPE_MISMATCH" : "PAYMENT_ALREADY_COMPLETED");
   }
+  const chargeCents = decimalToCents(claimed.payment.amount);
+  if (chargeCents === null) return fail("PAYMENT_FEE_MISSING");
 
   const payer = await prisma.user.findUnique({
     where: { id: session.user.id },
@@ -168,7 +228,7 @@ export async function startTeamCheckoutAction(teamId: string): Promise<ActionFai
     lastName: payer?.playerProfile?.lastName,
   });
   const checkout = await paymentAdapter.createCheckout({
-    amount: Math.round(amount * 100),
+    amount: chargeCents,
     currency: team.edition.currency,
     reference: claimed.payment.id,
     successUrl: `${appOrigin()}/area/pagamento/esito?paymentId=${claimed.payment.id}`,
@@ -188,7 +248,7 @@ export async function startTeamCheckoutAction(teamId: string): Promise<ActionFai
     action: "PAYMENT_CHECKOUT",
     entityType: "Payment",
     entityId: claimed.payment.id,
-    metadata: { amount, team: true, reused: claimed.reused },
+    metadata: { amountCents: chargeCents, team: true, reused: claimed.reused },
     ...trace,
   });
 

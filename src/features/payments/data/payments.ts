@@ -1,6 +1,7 @@
 import { Prisma } from "@generated/client";
 import type { Prisma as PrismaTypes } from "@generated/client";
 import { billingFill, type BillingSnapshot } from "@/features/payments/domain/billing";
+import { centsToDecimalString } from "@/features/payments/domain/fees";
 import { webhookApplyDecision } from "@/features/payments/domain/integrity";
 import { paymentProviderName } from "@/shared/config/drivers";
 import { paymentScopeViolation } from "@/shared/domain/hierarchy";
@@ -34,7 +35,7 @@ async function readPaymentScope(
 
 export async function createPendingPayment(input: {
   editionId: string;
-  amount: number;
+  amountCents: number;
   currency: string;
   registrationId?: string;
   teamId?: string;
@@ -51,7 +52,7 @@ export async function createPendingPayment(input: {
         registrationId: input.registrationId,
         teamId: input.teamId,
         payerUserId: input.payerUserId,
-        amount: new Prisma.Decimal(input.amount),
+        amount: new Prisma.Decimal(centsToDecimalString(input.amountCents)),
         currency: input.currency,
         status: "PENDING",
         provider: paymentProviderName(),
@@ -62,7 +63,7 @@ export async function createPendingPayment(input: {
 
 export async function claimCheckoutPayment(input: {
   editionId: string;
-  amount: number;
+  amountCents: number;
   currency: string;
   payerUserId: string;
   registrationId?: string;
@@ -96,7 +97,7 @@ export async function claimCheckoutPayment(input: {
         registrationId: input.registrationId,
         teamId: input.teamId,
         payerUserId: input.payerUserId,
-        amount: new Prisma.Decimal(input.amount),
+        amount: new Prisma.Decimal(centsToDecimalString(input.amountCents)),
         currency: input.currency,
         status: "PENDING",
         provider: paymentProviderName(),

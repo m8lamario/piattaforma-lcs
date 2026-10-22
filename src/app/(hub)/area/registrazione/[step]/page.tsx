@@ -6,7 +6,7 @@ import { authorize } from "@/shared/authz/authorize";
 import { GuardianForm } from "@/features/players/ui/GuardianForm";
 import { PersonalDataForm } from "@/features/players/ui/PersonalDataForm";
 import { loadPlayerWorkspace } from "@/features/registrations/data/workspace";
-import { isTerminalRegistrationStatus } from "@/features/registrations/domain/requirements";
+import { isPaymentCovered, isTerminalRegistrationStatus } from "@/features/registrations/domain/requirements";
 import {
   gateWizardStep,
   isWizardStepId,
@@ -22,9 +22,8 @@ import { PrivacyConsentForm } from "@/features/consents/ui/PrivacyConsentForm";
 import { GuardianWaitingView } from "@/features/consents/ui/GuardianWaitingView";
 import { EmailVerifyNotice } from "@/features/auth/ui/EmailVerifyNotice";
 import { MedicalUploadForm } from "@/features/documents/ui/MedicalUploadForm";
-import { participantCheckoutAmount } from "@/features/payments/domain/amounts";
 import { PlayerPaymentForm } from "@/features/payments/ui/PlayerPaymentForm";
-import { isPaymentCovered } from "@/features/registrations/domain/requirements";
+import { applyPendingSnapshot, formatEuro, resolveParticipantFee } from "@/features/payments/domain/fees";
 import { PlaceholderStep } from "@/features/registrations/ui/PlaceholderStep";
 import { SummaryStep } from "@/features/registrations/ui/SummaryStep";
 import { WizardShell } from "@/features/registrations/ui/WizardShell";
@@ -203,22 +202,29 @@ export default async function WizardStepPage({ params }: Props) {
       );
       break;
     }
-    case "pagamento":
+    case "pagamento": {
+      const presented = applyPendingSnapshot(
+        workspace.registration.pendingPaymentCents,
+        resolveParticipantFee({
+          category: workspace.registration.category,
+          paymentMode: workspace.registration.paymentMode,
+          teamPlayerFeeCents: workspace.registration.playerFeeCents,
+          teamStaffFeeCents: workspace.registration.staffFeeCents,
+          editionPlayerFee: workspace.registration.playerFeeAmount,
+          editionStaffFee: workspace.registration.staffFeeAmount,
+        }),
+      );
       body = (
         <PlayerPaymentForm
           covered={isPaymentCovered(workspace.evidence.payment)}
-          teamOnly={workspace.registration.paymentMode === "TEAM"}
-          amount={participantCheckoutAmount({
-            category: workspace.registration.category,
-            paymentMode: workspace.registration.paymentMode,
-            playerFeeAmount: workspace.registration.playerFeeAmount,
-            staffFeeAmount: workspace.registration.staffFeeAmount,
-          })}
-          developmentNote={workspace.registration.category !== "STAFF"}
+          teamOnly={presented.status === "not_due"}
+          amountLabel={presented.status === "ready" ? formatEuro(presented.cents) : null}
+          missing={presented.status === "missing"}
           currency={workspace.registration.currency}
         />
       );
       break;
+    }
     case "riepilogo":
       body = (
         <SummaryStep

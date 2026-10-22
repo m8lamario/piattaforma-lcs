@@ -91,7 +91,7 @@ Ogni voce: problema, opzioni, decisione necessaria, conseguenze, impatto sullo s
 - **Problema:** Importo giocatore/squadra per edizione sconosciuto.
 - **Opzioni:** campi Edition già in schema.
 - **Decisione necessaria:** organizzazione per ogni edizione.
-- **Impatto:** nessuno strutturale. Workaround: 0 / null = non richiesto se requirement PAYMENT required=false.
+- **Impatto:** la quota effettiva è quella della squadra, se c’è, altrimenti quella dell’edizione. Gli importi di squadra stanno in centesimi. Un pagamento già creato conserva il suo `amount`. Se non c’è una quota positiva, il checkout non parte (`PAYMENT_FEE_MISSING`): non si usa più un placeholder da 40 EUR.
 
 ## OD-048 Registro pagamenti e residenza
 
@@ -377,7 +377,7 @@ Già coperti: no PWA in M0; scan OD-021.
 
 | ID | Decisione |
 |---|---|
-| M5-D1 | Importo mancante → 40 EUR giocatore / 200 EUR squadra, copy placeholder OD-008 |
+| M5-D1 | Importo mancante: niente placeholder. Checkout bloccato con `PAYMENT_FEE_MISSING` (OD-008) |
 | M5-D2 | Stub: success URL interno `/area/pagamento/esito` marca SUCCEEDED dopo authorize sul pagatore |
 | M5-D3 | Webhook `/api/webhooks/payments` ignora eventi stub PENDING; provider live in seguito |
 | M5-D4 | BOTH: primo SUCCEEDED copre (OD-007); secondo checkout bloccato |
