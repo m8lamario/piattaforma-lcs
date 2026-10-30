@@ -892,7 +892,8 @@ model Payment {
 }
 
 // Bonifico di squadra confermato dal Super Admin. Non è una sessione Stripe.
-// amount è l'importo ricevuto; expectedAmount è il totale delle quote applicate in quel momento.
+// amount è l'importo ricevuto. expectedAmount è il totale scoperto alla registrazione e non segue le associazioni successive.
+// Le persone coperte sono i Payment con bankTransferId. In modalità TEAM un Payment di squadra copre la rosa.
 model TeamBankTransfer {
   id               String   @id @default(cuid())
   editionId        String

@@ -121,6 +121,164 @@ export function quoteBankTransfer(input: {
   };
 }
 
+export type BankAllocationBlock = "inactive" | "paid_elsewhere" | "fee_missing" | "not_due";
+
+export type BankAllocationPerson = {
+  registrationId: string;
+  userId: string;
+  name: string;
+  email: string;
+  category: BankTransferCategory;
+  linkedCents: number | null;
+  feeCents: number | null;
+  blocked: BankAllocationBlock | null;
+  provider: string | null;
+};
+
+export type BankAllocationReason = BankAllocationBlock | "unknown" | "insufficient";
+
+export type BankAllocationRow = {
+  registrationId: string;
+  state: "selected" | "open" | "blocked";
+  reason: BankAllocationReason | null;
+  cents: number | null;
+};
+
+export type BankAllocationPreview = {
+  rows: BankAllocationRow[];
+  usedCents: number;
+  residualCents: number;
+  progressPercent: number;
+  overCents: number;
+  addIds: string[];
+  removeIds: string[];
+  reason: BankAllocationReason | null;
+};
+
+export function describeBankAllocationPerson(input: {
+  registrationId: string;
+  userId: string;
+  name: string;
+  email: string;
+  category: BankTransferCategory;
+  registrationStatus: string;
+  fee: FeeResolution;
+  linkedCents: number | null;
+  otherProvider: string | null;
+}): BankAllocationPerson {
+  const linked = input.linkedCents != null;
+  let blocked: BankAllocationBlock | null = null;
+  if (!linked) {
+    if (!isActiveForBankTransfer(input.registrationStatus)) blocked = "inactive";
+    else if (input.otherProvider) blocked = "paid_elsewhere";
+    else if (input.fee.status === "not_due") blocked = "not_due";
+    else if (input.fee.status !== "ready") blocked = "fee_missing";
+  }
+  return {
+    registrationId: input.registrationId,
+    userId: input.userId,
+    name: input.name,
+    email: input.email,
+    category: input.category,
+    linkedCents: input.linkedCents,
+    feeCents: input.fee.status === "ready" ? input.fee.cents : null,
+    blocked,
+    provider: input.otherProvider,
+  };
+}
+
+export function uncoveredFeeCents(people: readonly BankAllocationPerson[]) {
+  return people.reduce((sum, person) => {
+    if (person.linkedCents != null || person.blocked || person.feeCents == null) return sum;
+    return sum + person.feeCents;
+  }, 0);
+}
+
+export function previewBankAllocation(input: {
+  receivedCents: number;
+  people: readonly BankAllocationPerson[];
+  selectedIds: readonly string[];
+}): BankAllocationPreview {
+  const known = new Map(input.people.map((person) => [person.registrationId, person]));
+  const selected = new Set(input.selectedIds);
+  const addIds: string[] = [];
+  const removeIds: string[] = [];
+  let usedCents = 0;
+  let reason: BankAllocationReason | null = null;
+
+  for (const id of selected) {
+    const person = known.get(id);
+    if (!person) {
+      reason = reason ?? "unknown";
+      continue;
+    }
+    if (person.linkedCents != null) {
+      usedCents += person.linkedCents;
+      continue;
+    }
+    if (person.blocked) {
+      reason = reason ?? person.blocked;
+      continue;
+    }
+    if (person.feeCents == null) {
+      reason = reason ?? "fee_missing";
+      continue;
+    }
+    usedCents += person.feeCents;
+    addIds.push(person.registrationId);
+  }
+
+  for (const person of input.people) {
+    if (person.linkedCents != null && !selected.has(person.registrationId)) {
+      removeIds.push(person.registrationId);
+    }
+  }
+
+  if (reason == null && addIds.length > 0 && usedCents > input.receivedCents) reason = "insufficient";
+
+  const rows: BankAllocationRow[] = input.people.map((person) => {
+    if (selected.has(person.registrationId)) {
+      return {
+        registrationId: person.registrationId,
+        state: "selected",
+        reason: person.linkedCents == null ? person.blocked : null,
+        cents: person.linkedCents ?? person.feeCents,
+      };
+    }
+    if (person.blocked) {
+      return {
+        registrationId: person.registrationId,
+        state: "blocked",
+        reason: person.blocked,
+        cents: person.feeCents,
+      };
+    }
+    const cents = person.linkedCents ?? person.feeCents;
+    const fits = cents != null && input.receivedCents - usedCents >= cents;
+    return {
+      registrationId: person.registrationId,
+      state: "open",
+      reason: fits ? null : "insufficient",
+      cents,
+    };
+  });
+
+  const overCents = Math.max(0, usedCents - input.receivedCents);
+  const progressPercent =
+    input.receivedCents <= 0 ? 0 : Math.min(100, Math.round((usedCents / input.receivedCents) * 100));
+
+  return {
+    rows,
+    usedCents,
+    residualCents: input.receivedCents - usedCents,
+    progressPercent,
+    overCents,
+    addIds,
+    removeIds,
+    reason,
+  };
+}
+
 export function receivedDifference(receivedCents: number, expectedCents: number) {
   return receivedCents - expectedCents;
 }

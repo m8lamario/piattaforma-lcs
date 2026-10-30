@@ -65,6 +65,7 @@ Un utente può avere più ruoli (es. rappresentante che è anche giocatore). La 
 /admin/comunicazioni/[id]      dettaglio, eventi, corpo redatto
 /admin/pagamenti
 /admin/pagamenti/bonifico    bonifico di squadra (`payment:record_transfer`, solo Super Admin)
+/admin/pagamenti/bonifico/[id] dettaglio: persone associate, residuo, aggiunte successive
 /admin/utenti                  Super Admin: chiusura / anonimizzazione account
 /admin/utenti/[id]
 /admin/audit

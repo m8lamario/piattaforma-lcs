@@ -40,7 +40,7 @@ Pagine placeholder, versioni, ConsentRecord, step privacy + step media prominent
 
 ## M5 — Pagamenti (completata)
 
-Adapter checkout stub, success interno, webhook route, regole PLAYER/TEAM/BOTH senza doppio addebito. Importo: quota squadra, altrimenti quota edizione (OD-008). Senza quota positiva il checkout non parte. Il Super Admin può registrare un bonifico di squadra: copre chi non ha già un pagamento riuscito e non crea una sessione Stripe.
+Adapter checkout stub, success interno, webhook route, regole PLAYER/TEAM/BOTH senza doppio addebito. Importo: quota squadra, altrimenti quota edizione (OD-008). Senza quota positiva il checkout non parte. Il Super Admin può registrare un bonifico di squadra, senza sessione Stripe. In modalità giocatore o entrambi sceglie le persone da coprire e può aggiungerle anche dopo; in modalità squadra la quota squadra copre la rosa.
 
 **Exit:** test, lint, typecheck, build; niente campi carta; isPaymentCovered; stub confirm autorizza il pagatore.
 

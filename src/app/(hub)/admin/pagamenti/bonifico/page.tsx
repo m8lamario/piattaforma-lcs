@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { listCompetitionsWithEditions } from "@/features/admin/data/catalog";
 import { listEditionBankTransfers, listEditionTeamOptions, loadBankTransferQuote } from "@/features/payments/data/bank-transfer";
-import { decimalToCents, formatEuro } from "@/features/payments/domain/fees";
+import { decimalToCents, formatEuro, formatSignedEuro } from "@/features/payments/domain/fees";
 import { paymentDateLabel } from "@/features/payments/domain/export";
 import { BankTransferForm } from "@/features/admin/ui/BankTransferForm";
 import { AdminFrame } from "@/features/admin/ui/AdminFrame";
@@ -57,16 +57,23 @@ export default async function AdminBankTransferPage({ searchParams }: Props) {
         editionId={editionId}
         teamId={teamId}
         currency={loaded?.currency ?? "EUR"}
+        paymentMode={loaded?.paymentMode ?? null}
+        people={loaded?.people ?? []}
         quote={loaded?.quote ?? null}
         today={new Intl.DateTimeFormat("sv-SE", { timeZone: "Europe/Rome" }).format(new Date())}
         history={history.map((row) => ({
           id: row.id,
-          teamName: row.team.name,
+          teamName: row.teamName,
           amountLabel: money(row.amount, row.currency),
-          expectedLabel: money(row.expectedAmount, row.currency),
+          usedLabel:
+            row.channel === "team"
+              ? it.adminBankTeamCoverage
+              : `${formatEuro(row.usedCents)} ${row.currency}`,
+          residualLabel:
+            row.channel === "team" ? "—" : `${formatSignedEuro(row.residualCents)} ${row.currency}`,
           reference: row.reference,
           paidOn: paymentDateLabel(row.paidAt),
-          operator: row.recordedBy.name?.trim() || row.recordedBy.email,
+          operator: row.operatorName?.trim() || row.operatorEmail,
         }))}
       />
     </AdminFrame>

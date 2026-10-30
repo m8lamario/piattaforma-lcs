@@ -3,16 +3,18 @@
 import { useActionState, useState } from "react";
 import { useRouter } from "next/navigation";
 import { recordTeamBankTransferAction } from "@/features/payments/record-bank-transfer";
+import { BankTransferPeoplePicker } from "@/features/admin/ui/BankTransferPeoplePicker";
 import {
   formatTransferDifference,
   parseTransferDate,
   parseTransferReference,
+  previewBankAllocation,
+  type BankAllocationPerson,
   type BankTransferQuote,
 } from "@/features/payments/domain/bank-transfer";
-import { formatEuro, parseEuroToCents } from "@/features/payments/domain/fees";
-import { paymentMethodLabel } from "@/features/payments/domain/export";
+import { formatEuro, formatSignedEuro, parseEuroToCents, type PaymentMode } from "@/features/payments/domain/fees";
 import { ActionError } from "@/shared/ui/ActionError";
-import { Button } from "@/shared/ui/Button";
+import { Button, ButtonLink } from "@/shared/ui/Button";
 import { PendingSubmitButton } from "@/shared/ui/PendingSubmitButton";
 import { it } from "@/shared/i18n/it";
 import fields from "@/shared/ui/form.module.css";
@@ -24,7 +26,8 @@ type HistoryRow = {
   id: string;
   teamName: string;
   amountLabel: string;
-  expectedLabel: string;
+  usedLabel: string;
+  residualLabel: string;
   reference: string;
   paidOn: string;
   operator: string;
@@ -36,6 +39,8 @@ type Props = {
   editionId: string;
   teamId: string;
   currency: string;
+  paymentMode: PaymentMode | null;
+  people: BankAllocationPerson[];
   quote: BankTransferQuote | null;
   history: HistoryRow[];
   today: string;
@@ -51,6 +56,8 @@ export function BankTransferForm({
   editionId,
   teamId,
   currency,
+  paymentMode,
+  people,
   quote,
   history,
   today,
@@ -60,10 +67,19 @@ export function BankTransferForm({
   const [amount, setAmount] = useState("");
   const [paidOn, setPaidOn] = useState(today);
   const [reference, setReference] = useState("");
+  const [selected, setSelected] = useState<string[]>([]);
+  const [selectedTeam, setSelectedTeam] = useState(teamId);
   const [confirm, setConfirm] = useState<string[] | null>(null);
   const [difference, setDifference] = useState<string | null>(null);
   const [localError, setLocalError] = useState<string | null>(null);
   const [acked, setAcked] = useState(state);
+  if (selectedTeam !== teamId) {
+    setSelectedTeam(teamId);
+    setSelected([]);
+    setConfirm(null);
+    setDifference(null);
+    setLocalError(null);
+  }
   if (state?.saved && acked !== state) {
     setAcked(state);
     setConfirm(null);
@@ -71,6 +87,7 @@ export function BankTransferForm({
     setAmount("");
     setReference("");
     setPaidOn(today);
+    setSelected([]);
     setLocalError(null);
   }
 
@@ -82,7 +99,7 @@ export function BankTransferForm({
     router.push(query ? `/admin/pagamenti/bonifico?${query}` : "/admin/pagamenti/bonifico");
   }
 
-  function review() {
+  function reviewTeam() {
     if (!quote || quote.status !== "ready") return;
     const parsed = parseEuroToCents(amount);
     const date = parseTransferDate(paidOn);
@@ -93,29 +110,77 @@ export function BankTransferForm({
       setDifference(null);
       return;
     }
-    const gap = formatTransferDifference(parsed.cents - quote.expectedCents, currency);
-    const lines = [
+    setDifference(formatTransferDifference(parsed.cents - quote.expectedCents, currency));
+    setLocalError(null);
+    setConfirm([
       `${it.adminBankExpected}: ${formatEuro(quote.expectedCents)} ${currency}`,
       `${it.adminBankReceived}: ${formatEuro(parsed.cents)} ${currency}`,
       `${it.adminBankReference}: ${ref}`,
       `${it.adminBankDate}: ${paidOn}`,
+    ]);
+  }
+
+  function reviewMembers() {
+    const parsed = parseEuroToCents(amount);
+    const date = parseTransferDate(paidOn);
+    const ref = parseTransferReference(reference);
+    if (!parsed.ok || !date || !ref) {
+      setLocalError(it.adminBankInvalid);
+      setConfirm(null);
+      return;
+    }
+    const preview = previewBankAllocation({ receivedCents: parsed.cents, people, selectedIds: selected });
+    if (preview.reason === "insufficient") {
+      setLocalError(it.errorPAYMENT_BANK_INSUFFICIENT);
+      setConfirm(null);
+      return;
+    }
+    if (preview.reason) {
+      setLocalError(it.adminBankInvalidSelection);
+      setConfirm(null);
+      return;
+    }
+    const chosen = people.filter((person) => selected.includes(person.registrationId));
+    const lines = [
+      `${it.adminBankReceived}: ${formatEuro(parsed.cents)} ${currency}`,
+      `${it.adminBankUsed}: ${formatEuro(preview.usedCents)} ${currency}`,
+      `${it.adminBankResidual}: ${formatSignedEuro(preview.residualCents)} ${currency}`,
+      `${it.adminBankReference}: ${ref}`,
+      `${it.adminBankDate}: ${paidOn}`,
+      ...chosen.map(
+        (person) =>
+          `${person.name || it.adminBankUnnamed}: ${formatEuro(person.feeCents ?? 0)} ${currency}`,
+      ),
     ];
-    setDifference(gap);
+    if (chosen.length === 0) lines.push(it.adminBankNoneSelected);
     setLocalError(null);
     setConfirm(lines);
   }
 
   const ready = quote?.status === "ready" ? quote : null;
+  const memberMode = Boolean(teamId) && paymentMode !== "TEAM" && paymentMode !== null;
+  const parsedAmount = parseEuroToCents(amount);
   const okBanner = `${fields.banner} ${fields.bannerOk}`;
   const dangerBanner = `${fields.banner} ${fields.bannerDanger}`;
   const warnBanner = `${fields.banner} ${fields.bannerWarn}`;
+  const savedText =
+    state?.coverage === "team"
+      ? it.adminBankSavedTeam
+      : state?.paymentCount
+        ? it.adminBankSaved
+        : it.adminBankSavedEmpty;
 
   return (
     <div className={styles.colMain}>
       {state?.saved ? (
-        <p className={okBanner} role="status">
-          {it.adminBankSaved}
-        </p>
+        <div className={okBanner} role="status">
+          <p>{savedText}</p>
+          {state.transferId ? (
+            <ButtonLink href={`/admin/pagamenti/bonifico/${state.transferId}`} variant="secondary">
+              {it.adminBankOpen}
+            </ButtonLink>
+          ) : null}
+        </div>
       ) : null}
       {localError ? <p className={dangerBanner}>{localError}</p> : null}
 
@@ -162,47 +227,25 @@ export function BankTransferForm({
         </div>
       </section>
 
-      {quote?.status === "missing" ? (
+      {paymentMode === "TEAM" && quote?.status === "missing" ? (
         <p className={dangerBanner}>
           {it.adminBankMissing}
           {quote.names.length === 0 ? null : " " + quote.names.join(", ") + "."}
         </p>
       ) : null}
-      {quote?.status === "nothing_due" ? <p className={styles.meta}>{it.adminBankNothing}</p> : null}
+      {paymentMode === "TEAM" && quote?.status === "nothing_due" ? (
+        <p className={styles.meta}>{it.adminBankNothing}</p>
+      ) : null}
 
-      {ready ? (
+      {paymentMode === "TEAM" && ready ? (
         <section className={styles.sideCard}>
           <h2 className={styles.sectionTitle}>{it.adminBankTotal}</h2>
-          <p className={styles.meta}>{ready.channel === "team" ? it.adminBankTeamHelp : it.adminBankMembersHelp}</p>
+          <p className={styles.meta}>{it.adminBankTeamHelp}</p>
           <p>
             <strong>
               {formatEuro(ready.expectedCents)} {currency}
             </strong>
           </p>
-          {ready.due.length !== 0 ? (
-            <div className={styles.tableWrap}>
-              <table className={styles.table}>
-                <thead>
-                  <tr>
-                    <th>{it.adminBankPerson}</th>
-                    <th>{it.adminFeesFilter}</th>
-                    <th>{it.adminBankAmount}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {ready.due.map((line) => (
-                    <tr key={line.registrationId}>
-                      <td>{line.name || it.adminBankUnnamed}</td>
-                      <td>{roleLabel(line.category)}</td>
-                      <td>
-                        {formatEuro(line.cents)} {currency}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : null}
           {ready.roster.length !== 0 ? (
             <ul className={styles.confirmList}>
               {ready.roster.map((person) => (
@@ -212,19 +255,6 @@ export function BankTransferForm({
               ))}
             </ul>
           ) : null}
-          {ready.skipped.length !== 0 ? (
-            <div>
-              <p className={styles.meta}>{it.adminBankSkipped}</p>
-              <ul className={styles.confirmList}>
-                {ready.skipped.map((person) => (
-                  <li key={person.provider + "-" + person.name}>
-                    {person.name || it.adminBankUnnamed} · {paymentMethodLabel(person.provider)}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ) : null}
-
           {confirm ? (
             <form action={action} className={fields.form}>
               <input type="hidden" name="editionId" value={editionId} />
@@ -249,48 +279,71 @@ export function BankTransferForm({
               </div>
             </form>
           ) : (
-            <div className={fields.form}>
-              <div className={styles.feeGrid}>
-                <div className={fields.field}>
-                  <label className={fields.label} htmlFor="bank-amount">
-                    {it.adminBankReceived}
-                  </label>
-                  <input
-                    id="bank-amount"
-                    className={fields.input}
-                    inputMode="decimal"
-                    value={amount}
-                    onChange={(event) => setAmount(event.target.value)}
-                  />
-                </div>
-                <div className={fields.field}>
-                  <label className={fields.label} htmlFor="bank-date">
-                    {it.adminBankDate}
-                  </label>
-                  <input
-                    id="bank-date"
-                    className={fields.input}
-                    type="date"
-                    max={today}
-                    value={paidOn}
-                    onChange={(event) => setPaidOn(event.target.value)}
-                  />
-                </div>
-                <div className={fields.field}>
-                  <label className={fields.label} htmlFor="bank-reference">
-                    {it.adminBankReference}
-                  </label>
-                  <input
-                    id="bank-reference"
-                    className={fields.input}
-                    value={reference}
-                    onChange={(event) => setReference(event.target.value)}
-                    maxLength={80}
-                  />
-                </div>
-              </div>
+            <AmountFields
+              amount={amount}
+              paidOn={paidOn}
+              reference={reference}
+              today={today}
+              onAmount={setAmount}
+              onDate={setPaidOn}
+              onReference={setReference}
+              onReview={reviewTeam}
+            />
+          )}
+        </section>
+      ) : null}
+
+      {memberMode ? (
+        <section className={styles.sideCard}>
+          <h2 className={styles.sectionTitle}>{it.adminBankPeople}</h2>
+          <p className={styles.meta}>{it.adminBankMembersHelp}</p>
+          {confirm ? (
+            <form action={action} className={fields.form}>
+              <input type="hidden" name="editionId" value={editionId} />
+              <input type="hidden" name="teamId" value={teamId} />
+              <input type="hidden" name="amount" value={amount} />
+              <input type="hidden" name="paidOn" value={paidOn} />
+              <input type="hidden" name="reference" value={reference} />
+              <input type="hidden" name="confirm" value="yes" />
+              {selected.map((id) => (
+                <input key={id} type="hidden" name="registrationId" value={id} />
+              ))}
+              <ul className={styles.confirmList}>
+                {confirm.map((line) => (
+                  <li key={line}>{line}</li>
+                ))}
+              </ul>
+              {state?.error ? <ActionError error={state.error} code={state.code} /> : null}
               <div className={fields.actions}>
-                <Button type="button" onClick={review}>
+                <PendingSubmitButton idle={it.adminBankConfirm} pendingLabel={it.adminBankSaving} />
+                <Button type="button" variant="ghost" onClick={() => setConfirm(null)} disabled={pending}>
+                  {it.adminFeesCancel}
+                </Button>
+              </div>
+            </form>
+          ) : (
+            <div className={fields.form}>
+              <AmountFields
+                amount={amount}
+                paidOn={paidOn}
+                reference={reference}
+                today={today}
+                onAmount={setAmount}
+                onDate={setPaidOn}
+                onReference={setReference}
+              />
+              <BankTransferPeoplePicker
+                people={people}
+                currency={currency}
+                receivedCents={parsedAmount.ok ? parsedAmount.cents : null}
+                selectedIds={selected}
+                onChange={(ids) => {
+                  setSelected(ids);
+                  setConfirm(null);
+                }}
+              />
+              <div className={fields.actions}>
+                <Button type="button" onClick={reviewMembers}>
                   {it.adminBankReview}
                 </Button>
               </div>
@@ -308,10 +361,12 @@ export function BankTransferForm({
                 <tr>
                   <th>{it.adminBankTeam}</th>
                   <th>{it.adminBankReceived}</th>
-                  <th>{it.adminBankExpected}</th>
+                  <th>{it.adminBankUsed}</th>
+                  <th>{it.adminBankResidual}</th>
                   <th>{it.adminBankDate}</th>
                   <th>{it.adminBankReference}</th>
                   <th>{it.adminBankOperator}</th>
+                  <th />
                 </tr>
               </thead>
               <tbody>
@@ -319,10 +374,16 @@ export function BankTransferForm({
                   <tr key={row.id}>
                     <td>{row.teamName}</td>
                     <td>{row.amountLabel}</td>
-                    <td>{row.expectedLabel}</td>
+                    <td>{row.usedLabel}</td>
+                    <td>{row.residualLabel}</td>
                     <td>{row.paidOn}</td>
                     <td>{row.reference}</td>
                     <td>{row.operator}</td>
+                    <td>
+                      <ButtonLink href={`/admin/pagamenti/bonifico/${row.id}`} variant="secondary">
+                        {it.adminBankOpen}
+                      </ButtonLink>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -331,5 +392,76 @@ export function BankTransferForm({
         </section>
       ) : null}
     </div>
+  );
+}
+
+function AmountFields({
+  amount,
+  paidOn,
+  reference,
+  today,
+  onAmount,
+  onDate,
+  onReference,
+  onReview,
+}: {
+  amount: string;
+  paidOn: string;
+  reference: string;
+  today: string;
+  onAmount: (value: string) => void;
+  onDate: (value: string) => void;
+  onReference: (value: string) => void;
+  onReview?: () => void;
+}) {
+  return (
+    <>
+      <div className={styles.feeGrid}>
+        <div className={fields.field}>
+          <label className={fields.label} htmlFor="bank-amount">
+            {it.adminBankReceived}
+          </label>
+          <input
+            id="bank-amount"
+            className={fields.input}
+            inputMode="decimal"
+            value={amount}
+            onChange={(event) => onAmount(event.target.value)}
+          />
+        </div>
+        <div className={fields.field}>
+          <label className={fields.label} htmlFor="bank-date">
+            {it.adminBankDate}
+          </label>
+          <input
+            id="bank-date"
+            className={fields.input}
+            type="date"
+            max={today}
+            value={paidOn}
+            onChange={(event) => onDate(event.target.value)}
+          />
+        </div>
+        <div className={fields.field}>
+          <label className={fields.label} htmlFor="bank-reference">
+            {it.adminBankReference}
+          </label>
+          <input
+            id="bank-reference"
+            className={fields.input}
+            value={reference}
+            onChange={(event) => onReference(event.target.value)}
+            maxLength={80}
+          />
+        </div>
+      </div>
+      {onReview ? (
+        <div className={fields.actions}>
+          <Button type="button" onClick={onReview}>
+            {it.adminBankReview}
+          </Button>
+        </div>
+      ) : null}
+    </>
   );
 }

@@ -18,3 +18,4 @@ Doppio click / tab chiuso a metà: si **riusa** il Payment `PENDING` (nuovo chec
 | PAYMENT_FEE_MISSING | PAYMENTS | Nessuna quota positiva | Manca override squadra e predefinita edizione | Il pagamento non parte | Nessuno | checkout |
 | PAYMENT_BANK_NOTHING_DUE | PAYMENTS | Nessuna quota scoperta | Bonifico su squadra già saldata | Non c’è nulla da saldare | Nessuno | bonifico squadra |
 | PAYMENT_BANK_DUPLICATE | PAYMENTS | Riferimento già usato sulla squadra | Secondo invio dello stesso CRO | Riferimento già registrato | Correggi | bonifico squadra |
+| PAYMENT_BANK_INSUFFICIENT | PAYMENTS | Residuo insufficiente | Quote selezionate oltre l'importo ricevuto | Il residuo non copre le quote | Riduci la selezione | associazione bonifico |

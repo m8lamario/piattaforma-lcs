@@ -217,9 +217,12 @@ Mai un flag denormalizzato `privacyAccepted` sul User come unica prova.
 **TeamBankTransfer** — bonifico confermato dal Super Admin, senza sessione Stripe.
 
 - teamId + editionId, con la stessa FK composta di Payment
-- `amount` è l’importo ricevuto; `expectedAmount` è il totale delle quote applicate al momento della conferma
+- `amount` è l’importo ricevuto. `expectedAmount` è lo storico del totale scoperto alla registrazione, non il residuo aggiornato
 - reference unico per squadra, paidAt, recordedByUserId
-- I Payment collegati (`bankTransferId`, `recordedByUserId`) segnano la copertura: in modalità TEAM una riga di squadra con l’importo ricevuto; in modalità PLAYER o BOTH una riga per ogni giocatore e staff ancora scoperto, con la quota di quella persona. Un Payment `SUCCEEDED` già presente non si aggiorna.
+- I Payment collegati (`bankTransferId`, `recordedByUserId`) segnano la copertura.
+- In modalità TEAM una riga di squadra con l’importo ricevuto copre la rosa, anche le iscrizioni successive. Le quote individuali sono `not_due` e non si associano una per una.
+- In modalità PLAYER o BOTH il Super Admin sceglie i giocatori e lo staff. Ogni nuova riga fotografa la quota di quella persona (giocatore o staff, override di squadra altrimenti predefinita di edizione). Si possono aggiungere persone iscritte dopo la registrazione del bonifico, finché la somma degli snapshot non supera `amount`. Le righe già collegate restano anche se una conferma precedente superava l’importo ricevuto: si possono rimuovere, non se ne aggiungono altre finché il residuo non basta. Rimuovere cancella solo quel Payment `bank_transfer` e lo stato iscrizione si ricalcola. Un `SUCCEEDED` di un altro provider non si modifica e impedisce una seconda copertura. Un solo `SUCCEEDED` per `registrationId`.
+- `expectedAmount` resta il totale scoperto al momento della registrazione (o l’importo ricevuto, se allora non c’era nessuno da coprire). Non si ricalcola quando si associano persone in seguito.
 
 Documenti, consensi e token di consenso restano sulla Registration: edition e competition si raggiungono da lì, senza duplicare le FK. Notification è per utente. AuditLog è append-only (`entityType` + `entityId`), senza scope duplicato. School resta globale e riusabile tra edizioni. `Competition.parentId` è un sotto-torneo opzionale, non un’edizione.
 
