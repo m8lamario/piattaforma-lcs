@@ -6,9 +6,11 @@ import { auth } from "@/auth";
 import {
   getCurrentMedicalDocument,
   getDocumentById,
+  listPendingMedicalQueue,
   reviewMedicalDocument,
   storeMedicalCertificate,
 } from "@/features/documents/data/documents";
+import { nextPendingAfter, reviewDocumentHref, reviewDoneHref } from "@/features/documents/domain/reviewQueue";
 import { MEDICAL_EXCESS_REASON } from "@/features/documents/domain/retention";
 import { createDocumentAccessToken } from "@/features/documents/domain/signedUrl";
 import { parseDateOnly } from "@/features/players/domain/dates";
@@ -19,6 +21,7 @@ import {
 import { nextStepAfter } from "@/features/registrations/domain/wizard";
 import { workspaceWriteCode } from "@/features/registrations/domain/writeGate";
 import { fail, type ActionFailure } from "@/shared/errors";
+import { it } from "@/shared/i18n/it";
 import { authorize } from "@/shared/authz/authorize";
 import { getActorByUserId } from "@/shared/authz/getActor";
 import { SIGNED_URL_TTL_SECONDS } from "@/shared/config/app";
@@ -150,7 +153,7 @@ export async function createSignedDocumentUrlAction(documentId: string) {
   return { url: `/api/documents/file?token=${encodeURIComponent(token)}` };
 }
 
-export async function reviewDocumentAction(formData: FormData) {
+export async function reviewDocumentAction(_prev: ActionFailure | undefined, formData: FormData) {
   const session = await auth();
   if (!session?.user?.id) redirect("/accedi?next=/admin/documenti");
   const actor = await getActorByUserId(session.user.id);
@@ -158,13 +161,17 @@ export async function reviewDocumentAction(formData: FormData) {
 
   const documentId = String(formData.get("documentId") ?? "");
   const decision = String(formData.get("decision") ?? "");
+  const filters = {
+    teamId: String(formData.get("teamId") ?? "").trim(),
+    q: String(formData.get("queueQ") ?? "").trim().slice(0, 80),
+  };
   let reason = String(formData.get("reason") ?? "");
   if (formData.get("excessHealth") === "on") {
     reason = reason.trim() ? `${MEDICAL_EXCESS_REASON}. ${reason.trim()}` : MEDICAL_EXCESS_REASON;
   }
   const expiresAt = parseDateOnly(String(formData.get("expiresAt") ?? ""));
   const document = await getDocumentById(documentId);
-  if (!document) return;
+  if (!document) return fail("DOCUMENT_NOT_FOUND");
 
   const allowed = authorize(actor, "document:review", {
     ownerUserId: document.playerProfile.userId,
@@ -174,7 +181,7 @@ export async function reviewDocumentAction(formData: FormData) {
     redirect("/area");
   }
 
-  if (decision !== "APPROVED" && decision !== "REJECTED") return;
+  if (decision !== "APPROVED" && decision !== "REJECTED") return fail("VALIDATION_INVALID_INPUT");
 
   const result = await reviewMedicalDocument({
     documentId,
@@ -183,13 +190,9 @@ export async function reviewDocumentAction(formData: FormData) {
     reason,
     expiresAt,
   });
-  if (!result.ok && result.reason === "reason_required") {
-    redirect(`/admin/documenti/${documentId}?error=reason`);
-  }
-  if (!result.ok && result.reason === "expiry_required") {
-    redirect(`/admin/documenti/${documentId}?error=expiry`);
-  }
-  if (!result.ok) return;
+  if (!result.ok && result.reason === "reason_required") return fail("DOCUMENT_REJECT_REASON_REQUIRED");
+  if (!result.ok && result.reason === "expiry_required") return fail("VALIDATION_INVALID_INPUT", it.adminExpiryRequired);
+  if (!result.ok) return fail("DOCUMENT_ALREADY_REVIEWED");
 
   await persistWorkspaceStatus(document.playerProfile.userId);
 
@@ -216,5 +219,11 @@ export async function reviewDocumentAction(formData: FormData) {
   revalidatePath("/admin/documenti");
   revalidatePath(`/admin/documenti/${documentId}`);
   revalidatePath("/area");
-  redirect("/admin/documenti");
+
+  const queue = await listPendingMedicalQueue({
+    teamId: filters.teamId || undefined,
+    q: filters.q || undefined,
+  });
+  const nextId = nextPendingAfter(queue, { id: document.id, uploadedAt: document.uploadedAt });
+  redirect(nextId ? reviewDocumentHref(nextId, filters) : reviewDoneHref(filters));
 }

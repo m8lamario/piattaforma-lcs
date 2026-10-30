@@ -12,6 +12,7 @@ type Props = {
   icon?: IconName;
   iconPosition?: "left" | "right";
   className?: string;
+  disabled?: boolean;
   formAction?: ButtonHTMLAttributes<HTMLButtonElement>["formAction"];
 };
 
@@ -22,6 +23,7 @@ export function PendingSubmitButton({
   icon,
   iconPosition = "left",
   className,
+  disabled = false,
   formAction,
 }: Props) {
   const { pending } = useFormStatus();
@@ -32,7 +34,7 @@ export function PendingSubmitButton({
       icon={icon}
       iconPosition={iconPosition}
       className={className}
-      disabled={pending}
+      disabled={pending || disabled}
       aria-busy={pending}
       formAction={formAction}
     >

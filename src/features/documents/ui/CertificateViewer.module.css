@@ -1,0 +1,66 @@
+.frame {
+  display: grid;
+  gap: var(--space-3);
+  min-height: 70vh;
+}
+
+.toolbar {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.stage {
+  overflow: auto;
+  min-height: 62vh;
+  background: var(--color-surface-inset);
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--radius-md);
+}
+
+.image,
+.imageZoom {
+  display: block;
+  height: auto;
+}
+
+.image {
+  width: 100%;
+}
+
+.imageZoom {
+  width: 200%;
+  max-width: none;
+}
+
+.pdf {
+  width: 100%;
+  min-height: 70vh;
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-inset);
+}
+
+.message {
+  display: grid;
+  gap: var(--space-3);
+  align-content: start;
+  min-height: 16rem;
+  margin: 0;
+  padding: var(--space-5);
+  background: var(--color-surface-inset);
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--radius-md);
+  color: var(--color-text-muted);
+}
+
+.message p {
+  margin: 0;
+}
+
+@media (max-width: 959px) {
+  .frame,
+  .pdf,
+  .stage {
+    min-height: 52vh;
+  }
+}
