@@ -30,7 +30,8 @@ import { ensureEmailVerification } from "@/features/auth/data/emailVerification"
 import { emailVerificationPath } from "@/features/auth/domain/verify";
 import { fail, failValidation, type ActionFailure, type ActionState } from "@/shared/errors";
 import { anonymizeUserAccount, deleteUserAccount } from "@/features/admin/data/lifecycle";
-import { anonymizeAccountSchema, deleteAccountSchema } from "@/features/admin/schemas/lifecycle";
+import { anonymizeAccountSchema, deleteAccountSchema, schoolLifecycleSchema } from "@/features/admin/schemas/lifecycle";
+import { anonymizeSchoolAccount, deleteSchoolAccount } from "@/features/admin/data/schoolLifecycle";
 import { appOrigin } from "@/shared/config/app";
 import { parseEuroToCents } from "@/features/payments/domain/fees";
 import { saveEditionDefaultFees, saveTeamFeeOverrides } from "@/features/admin/data/team-fees";
@@ -383,6 +384,63 @@ export async function anonymizeAccountAction(
   revalidatePath(`/admin/utenti/${parsed.data.userId}`);
   revalidatePath("/admin/audit");
   redirect(`/admin/utenti/${parsed.data.userId}?done=anonymized`);
+}
+
+export async function anonymizeSchoolAction(
+  _prev: ActionFailure | undefined,
+  formData: FormData,
+): Promise<ActionFailure | undefined> {
+  const { session, actor } = await requireAdminActor();
+  const parsed = schoolLifecycleSchema.safeParse({
+    schoolId: formData.get("schoolId"),
+    confirm: formData.get("confirm"),
+  });
+  if (!parsed.success) return failValidation(parsed.error.issues[0]?.message);
+  if (!authorize(actor, "user:anonymize").allow) return fail("LIFECYCLE_ANONYMIZE_FORBIDDEN");
+  const rateKey = await clientKey(`lifecycle:${session.user.id}`);
+  if (!(await consumeRateLimit(rateKey, RATE_LIMITS.lifecycle.limit, RATE_LIMITS.lifecycle.windowMs))) {
+    return fail("RATE_LIMITED");
+  }
+  const result = await anonymizeSchoolAccount({
+    schoolId: parsed.data.schoolId,
+    confirm: parsed.data.confirm,
+    actorUserId: session.user.id,
+  });
+  if (!result.ok) return fail(result.code);
+  revalidatePath("/admin/scuole");
+  revalidatePath(`/admin/scuole/${parsed.data.schoolId}`);
+  revalidatePath("/admin/squadre");
+  revalidatePath("/admin/utenti");
+  revalidatePath("/admin/audit");
+  redirect(`/admin/scuole/${parsed.data.schoolId}?done=anonymized`);
+}
+
+export async function deleteSchoolAction(
+  _prev: ActionFailure | undefined,
+  formData: FormData,
+): Promise<ActionFailure | undefined> {
+  const { session, actor } = await requireAdminActor();
+  const parsed = schoolLifecycleSchema.safeParse({
+    schoolId: formData.get("schoolId"),
+    confirm: formData.get("confirm"),
+  });
+  if (!parsed.success) return failValidation(parsed.error.issues[0]?.message);
+  if (!authorize(actor, "user:delete").allow) return fail("LIFECYCLE_DELETE_FORBIDDEN");
+  const rateKey = await clientKey(`lifecycle:${session.user.id}`);
+  if (!(await consumeRateLimit(rateKey, RATE_LIMITS.lifecycle.limit, RATE_LIMITS.lifecycle.windowMs))) {
+    return fail("RATE_LIMITED");
+  }
+  const result = await deleteSchoolAccount({
+    schoolId: parsed.data.schoolId,
+    confirm: parsed.data.confirm,
+    actorUserId: session.user.id,
+  });
+  if (!result.ok) return fail(result.code);
+  revalidatePath("/admin/scuole");
+  revalidatePath("/admin/squadre");
+  revalidatePath("/admin/utenti");
+  revalidatePath("/admin/audit");
+  redirect("/admin/scuole?done=deleted");
 }
 
 export async function saveEditionDefaultFeesAction(

@@ -22,6 +22,9 @@ Non è un parere legale. OD-029 (self-service diritti) e OD-030 (purge file medi
 | `LIFECYCLE_ACCOUNT_DELETED` | 410 | Superficie admin / catalogo per `lifecycleStatus = DELETED`. Il **login** non emette questo codice: stesso fail `AUTH_INVALID_CREDENTIALS` (anti-enumerazione). | Questo account è chiuso. | Soft |
 | `LIFECYCLE_ACCOUNT_ANONYMIZED` | 410 | Superficie admin / catalogo per `lifecycleStatus = ANONYMIZED`. Stesso trattamento anti-enum al login. | Questo account è già stato anonimizzato. | Soft |
 | `LIFECYCLE_USER_NOT_FOUND` | 404 | User id assente (admin). | Account non trovato. | — |
+| `SCHOOL_NOT_FOUND` | 404 | School id assente. | Scuola non trovata. | — |
+| `SCHOOL_DELETE_BLOCKED` | 409 | Pagamenti, bonifici o certificati medici sulla scuola. | Non puoi eliminare questa scuola: restano pagamenti, bonifici o documenti da conservare. Puoi anonimizzare i dati personali. | Retained |
+| `SCHOOL_ALREADY_ANONYMIZED` | 409 | `School.metadata.anonymized` già true. | Questa scuola è già stata anonimizzata. | Soft già applicato |
 
 `audit:delete` è un’azione authz sempre negata (anche Super Admin). Non c’è codice catalogo dedicato: l’UI non espone la cancellazione dei log.
 

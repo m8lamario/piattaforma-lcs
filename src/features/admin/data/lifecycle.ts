@@ -117,7 +117,7 @@ export async function removePlayerFromTeam(input: {
   return { ok: true, plan: decision.plan };
 }
 
-async function loadAccountInput(userId: string, actorUserId: string, confirm: string): Promise<AccountInput> {
+export async function loadAccountInput(userId: string, actorUserId: string, confirm: string): Promise<AccountInput> {
   const user = await prisma.user.findUnique({
     where: { id: userId },
     include: {
@@ -245,6 +245,158 @@ async function markRegistrationsRemoved(tx: Prisma.TransactionClient, registrati
   });
 }
 
+export async function applyDeletePlanInTx(
+  tx: Prisma.TransactionClient,
+  plan: DeletePlan,
+  oldEmail: string,
+  audit: { actorUserId: string; documentsRetained: number; paymentsRetained: number },
+) {
+  await applyAccessRevocation(tx, plan, oldEmail);
+  await redactUserEmailHistory(plan.userId, oldEmail, tx, plan.tombstoneEmail);
+  await markRegistrationsRemoved(tx, plan.markRegistrationIds);
+  await tx.user.update({
+    where: { id: plan.userId },
+    data: {
+      email: plan.tombstoneEmail,
+      name: null,
+      image: null,
+      passwordHash: null,
+      emailVerified: null,
+      lifecycleStatus: "DELETED",
+      deletedAt: new Date(),
+      stripeCustomerId: null,
+    },
+  });
+  await tx.payment.updateMany({
+    where: { payerUserId: plan.userId },
+    data: {
+      billingName: null,
+      billingEmail: null,
+      billingLine1: null,
+      billingLine2: null,
+      billingPostalCode: null,
+      billingCity: null,
+      billingState: null,
+      billingCountry: null,
+    },
+  });
+  await tx.auditLog.create({
+    data: {
+      actorUserId: audit.actorUserId,
+      action: "ACCOUNT_DELETE",
+      entityType: "User",
+      entityId: plan.userId,
+      metadata: {
+        memberships: plan.deleteMembershipIds.length,
+        rolesCleared: plan.revokeRoleIds.length,
+        documentsRetained: audit.documentsRetained,
+        paymentsRetained: audit.paymentsRetained,
+        auditPriorCount: plan.auditLogCount,
+      },
+    },
+  });
+}
+
+export async function applyAnonymizePlanInTx(
+  tx: Prisma.TransactionClient,
+  plan: AnonymizePlan,
+  oldEmail: string,
+  profileId: string | null,
+  actorUserId: string,
+) {
+  await applyAccessRevocation(tx, plan, oldEmail);
+  await markRegistrationsRemoved(tx, plan.markRegistrationIds);
+  await tx.user.update({
+    where: { id: plan.userId },
+    data: {
+      email: plan.tombstoneEmail,
+      name: null,
+      image: null,
+      passwordHash: null,
+      emailVerified: null,
+      lifecycleStatus: "ANONYMIZED",
+      anonymizedAt: new Date(),
+      deletedAt: new Date(),
+      stripeCustomerId: null,
+    },
+  });
+  if (profileId) {
+    await tx.playerProfile.update({
+      where: { id: profileId },
+      data: {
+        firstName: "Anonimo",
+        lastName: "Utente",
+        birthDate: null,
+        fiscalCode: null,
+        phone: null,
+        shirtSize: null,
+        metadata: { anonymized: true },
+      },
+    });
+  }
+  await tx.payment.updateMany({
+    where: { payerUserId: plan.userId },
+    data: {
+      billingName: null,
+      billingEmail: null,
+      billingLine1: null,
+      billingLine2: null,
+      billingPostalCode: null,
+      billingCity: null,
+      billingState: null,
+      billingCountry: null,
+    },
+  });
+  for (const guardianId of plan.anonymizeGuardianIds) {
+    await tx.guardian.update({
+      where: { id: guardianId },
+      data: {
+        firstName: "Anonimo",
+        lastName: "Contatto",
+        relationship: "ALTRO",
+        email: `anon.guardian.${guardianId}@invalid.local`,
+        phone: null,
+        metadata: { anonymized: true },
+      },
+    });
+  }
+  if (plan.redactDocumentIds.length > 0) {
+    await tx.document.updateMany({
+      where: { id: { in: plan.redactDocumentIds } },
+      data: { originalFilename: "redatto" },
+    });
+  }
+  if (plan.redactConsentIds.length > 0) {
+    await tx.consentRecord.updateMany({
+      where: { id: { in: plan.redactConsentIds } },
+      data: { ipAddress: null, userAgent: null },
+    });
+  }
+  await tx.playerInvite.updateMany({
+    where: { acceptedByUserId: plan.userId },
+    data: { email: plan.tombstoneEmail, firstName: null, lastName: null },
+  });
+  await tx.staffInvite.updateMany({
+    where: { acceptedByUserId: plan.userId },
+    data: { email: plan.tombstoneEmail },
+  });
+  await redactUserEmailHistory(plan.userId, oldEmail, tx, plan.tombstoneEmail);
+  await tx.auditLog.create({
+    data: {
+      actorUserId,
+      action: "ACCOUNT_ANONYMIZE",
+      entityType: "User",
+      entityId: plan.userId,
+      metadata: {
+        documentsRedacted: plan.redactDocumentIds.length,
+        consentsRedacted: plan.redactConsentIds.length,
+        paymentsRetained: plan.retainPaymentIds.length,
+        auditPriorCount: plan.auditLogCount,
+      },
+    },
+  });
+}
+
 export async function deleteUserAccount(input: {
   userId: string;
   confirm: string;
@@ -267,52 +419,13 @@ export async function deleteUserAccount(input: {
     };
   }
 
-  await prisma.$transaction(async (tx) => {
-    await applyAccessRevocation(tx, decision.plan, current.email);
-    await redactUserEmailHistory(decision.plan.userId, current.email, tx, decision.plan.tombstoneEmail);
-    await markRegistrationsRemoved(tx, decision.plan.markRegistrationIds);
-    await tx.user.update({
-      where: { id: decision.plan.userId },
-      data: {
-        email: decision.plan.tombstoneEmail,
-        name: null,
-        image: null,
-        passwordHash: null,
-        emailVerified: null,
-        lifecycleStatus: "DELETED",
-        deletedAt: new Date(),
-        stripeCustomerId: null,
-      },
-    });
-    await tx.payment.updateMany({
-      where: { payerUserId: decision.plan.userId },
-      data: {
-        billingName: null,
-        billingEmail: null,
-        billingLine1: null,
-        billingLine2: null,
-        billingPostalCode: null,
-        billingCity: null,
-        billingState: null,
-        billingCountry: null,
-      },
-    });
-    await tx.auditLog.create({
-      data: {
-        actorUserId: input.actorUserId,
-        action: "ACCOUNT_DELETE",
-        entityType: "User",
-        entityId: decision.plan.userId,
-        metadata: {
-          memberships: decision.plan.deleteMembershipIds.length,
-          rolesCleared: decision.plan.revokeRoleIds.length,
-          documentsRetained: snapshot.documentIds.length,
-          paymentsRetained: snapshot.paymentIds.length,
-          auditPriorCount: decision.plan.auditLogCount,
-        },
-      },
-    });
-  });
+  await prisma.$transaction((tx) =>
+    applyDeletePlanInTx(tx, decision.plan, current.email, {
+      actorUserId: input.actorUserId,
+      documentsRetained: snapshot.documentIds.length,
+      paymentsRetained: snapshot.paymentIds.length,
+    }),
+  );
 
   return { ok: true, plan: decision.plan };
 }
@@ -339,99 +452,9 @@ export async function anonymizeUserAccount(input: {
     };
   }
 
-  await prisma.$transaction(async (tx) => {
-    await applyAccessRevocation(tx, decision.plan, current.email);
-    await markRegistrationsRemoved(tx, decision.plan.markRegistrationIds);
-    await tx.user.update({
-      where: { id: decision.plan.userId },
-      data: {
-        email: decision.plan.tombstoneEmail,
-        name: null,
-        image: null,
-        passwordHash: null,
-        emailVerified: null,
-        lifecycleStatus: "ANONYMIZED",
-        anonymizedAt: new Date(),
-        deletedAt: new Date(),
-        stripeCustomerId: null,
-      },
-    });
-    if (current.playerProfile) {
-      await tx.playerProfile.update({
-        where: { id: current.playerProfile.id },
-        data: {
-          firstName: "Anonimo",
-          lastName: "Utente",
-          birthDate: null,
-          fiscalCode: null,
-          phone: null,
-          shirtSize: null,
-          metadata: { anonymized: true },
-        },
-      });
-    }
-    await tx.payment.updateMany({
-      where: { payerUserId: decision.plan.userId },
-      data: {
-        billingName: null,
-        billingEmail: null,
-        billingLine1: null,
-        billingLine2: null,
-        billingPostalCode: null,
-        billingCity: null,
-        billingState: null,
-        billingCountry: null,
-      },
-    });
-    for (const guardianId of decision.plan.anonymizeGuardianIds) {
-      await tx.guardian.update({
-        where: { id: guardianId },
-        data: {
-          firstName: "Anonimo",
-          lastName: "Contatto",
-          relationship: "ALTRO",
-          email: `anon.guardian.${guardianId}@invalid.local`,
-          phone: null,
-          metadata: { anonymized: true },
-        },
-      });
-    }
-    if (decision.plan.redactDocumentIds.length > 0) {
-      await tx.document.updateMany({
-        where: { id: { in: decision.plan.redactDocumentIds } },
-        data: { originalFilename: "redatto" },
-      });
-    }
-    if (decision.plan.redactConsentIds.length > 0) {
-      await tx.consentRecord.updateMany({
-        where: { id: { in: decision.plan.redactConsentIds } },
-        data: { ipAddress: null, userAgent: null },
-      });
-    }
-    await tx.playerInvite.updateMany({
-      where: { acceptedByUserId: decision.plan.userId },
-      data: { email: decision.plan.tombstoneEmail, firstName: null, lastName: null },
-    });
-    await tx.staffInvite.updateMany({
-      where: { acceptedByUserId: decision.plan.userId },
-      data: { email: decision.plan.tombstoneEmail },
-    });
-    await redactUserEmailHistory(decision.plan.userId, current.email, tx, decision.plan.tombstoneEmail);
-    await tx.auditLog.create({
-      data: {
-        actorUserId: input.actorUserId,
-        action: "ACCOUNT_ANONYMIZE",
-        entityType: "User",
-        entityId: decision.plan.userId,
-        metadata: {
-          documentsRedacted: decision.plan.redactDocumentIds.length,
-          consentsRedacted: decision.plan.redactConsentIds.length,
-          paymentsRetained: decision.plan.retainPaymentIds.length,
-          auditPriorCount: decision.plan.auditLogCount,
-        },
-      },
-    });
-  });
+  await prisma.$transaction((tx) =>
+    applyAnonymizePlanInTx(tx, decision.plan, current.email, current.playerProfile?.id ?? null, input.actorUserId),
+  );
 
   return { ok: true, plan: decision.plan };
 }

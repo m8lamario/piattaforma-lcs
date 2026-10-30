@@ -342,6 +342,14 @@ export const ERROR_CATALOG: Record<ErrorCode, ErrorDefinition> = {
   LIFECYCLE_USER_NOT_FOUND: def("LIFECYCLE", "User id inesistente dopo authz super admin.", 404, "none"),
   LIFECYCLE_TARGET_NOT_ACTIVE: def("LIFECYCLE", "Remove-from-team su account non ACTIVE.", 409, "none"),
   LIFECYCLE_REGISTRATION_REMOVED: def("LIFECYCLE", "Registration.status = REMOVED: scritture wizard bloccate.", 409, "none"),
+  SCHOOL_NOT_FOUND: def("LIFECYCLE", "School id inesistente.", 404, "none"),
+  SCHOOL_DELETE_BLOCKED: def(
+    "LIFECYCLE",
+    "Pagamenti, bonifici o documenti impediscono la cancellazione della scuola.",
+    409,
+    "none",
+  ),
+  SCHOOL_ALREADY_ANONYMIZED: def("LIFECYCLE", "School.metadata.anonymized è già true.", 409, "none"),
 
   SCHOOL_ACCESS_DUPLICATE: def("SCHOOL_ACCESS", "Richiesta PENDING già presente per email o scuola+edizione.", 409, "wait", {
     severity: "info",
