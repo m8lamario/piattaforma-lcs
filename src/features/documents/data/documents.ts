@@ -91,6 +91,15 @@ export async function listRecentReviewedMedicalDocuments() {
   });
 }
 
+export async function getAdminDocumentViews(documentIds: string[]) {
+  const ids = [...new Set(documentIds)].slice(0, 8);
+  if (ids.length === 0) return [];
+  return prisma.document.findMany({
+    where: { id: { in: ids } },
+    select: adminDocumentSelect,
+  });
+}
+
 export async function getAdminDocumentView(documentId: string) {
   return prisma.document.findUnique({
     where: { id: documentId },

@@ -11,34 +11,38 @@ type Props = {
   documentId: string;
   mimeType: string;
   available: boolean;
+  prefetchedUrl?: string | null;
+  loading?: boolean;
 };
 
-type Phase = { kind: "loading" } | { kind: "ready"; url: string } | { kind: "error" } | { kind: "missing" };
-
-export function CertificateViewer({ documentId, mimeType, available }: Props) {
-  const [phase, setPhase] = useState<Phase>(available ? { kind: "loading" } : { kind: "missing" });
+export function CertificateViewer({ documentId, mimeType, available, prefetchedUrl, loading }: Props) {
+  const [fallbackUrl, setFallbackUrl] = useState<string | null>(null);
+  const [fetchError, setFetchError] = useState(false);
   const [attempt, setAttempt] = useState(0);
   const [zoomed, setZoomed] = useState(false);
   const image = mimeType === "image/jpeg" || mimeType === "image/png";
   const pdf = mimeType === "application/pdf";
+  const displayUrl = prefetchedUrl ?? fallbackUrl;
+  const needsFallback = available && !displayUrl && !loading;
 
   useEffect(() => {
-    if (!available) return;
+    if (!needsFallback) return;
     let active = true;
     void createSignedDocumentUrlAction(documentId).then((result) => {
       if (!active) return;
       if ("url" in result && result.url) {
-        setPhase({ kind: "ready", url: result.url });
+        setFallbackUrl(result.url);
+        setFetchError(false);
         return;
       }
-      setPhase({ kind: "error" });
+      setFetchError(true);
     });
     return () => {
       active = false;
     };
-  }, [available, attempt, documentId]);
+  }, [needsFallback, attempt, documentId]);
 
-  if (phase.kind === "missing") {
+  if (!available) {
     return (
       <p className={styles.message} role="status">
         {it.adminReviewFileMissing}
@@ -46,23 +50,22 @@ export function CertificateViewer({ documentId, mimeType, available }: Props) {
     );
   }
 
-  if (phase.kind === "loading") {
+  if (!displayUrl) {
+    if (fetchError) {
+      return (
+        <div className={styles.message} role="alert">
+          <p>{it.adminReviewFileError}</p>
+          <Button type="button" variant="secondary" onClick={() => setAttempt((value) => value + 1)}>
+            {it.adminReviewFileRetry}
+          </Button>
+          <OpenDocumentButton documentId={documentId} />
+        </div>
+      );
+    }
     return (
       <p className={styles.message} role="status">
         {it.adminReviewLoading}
       </p>
-    );
-  }
-
-  if (phase.kind === "error") {
-    return (
-      <div className={styles.message} role="alert">
-        <p>{it.adminReviewFileError}</p>
-        <Button type="button" variant="secondary" onClick={() => setAttempt((value) => value + 1)}>
-          {it.adminReviewFileRetry}
-        </Button>
-        <OpenDocumentButton documentId={documentId} />
-      </div>
     );
   }
 
@@ -77,7 +80,7 @@ export function CertificateViewer({ documentId, mimeType, available }: Props) {
         <div className={styles.stage}>
           {/* eslint-disable-next-line @next/next/no-img-element -- il file medico è privato e il link firmato scade: non passa dall'ottimizzatore immagini */}
           <img
-            src={phase.url}
+            src={displayUrl}
             alt={it.adminDocumentTitle}
             className={zoomed ? styles.imageZoom : styles.image}
           />
@@ -88,7 +91,7 @@ export function CertificateViewer({ documentId, mimeType, available }: Props) {
 
   if (pdf) {
     return (
-      <iframe className={styles.pdf} src={phase.url} title={it.adminDocumentTitle} />
+      <iframe className={styles.pdf} src={displayUrl} title={it.adminDocumentTitle} />
     );
   }
 
