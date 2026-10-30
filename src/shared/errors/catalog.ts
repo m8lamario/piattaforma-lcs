@@ -250,6 +250,12 @@ export const ERROR_CATALOG: Record<ErrorCode, ErrorDefinition> = {
     409,
     "correct_input",
   ),
+  PAYMENT_BANK_INSUFFICIENT: def(
+    "PAYMENTS",
+    "Somma delle quote da associare superiore all'importo ricevuto meno i Payment già collegati al bonifico.",
+    409,
+    "correct_input",
+  ),
   PAYMENT_GUARDIAN_REQUIRED: def(
     "PAYMENTS",
     "Checkout giocatore minore senza autorizzazione di iscrizione del genitore.",

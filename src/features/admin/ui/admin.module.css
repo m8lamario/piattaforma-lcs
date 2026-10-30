@@ -302,7 +302,11 @@
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-3);
-  align-items: center;
+  align-items: end;
+}
+
+.searchField {
+  flex: 1 1 16rem;
 }
 
 @media (min-width: 960px) {
@@ -342,6 +346,91 @@
   gap: var(--space-2);
 }
 
+.stack {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.amountStats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  gap: var(--space-3);
+}
+
+.amountStat {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.amountStat span {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+.meter {
+  height: 0.65rem;
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-inset);
+  overflow: hidden;
+}
+
+.meterFill,
+.meterFillOver {
+  display: block;
+  height: 100%;
+  background: var(--color-accent);
+}
+
+.meterFillOver {
+  background: var(--color-warning);
+}
+
+.personList {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.personRow {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: var(--space-3);
+  align-items: center;
+  padding: var(--space-3);
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--radius-md);
+}
+
+.personRowDisabled {
+  opacity: 0.72;
+}
+
+.personIdentity {
+  display: grid;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.personIdentity strong,
+.personIdentity span {
+  overflow-wrap: anywhere;
+}
+
+.personCheck {
+  width: 1.15rem;
+  height: 1.15rem;
+  accent-color: var(--color-accent);
+}
+
+.personAside {
+  display: grid;
+  justify-items: end;
+  gap: var(--space-2);
+  text-align: right;
+}
+
 @media (max-width: 959px) {
   .subnav {
     flex-wrap: nowrap;
@@ -356,5 +445,15 @@
 @media (max-width: 640px) {
   .filtersRow {
     grid-template-columns: 1fr;
+  }
+
+  .personRow {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .personAside {
+    grid-column: 2;
+    justify-items: start;
+    text-align: left;
   }
 }

@@ -39,6 +39,10 @@ export function formatEuro(cents: number) {
   return `${whole},${frac}`;
 }
 
+export function formatSignedEuro(cents: number) {
+  return `${cents < 0 ? "−" : ""}${formatEuro(Math.abs(cents))}`;
+}
+
 function pickOverride(overrideCents: number | null | undefined, editionAmount: { toString(): string } | number | null | undefined): FeeResolution {
   if (overrideCents != null) {
     if (!Number.isInteger(overrideCents) || overrideCents < 1 || overrideCents > MAX_FEE_CENTS) {
