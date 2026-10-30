@@ -8,6 +8,7 @@ const LINKS = [
   { href: "/admin/documenti", labelKey: "navAdminDocuments" },
   { href: "/admin/edizioni", labelKey: "navAdminEditions" },
   { href: "/admin/squadre", labelKey: "navAdminTeams" },
+  { href: "/admin/scuole", labelKey: "navAdminSchools" },
   { href: "/admin/richieste", labelKey: "navAdminSchoolRequests" },
   { href: "/admin/pagamenti", labelKey: "navAdminPayments" },
   { href: "/admin/comunicazioni", labelKey: "navAdminEmails" },

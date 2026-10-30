@@ -3,6 +3,7 @@ import { getTeamAdmin } from "@/features/admin/data/catalog";
 import { AdminFrame } from "@/features/admin/ui/AdminFrame";
 import { requireStaff } from "@/shared/authz/requireStaff";
 import { StaffInviteForm } from "@/features/admin/ui/StaffInviteForm";
+import { ButtonLink } from "@/shared/ui/Button";
 import { PageHeader } from "@/shared/ui/PageHeader";
 import { StatusChip } from "@/shared/ui/StatusChip";
 import { it } from "@/shared/i18n/it";
@@ -20,6 +21,7 @@ export default async function AdminTeamDetailPage({ params }: Props) {
         kicker={`${team.edition.competition.name} · ${team.edition.name}`}
         title={team.name}
         description={`${team.school.name}${team.school.city ? ` · ${team.school.city}` : ""}`}
+        aside={<ButtonLink href={`/admin/scuole/${team.school.id}`}>{it.schoolLifecycleOpen}</ButtonLink>}
       />
 
       <div className={styles.twoColGrid}>

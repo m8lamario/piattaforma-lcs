@@ -14,6 +14,11 @@ export const deleteAccountSchema = z.object({
     .min(1, `Scrivi ${DELETE_CONFIRM_WORD} per confermare.`),
 });
 
+export const schoolLifecycleSchema = z.object({
+  schoolId: z.string().min(1),
+  confirm: z.string().min(1, "Conferma mancante."),
+});
+
 export const anonymizeAccountSchema = z.object({
   userId: z.string().min(1),
   confirm: z

@@ -982,6 +982,10 @@ export const it = {
   errorLIFECYCLE_USER_NOT_FOUND: "Account non trovato.",
   errorLIFECYCLE_TARGET_NOT_ACTIVE: "Questo account non è più attivo.",
   errorLIFECYCLE_REGISTRATION_REMOVED: "Sei stato rimosso dalla squadra. Questa iscrizione non si modifica più da qui.",
+  errorSCHOOL_NOT_FOUND: "Scuola non trovata.",
+  errorSCHOOL_DELETE_BLOCKED:
+    "Non puoi eliminare questa scuola: restano pagamenti, bonifici o documenti da conservare. Puoi anonimizzare i dati personali.",
+  errorSCHOOL_ALREADY_ANONYMIZED: "Questa scuola è già stata anonimizzata.",
   errorSCHOOL_ACCESS_DUPLICATE: "Abbiamo già una richiesta in esame per questi dati.",
   errorSCHOOL_ACCESS_ALREADY_APPROVED:
     "Questa richiesta è già stata approvata. Controlla l’email per attivare l’account.",
@@ -1051,6 +1055,35 @@ export const it = {
   lifecycleUsersHelp: "Chiusura e anonimizzazione secondo la policy della piattaforma. I rappresentanti non vedono questa pagina.",
   lifecycleUsersEmpty: "Nessun account in elenco.",
   navAdminUsers: "Account",
+  navAdminSchools: "Scuole",
+  schoolLifecycleTitle: "Account scolastico",
+  schoolLifecycleHelp:
+    "Anonimizzazione e cancellazione riguardano la scuola, i referenti e le persone iscritte solo a questa scuola. Pagamenti, esiti di verifica e audit non si cancellano.",
+  schoolLifecycleAnonymizeTitle: "Anonimizza account",
+  schoolLifecycleAnonymizeHelp:
+    "Mantiene scuola, squadre, iscrizioni, pagamenti e audit. Sostituisce i dati identificativi con valori non riconducibili e revoca gli accessi.",
+  schoolLifecycleDeleteTitle: "Elimina account",
+  schoolLifecycleDeleteHelp:
+    "Elimina la scuola e le squadre solo se non ci sono pagamenti, bonifici o documenti da conservare. Gli account esclusivi vengono chiusi, non cancellati dallo storico.",
+  schoolLifecycleConfirmLabel: "Scrivi {word} per confermare",
+  schoolLifecycleAnonymizeSubmit: "Anonimizza scuola",
+  schoolLifecycleDeleteSubmit: "Elimina scuola",
+  schoolLifecycleAnonymizing: "Anonimizzazione in corso…",
+  schoolLifecycleDeleting: "Eliminazione in corso…",
+  schoolLifecycleSummary:
+    "{users} utenti collegati, di cui {players} giocatori e {staff} staff. {registrations} iscrizioni. Documenti medici: {documents}. Pagamenti: {payments}. Bonifici: {transfers}.",
+  schoolLifecycleShared:
+    "{count} account restano attivi perché sono collegati anche ad altre scuole o a ruoli di piattaforma. Su questa scuola perdono solo membership e iscrizione locale.",
+  schoolLifecycleRetain:
+    "Restano gli identificativi interni, lo stato delle iscrizioni, i pagamenti senza dati di fatturazione, l’esito delle verifiche documentali e l’audit. I file medici delle iscrizioni chiuse vengono rimossi dallo storage secondo la policy di ritiro.",
+  schoolLifecycleBlocked:
+    "La cancellazione completa non è disponibile. Usa l’anonimizzazione per togliere i dati personali e lasciare pagamenti, documenti e audit.",
+  schoolLifecycleEmpty: "Nessuna scuola.",
+  schoolLifecycleDoneAnonymized: "Scuola anonimizzata. Gli accessi degli account esclusivi sono stati revocati.",
+  schoolLifecycleDoneDeleted: "Scuola eliminata. Gli account esclusivi sono chiusi; lo storico necessario resta.",
+  schoolLifecycleOpen: "Gestisci scuola",
+  schoolListTitle: "Scuole",
+  schoolListHelp: "Ogni scuola può avere più squadre, un referente e le iscrizioni collegate.",
   heroRemoved: "Sei stato rimosso dalla squadra. L’account resta tuo; questa iscrizione non si modifica più da qui.",
   lifecycleDeletedDone: "Account chiuso. L’accesso è disattivato; audit e dati da conservare restano.",
   lifecycleAnonymizedDone: "Account anonimizzato. I dati identificativi non sono più visibili.",
