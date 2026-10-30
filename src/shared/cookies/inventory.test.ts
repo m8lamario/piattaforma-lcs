@@ -79,7 +79,8 @@ describe("inventario cookie", () => {
     expect(layout).toContain("ADOBE_FONTS_STYLESHEET");
     expect(layout).toContain("VercelInsights");
     expect(proxy).toContain("connect-src 'self'");
-    expect(proxy).toContain("frame-src 'none'");
+    expect(proxy).toContain("frame-src 'self' blob:");
+    expect(proxy).toContain("frame-ancestors 'self'");
     expect(proxy).toContain("RETIRED_COOKIE_NAMES");
     expect(proxy).toContain("VERCEL_SCRIPTS_ORIGIN");
     const runtime = readFileSync(

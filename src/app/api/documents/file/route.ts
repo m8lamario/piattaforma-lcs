@@ -55,6 +55,8 @@ export async function GET(request: NextRequest) {
       "Content-Disposition": `inline; filename="${filename}"`,
       "Cache-Control": "no-store",
       "X-Content-Type-Options": "nosniff",
+      "X-Frame-Options": "SAMEORIGIN",
+      "Content-Security-Policy": "default-src 'none'; frame-ancestors 'self'",
     },
   });
 }

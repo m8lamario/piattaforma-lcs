@@ -24,7 +24,8 @@ function csp(nonce: string) {
     `script-src ${scriptSrc}${vercelScripts}`,
     `font-src 'self' ${fontSources}`,
     `connect-src 'self'${vercelScripts}`,
-    "frame-src 'none'",
+    // I PDF dei certificati si aprono in iframe same-origin o blob: (anteprima in memoria).
+    "frame-src 'self' blob:",
     "frame-ancestors 'none'",
     "base-uri 'self'",
     "form-action 'self'",
@@ -51,6 +52,14 @@ export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   requestHeaders.set("x-pathname", pathname);
   const needsAuth = protectedPrefixes.some((prefix) => pathname.startsWith(prefix));
+
+  if (pathname === "/api/documents/file") {
+    const fileResponse = NextResponse.next({
+      request: { headers: requestHeaders },
+    });
+    fileResponse.headers.set("Content-Security-Policy", "default-src 'none'; frame-ancestors 'self'");
+    return fileResponse;
+  }
 
   if (needsAuth && !session?.user) {
     const url = request.nextUrl.clone();
