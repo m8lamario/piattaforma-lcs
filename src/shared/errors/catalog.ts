@@ -181,6 +181,12 @@ export const ERROR_CATALOG: Record<ErrorCode, ErrorDefinition> = {
   DOCUMENT_REJECT_REASON_REQUIRED: def("DOCUMENTS", "Review REJECTED senza reason trim.", 400, "correct_input", {
     retrySafe: true,
   }),
+  DOCUMENT_ALREADY_REVIEWED: def(
+    "DOCUMENTS",
+    "Document non più PENDING_REVIEW: updateMany non ha scritto una seconda review.",
+    409,
+    "none",
+  ),
   STAFF_MEDICAL_NOT_REQUIRED: def(
     "DOCUMENTS",
     "Upload certificato su Registration.category STAFF.",

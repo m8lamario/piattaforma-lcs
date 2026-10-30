@@ -51,7 +51,8 @@ Un utente può avere più ruoli (es. rappresentante che è anche giocatore). La 
 /admin/richieste/[id]
 /admin/registrazioni
 /admin/giocatori/[id]
-/admin/documenti
+/admin/documenti               coda certificati; «Inizia la revisione» apre il primo
+/admin/documenti/[id]          certificato, dati e decisione nella stessa pagina; dopo il salvataggio si apre il successivo ancora in coda
 /admin/squadre
 /admin/squadre/[id]
 /admin/edizioni
@@ -79,7 +80,7 @@ Un utente può avere più ruoli (es. rappresentante che è anche giocatore). La 
 M0: `/`, `/accedi`, layout token, shell autenticata.
 M1: `/squadra` (inviti rappresentante), `/invito`, `/invito/[token]` (redeem/account), `/area` con stato account collegato alla squadra.
 M2: `/area` dashboard checklist; `/area/registrazione` e `/area/registrazione/[step]` (dati, tutore, placeholder passi successivi, riepilogo). `/area/dati` redirige al passo dati.
-M3: `/area/registrazione/certificato`; `/admin/documenti`; `/api/documents/file`.
+M3: `/area/registrazione/certificato`; `/admin/documenti` e `/admin/documenti/[id]` (revisione continua); `/api/documents/file`.
 M4: `/area/registrazione/privacy` e `/liberatorie`; `/liberatorie` pubblica.
 M5: `/area/registrazione/pagamento`; `/area/pagamento/esito`; `/api/webhooks/payments`.
 M6: `/squadra` rosa PII minima; `/area/comunicazioni`.

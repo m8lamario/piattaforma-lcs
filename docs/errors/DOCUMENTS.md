@@ -9,4 +9,5 @@
 | DOCUMENT_NOT_FOUND | DOCUMENTS | Id inesistente o 404 opaco | IDOR o missing | Documento non disponibile | Nessuno | file GET / signed URL |
 | DOCUMENT_UPLOAD_RATE_LIMITED | DOCUMENTS | Rate limit upload | Troppi upload | Troppi upload | Attendi | upload |
 | DOCUMENT_REJECT_REASON_REQUIRED | DOCUMENTS | Rifiuto senza motivo | Admin | Devi indicare un motivo | Correggi | review |
+| DOCUMENT_ALREADY_REVIEWED | DOCUMENTS | Non più in revisione | Un altro revisore ha già deciso | Decisione non registrata di nuovo | Nessuno | review |
 | STAFF_MEDICAL_NOT_REQUIRED | DOCUMENTS | Upload medico su staff | category STAFF | Il certificato non è richiesto | Nessuno | `uploadMedicalCertificateAction` |

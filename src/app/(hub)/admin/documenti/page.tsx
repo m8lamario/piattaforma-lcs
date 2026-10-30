@@ -3,12 +3,13 @@ import {
   listPendingMedicalDocuments,
   listRecentReviewedMedicalDocuments,
 } from "@/features/documents/data/documents";
+import { reviewDocumentHref } from "@/features/documents/domain/reviewQueue";
 import { filterOptions } from "@/features/admin/data/catalog";
 import { AdminFrame } from "@/features/admin/ui/AdminFrame";
 import { requireStaffOrReviewer } from "@/shared/authz/requireStaff";
 import { PageHeader } from "@/shared/ui/PageHeader";
 import { StatusChip, type StatusTone } from "@/shared/ui/StatusChip";
-import { Button } from "@/shared/ui/Button";
+import { Button, ButtonLink } from "@/shared/ui/Button";
 import { it } from "@/shared/i18n/it";
 import styles from "@/features/admin/ui/admin.module.css";
 import fields from "@/shared/ui/form.module.css";
@@ -31,21 +32,30 @@ function statusTone(status: string): StatusTone {
 }
 
 type Props = {
-  searchParams: Promise<{ teamId?: string; q?: string }>;
+  searchParams: Promise<{ teamId?: string; q?: string; done?: string }>;
 };
 
 export default async function AdminDocumentsPage({ searchParams }: Props) {
   const query = await searchParams;
+  const filters = { teamId: query.teamId?.trim() || undefined, q: query.q?.trim() || undefined };
   const [{ actor }, pending, recent, options] = await Promise.all([
     requireStaffOrReviewer("/admin/documenti"),
-    listPendingMedicalDocuments({ teamId: query.teamId, q: query.q?.trim() || undefined }),
+    listPendingMedicalDocuments(filters),
     listRecentReviewedMedicalDocuments(),
     filterOptions(),
   ]);
 
   return (
     <AdminFrame path="/admin/documenti" allowReviewer actor={actor}>
-      <PageHeader title={it.adminDocumentsTitle} description={it.adminDocumentsHelp} />
+      <PageHeader
+        title={it.adminDocumentsTitle}
+        description={it.adminDocumentsHelp}
+        aside={
+          pending[0] ? (
+            <ButtonLink href={reviewDocumentHref(pending[0].id, filters)}>{it.adminReviewStart}</ButtonLink>
+          ) : null
+        }
+      />
       <form className={styles.filters} method="get">
         <div className={styles.filtersRow}>
           <div className={fields.field}>
@@ -74,13 +84,13 @@ export default async function AdminDocumentsPage({ searchParams }: Props) {
       </form>
       {pending.length === 0 ? (
         <p className={styles.empty} role="status">
-          {it.adminDocumentsEmpty}
+          {query.done === "1" ? it.adminDocumentsDone : it.adminDocumentsEmpty}
         </p>
       ) : (
         <ul className={styles.list}>
           {pending.map((document) => (
             <li key={document.id}>
-              <Link href={`/admin/documenti/${document.id}`} className={styles.item}>
+              <Link href={reviewDocumentHref(document.id, filters)} className={styles.item}>
                 <span>
                   <strong>{playerName(document)}</strong>
                   <span className={styles.meta}>{document.registration.team.name}</span>
@@ -97,7 +107,7 @@ export default async function AdminDocumentsPage({ searchParams }: Props) {
           <ul className={styles.list}>
             {recent.map((document) => (
               <li key={document.id}>
-                <Link href={`/admin/documenti/${document.id}`} className={styles.item}>
+                <Link href={`${reviewDocumentHref(document.id, filters)}`} className={styles.item}>
                   <span>
                     <strong>{playerName(document)}</strong>
                     <span className={styles.meta}>{document.registration.team.name}</span>

@@ -47,23 +47,35 @@ export async function getDocumentById(documentId: string) {
   });
 }
 
+function pendingMedicalWhere(filters: { teamId?: string; q?: string }) {
+  return {
+    status: "PENDING_REVIEW" as const,
+    type: { code: "MEDICAL_CERTIFICATE" },
+    registration: filters.teamId ? { teamId: filters.teamId } : undefined,
+    playerProfile: filters.q
+      ? {
+          OR: [
+            { firstName: { contains: filters.q, mode: "insensitive" as const } },
+            { lastName: { contains: filters.q, mode: "insensitive" as const } },
+          ],
+        }
+      : undefined,
+  };
+}
+
 export async function listPendingMedicalDocuments(filters: { teamId?: string; q?: string } = {}) {
   return prisma.document.findMany({
-    where: {
-      status: "PENDING_REVIEW",
-      type: { code: "MEDICAL_CERTIFICATE" },
-      registration: filters.teamId ? { teamId: filters.teamId } : undefined,
-      playerProfile: filters.q
-        ? {
-            OR: [
-              { firstName: { contains: filters.q, mode: "insensitive" } },
-              { lastName: { contains: filters.q, mode: "insensitive" } },
-            ],
-          }
-        : undefined,
-    },
-    orderBy: { uploadedAt: "asc" },
+    where: pendingMedicalWhere(filters),
+    orderBy: [{ uploadedAt: "asc" }, { id: "asc" }],
     select: adminDocumentSelect,
+  });
+}
+
+export async function listPendingMedicalQueue(filters: { teamId?: string; q?: string } = {}) {
+  return prisma.document.findMany({
+    where: pendingMedicalWhere(filters),
+    orderBy: [{ uploadedAt: "asc" }, { id: "asc" }],
+    select: { id: true, uploadedAt: true },
   });
 }
 
@@ -176,27 +188,25 @@ export async function reviewMedicalDocument(input: {
   }
 
   const updated = await prisma.$transaction(async (tx) => {
-    const document = await tx.document.findUnique({ where: { id: input.documentId } });
-    if (!document || document.status !== "PENDING_REVIEW") {
-      return null;
-    }
-    await tx.documentReview.create({
-      data: {
-        documentId: document.id,
-        reviewerId: input.reviewerId,
-        decision: input.decision,
-        reason: input.reason?.trim() || null,
-      },
-    });
-    return tx.document.update({
-      where: { id: document.id },
+    const claimed = await tx.document.updateMany({
+      where: { id: input.documentId, status: "PENDING_REVIEW" },
       data: {
         status: input.decision,
         expiresAt: input.decision === "APPROVED" ? input.expiresAt : null,
       },
     });
+    if (claimed.count !== 1) return null;
+    await tx.documentReview.create({
+      data: {
+        documentId: input.documentId,
+        reviewerId: input.reviewerId,
+        decision: input.decision,
+        reason: input.reason?.trim() || null,
+      },
+    });
+    return tx.document.findUnique({ where: { id: input.documentId } });
   });
 
-  if (!updated) return { ok: false as const, reason: "missing" as const };
+  if (!updated) return { ok: false as const, reason: "not_pending" as const };
   return { ok: true as const, document: updated };
 }
