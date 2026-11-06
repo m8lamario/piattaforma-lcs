@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import { after } from "next/server";
 import { redirect } from "next/navigation";
-import { auth } from "@/auth";
+import { requirePageUser } from "@/shared/authz/requestIdentity";
 import { maybeSendC1Reminder } from "@/features/consents/data/tokens";
 import { maybeSendGuardianReminder } from "@/features/consents/data/guardianAuth";
 import { EmailVerifyNotice } from "@/features/auth/ui/EmailVerifyNotice";
@@ -30,8 +30,8 @@ import { loadAppShell } from "@/shared/ui/loadAppShell";
 import { EmptyState } from "@/shared/ui/EmptyState";
 import { it } from "@/shared/i18n/it";
 
-function scheduleWorkspaceFollowUp(workspace: PlayerWorkspace | null) {
-  if (!workspace) return;
+function scheduleWorkspaceFollowUp(workspace: PlayerWorkspace | null, viewing: boolean) {
+  if (!workspace || viewing) return;
   after(async () => {
     if (workspace.projectedStatus !== workspace.registration.status) {
       await persistRegistrationStatus(workspace.registration.id, workspace.projectedStatus);
@@ -44,12 +44,9 @@ function scheduleWorkspaceFollowUp(workspace: PlayerWorkspace | null) {
 }
 
 export default async function AreaPage() {
-  const session = await auth();
-  if (!session?.user?.id) {
-    redirect("/accedi");
-  }
-
-  const userId = session.user.id;
+  const identity = await requirePageUser("/area");
+  const userId = identity.subjectUserId;
+  const viewing = Boolean(identity.view);
   const shellPromise = loadAppShell(userId);
   const workspacePromise = loadPlayerWorkspace(userId);
 
@@ -78,7 +75,7 @@ export default async function AreaPage() {
         listTeamsByIds(teamIds),
         listUnreadNotifications(userId),
       ]);
-      scheduleWorkspaceFollowUp(workspace);
+      scheduleWorkspaceFollowUp(workspace, viewing);
       if (
         team &&
         authorize(shell.actor, "team:read", {
@@ -148,7 +145,7 @@ export default async function AreaPage() {
       );
     }
 
-    scheduleWorkspaceFollowUp(await workspacePromise);
+    scheduleWorkspaceFollowUp(await workspacePromise, viewing);
     return (
       <EmptyState icon="team" title={it.areaOverviewTitle}>
         <p>{it.areaRepEmpty}</p>
@@ -157,7 +154,7 @@ export default async function AreaPage() {
   }
 
   const workspace = await workspacePromise;
-  scheduleWorkspaceFollowUp(workspace);
+  scheduleWorkspaceFollowUp(workspace, viewing);
 
   if (workspace) {
     return (

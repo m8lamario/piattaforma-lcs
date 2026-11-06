@@ -24,6 +24,7 @@ I nomi Auth.js hanno il prefisso `__Secure-` o `__Host-` quando il sito è servi
 | CSRF Auth.js. Produzione: `__Host-authjs.csrf-token`. Sviluppo HTTP: `authjs.csrf-token` | cookie HttpOnly, SameSite=Lax, Path=/, Secure su HTTPS | proteggere il flusso di accesso | sessione del browser (nessun Max-Age) | prima parte | tecnico |
 | Ritorno dopo il login. Produzione: `__Secure-authjs.callback-url`. Sviluppo HTTP: `authjs.callback-url` | cookie HttpOnly, SameSite=Lax, Path=/, Secure su HTTPS | tornare alla pagina richiesta dopo il login | sessione del browser (nessun Max-Age) | prima parte | tecnico |
 | `eph-team` | cookie HttpOnly, SameSite=Lax, Path=/, Secure su HTTPS | ricordare la squadra selezionata dal rappresentante, tra quelle già autorizzate. Un valore non autorizzato viene ignorato. Si cancella all’uscita dall’account | 365 giorni | prima parte | tecnico, per la funzione di selezione squadra |
+| `eph-view` | cookie HttpOnly, SameSite=Lax, Path=/, Secure su HTTPS | tenere attiva una visualizzazione in sola lettura avviata da un amministratore autorizzato. Non sostituisce il cookie di sessione e non contiene la password dell’account visualizzato. Si cancella con «Termina visualizzazione» o all’uscita | 30 minuti | prima parte | tecnico |
 | Checkout Stripe, solo dopo il redirect e solo se i pagamenti Stripe sono attivi | dominio del fornitore, non su questo sito. Stripe.js non è caricato qui | pagamento della quota | secondo l’[informativa cookie di Stripe](https://stripe.com/it/legal/cookies-policy) | terza parte | da confermare sull’informativa del fornitore |
 | `eph-cookie-consent` | cookie HttpOnly di prima parte | ricordare Accetta, Rifiuta o le categorie di statistica | 180 giorni, impostato solo dopo una scelta | prima parte | tecnico di gestione del consenso |
 
@@ -53,13 +54,13 @@ I cookie di questa piattaforma (sessione di accesso, protezione del login, ritor
 
 Vercel Web Analytics e Speed Insights non usano cookie, ma restano strumenti di statistica non necessari. Il banner Accetta / Rifiuta / Preferenze compare finché non registri una scelta. Senza scelta, o dopo Rifiuta, gli script non partono.
 
-La scelta si modifica o si revoca da questa pagina. Revocare riporta allo stato «nessuna scelta» e rispegne gli strumenti non necessari. Uscire dall’account non è la revoca di un consenso cookie: chiude la sessione e cancella `eph-team`.
+La scelta si modifica o si revoca da questa pagina. Revocare riporta allo stato «nessuna scelta» e rispegne gli strumenti non necessari. Uscire dall’account non è la revoca di un consenso cookie: chiude la sessione e cancella `eph-team` e, se presente, `eph-view`.
 
 ---
 
 ## 4. Come gestirli
 
-- Logout: invalida la sessione lato applicazione e cancella `eph-team`.
+- Logout: invalida la sessione lato applicazione e cancella `eph-team` e `eph-view`.
 - Browser: elimina o blocca i cookie dalle impostazioni. [Chrome](https://support.google.com/chrome/answer/95647), [Firefox](https://support.mozilla.org/kb/clear-cookies-and-site-data-firefox), [Edge](https://support.microsoft.com/microsoft-edge/delete-cookies-in-microsoft-edge-63947406-40ac-c3b8-57b9-2a946a29ae09), [Safari](https://support.apple.com/guide/safari/sfri11471/mac).
 - Non usiamo un identificativo pubblicitario proprio.
 

@@ -14,6 +14,7 @@ import { workspaceWriteCode } from "@/features/registrations/domain/writeGate";
 import { authorize } from "@/shared/authz/authorize";
 import { getActorByUserId } from "@/shared/authz/getActor";
 import { fail, failValidation, type ActionFailure } from "@/shared/errors";
+import { viewWriteDenial } from "@/shared/lib/readOnlyGuard";
 import { writeAuditLog } from "@/shared/lib/audit";
 import { prisma } from "@/shared/lib/prisma";
 import {
@@ -34,6 +35,8 @@ async function requireWritableRegistration() {
   if (!session?.user?.id) redirect("/accedi?next=/area");
   const actor = await getActorByUserId(session.user.id);
   if (!actor) redirect("/accedi");
+  const denied = await viewWriteDenial();
+  if (denied) return { failure: denied, session, actor, workspace: null };
   const workspace = await loadPlayerWorkspace(session.user.id);
   if (!workspace) {
     return { failure: fail("REGISTRATION_NOT_FOUND"), session, actor, workspace: null };

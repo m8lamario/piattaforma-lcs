@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { after } from "next/server";
-import { auth } from "@/auth";
+import { requirePageUser } from "@/shared/authz/requestIdentity";
 import { maybeSendC1Reminder } from "@/features/consents/data/tokens";
 import { boxesFor, isBoxActive, latestChoices, revocableCodes } from "@/features/consents/domain/boxes";
 import { ConsentsManager } from "@/features/consents/ui/ConsentsManager";
@@ -11,11 +11,12 @@ import { it } from "@/shared/i18n/it";
 import styles from "../comunicazioni/page.module.css";
 
 export default async function ConsentsPage() {
-  const session = await auth();
-  if (!session?.user?.id) redirect("/accedi?next=/area/consensi");
-  const workspace = await loadPlayerWorkspace(session.user.id);
+  const identity = await requirePageUser("/area/consensi");
+  const workspace = await loadPlayerWorkspace(identity.subjectUserId);
   if (!workspace) redirect("/area");
-  after(() => maybeSendC1Reminder(workspace.registration.id).catch(() => undefined));
+  if (!identity.view) {
+    after(() => maybeSendC1Reminder(workspace.registration.id).catch(() => undefined));
+  }
 
   const map = latestChoices(workspace.choices);
   const revocable = new Set(

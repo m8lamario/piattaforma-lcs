@@ -10,6 +10,7 @@ import { createNotification } from "@/features/notifications/data/notifications"
 import { writeAuditLog } from "@/shared/lib/audit";
 import { prisma } from "@/shared/lib/prisma";
 import { userAgentAndIp } from "@/shared/lib/request-guard";
+import { loadActiveAdminView } from "@/shared/lib/readOnlyGuard";
 
 async function persistByUser(userId: string) {
   const workspace = await loadPlayerWorkspace(userId);
@@ -19,6 +20,9 @@ async function persistByUser(userId: string) {
 }
 
 export async function completeStubPayment(paymentId: string) {
+  if (await loadActiveAdminView()) {
+    return { ok: false as const, reason: "readonly" as const };
+  }
   const session = await auth();
   if (!session?.user?.id) {
     return { ok: false as const, reason: "auth" as const };

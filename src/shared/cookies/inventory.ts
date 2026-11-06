@@ -1,3 +1,5 @@
+import { ADMIN_VIEW_COOKIE, ADMIN_VIEW_TTL_SECONDS } from "@/features/admin-view/domain/constants";
+
 /**
  * Inventario tecnico di cookie e risorse esterne del frontend.
  * Le durate Auth.js sono quelle di `@auth/core` `defaultCookies` + `session.maxAge`
@@ -6,6 +8,7 @@
 
 export const SESSION_MAX_AGE_SECONDS = 30 * 24 * 60 * 60;
 export const SESSION_UPDATE_AGE_SECONDS = 24 * 60 * 60;
+
 export const TEAM_COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 365;
 export const CONSENT_MAX_AGE_SECONDS = 60 * 60 * 24 * 180;
 
@@ -95,6 +98,23 @@ export const FIRST_PARTY_COOKIES: readonly FirstPartyCookie[] = [
     sameSite: "lax",
     secure: "https-only",
     setWhen: "Solo dopo la selezione esplicita di una squadra. Cancellato all’uscita dall’account.",
+  },
+  {
+    id: "admin-view",
+    name: ADMIN_VIEW_COOKIE,
+    productionName: ADMIN_VIEW_COOKIE,
+    provider: "ESL Player Hub (prima parte)",
+    purpose:
+      "Tenere attiva una visualizzazione in sola lettura avviata da un amministratore autorizzato, senza sostituire la sessione di accesso",
+    category: "necessary",
+    durationSeconds: ADMIN_VIEW_TTL_SECONDS,
+    durationLabel: "30 minuti",
+    path: "/",
+    httpOnly: true,
+    sameSite: "lax",
+    secure: "https-only",
+    setWhen:
+      "Solo dopo la conferma «Visualizza come utente». Cancellato con «Termina visualizzazione» o all’uscita dall’account.",
   },
   {
     id: "consent",

@@ -1,12 +1,11 @@
 import { redirect } from "next/navigation";
-import { auth } from "@/auth";
+import { requirePageUser } from "@/shared/authz/requestIdentity";
 import { loadPlayerWorkspace } from "@/features/registrations/data/workspace";
 import { nextIncompleteStep } from "@/features/registrations/domain/wizard";
 
 export default async function RegistrationIndexPage() {
-  const session = await auth();
-  if (!session?.user?.id) redirect("/accedi?next=/area/registrazione");
-  const workspace = await loadPlayerWorkspace(session.user.id);
+  const identity = await requirePageUser("/area/registrazione");
+  const workspace = await loadPlayerWorkspace(identity.subjectUserId);
   if (!workspace) redirect("/area");
   redirect(`/area/registrazione/${nextIncompleteStep(workspace.checklist)}`);
 }

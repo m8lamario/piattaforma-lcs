@@ -29,6 +29,7 @@ import { isWellFormedInviteToken } from "@/features/teams/domain/token";
 import { ensureEmailVerification } from "@/features/auth/data/emailVerification";
 import { emailVerificationPath } from "@/features/auth/domain/verify";
 import { fail, failValidation, type ActionFailure, type ActionState } from "@/shared/errors";
+import { viewWriteDenial } from "@/shared/lib/readOnlyGuard";
 import { anonymizeUserAccount, deleteUserAccount } from "@/features/admin/data/lifecycle";
 import { anonymizeAccountSchema, deleteAccountSchema, schoolLifecycleSchema } from "@/features/admin/schemas/lifecycle";
 import { anonymizeSchoolAccount, deleteSchoolAccount } from "@/features/admin/data/schoolLifecycle";
@@ -75,6 +76,7 @@ function requirementsFromForm(formData: FormData) {
 }
 
 async function requireAdminActor() {
+  if (await viewWriteDenial()) redirect("/admin");
   const session = await auth();
   if (!session?.user?.id) redirect("/accedi?next=/admin");
   const actor = await getActorByUserId(session.user.id);
@@ -242,6 +244,8 @@ export async function redeemStaffInviteAction(
   _prev: ActionFailure | undefined,
   formData: FormData,
 ) {
+  const denied = await viewWriteDenial();
+  if (denied) return denied;
   const parsed = redeemStaffSchema.safeParse({
     token: formData.get("token"),
     password: formData.get("password") || undefined,

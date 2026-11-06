@@ -3,12 +3,12 @@ import Credentials from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { loginSchema } from "@/features/auth/schemas/login";
 import { verifyPassword } from "@/features/auth/domain/password";
-import { prisma } from "@/shared/lib/prisma";
+import { unguardedPrisma } from "@/shared/lib/prisma";
 import { SESSION_MAX_AGE_SECONDS, SESSION_UPDATE_AGE_SECONDS } from "@/shared/cookies/inventory";
 import { logger } from "@/shared/lib/logger";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
-  adapter: PrismaAdapter(prisma),
+  adapter: PrismaAdapter(unguardedPrisma),
   trustHost: true,
   session: {
     strategy: "jwt",
@@ -28,7 +28,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         const parsed = loginSchema.safeParse(credentials);
         if (!parsed.success) return null;
 
-        const user = await prisma.user.findUnique({
+        const user = await unguardedPrisma.user.findUnique({
           where: { email: parsed.data.email.toLowerCase() },
         });
         if (!user?.passwordHash || user.lifecycleStatus !== "ACTIVE") {
@@ -52,7 +52,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         token.sub = user.id;
       }
       if (token.sub) {
-        const row = await prisma.user.findUnique({
+        const row = await unguardedPrisma.user.findUnique({
           where: { id: token.sub },
           select: { lifecycleStatus: true, email: true },
         });

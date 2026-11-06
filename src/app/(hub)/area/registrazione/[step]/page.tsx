@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { after } from "next/server";
-import { auth } from "@/auth";
+import { canReadMedicalFile } from "@/features/admin-view/domain/policy";
+import { requirePageUser } from "@/shared/authz/requestIdentity";
 import { loadAppShell } from "@/shared/ui/loadAppShell";
 import { authorize } from "@/shared/authz/authorize";
 import { GuardianForm } from "@/features/players/ui/GuardianForm";
@@ -36,19 +37,17 @@ type Props = {
 
 export default async function WizardStepPage({ params }: Props) {
   const { step: raw } = await params;
-  const session = await auth();
-  if (!session?.user?.id) {
-    redirect(`/accedi?next=/area/registrazione/${raw}`);
-  }
+  const identity = await requirePageUser(`/area/registrazione/${raw}`);
+  const userId = identity.subjectUserId;
 
   const [shell, workspace] = await Promise.all([
-    loadAppShell(session.user.id),
-    loadPlayerWorkspace(session.user.id),
+    loadAppShell(userId),
+    loadPlayerWorkspace(userId),
   ]);
   if (!workspace) redirect("/area");
 
-  const allowed = authorize(shell.actor ?? { userId: session.user.id, roles: [], membershipTeamIds: [] }, "registration:read", {
-    ownerUserId: session.user.id,
+  const allowed = authorize(shell.actor ?? identity.subjectActor, "registration:read", {
+    ownerUserId: userId,
     teamId: workspace.registration.teamId,
   });
   if (!allowed.allow) redirect("/area");
@@ -65,10 +64,12 @@ export default async function WizardStepPage({ params }: Props) {
     redirect(`/area/registrazione/${gated}`);
   }
 
-  after(() => {
-    void maybeSendC1Reminder(workspace.registration.id).catch(() => undefined);
-    void maybeSendGuardianReminder(workspace.registration.id).catch(() => undefined);
-  });
+  if (!identity.view) {
+    after(() => {
+      void maybeSendC1Reminder(workspace.registration.id).catch(() => undefined);
+      void maybeSendGuardianReminder(workspace.registration.id).catch(() => undefined);
+    });
+  }
 
   const steps = visibleWizardSteps(workspace.checklist);
   const privacySlugs = privacySlugsFor(workspace.evidence.isMinor);
@@ -121,7 +122,20 @@ export default async function WizardStepPage({ params }: Props) {
       );
       break;
     case "certificato":
-      body = <MedicalUploadForm document={workspace.medicalDocument} />;
+      body = (
+        <MedicalUploadForm
+          document={workspace.medicalDocument}
+          readOnly={Boolean(identity.view)}
+          allowFileOpen={canReadMedicalFile({
+            viewing: Boolean(identity.view),
+            viewerAllowed: authorize(identity.sessionActor, "document:read_file", {
+              ownerUserId: userId,
+              teamId: workspace.registration.teamId,
+            }).allow,
+            subjectAllowed: true,
+          })}
+        />
+      );
       break;
     case "privacy": {
       const documents = privacySlugs

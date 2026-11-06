@@ -61,11 +61,14 @@ La casella obbligatoria per giocare è M3 (maggiorenni) o G4 (minorenni), nel pa
 | Amministratori dell’organizzazione | no file: vedono stato e metadati | sì |
 | Revisore certificati (`MEDICAL_REVIEWER`) e Super Admin | sì, con audit di ogni visualizzazione | sì |
 | Organizzatore di una coppa locale | interfaccia di gestione della competizione, se autorizzato | lo stato; il file solo con il permesso di revisione documenti, con audit |
+| Amministratore in visualizzazione di sola lettura | il file solo se quel ruolo può già aprirlo. La visualizzazione non autorizza da sola e non consente di sostituire o cancellare il file. Ogni apertura è registrata a parte, senza il contenuto del certificato | lo stato, come nell’interfaccia dell’account |
 | Fornitore di storage | Cloudflare R2, accesso tecnico agli oggetti | sì |
 | Scuole e federazioni | no, in via ordinaria | no |
 | Assicurazione | solo in caso di infortunio e di richiesta della pratica | il file necessario a quella pratica |
 
 Accesso tecnico: niente percorso pubblico; token a tempo legato al documento e all’utente (default 60 secondi); ogni lettura è registrata.
+
+**Bozza da validare legalmente.** La visualizzazione amministrativa in sola lettura, descritta nell’[informativa privacy](/privacy), non estende da sola l’elenco di chi può aprire il file.
 
 Nessun medico esterno accede ai certificati.
 

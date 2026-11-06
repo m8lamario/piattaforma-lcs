@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { shellNavFlags } from "./shellNav";
+import { homeForShellFlags, shellNavFlags } from "./shellNav";
 
 describe("shellNavFlags", () => {
   it("per il rappresentante mostra panoramica squadra e scuola, non compagni né consensi", () => {
@@ -70,6 +70,24 @@ describe("shellNavFlags", () => {
       mediaUnderAdmin: true,
       showArea: false,
     });
+  });
+
+  it("manda la visualizzazione alla home del soggetto", () => {
+    const player = shellNavFlags({
+      isRepresentative: false,
+      isStaffOrReviewer: false,
+      hasMembership: true,
+      hasPlayerRegistration: true,
+    });
+    expect(homeForShellFlags(player)).toBe("/area");
+    const partner = shellNavFlags({
+      isRepresentative: false,
+      isStaffOrReviewer: false,
+      hasMembership: false,
+      hasPlayerRegistration: false,
+      canVerifyMedia: true,
+    });
+    expect(homeForShellFlags(partner)).toBe("/media");
   });
 
   it("per il solo giocatore mostra consensi e compagni", () => {

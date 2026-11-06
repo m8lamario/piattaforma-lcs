@@ -52,7 +52,16 @@ function canMediaVerify(actor: Actor, competitionId?: string) {
   return actor.mediaPartner.competitionIds.includes(competitionId);
 }
 
-const SUPER_ONLY: Action[] = ["platform:admin", "user:delete", "user:anonymize", "email:compose", "media:manage", "fee:manage", "payment:record_transfer"];
+const SUPER_ONLY: Action[] = [
+  "platform:admin",
+  "user:delete",
+  "user:anonymize",
+  "email:compose",
+  "media:manage",
+  "fee:manage",
+  "payment:record_transfer",
+  "user:view_as",
+];
 const ORG_ADMIN_DENIED: Action[] = [...SUPER_ONLY, "document:read_file", "document:review", "media:verify"];
 
 export function authorize(
@@ -73,7 +82,9 @@ export function authorize(
       return deny(
         action === "document:read_file" || action === "document:review"
           ? "Il file del certificato è riservato al revisore."
-          : "Solo Super Admin può gestire la piattaforma.",
+          : action === "user:view_as"
+            ? "Solo un Super Admin può visualizzare un account."
+            : "Solo Super Admin può gestire la piattaforma.",
       );
     }
     return { allow: true };
@@ -104,6 +115,7 @@ export function authorize(
     case "user:delete":
     case "user:anonymize":
     case "media:manage":
+    case "user:view_as":
       return deny("Permesso negato.");
     case "media:verify":
       return canMediaVerify(actor, resource.competitionId)

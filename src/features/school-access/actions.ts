@@ -23,6 +23,7 @@ import {
   schoolAccessRequestSchema,
 } from "@/features/school-access/schemas/request";
 import { writeAuditLog } from "@/shared/lib/audit";
+import { viewWriteDenial } from "@/shared/lib/readOnlyGuard";
 import { RATE_LIMITS, clientKey, consumeRateLimit, userAgentAndIp } from "@/shared/lib/request-guard";
 import { isWellFormedInviteToken } from "@/features/teams/domain/token";
 import { deliverEmailVerification } from "@/features/auth/data/emailVerification";
@@ -36,6 +37,7 @@ function formatExpiry(value: Date) {
 }
 
 async function requireAdminActor() {
+  if (await viewWriteDenial()) redirect("/admin/richieste");
   const session = await auth();
   if (!session?.user?.id) redirect("/accedi?next=/admin/richieste");
   const actor = await getActorByUserId(session.user.id);
@@ -44,6 +46,8 @@ async function requireAdminActor() {
 }
 
 export async function submitSchoolAccessAction(_prev: ActionFailure | undefined, formData: FormData) {
+  const denied = await viewWriteDenial();
+  if (denied) return denied;
   const parsed = schoolAccessRequestSchema.safeParse({
     firstName: formData.get("firstName"),
     lastName: formData.get("lastName"),
@@ -217,6 +221,8 @@ export async function resendSchoolAccessActivationAction(_prev: ActionFailure | 
 }
 
 export async function activateSchoolAccessAction(_prev: ActionFailure | undefined, formData: FormData) {
+  const denied = await viewWriteDenial();
+  if (denied) return denied;
   const parsed = activateSchoolAccessSchema.safeParse({
     token: formData.get("token"),
     password: formData.get("password"),

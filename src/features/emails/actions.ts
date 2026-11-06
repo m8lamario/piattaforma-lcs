@@ -7,6 +7,7 @@ import { appOrigin } from "@/shared/config/app";
 import { authorize } from "@/shared/authz/authorize";
 import { requireStaff } from "@/shared/authz/requireStaff";
 import { fail, failValidation, type ActionFailure, type ActionState } from "@/shared/errors";
+import { viewWriteDenial } from "@/shared/lib/readOnlyGuard";
 import { writeAuditLog } from "@/shared/lib/audit";
 import { RATE_LIMITS, clientKey, consumeRateLimit, userAgentAndIp } from "@/shared/lib/request-guard";
 import { MANUAL_TEMPLATE_KEYS } from "@/features/emails/domain/catalog";
@@ -84,6 +85,8 @@ export async function sendManualEmailAction(
   _prev: ActionState<{ messageId?: string }> | undefined,
   formData: FormData,
 ): Promise<ActionState<{ messageId?: string }>> {
+  const denied = await viewWriteDenial();
+  if (denied) return denied;
   const { session, actor } = await requireEmailActor("/admin/comunicazioni/nuova", "email:send");
   if (String(formData.get("confirm")) !== "on") return fail("EMAIL_CONFIRM_REQUIRED");
   const parsed = sendSchema.safeParse({
@@ -164,6 +167,8 @@ export async function retryEmailAction(
   _prev: ActionFailure | undefined,
   formData: FormData,
 ): Promise<ActionFailure | { ok: true; id: string }> {
+  const denied = await viewWriteDenial();
+  if (denied) return denied;
   const { session } = await requireEmailActor("/admin/comunicazioni", "email:send");
   const id = String(formData.get("id") ?? "");
   if (!id) return fail("EMAIL_NOT_FOUND");
@@ -186,6 +191,8 @@ export async function saveEmailTemplateAction(
   _prev: ActionFailure | undefined,
   formData: FormData,
 ): Promise<ActionFailure | { ok: true }> {
+  const denied = await viewWriteDenial();
+  if (denied) return denied;
   const { session } = await requireEmailActor("/admin/comunicazioni/template", "email:compose");
   const key = String(formData.get("key") ?? "");
   const subject = String(formData.get("subject") ?? "");
@@ -213,6 +220,8 @@ export async function notifyStaleLegalVersionAction(
   _prev: ActionState<{ sent?: number; failed?: number; total?: number }> | undefined,
   formData: FormData,
 ): Promise<ActionState<{ sent?: number; failed?: number; total?: number }>> {
+  const denied = await viewWriteDenial();
+  if (denied) return denied;
   const { session } = await requireEmailActor("/admin/informative", "email:send");
   const slug = String(formData.get("slug") ?? "");
   const confirm = String(formData.get("confirm") ?? "");

@@ -23,7 +23,8 @@ Lo scope dell’organizer è la competition intera, non una singola edition. `au
 | Azione | Player | Team Rep | Org Admin | Medical Reviewer | Super Admin |
 |---|---|---|---|---|---|
 | Login proprio account | sì | sì | sì | sì | sì |
-| Modificare dati propri | sì | se anche player | impersonation no in v1 | no | sì tecnico |
+| Modificare dati propri | sì | se anche player | no | no | sì tecnico |
+| Visualizzare un account in sola lettura (`user:view_as`) | no | no | no | no | sì, 30 minuti, senza scritture |
 | Vedere roster propria squadra (minimo) | sì | sì | sì | no | sì |
 | Invitare giocatori | no | sì (proprio team) | sì | no | sì |
 | Vedere stato certificato del roster | no (né dei compagni) | **stato** | **stato** | sì | sì |
@@ -100,7 +101,8 @@ type Action =
   | "email:send"
   | "email:compose"
   | "media:manage"
-  | "media:verify";
+  | "media:verify"
+  | "user:view_as";
 
 function authorize(actor: Actor, action: Action, resource: Resource): Decision
 ```
@@ -119,3 +121,4 @@ Nessun bypass `if (role === SUPER_ADMIN) return true` sparso nelle pagine: il su
 - `email:read` e `email:send` allo staff (Org Admin / Super Admin). Rep, giocatore, organizer e revisore certificati no.
 - `team:remove_player` scoped a `teamId`: il rappresentante non tocca altre squadre né account altrui.
 - `audit:delete` è sempre deny, Super Admin compreso: i log non si cancellano da prodotto.
+- `user:view_as` solo Super Admin. Apre l’interfaccia dell’account scelto senza sostituire la sessione Auth.js e senza usare la password dell’utente. Ogni scrittura Prisma è rifiutata. Il file medico resta su `document:read_file` dell’amministratore, non del soggetto visualizzato. Org Admin e revisore non ricevono il permesso.

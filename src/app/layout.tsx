@@ -4,6 +4,7 @@ import { headers } from "next/headers";
 import localFont from "next/font/local";
 import "@/shared/ui/tokens.css";
 import "./globals.css";
+import { AdminViewBanner } from "@/features/admin-view/ui/AdminViewBanner";
 import { CookieBanner } from "@/features/cookies/ui/CookieBanner";
 import { VercelInsights } from "@/features/cookies/ui/VercelInsights";
 import { ADOBE_FONTS_ORIGINS, ADOBE_FONTS_STYLESHEET } from "@/shared/cookies/inventory";
@@ -36,6 +37,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
         <script nonce={nonce} dangerouslySetInnerHTML={{ __html: THEME_BOOTSTRAP_SCRIPT }} />
       </head>
       <body>
+        <AdminViewBanner />
         {children}
         <VercelInsights />
         <CookieBanner />

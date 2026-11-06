@@ -4,6 +4,13 @@ Ogni voce: problema, opzioni, decisione necessaria, conseguenze, impatto sullo s
 
 ---
 
+## OD-050 Base giuridica della visualizzazione amministrativa
+
+- **Contesto:** il Super Admin può aprire l’interfaccia di un account in sola lettura (`user:view_as`), con audit e senza usare le credenziali. Il testo in `content/legal/` è una bozza.
+- **Decisione tecnica:** il permesso non è un consenso. Non si aggiunge una casella. Org Admin e revisore non lo ricevono. Il file medico non si sblocca con la sola visualizzazione.
+- **Aperto:** base giuridica (artt. 6 e 9 GDPR), se il permesso vada esteso ad altri ruoli, conservazione di IP/UA della sessione oltre OD-022.
+- **Bloccante per:** pubblicazione del paragrafo verso interessati reali. Il resto della piattaforma non dipende da questa scelta.
+
 ## OD-049 Elenco taglie maglia
 
 - **Problema:** l’organizzazione deve definire le taglie da gioco. Non c’è un listino firmato in `docs/`.

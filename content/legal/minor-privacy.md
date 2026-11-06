@@ -69,6 +69,8 @@ Strumenti elettronici e cartacei, personale autorizzato e istruito, misure di si
 
 ## 5. Destinatari
 
+**Bozza da validare legalmente.** Un amministratore con permesso specifico può aprire l’interfaccia dell’account del minore in sola lettura, per assistenza e gestione. Non usa le credenziali del minore, non può modificare i dati e non vede il certificato se il suo ruolo non può già aprirlo. Dettaglio nella sezione «Accesso amministrativo in sola lettura» dell’[informativa privacy](/privacy).
+
 Organizzatori locali dei tornei, fotografi e videomaker incaricati, fornitori della piattaforma di iscrizione, dei servizi email e di pagamento e dei servizi IT, tutti nominati responsabili del trattamento (art. 28 GDPR); istituti scolastici partecipanti, per la sola gestione delle squadre; compagnie assicurative; arbitri e personale di campo; consulenti fiscali e legali; autorità pubbliche quando richiesto dalla legge. Con il consenso F, i partner del punto 10 ricevono solo i dati del genitore che ha dato il consenso, li trattano come titolari autonomi e vi daranno la propria informativa. I dati sono diffusi solo come indicato ai punti 3.C1, 3.C2 e 3.D. Per le pagine social del torneo non è pubblicato un accordo di contitolarità specifico. I canali social sono quelli elencati nella [liberatoria](/liberatorie).
 
 ---

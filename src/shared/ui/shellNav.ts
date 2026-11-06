@@ -28,3 +28,14 @@ export function shellNavFlags(input: {
     showArea,
   };
 }
+
+export function homeForShellFlags(flags: {
+  showMedia: boolean;
+  showArea: boolean;
+  showAdmin: boolean;
+  mediaUnderAdmin: boolean;
+}) {
+  if (flags.showMedia && !flags.showArea && !flags.mediaUnderAdmin) return "/media";
+  if (!flags.showArea && flags.showAdmin) return "/admin";
+  return "/area";
+}

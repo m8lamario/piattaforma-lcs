@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { auth } from "@/auth";
+import { requirePageUser } from "@/shared/authz/requestIdentity";
 import { getEmailVerificationChallenge } from "@/features/auth/data/emailVerification";
 import {
   emailVerificationPath,
@@ -27,13 +27,10 @@ function formatExpiry(value: Date) {
 export default async function VerifyEmailPage({ searchParams }: Props) {
   const { next } = await searchParams;
   const destination = pathAfterEmailVerification(next);
-  const session = await auth();
-  if (!session?.user?.id) {
-    redirect(`/accedi?next=${encodeURIComponent(emailVerificationPath(destination))}`);
-  }
+  const identity = await requirePageUser(emailVerificationPath(destination));
 
   const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
+    where: { id: identity.subjectUserId },
     select: { email: true, emailVerified: true },
   });
   if (!user) redirect("/accedi");

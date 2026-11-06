@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { auth } from "@/auth";
+import { getRequestIdentity } from "@/shared/authz/requestIdentity";
 import { logoutAction } from "@/features/auth/actions";
 import { findInviteByPlainToken, loadRedeemContext } from "@/features/teams/data/invites";
 import { decideRedeemPath } from "@/features/teams/domain/invite";
@@ -39,7 +39,7 @@ function InviteMessage({ title, body }: { title: string; body: string }) {
 
 export default async function InviteRedeemPage({ params }: Props) {
   const { token } = await params;
-  const session = await auth();
+  const identity = await getRequestIdentity();
 
   if (!isWellFormedInviteToken(token)) {
     return (
@@ -86,8 +86,8 @@ export default async function InviteRedeemPage({ params }: Props) {
   const path = decideRedeemPath({
     inspection,
     existingUser: context.existingUser,
-    session: session?.user?.id
-      ? { userId: session.user.id, email: session.user.email ?? "" }
+    session: identity
+      ? { userId: identity.subjectUserId, email: identity.subjectEmail ?? "" }
       : null,
     existingRegistrations: context.existingRegistrations,
   });
@@ -153,7 +153,7 @@ export default async function InviteRedeemPage({ params }: Props) {
         <section className={styles.sheet}>
           <h1>{it.inviteTitle}</h1>
           <p>{userMessage("INVITE_WRONG_SESSION")}</p>
-          <form action={logoutAction}>
+          <form action={logoutAction} data-view-allow="logout">
             <input type="hidden" name="next" value={`/invito/${token}`} />
             <Button type="submit">{it.logoutRetryInvite}</Button>
           </form>

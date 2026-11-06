@@ -19,6 +19,7 @@ import { workspaceWriteCode } from "@/features/registrations/domain/writeGate";
 import { authorize } from "@/shared/authz/authorize";
 import { getActorByUserId } from "@/shared/authz/getActor";
 import { fail, type ActionFailure } from "@/shared/errors";
+import { viewWriteDenial } from "@/shared/lib/readOnlyGuard";
 import { writeAuditLog } from "@/shared/lib/audit";
 import { getTeamForActor } from "@/features/teams/data/invites";
 import { prisma } from "@/shared/lib/prisma";
@@ -26,6 +27,8 @@ import { userAgentAndIp } from "@/shared/lib/request-guard";
 import { appOrigin } from "@/shared/config/app";
 
 export async function startPlayerCheckoutAction(): Promise<ActionFailure | void> {
+  const denied = await viewWriteDenial();
+  if (denied) return denied;
   const session = await auth();
   if (!session?.user?.id) redirect("/accedi?next=/area/registrazione/pagamento");
   const actor = await getActorByUserId(session.user.id);
@@ -152,6 +155,8 @@ export async function startPlayerCheckoutAction(): Promise<ActionFailure | void>
 }
 
 export async function startTeamCheckoutAction(teamId: string): Promise<ActionFailure | void> {
+  const denied = await viewWriteDenial();
+  if (denied) return denied;
   const session = await auth();
   if (!session?.user?.id) redirect("/accedi?next=/squadra");
   const actor = await getActorByUserId(session.user.id);

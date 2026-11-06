@@ -10,8 +10,12 @@ import {
 } from "@/shared/cookies/consent";
 import { CONSENT_COOKIE_NAME, optionalCategories } from "@/shared/cookies/inventory";
 import { shouldUseSecureCookie } from "@/shared/cookies/options";
+import { loadActiveAdminView } from "@/shared/lib/readOnlyGuard";
 
 async function persistConsent(formData: FormData) {
+  if (await loadActiveAdminView()) {
+    redirect(safeReturnPath(formData.get("returnTo")));
+  }
   const headerList = await headers();
   const secure = shouldUseSecureCookie(headerList.get("x-forwarded-proto"));
   const decision = decideConsentWrite({

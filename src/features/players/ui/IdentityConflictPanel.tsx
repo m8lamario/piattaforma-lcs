@@ -32,7 +32,7 @@ export function IdentityConflictPanel({ registrationId, showFormHint = true, sec
         {showFormHint ? (
           <ButtonLink href="/area/registrazione/dati">{it.identityConflictCorrectCta}</ButtonLink>
         ) : null}
-        <form action={logoutAction}>
+        <form action={logoutAction} data-view-allow="logout">
           <Button type="submit" variant="ghost">
             {it.logout}
           </Button>
