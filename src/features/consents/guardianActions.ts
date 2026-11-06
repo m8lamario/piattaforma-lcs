@@ -11,9 +11,11 @@ import { isConsentBoxCode, submittedBoxesFrom } from "@/features/consents/domain
 import { isPartnerBoxVisible } from "@/features/consents/data/partners";
 import { privacySlugsFor, MEDIA_RELEASE_SLUG } from "@/features/consents/domain/pack";
 import { fail, type ActionFailure } from "@/shared/errors";
+import { viewWriteDenial } from "@/shared/lib/readOnlyGuard";
 import { RATE_LIMITS, clientKey, consumeRateLimit, userAgentAndIp } from "@/shared/lib/request-guard";
 
 export async function openGuardianLinkAction(token: string, purpose: "AUTHORIZE" | "PUBLICATION" | "REVOKE") {
+  if (await viewWriteDenial()) return;
   const found = await loadGuardianLink(token, purpose);
   if (!found || found.stale || !found.authorization) return;
   const trace = await userAgentAndIp();
@@ -24,6 +26,8 @@ export async function submitGuardianAuthorizationAction(
   _prev: ActionFailure | undefined,
   formData: FormData,
 ): Promise<ActionFailure | { done: true; refused: boolean }> {
+  const denied = await viewWriteDenial();
+  if (denied) return denied;
   const token = String(formData.get("token") ?? "");
   const purposeRaw = String(formData.get("purpose") ?? "AUTHORIZE");
   const purpose = purposeRaw === "PUBLICATION" ? "PUBLICATION" : "AUTHORIZE";
@@ -66,6 +70,8 @@ export async function submitGuardianRevocationAction(
   _prev: ActionFailure | undefined,
   formData: FormData,
 ): Promise<ActionFailure | { done: true }> {
+  const denied = await viewWriteDenial();
+  if (denied) return denied;
   const token = String(formData.get("token") ?? "");
   const rateKey = await clientKey(`guardian-revoke:${token.slice(0, 12)}`);
   if (!(await consumeRateLimit(rateKey, RATE_LIMITS.consentWrite.limit, RATE_LIMITS.consentWrite.windowMs))) {

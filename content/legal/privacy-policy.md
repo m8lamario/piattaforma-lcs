@@ -64,6 +64,18 @@ Nella piattaforma: il giocatore vede i propri dati e il proprio certificato; i c
 
 Fornitori: hosting Vercel (UE), database Neon PostgreSQL in AWS Europe Central 1 (Francoforte, Germania), storage Cloudflare R2 con giurisdizione Unione europea, email Resend, pagamenti Stripe. DPA art. 28 sugli account ESL di questi fornitori.
 
+### Accesso amministrativo in sola lettura
+
+**Bozza da validare legalmente prima della pubblicazione. Non è un parere giuridico e non sostituisce la revisione del titolare o del consulente privacy.**
+
+Personale con un permesso tecnico distinto (`user:view_as`, oggi il Super Admin della piattaforma, non l’amministratore di organizzazione né il revisore dei certificati) può aprire l’interfaccia di un account per assistenza tecnica, gestione amministrativa e risoluzione di problemi.
+
+- L’accesso usa la sessione già aperta dell’amministratore. Non vengono chieste né usate le credenziali della persona interessata.
+- La visualizzazione è di sola lettura: le modifiche sono rifiutate dal server, non solo nascoste nell’interfaccia.
+- La sessione dura al massimo 30 minuti, può essere chiusa in qualsiasi momento ed è registrata: chi l’ha avviata, quale account, inizio, fine, durata e tentativi di modifica bloccati. Il registro non contiene il contenuto dei certificati.
+- Il file del certificato medico non diventa visibile per il solo fatto della visualizzazione. Resta soggetto ai permessi già previsti (persona interessata sul proprio file, revisore certificati, Super Admin) e ogni apertura è registrata a parte.
+- La base giuridica di questo accesso, rispetto agli artt. 6 e 9 GDPR, è **DA VALIDARE LEGALMENTE**. Questa bozza non la indica come già scelta.
+
 ---
 
 ## 6. Trasferimenti extra-UE

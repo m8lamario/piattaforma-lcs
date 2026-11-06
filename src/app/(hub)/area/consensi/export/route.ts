@@ -1,16 +1,13 @@
 import { redirect } from "next/navigation";
-import { auth } from "@/auth";
+import { requirePageUser } from "@/shared/authz/requestIdentity";
 import { buildConsentExport, consentExportText } from "@/features/consents/domain/export";
 import { latestChoices } from "@/features/consents/domain/boxes";
 import { loadPlayerWorkspace } from "@/features/registrations/data/workspace";
 import { prisma } from "@/shared/lib/prisma";
 
 export async function GET(request: Request) {
-  const session = await auth();
-  if (!session?.user?.id) {
-    redirect("/accedi?next=/area/consensi/export");
-  }
-  const workspace = await loadPlayerWorkspace(session.user.id);
+  const identity = await requirePageUser("/area/consensi/export");
+  const workspace = await loadPlayerWorkspace(identity.subjectUserId);
   if (!workspace) {
     redirect("/area");
   }

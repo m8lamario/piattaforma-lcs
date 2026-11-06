@@ -46,6 +46,8 @@ Tabelle `User`, `Account`, `Session`, `VerificationToken` secondo Auth.js Prisma
 
 **User** — account. Email unica.
 
+**AdminViewSession** — visualizzazione in sola lettura di un account, separata dalla sessione Auth.js. `adminUserId`, `targetUserId`, `mode` (`READ_ONLY`), `startedAt`, `expiresAt`, `endedAt`, `endReason`. Non si cancella da UI. Lo storico degli atti (`VIEW_SESSION_START`, `VIEW_SESSION_END`, `VIEW_WRITE_BLOCKED`) sta su `AuditLog`. `onDelete: Restrict` verso `User`.
+
 **UserRole** — `role` + scope opzionale.
 
 | role | teamId | competitionId |

@@ -36,6 +36,8 @@ import { writeAuditLog } from "@/shared/lib/audit";
 import { RATE_LIMITS, clientKey, consumeRateLimit } from "@/shared/lib/request-guard";
 import { TEAM_COOKIE, appOrigin } from "@/shared/config/app";
 import { clearTeamCookieOptions, shouldUseSecureCookie } from "@/shared/cookies/options";
+import { viewWriteDenial } from "@/shared/lib/readOnlyGuard";
+import { clearAdminViewOnLogout } from "@/features/admin-view/actions";
 
 export async function loginAction(_prev: ActionFailure | undefined, formData: FormData) {
   const parsed = loginSchema.safeParse({
@@ -80,6 +82,10 @@ export async function loginAction(_prev: ActionFailure | undefined, formData: Fo
 export async function logoutAction(formData?: FormData) {
   const next = String(formData?.get("next") ?? "/");
   const redirectTo = next.startsWith("/") && !next.startsWith("//") ? next : "/";
+  const session = await auth();
+  if (session?.user?.id) {
+    await clearAdminViewOnLogout(session.user.id);
+  }
   const headerList = await headers();
   const jar = await cookies();
   jar.set(TEAM_COOKIE, "", clearTeamCookieOptions(shouldUseSecureCookie(headerList.get("x-forwarded-proto"))));
@@ -90,6 +96,8 @@ export async function changePasswordAction(
   _prev: ActionState<{ ok?: boolean }> | undefined,
   formData: FormData,
 ): Promise<ActionState<{ ok?: boolean }>> {
+  const denied = await viewWriteDenial();
+  if (denied) return denied;
   const session = await auth();
   if (!session?.user?.id) redirect("/accedi?next=/area/account");
   const parsed = changePasswordSchema.safeParse({
@@ -196,6 +204,8 @@ export async function verifyEmailCodeAction(
   _prev: ActionFailure | undefined,
   formData: FormData,
 ): Promise<ActionFailure | undefined> {
+  const denied = await viewWriteDenial();
+  if (denied) return denied;
   const session = await auth();
   const destination = pathAfterEmailVerification(String(formData.get("next") ?? ""));
   if (!session?.user?.id) {
@@ -238,6 +248,8 @@ export async function verifyEmailCodeAction(
 }
 
 export async function resendEmailVerificationAction(): Promise<ActionFailure | { sent: true }> {
+  const denied = await viewWriteDenial();
+  if (denied) return denied;
   const session = await auth();
   if (!session?.user?.id) redirect("/accedi?next=/verifica-email");
   const user = await prisma.user.findUnique({
@@ -265,6 +277,8 @@ export async function changeUnverifiedEmailAction(
   _prev: ActionFailure | { changed?: true; unchanged?: true } | undefined,
   formData: FormData,
 ): Promise<ActionFailure | { changed: true } | { unchanged: true }> {
+  const denied = await viewWriteDenial();
+  if (denied) return denied;
   const session = await auth();
   if (!session?.user?.id) redirect("/accedi?next=/verifica-email");
 

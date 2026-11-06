@@ -1,6 +1,5 @@
-import { auth } from "@/auth";
+import { requirePageUser } from "@/shared/authz/requestIdentity";
 import { after } from "next/server";
-import { redirect } from "next/navigation";
 import { listNotifications, markNotificationsRead } from "@/features/notifications/data/notifications";
 import { EmptyState } from "@/shared/ui/EmptyState";
 import { PageHeader } from "@/shared/ui/PageHeader";
@@ -8,10 +7,11 @@ import { it } from "@/shared/i18n/it";
 import styles from "./page.module.css";
 
 export default async function CommunicationsPage() {
-  const session = await auth();
-  if (!session?.user?.id) redirect("/accedi?next=/area/comunicazioni");
-  const items = await listNotifications(session.user.id);
-  after(() => markNotificationsRead(session.user.id));
+  const identity = await requirePageUser("/area/comunicazioni");
+  const items = await listNotifications(identity.subjectUserId);
+  if (!identity.view) {
+    after(() => markNotificationsRead(identity.subjectUserId));
+  }
 
   return (
     <main className={styles.main}>

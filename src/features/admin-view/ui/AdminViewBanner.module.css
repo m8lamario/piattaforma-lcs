@@ -1,0 +1,40 @@
+.banner {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-page-x-sm);
+  background: var(--color-warning-soft);
+  color: var(--color-text);
+  border-bottom: var(--line-width) solid var(--color-warning);
+}
+
+.copy {
+  margin: 0;
+  font-weight: 650;
+  max-width: 70rem;
+}
+
+.live {
+  flex-basis: 100%;
+  margin: 0;
+  font-size: var(--text-sm);
+}
+
+.live:empty {
+  display: none;
+}
+
+:global(html:has([data-admin-view-banner])) {
+  --shell-sticky-top: 8.5rem;
+}
+
+@media (min-width: 64rem) {
+  :global(html:has([data-admin-view-banner])) {
+    --shell-sticky-top: 4.75rem;
+  }
+}

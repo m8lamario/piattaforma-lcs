@@ -15,6 +15,7 @@ const LINKS = [
   { href: "/media", labelKey: "navMedia", superOnly: true },
   { href: "/admin/media-partner", labelKey: "navAdminMediaPartners", superOnly: true },
   { href: "/admin/utenti", labelKey: "navAdminUsers", superOnly: true },
+  { href: "/admin/visualizzazioni", labelKey: "navAdminViews", superOnly: true },
   { href: "/admin/audit", labelKey: "navAdminAudit" },
   { href: "/admin/informative", labelKey: "navAdminLegal" },
 ] as const;

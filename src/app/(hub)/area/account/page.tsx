@@ -1,5 +1,4 @@
-import { redirect } from "next/navigation";
-import { auth } from "@/auth";
+import { requirePageUser } from "@/shared/authz/requestIdentity";
 import { AccountPasswordForm } from "@/features/auth/ui/AccountPasswordForm";
 import { isTerminalRegistrationStatus } from "@/features/registrations/domain/requirements";
 import { WithdrawForm } from "@/features/registrations/ui/WithdrawForm";
@@ -10,11 +9,10 @@ import fields from "@/shared/ui/form.module.css";
 import styles from "./page.module.css";
 
 export default async function AccountPage() {
-  const session = await auth();
-  if (!session?.user?.id) redirect("/accedi?next=/area/account");
+  const identity = await requirePageUser("/area/account");
 
   const profile = await prisma.playerProfile.findUnique({
-    where: { userId: session.user.id },
+    where: { userId: identity.subjectUserId },
     select: {
       registrations: {
         orderBy: { createdAt: "desc" },
@@ -31,10 +29,10 @@ export default async function AccountPage() {
     <main className={styles.main}>
       <PageHeader title={it.accountTitle} />
       <p className={fields.readonly}>
-        {it.emailReadOnly}: <strong>{session.user.email}</strong>
+        {it.emailReadOnly}: <strong>{identity.subjectEmail}</strong>
       </p>
-      <AccountPasswordForm />
-      {withdrawRegistrationId ? (
+      {identity.view ? <p className={fields.banner}>{it.adminViewAccountLocked}</p> : <AccountPasswordForm />}
+      {!identity.view && withdrawRegistrationId ? (
         <section className={styles.option} aria-labelledby="account-withdraw-title">
           <h2 id="account-withdraw-title" className={styles.optionTitle}>
             {it.withdraw}

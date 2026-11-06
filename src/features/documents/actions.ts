@@ -32,6 +32,7 @@ import {
 import { nextStepAfter } from "@/features/registrations/domain/wizard";
 import { workspaceWriteCode } from "@/features/registrations/domain/writeGate";
 import { fail, type ActionFailure } from "@/shared/errors";
+import { viewWriteDenial } from "@/shared/lib/readOnlyGuard";
 import { it } from "@/shared/i18n/it";
 import { authorize } from "@/shared/authz/authorize";
 import { getActorByUserId } from "@/shared/authz/getActor";
@@ -111,6 +112,8 @@ export async function uploadMedicalCertificateAction(
   _prev: ActionFailure | undefined,
   formData: FormData,
 ) {
+  const denied = await viewWriteDenial();
+  if (denied) return denied;
   const session = await auth();
   if (!session?.user?.id) redirect("/accedi?next=/area/registrazione/certificato");
 
@@ -279,6 +282,8 @@ export async function reviewDocumentAction(
   _prev: ActionFailure | ReviewDocumentQueueSuccess | undefined,
   formData: FormData,
 ) {
+  const denied = await viewWriteDenial();
+  if (denied) return denied;
   const session = await auth();
   if (!session?.user?.id) redirect("/accedi?next=/admin/documenti");
   const actor = await getActorByUserId(session.user.id);

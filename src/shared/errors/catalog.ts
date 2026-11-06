@@ -93,6 +93,16 @@ export const ERROR_CATALOG: Record<ErrorCode, ErrorDefinition> = {
   FORBIDDEN_PAYMENT_PLAYER: def("AUTHZ", "payment:create_player denied.", 403, "none"),
   FORBIDDEN_PAYMENT_TEAM: def("AUTHZ", "payment:create_team denied.", 403, "none"),
   FORBIDDEN_STAFF_INVITE: def("AUTHZ", "staff:invite denied.", 403, "none"),
+  VIEW_READ_ONLY: def("AUTHZ", "Mutazione rifiutata durante la visualizzazione READ_ONLY.", 403, "none"),
+  VIEW_FORBIDDEN: def("AUTHZ", "user:view_as assente sull’attore.", 403, "none"),
+  VIEW_TARGET_FORBIDDEN: def("AUTHZ", "Policy di visualizzazione negata sul target.", 403, "none"),
+  VIEW_SELF: def("AUTHZ", "adminUserId uguale a targetUserId.", 403, "none"),
+  VIEW_TARGET_UNAVAILABLE: def("AUTHZ", "Target assente o lifecycle diverso da ACTIVE.", 404, "none"),
+  VIEW_CONFIRM_REQUIRED: def("AUTHZ", "Checkbox di conferma assente.", 400, "correct_input", { retrySafe: true }),
+  VIEW_RATE_LIMITED: def("AUTHZ", "Rate limit sull’avvio della visualizzazione.", 429, "wait", {
+    severity: "warning",
+    retrySafe: true,
+  }),
 
   IDENTITY_FISCAL_CODE_ASSOCIATED: def("IDENTITY", "CF unique: altro PlayerProfile detiene il codice.", 409, "use_original_account"),
   IDENTITY_EXISTING_ACCOUNT_DIFFERENT_EMAIL: def(

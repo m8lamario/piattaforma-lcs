@@ -12,3 +12,10 @@ Deny-by-default. Verso player/rep: 404 opaco su file medici (`FORBIDDEN_DOCUMENT
 | FORBIDDEN_PAYMENT_PLAYER | AUTHZ | payment:create_player denied | Non owner | Non puoi pagare questa iscrizione | Nessuno | checkout player |
 | FORBIDDEN_PAYMENT_TEAM | AUTHZ | payment:create_team denied | Non rep | Solo il rappresentante può pagare per la squadra | Nessuno | checkout team |
 | FORBIDDEN_STAFF_INVITE | AUTHZ | staff:invite denied | Non admin | Non puoi invitare un rappresentante | Nessuno | `createStaffInviteAction` |
+| VIEW_READ_ONLY | AUTHZ | Mutazione durante visualizzazione | Cookie di sola lettura valido | Le modifiche sono disabilitate | Nessuno | guard Prisma e action |
+| VIEW_FORBIDDEN | AUTHZ | user:view_as assente | Ruolo senza permesso | Non puoi visualizzare un account | Nessuno | `startAdminViewAction` |
+| VIEW_TARGET_FORBIDDEN | AUTHZ | Policy target | Target non apribile | Non puoi aprire questo account | Nessuno | `startAdminViewAction` |
+| VIEW_SELF | AUTHZ | Stesso utente | Admin = target | Non puoi visualizzare te stesso | Nessuno | `startAdminViewAction` |
+| VIEW_TARGET_UNAVAILABLE | AUTHZ | Target non attivo | Assente o chiuso | Account non disponibile | Nessuno | `startAdminViewAction` |
+| VIEW_CONFIRM_REQUIRED | AUTHZ | Conferma assente | Checkbox non spuntata | Conferma prima di avviare | Correggi | `startAdminViewAction` |
+| VIEW_RATE_LIMITED | AUTHZ | Rate limit avvio | Troppe sessioni | Riprova più tardi | Attendi | `startAdminViewAction` |

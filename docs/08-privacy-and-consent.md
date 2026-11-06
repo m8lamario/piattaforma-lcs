@@ -173,7 +173,7 @@ Workaround canale: `[INSERIRE EMAIL PRIVACY]`.
 
 ## 11. Cookie
 
-`cookie-policy.md` elenca i cookie e le risorse esterne **effettivi**. Inventario di codice: `src/shared/cookies/inventory.ts`. Durata sessione Auth.js fissata a 30 giorni. `eph-team` è HttpOnly, Secure su HTTPS, cancellato al logout. Vercel Web Analytics e Speed Insights sono in `OPTIONAL_TECHNOLOGIES` (categoria `analytics`): cookieless, niente `localStorage`/`sessionStorage`, spenti senza una scelta. Il banner Accetta / Rifiuta / Preferenze compare finché manca `eph-cookie-consent`. Non è un `ConsentRecord`. I cookie di piattaforma restano tecnici (OD-027). Il tema UI segue `prefers-color-scheme`.
+`cookie-policy.md` elenca i cookie e le risorse esterne **effettivi**. Inventario di codice: `src/shared/cookies/inventory.ts`. Durata sessione Auth.js fissata a 30 giorni. `eph-team` è HttpOnly, Secure su HTTPS, cancellato al logout. `eph-view` è il cookie tecnico della visualizzazione amministrativa in sola lettura (30 minuti). Vercel Web Analytics e Speed Insights sono in `OPTIONAL_TECHNOLOGIES` (categoria `analytics`): cookieless, niente `localStorage`/`sessionStorage`, spenti senza una scelta. Il banner Accetta / Rifiuta / Preferenze compare finché manca `eph-cookie-consent`. Non è un `ConsentRecord`. I cookie di piattaforma restano tecnici (OD-027). Il tema UI segue `prefers-color-scheme`.
 
 ---
 
@@ -190,4 +190,10 @@ Seed: se manca la versione corrente, crea `placeholder-1`. Non riscrive una curr
 
 ## 13. Cosa blocca un lancio reale
 
-Vedi OD-001 (testi firmati) e OD-026–OD-046: titolare/DPO, cookie, testo ufficiale di `terms`, diritti, retention certificati, rimozione media già pubblicati, email al tutore, contitolarità, fornitori/DPA, base giuridica sanitaria della **copia** del certificato, elenco partner, validità del click del minore (OD-002), re-consent (OD-024), informativa staff. Senza testi firmati il prodotto resta in sviluppo con placeholder visibili; **non** è pubblicabile verso interessati reali.
+Vedi OD-001 (testi firmati) e OD-026–OD-046: titolare/DPO, cookie, testo ufficiale di `terms`, diritti, retention certificati, rimozione media già pubblicati, email al tutore, contitolarità, fornitori/DPA, base giuridica sanitaria della **copia** del certificato, elenco partner, validità del click del minore (OD-002), re-consent (OD-024), informativa staff. Senza testi firmati il prodotto resta in sviluppo con placeholder visibili; **non** è pubblicabile verso interessati reali. La bozza sull’accesso amministrativo in sola lettura (OD-050) va rivista prima della pubblicazione.
+
+## 14. Visualizzazione amministrativa
+
+Non è un nuovo consenso e non aggiunge uno slug in `LEGAL_CATALOG`. Il testo è una **bozza** dentro `privacy-policy.md`, `document-processing.md` e `minor-privacy.md` (sezione «Accesso amministrativo in sola lettura»). La base giuridica resta **DA VALIDARE LEGALMENTE** (OD-050). Le accettazioni già registrate non si riscrivono: `ensureLegalDocuments` crea una nuova versione se il file cambia.
+
+Il permesso è `user:view_as` (solo Super Admin). Il cookie tecnico è `eph-view`, 30 minuti, HttpOnly. Lo storico è `AdminViewSession` più eventi append-only su `AuditLog` (`VIEW_SESSION_START`, `VIEW_SESSION_END`, `VIEW_WRITE_BLOCKED`, `DOCUMENT_VIEW` con `viewSessionId`). Nessun contenuto sanitario nei metadata.

@@ -36,6 +36,7 @@ export const ACTIONS = [
   "email:compose",
   "media:manage",
   "media:verify",
+  "user:view_as",
 ] as const;
 
 export type Action = (typeof ACTIONS)[number];

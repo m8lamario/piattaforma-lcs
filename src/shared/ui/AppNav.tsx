@@ -196,7 +196,7 @@ export function AppNav({
         </nav>
         <div className={styles.session}>
           {email ? <span className={styles.email}>{email}</span> : null}
-          <form action={logoutAction}>
+          <form action={logoutAction} data-view-allow="logout">
             <Button type="submit" variant="ghost" className={styles.logout}>
               {it.logout}
             </Button>

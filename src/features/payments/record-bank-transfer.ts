@@ -16,6 +16,7 @@ import { fail, failValidation, type ActionState } from "@/shared/errors";
 import { writeAuditLog } from "@/shared/lib/audit";
 import { logger } from "@/shared/lib/logger";
 import { userAgentAndIp } from "@/shared/lib/request-guard";
+import { viewWriteDenial } from "@/shared/lib/readOnlyGuard";
 import { it } from "@/shared/i18n/it";
 
 type BankActionState = ActionState<{
@@ -37,6 +38,8 @@ function registrationIds(formData: FormData) {
 }
 
 async function requireTransferActor() {
+  const denied = await viewWriteDenial();
+  if (denied) return denied;
   const session = await auth();
   if (!session?.user?.id) return fail("AUTH_SESSION_REQUIRED");
   const actor = await getActorByUserId(session.user.id);

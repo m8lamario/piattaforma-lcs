@@ -6,6 +6,7 @@ import { storageAdapter } from "@/shared/adapters";
 import { authorize } from "@/shared/authz/authorize";
 import { getActorByUserId } from "@/shared/authz/getActor";
 import { writeAuditLog } from "@/shared/lib/audit";
+import { loadActiveAdminView } from "@/shared/lib/readOnlyGuard";
 
 function notFound() {
   return new NextResponse("Documento non disponibile.", { status: 404 });
@@ -38,12 +39,14 @@ export async function GET(request: NextRequest) {
   const stored = await storageAdapter.readPrivate({ key: document.storageKey });
   if (!stored) return notFound();
 
+  const view = await loadActiveAdminView();
   const forwarded = request.headers.get("x-forwarded-for");
   await writeAuditLog({
     actorUserId: session.user.id,
     action: "DOCUMENT_VIEW",
     entityType: "Document",
     entityId: document.id,
+    metadata: view ? { viewSessionId: view.sessionId } : undefined,
     ipAddress: forwarded?.split(",")[0]?.trim() ?? null,
     userAgent: request.headers.get("user-agent"),
   });

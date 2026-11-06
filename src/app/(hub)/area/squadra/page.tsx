@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { auth } from "@/auth";
+import { requirePageUser } from "@/shared/authz/requestIdentity";
 import { loadPlayerWorkspace } from "@/features/registrations/data/workspace";
 import { listTeammates } from "@/features/teams/data/roster";
 import { authorize } from "@/shared/authz/authorize";
@@ -10,10 +10,9 @@ import { it } from "@/shared/i18n/it";
 import styles from "../comunicazioni/page.module.css";
 
 export default async function PlayerTeamPage() {
-  const session = await auth();
-  if (!session?.user?.id) redirect("/accedi?next=/area/squadra");
-  const shellPromise = loadAppShell(session.user.id);
-  const workspacePromise = loadPlayerWorkspace(session.user.id);
+  const identity = await requirePageUser("/area/squadra");
+  const shellPromise = loadAppShell(identity.subjectUserId);
+  const workspacePromise = loadPlayerWorkspace(identity.subjectUserId);
   const shell = await shellPromise;
   if (shell.showTeam) redirect("/squadra");
   const membershipTeamId = shell.actor?.membershipTeamIds[0];

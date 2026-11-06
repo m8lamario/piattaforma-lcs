@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import { authorize } from "@/shared/authz/authorize";
 import { getActorByUserId } from "@/shared/authz/getActor";
+import { getRequestIdentity } from "@/shared/authz/requestIdentity";
 import { dispatchOutboundEmail } from "@/features/emails/data/dispatch";
 import { deliverEmailVerification } from "@/features/auth/data/emailVerification";
 import { emailVerificationPath } from "@/features/auth/domain/verify";
@@ -12,6 +13,7 @@ import { writeAuditLog } from "@/shared/lib/audit";
 import { RATE_LIMITS, clientKey, consumeRateLimit, userAgentAndIp } from "@/shared/lib/request-guard";
 import { isWellFormedInviteToken } from "@/features/teams/domain/token";
 import { fail, failValidation, type ActionFailure, type ActionState } from "@/shared/errors";
+import { viewWriteDenial } from "@/shared/lib/readOnlyGuard";
 import { mediaActivationErrorCode } from "@/features/media-partners/domain/activation";
 import { MEDIA_SEARCH_MIN_LENGTH } from "@/features/media-partners/domain/verify";
 import {
@@ -46,6 +48,7 @@ function competitionIdsFrom(formData: FormData) {
 }
 
 async function requireMediaManager() {
+  if (await viewWriteDenial()) redirect("/admin/media-partner");
   const session = await auth();
   if (!session?.user?.id) redirect("/accedi?next=/admin/media-partner");
   const actor = await getActorByUserId(session.user.id);
@@ -54,16 +57,21 @@ async function requireMediaManager() {
 }
 
 async function requireVerifier() {
-  const session = await auth();
-  if (!session?.user?.id) return { ok: false as const, error: fail("AUTH_SESSION_REQUIRED") };
-  const actor = await getActorByUserId(session.user.id);
-  if (!actor) return { ok: false as const, error: fail("AUTH_ACCOUNT_MISSING") };
+  const identity = await getRequestIdentity();
+  if (!identity) return { ok: false as const, error: fail("AUTH_SESSION_REQUIRED") };
+  const actor = identity.subjectActor;
   if (!authorize(actor, "media:verify").allow) {
     return { ok: false as const, error: fail("MEDIA_PARTNER_FORBIDDEN") };
   }
   const scope = mediaCompetitionScope(actor);
   if (!scope) return { ok: false as const, error: fail("MEDIA_PARTNER_FORBIDDEN") };
-  return { ok: true as const, session, actor, scope };
+  return {
+    ok: true as const,
+    session: { user: { id: identity.sessionUserId, email: identity.sessionEmail } },
+    actor,
+    scope,
+    viewSessionId: identity.view?.sessionId ?? null,
+  };
 }
 
 export async function createMediaPartnerAction(_prev: ActionFailure | undefined, formData: FormData) {
@@ -328,7 +336,10 @@ export async function loadMediaPlayerCardAction(
       action: "MEDIA_VERIFY_DENIED",
       entityType: "Registration",
       entityId: parsed.data.registrationId,
-      metadata: { reason: "forbidden" },
+      metadata: {
+        reason: "forbidden",
+        ...(access.viewSessionId ? { viewSessionId: access.viewSessionId } : {}),
+      },
       ...trace,
     });
     return fail("MEDIA_PARTNER_PLAYER_NOT_FOUND");
@@ -342,7 +353,10 @@ export async function loadMediaPlayerCardAction(
       action: "MEDIA_VERIFY_DENIED",
       entityType: "Registration",
       entityId: parsed.data.registrationId,
-      metadata: { reason: "forbidden" },
+      metadata: {
+        reason: "forbidden",
+        ...(access.viewSessionId ? { viewSessionId: access.viewSessionId } : {}),
+      },
       ...trace,
     });
     return fail("MEDIA_PARTNER_PLAYER_NOT_FOUND");
@@ -358,6 +372,7 @@ export async function loadMediaPlayerCardAction(
       competitionId: loaded.competitionId,
       photoVideo: loaded.card.photoVideo.state,
       social: loaded.card.social.state,
+      ...(access.viewSessionId ? { viewSessionId: access.viewSessionId } : {}),
     },
     ...trace,
   });

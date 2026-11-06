@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { auth } from "@/auth";
+import { getRequestIdentity } from "@/shared/authz/requestIdentity";
 import { logoutAction } from "@/features/auth/actions";
 import { LoginForm } from "@/features/auth/ui/LoginForm";
 import { findTeamByRegistrationToken, loadRedeemContext } from "@/features/teams/data/invites";
@@ -69,8 +69,8 @@ export default async function TeamJoinPage({ params }: Props) {
     );
   }
 
-  const session = await auth();
-  if (!session?.user?.id || !session.user.email) {
+  const identity = await getRequestIdentity();
+  if (!identity?.subjectUserId || !identity.subjectEmail) {
     return (
       <Frame>
         <section className={styles.sheet}>
@@ -82,13 +82,13 @@ export default async function TeamJoinPage({ params }: Props) {
     );
   }
 
-  const context = await loadRedeemContext(session.user.email);
+  const context = await loadRedeemContext(identity.subjectEmail);
   const path = decideTeamJoinPath({
-    email: session.user.email,
+    email: identity.subjectEmail,
     teamId: team.id,
     editionId: team.editionId,
     existingUser: context.existingUser,
-    session: { userId: session.user.id, email: session.user.email },
+    session: { userId: identity.subjectUserId, email: identity.subjectEmail },
     existingRegistrations: context.existingRegistrations,
   });
 
@@ -98,7 +98,7 @@ export default async function TeamJoinPage({ params }: Props) {
         <section className={styles.sheet}>
           <p className={styles.kicker}>{editionLine}</p>
           <h1>{it.inviteTitle}</h1>
-          <p>{it.teamJoinSession.replace("{email}", session.user.email).replace("{team}", team.name)}</p>
+          <p>{it.teamJoinSession.replace("{email}", identity.subjectEmail).replace("{team}", team.name)}</p>
           <AttachTeamForm token={token} teamName={team.name} />
         </section>
       </Frame>
@@ -120,7 +120,7 @@ export default async function TeamJoinPage({ params }: Props) {
           <p className={styles.kicker}>{editionLine}</p>
           <h1>{it.inviteTitle}</h1>
           <p>{userMessage("INVITE_WRONG_SESSION")}</p>
-          <form action={logoutAction}>
+          <form action={logoutAction} data-view-allow="logout">
             <input type="hidden" name="next" value={`/iscrizione/${token}`} />
             <Button type="submit">{it.logoutRetryInvite}</Button>
           </form>

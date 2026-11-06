@@ -20,6 +20,8 @@ type DocumentState = {
 
 type Props = {
   document: DocumentState | null;
+  readOnly?: boolean;
+  allowFileOpen?: boolean;
 };
 
 function statusBanner(document: DocumentState) {
@@ -32,7 +34,7 @@ function statusBanner(document: DocumentState) {
   return { copy: it.medicalPending, className: fields.bannerWarn };
 }
 
-export function MedicalUploadForm({ document }: Props) {
+export function MedicalUploadForm({ document, readOnly = false, allowFileOpen = true }: Props) {
   const [state, action, pending] = useActionState(uploadMedicalCertificateAction, undefined);
   const mustUpload = !document || document.status === "REJECTED" || document.status === "EXPIRED";
   const maxMb = Math.round(MAX_UPLOAD_BYTES / (1024 * 1024));
@@ -45,6 +47,9 @@ export function MedicalUploadForm({ document }: Props) {
       <p className={`${fields.banner} ${banner.className}`} role="status">
         {banner.copy}
       </p>
+      {readOnly && !allowFileOpen ? (
+        <p className={`${fields.banner} ${fields.bannerWarn}`}>{it.adminViewFileHidden}</p>
+      ) : null}
 
       <div className={fields.bannerStack}>
         <p>{it.medicalCopyNotice}</p>
@@ -58,18 +63,20 @@ export function MedicalUploadForm({ document }: Props) {
         help={`${it.medicalAccept} ${maxMb} MB.`}
         accept="application/pdf,image/jpeg,image/png,.pdf,.jpg,.jpeg,.png"
         maxBytes={MAX_UPLOAD_BYTES}
-        required={mustUpload}
-        disabled={pending}
+        required={mustUpload && !readOnly}
+        disabled={pending || readOnly}
         uploading={pending}
         existingName={document?.originalFilename}
-        existingSlot={document ? <OpenDocumentButton documentId={document.id} /> : null}
+        existingSlot={
+          document && allowFileOpen ? <OpenDocumentButton documentId={document.id} /> : null
+        }
       />
 
       <div className={`${fields.actions} ${fields.sticky}`}>
-        <Button type="submit" name="intent" value="continue" disabled={pending} aria-busy={pending}>
+        <Button type="submit" name="intent" value="continue" disabled={pending || readOnly} aria-busy={pending}>
           {pending ? it.saving : it.saveContinue}
         </Button>
-        <Button type="submit" name="intent" value="exit" variant="ghost" disabled={pending}>
+        <Button type="submit" name="intent" value="exit" variant="ghost" disabled={pending || readOnly}>
           {it.saveExit}
         </Button>
         <WizardLaterButton />

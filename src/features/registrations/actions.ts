@@ -11,12 +11,15 @@ import { Prisma } from "@generated/client";
 import { clearIdentityConflict } from "@/features/players/domain/identity";
 import { createNotification } from "@/features/notifications/data/notifications";
 import { fail, type ActionFailure } from "@/shared/errors";
+import { viewWriteDenial } from "@/shared/lib/readOnlyGuard";
 import { purgeDocumentBlob } from "@/features/documents/data/retention";
 
 export async function withdrawRegistrationAction(
   _prev: ActionFailure | undefined,
   formData: FormData,
 ): Promise<ActionFailure | undefined> {
+  const denied = await viewWriteDenial();
+  if (denied) return denied;
   const session = await auth();
   if (!session?.user?.id) redirect("/accedi");
   const actor = await getActorByUserId(session.user.id);

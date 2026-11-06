@@ -161,3 +161,10 @@ Non loggare: password, token, CF completo (mascherare), body documenti, Authoriz
 - `/admin/comunicazioni` solo staff (`email:read` / `email:send`); corpo libero e override template solo Super Admin (`email:compose`).
 - Audit `EMAIL_VIEW` (solo id), `EMAIL_SEND`, `EMAIL_RETRY`, `EMAIL_TEMPLATE_UPDATE`. La lista non scrive un audit per riga.
 - Playwright happy path in CI; nonce CSP sul bootstrap tema.
+
+## 22. Visualizzazione amministrativa in sola lettura
+
+- Cookie `eph-view` firmato con `AUTH_SECRET`, HttpOnly, SameSite=Lax, 30 minuti. Il payload non è autorità: ogni richiesta ricarica `AdminViewSession` e confronta `adminUserId` con la sessione Auth.js.
+- Auth.js non viene sostituita. Le scritture di sessione Auth.js passano da `unguardedPrisma`. Il client applicativo `prisma` rifiuta le mutazioni, `$executeRaw` e `$queryRaw` finché la visualizzazione è attiva. Eccezioni: `AuditLog.create` e `RateLimitHit.create`.
+- `user:view_as` solo Super Admin. Il file medico usa `document:read_file` dell’amministratore autenticato.
+- Logout e «Termina visualizzazione» chiudono la riga e cancellano il cookie.

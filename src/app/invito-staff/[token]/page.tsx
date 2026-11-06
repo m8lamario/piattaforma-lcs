@@ -1,4 +1,4 @@
-import { auth } from "@/auth";
+import { getRequestIdentity } from "@/shared/authz/requestIdentity";
 import { findStaffInviteByPlainToken } from "@/features/admin/data/staffInvites";
 import { StaffRedeemForm } from "@/features/admin/ui/StaffRedeemForm";
 import { LoginForm } from "@/features/auth/ui/LoginForm";
@@ -13,7 +13,7 @@ type Props = { params: Promise<{ token: string }> };
 
 export default async function StaffInvitePage({ params }: Props) {
   const { token } = await params;
-  const session = await auth();
+  const identity = await getRequestIdentity();
 
   if (!isWellFormedInviteToken(token)) {
     return (
@@ -46,7 +46,9 @@ export default async function StaffInvitePage({ params }: Props) {
 
   const existing = await prisma.user.findUnique({ where: { email: found.invite.email } });
   const needsPassword = !existing;
-  const needsLogin = Boolean(existing && (!session?.user?.id || session.user.email?.toLowerCase() !== found.invite.email));
+  const needsLogin = Boolean(
+    existing && (!identity || identity.subjectEmail?.toLowerCase() !== found.invite.email.toLowerCase()),
+  );
 
   return (
     <PublicShell>

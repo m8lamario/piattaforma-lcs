@@ -27,6 +27,7 @@ import {
   redeemPathCode,
 } from "@/features/teams/domain/invite";
 import { fail, failValidation, userMessage, type ActionFailure, type ActionState } from "@/shared/errors";
+import { viewWriteDenial } from "@/shared/lib/readOnlyGuard";
 import { parseBulkInviteCsv } from "@/features/teams/domain/bulk";
 import { registrationReminder } from "@/features/teams/domain/reminder";
 import { extractInviteToken, isWellFormedInviteToken } from "@/features/teams/domain/token";
@@ -87,6 +88,8 @@ export async function createInviteAction(
   _prev: ActionState<{ redeemUrl?: string }> | undefined,
   formData: FormData,
 ): Promise<ActionState<{ redeemUrl?: string }>> {
+  const denied = await viewWriteDenial();
+  if (denied) return denied;
   const session = await auth();
   if (!session?.user?.id) {
     return fail("AUTH_SESSION_REQUIRED");
@@ -186,6 +189,7 @@ export async function createInviteAction(
 }
 
 export async function revokeInviteAction(formData: FormData) {
+  if (await viewWriteDenial()) redirect("/squadra/inviti");
   const session = await auth();
   if (!session?.user?.id) redirect("/accedi");
 
@@ -224,6 +228,8 @@ export async function submitInviteTokenAction(
   _prev: ActionFailure | undefined,
   formData: FormData,
 ) {
+  const denied = await viewWriteDenial();
+  if (denied) return denied;
   const token = extractInviteToken(String(formData.get("token") ?? ""));
   if (!token) {
     return fail("INVITE_TOKEN_MALFORMED");
@@ -235,6 +241,8 @@ export async function redeemInviteAction(
   _prev: ActionFailure | undefined,
   formData: FormData,
 ) {
+  const denied = await viewWriteDenial();
+  if (denied) return denied;
   const parsed = redeemInviteSchema.safeParse({
     token: formData.get("token"),
     firstName: formData.get("firstName"),
@@ -311,6 +319,7 @@ export async function redeemInviteAction(
 }
 
 export async function attachInviteAction(formData: FormData) {
+  if (await viewWriteDenial()) redirect("/area");
   const token = String(formData.get("token") ?? "");
   const session = await auth();
   if (!session?.user?.id || !session.user.email) {
@@ -373,6 +382,8 @@ export async function joinTeamAction(
   _prev: ActionFailure | undefined,
   formData: FormData,
 ) {
+  const denied = await viewWriteDenial();
+  if (denied) return denied;
   const categoryRaw = formData.get("category");
   // #region agent log
   fetch("http://127.0.0.1:7693/ingest/5c6b6d7d-171d-41fc-8f12-2fa6a7b3b82d", {
@@ -515,6 +526,7 @@ export async function joinTeamAction(
 }
 
 export async function attachTeamLinkAction(formData: FormData) {
+  if (await viewWriteDenial()) redirect("/area");
   const token = String(formData.get("token") ?? "");
   const session = await auth();
   if (!session?.user?.id || !session.user.email) {
@@ -590,6 +602,8 @@ async function requireTeamAction(
   teamId: string,
   action: "team:invite" | "team:update_roster" | "team:read" | "team:remove_player",
 ) {
+  const denied = await viewWriteDenial();
+  if (denied) return denied;
   const session = await auth();
   if (!session?.user?.id) return fail("AUTH_SESSION_REQUIRED");
   const actor = await getActorByUserId(session.user.id);
@@ -611,10 +625,11 @@ async function requireTeamAction(
 }
 
 export async function requireRepresentativeTeamId() {
-  const session = await auth();
-  if (!session?.user?.id) redirect("/accedi?next=/squadra");
-  const actor = await getActorByUserId(session.user.id);
-  if (!actor) redirect("/accedi");
+  const { getRequestIdentity } = await import("@/shared/authz/requestIdentity");
+  const identity = await getRequestIdentity();
+  if (!identity) redirect("/accedi?next=/squadra");
+  const session = { user: { id: identity.sessionUserId, email: identity.sessionEmail } };
+  const actor = identity.subjectActor;
   const teamIds = representativeTeamIds(actor);
   if (teamIds.length === 0 && !actor.roles.some((role) => role.role === "ORGANIZATION_ADMIN" || role.role === "SUPER_ADMIN")) {
     redirect("/area");

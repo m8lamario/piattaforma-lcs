@@ -28,6 +28,7 @@ import {
 import { nextStepAfter } from "@/features/registrations/domain/wizard";
 import { workspaceWriteCode } from "@/features/registrations/domain/writeGate";
 import { fail, type ActionFailure } from "@/shared/errors";
+import { viewWriteDenial } from "@/shared/lib/readOnlyGuard";
 import { authorize } from "@/shared/authz/authorize";
 import { getActorByUserId } from "@/shared/authz/getActor";
 import { writeAuditLog } from "@/shared/lib/audit";
@@ -40,6 +41,8 @@ import {
 } from "@/shared/lib/request-guard";
 
 async function requireConsentAccount(nextPath = "/area/consensi") {
+  const denied = await viewWriteDenial();
+  if (denied) return { ok: false as const, error: denied };
   const session = await auth();
   if (!session?.user?.id) redirect(`/accedi?next=${nextPath}`);
   const actor = await getActorByUserId(session.user.id);
@@ -72,6 +75,8 @@ async function requireConsentAccount(nextPath = "/area/consensi") {
 }
 
 async function requireWritable(nextPath = "/area/registrazione/privacy") {
+  const denied = await viewWriteDenial();
+  if (denied) return { ok: false as const, error: denied };
   const session = await auth();
   if (!session?.user?.id) redirect(`/accedi?next=${nextPath}`);
   const actor = await getActorByUserId(session.user.id);

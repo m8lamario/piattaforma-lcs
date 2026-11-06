@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { auth } from "@/auth";
+import { requirePageUser } from "@/shared/authz/requestIdentity";
 import { completeStubPayment } from "@/features/payments/data/complete";
 import { getPaymentById } from "@/features/payments/data/payments";
 import { PaymentStatusView } from "@/features/payments/ui/PaymentStatusView";
@@ -18,28 +18,28 @@ type Props = {
 export default async function PaymentResultPage({ searchParams }: Props) {
   const { paymentId } = await searchParams;
   if (!paymentId) redirect("/area");
-  const session = await auth();
-  if (!session?.user?.id) {
-    redirect(`/accedi?next=/area/pagamento/esito?paymentId=${paymentId}`);
-  }
+  const identity = await requirePageUser(`/area/pagamento/esito?paymentId=${paymentId}`);
 
-  if (shouldCompletePaymentOnReturn()) {
+  if (shouldCompletePaymentOnReturn() && !identity.view) {
     const result = await completeStubPayment(paymentId);
-    if (!result.ok) {
+    if (!result.ok && result.reason !== "readonly") {
       if (result.reason === "auth") redirect(`/accedi?next=/area/pagamento/esito?paymentId=${paymentId}`);
       redirect("/area");
     }
   }
 
-  const [payment, shell] = await Promise.all([getPaymentById(paymentId), loadAppShell(session.user.id)]);
+  const [payment, shell] = await Promise.all([
+    getPaymentById(paymentId),
+    loadAppShell(identity.subjectUserId),
+  ]);
   if (!payment || !shell.actor) redirect("/area");
   const playerOk = Boolean(
     payment.registrationId &&
-      authorize(shell.actor, "payment:create_player", {
-        ownerUserId: session.user.id,
+      authorize(identity.subjectActor, "payment:create_player", {
+        ownerUserId: identity.subjectUserId,
         teamId: payment.registration?.teamId,
       }).allow &&
-      payment.payerUserId === session.user.id,
+      payment.payerUserId === identity.subjectUserId,
   );
   const teamOk = Boolean(
     payment.teamId && authorize(shell.actor, "payment:create_team", { teamId: payment.teamId }).allow,
@@ -50,7 +50,7 @@ export default async function PaymentResultPage({ searchParams }: Props) {
   let nextHref = teamPayment ? "/squadra" : "/area";
   let nextLabel = teamPayment ? it.navTeam : it.backToArea;
   if (payment.status === "SUCCEEDED" && !teamPayment) {
-    const workspace = await loadPlayerWorkspace(session.user.id);
+    const workspace = await loadPlayerWorkspace(identity.subjectUserId);
     const remaining = workspace ? nextHero(workspace.checklist).code !== "DONE" : false;
     nextHref = remaining ? "/area/registrazione" : "/area";
     nextLabel = remaining ? it.ctaContinue : it.backToArea;

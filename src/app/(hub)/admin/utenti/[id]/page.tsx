@@ -2,6 +2,8 @@ import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { getUserAdmin } from "@/features/admin/data/lifecycle";
 import { lifecycleStatusLabel } from "@/features/admin/domain/lifecycle";
+import { decideAdminViewStart } from "@/features/admin-view/domain/policy";
+import { StartAdminViewForm } from "@/features/admin-view/ui/StartAdminViewForm";
 import { AccountLifecycleForm } from "@/features/admin/ui/AccountLifecycleForm";
 import { AdminFrame } from "@/features/admin/ui/AdminFrame";
 import { PageHeader } from "@/shared/ui/PageHeader";
@@ -25,6 +27,12 @@ export default async function AdminUserDetailPage({ params, searchParams }: Prop
   if (!user) notFound();
   const canDelete = authorize(actor, "user:delete", { ownerUserId: user.id }).allow;
   const canAnonymize = authorize(actor, "user:anonymize", { ownerUserId: user.id }).allow;
+  const viewDecision = decideAdminViewStart({
+    viewerCan: authorize(actor, "user:view_as").allow,
+    sameUser: actor.userId === user.id,
+    targetActive: user.lifecycleStatus === "ACTIVE",
+    confirmed: true,
+  });
 
   return (
     <AdminFrame path={`/admin/utenti/${id}`} actor={actor}>
@@ -82,6 +90,20 @@ export default async function AdminUserDetailPage({ params, searchParams }: Prop
 
         {/* Right: Lifecycle management actions */}
         <aside className={styles.colSide}>
+          <div className={styles.sideCard}>
+            <h2 className={styles.sectionTitle}>{it.adminViewStart}</h2>
+            {viewDecision.ok ? (
+              <StartAdminViewForm userId={user.id} />
+            ) : (
+              <p className={styles.meta}>
+                {viewDecision.reason === "self"
+                  ? it.adminViewSelf
+                  : viewDecision.reason === "unavailable"
+                    ? it.adminViewInactive
+                    : it.adminViewHelp}
+              </p>
+            )}
+          </div>
           <div className={styles.sideCard}>
             <h2 className={styles.sectionTitle}>{it.lifecycleUsersTitle}</h2>
             <AccountLifecycleForm
