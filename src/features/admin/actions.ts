@@ -36,6 +36,8 @@ import { anonymizeSchoolAccount, deleteSchoolAccount } from "@/features/admin/da
 import { appOrigin } from "@/shared/config/app";
 import { parseEuroToCents } from "@/features/payments/domain/fees";
 import { saveEditionDefaultFees, saveTeamFeeOverrides } from "@/features/admin/data/team-fees";
+import { resetEnrollmentAuthorization } from "@/features/consents/data/guardianAuth";
+import { it } from "@/shared/i18n/it";
 
 function parseOptionalDate(value?: string) {
   if (!value?.trim()) return null;
@@ -525,6 +527,35 @@ export async function saveTeamFeesAction(
   revalidatePath("/area");
   revalidatePath("/squadra");
   return { saved: true as const };
+}
+
+export async function resetGuardianAuthorizationAction(
+  _prev: ActionFailure | undefined,
+  formData: FormData,
+): Promise<ActionFailure | { done: true }> {
+  const { session } = await requireAdminActor();
+  const registrationId = String(formData.get("registrationId") ?? "");
+  const profileId = String(formData.get("profileId") ?? "");
+  if (!registrationId) return failValidation();
+  if (formData.get("confirm") !== "on") return failValidation(it.guardianResetConfirm);
+  const rateKey = await clientKey(`guardian-reset:${session.user.id}`);
+  if (!(await consumeRateLimit(rateKey, RATE_LIMITS.consentWrite.limit, RATE_LIMITS.consentWrite.windowMs))) {
+    return fail("RATE_LIMITED");
+  }
+  const trace = await userAgentAndIp();
+  const result = await resetEnrollmentAuthorization({
+    registrationId,
+    actorUserId: session.user.id,
+    ...trace,
+  });
+  if (!result.ok) {
+    if (result.reason === "withdrawn") return fail("REGISTRATION_WITHDRAWN");
+    return fail("RESOURCE_NOT_FOUND");
+  }
+  revalidatePath("/admin/giocatori");
+  if (profileId) revalidatePath(`/admin/giocatori/${profileId}`);
+  revalidatePath("/area");
+  return { done: true as const };
 }
 
 function itFeeInvalid() {

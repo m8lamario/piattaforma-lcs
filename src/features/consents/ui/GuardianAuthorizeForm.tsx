@@ -8,11 +8,14 @@ import type { ConsentBoxDef } from "@/features/consents/domain/boxes";
 import { Button } from "@/shared/ui/Button";
 import { ActionError } from "@/shared/ui/ActionError";
 import { Icon } from "@/shared/ui/Icon";
+import { StatusChip } from "@/shared/ui/StatusChip";
 import { it } from "@/shared/i18n/it";
 import fields from "@/shared/ui/form.module.css";
 import type { ConsentDocumentView } from "@/features/consents/ui/PrivacyConsentForm";
 import consentStyles from "@/features/consents/ui/ConsentForm.module.css";
 import pageStyles from "@/app/autorizzazione-genitore/[token]/page.module.css";
+
+type CurrentChoice = { code: string; accepted: boolean; value?: string | null };
 
 type Props = {
   token: string;
@@ -21,22 +24,86 @@ type Props = {
   tournamentName: string;
   documents: ConsentDocumentView[];
   boxes: ConsentBoxDef[];
+  currentChoices?: CurrentChoice[];
+  currentG3?: "OTHER_PARENT" | "SOLE" | "";
+  submittedStatus?: "AUTHORIZED" | "REFUSED" | null;
 };
 
-export function GuardianAuthorizeForm({ token, purpose, playerName, tournamentName, documents, boxes }: Props) {
-  const [state, action, pending] = useActionState(submitGuardianAuthorizationAction, undefined);
-  const [readSlugs, setReadSlugs] = useState<Record<string, boolean>>({});
-  const [values, setValues] = useState<Record<string, boolean>>({});
-  const [g3, setG3] = useState<"OTHER_PARENT" | "SOLE" | "">("");
+export function GuardianAuthorizeForm({
+  token,
+  purpose,
+  playerName,
+  tournamentName,
+  documents,
+  boxes,
+  currentChoices = [],
+  currentG3 = "",
+  submittedStatus = null,
+}: Props) {
+  const [mode, setMode] = useState<"form" | "summary">(
+    currentChoices.length > 0 || submittedStatus ? "summary" : "form",
+  );
+  const [confirmingRefuse, setConfirmingRefuse] = useState(false);
+  const [readSlugs, setReadSlugs] = useState<Record<string, boolean>>(() =>
+    submittedStatus ? Object.fromEntries(documents.map((document) => [document.slug, true])) : {},
+  );
+  const [values, setValues] = useState<Record<string, boolean>>(() =>
+    Object.fromEntries(currentChoices.map((choice) => [choice.code, choice.accepted])),
+  );
+  const [g3, setG3] = useState<"OTHER_PARENT" | "SOLE" | "">(currentG3);
   const markRead = useCallback((slug: string) => {
     setReadSlugs((current) => ({ ...current, [slug]: true }));
   }, []);
+  const [state, action, pending] = useActionState(
+    async (prev: Parameters<typeof submitGuardianAuthorizationAction>[0], formData: FormData) => {
+      const result = await submitGuardianAuthorizationAction(prev, formData);
+      if (result && "done" in result && result.done) {
+        setMode("summary");
+        setConfirmingRefuse(false);
+        if ("refused" in result && result.refused) {
+          setValues((current) => Object.fromEntries(Object.keys(current).map((code) => [code, false])));
+        }
+      }
+      return result;
+    },
+    undefined,
+  );
 
-  if (state && "done" in state && state.done) {
+  const submitted = Boolean(state && "done" in state && state.done);
+  const refused = (state && "refused" in state && state.refused) || submittedStatus === "REFUSED";
+  const showSummary = mode === "summary";
+
+  if (showSummary) {
     return (
       <div className={pageStyles.statusCard}>
         <h1 className={pageStyles.title}>{it.guardianLinkTitle}</h1>
-        <p className={pageStyles.lead}>{"refused" in state && state.refused ? it.guardianLinkRefused : it.guardianLinkDone}</p>
+        <p className={pageStyles.lead}>
+          {submitted
+            ? refused
+              ? it.guardianLinkRefused
+              : it.guardianLinkDone
+            : it.guardianLinkSummary}
+        </p>
+        <p className={fields.help}>{it.guardianLinkAmendHelp}</p>
+        <ul className={consentStyles.choiceList}>
+          {boxes.map((box) => {
+            const latest = values[box.code] ?? currentChoices.find((choice) => choice.code === box.code)?.accepted;
+            return (
+              <li key={box.code} className={consentStyles.check}>
+                <span className={consentStyles.boxCode}>{box.code}</span>
+                <span style={{ flex: 1 }}>{it[box.labelKey]}</span>
+                <StatusChip tone={refused ? "danger" : latest ? "complete" : "neutral"}>
+                  {refused || latest === false ? it.consentsInactive : latest ? it.consentsActive : it.consentsInactive}
+                </StatusChip>
+              </li>
+            );
+          })}
+        </ul>
+        <div className={fields.actions}>
+          <Button type="button" onClick={() => setMode("form")}>
+            {it.guardianLinkEdit}
+          </Button>
+        </div>
       </div>
     );
   }
@@ -154,16 +221,38 @@ export function GuardianAuthorizeForm({ token, purpose, playerName, tournamentNa
         <p className={fields.notice}>{it.consentReadLocked}</p>
       )}
 
-      <div className={`${fields.actions} ${fields.sticky}`}>
-        <Button type="submit" disabled={pending || !requiredReady} aria-busy={pending}>
-          {pending ? it.saving : it.guardianLinkSubmit}
-        </Button>
-        {purpose === "AUTHORIZE" ? (
-          <Button type="submit" name="refuse" value="on" variant="ghost" disabled={pending}>
-            {it.guardianLinkRefuse}
+      {confirmingRefuse ? (
+        <div
+          className={`${fields.banner} ${fields.bannerDanger} ${pageStyles.confirmPanel}`}
+          role="alertdialog"
+          aria-labelledby="guardian-refuse-confirm-title"
+        >
+          <p id="guardian-refuse-confirm-title">
+            <strong>{it.guardianLinkRefuseConfirmTitle}</strong>
+          </p>
+          <input type="hidden" name="refuse" value="on" />
+          <input type="hidden" name="refuseConfirm" value="on" />
+          <div className={fields.actions}>
+            <Button type="submit" variant="danger" disabled={pending} aria-busy={pending}>
+              {pending ? it.saving : it.guardianLinkRefuseConfirm}
+            </Button>
+            <Button type="button" variant="ghost" disabled={pending} onClick={() => setConfirmingRefuse(false)}>
+              {it.guardianLinkRefuseCancel}
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <div className={`${fields.actions} ${fields.sticky}`}>
+          <Button type="submit" disabled={pending || !requiredReady} aria-busy={pending}>
+            {pending ? it.saving : it.guardianLinkSubmit}
           </Button>
-        ) : null}
-      </div>
+          {purpose === "AUTHORIZE" ? (
+            <Button type="button" variant="ghost" disabled={pending} onClick={() => setConfirmingRefuse(true)}>
+              {it.guardianLinkRefuse}
+            </Button>
+          ) : null}
+        </div>
+      )}
     </form>
   );
 }

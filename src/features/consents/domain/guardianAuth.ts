@@ -1,6 +1,8 @@
 import {
   MEDIA_USE_CODES,
   isHealthConsent,
+  latestChoices,
+  type ChoiceSnapshot,
   type ConsentBoxCode,
 } from "@/features/consents/domain/boxes";
 
@@ -74,6 +76,54 @@ export function isAuthorizedStatus(status: string) {
   return status === "AUTHORIZED";
 }
 
+export function isSubmittedAuthorizationStatus(status: string) {
+  return status === "AUTHORIZED" || status === "REFUSED";
+}
+
+export type GuardianDecisionInput = {
+  code: string;
+  accepted: boolean;
+  value?: string | null;
+};
+
+export type GuardianDecisionChange = GuardianDecisionInput & {
+  previousAccepted: boolean | null;
+  previousValue: string | null;
+};
+
+export function latestGuardianDecisions(
+  events: Array<{ code: string; accepted: boolean; value?: string | null; createdAt: Date | number }>,
+): Map<string, ChoiceSnapshot> {
+  return latestChoices(
+    events.map((event) => ({
+      code: event.code,
+      accepted: event.accepted,
+      value: event.value,
+      createdAt: event.createdAt instanceof Date ? event.createdAt.getTime() : event.createdAt,
+    })),
+  );
+}
+
+export function changedGuardianDecisions(
+  previous: Map<string, { accepted: boolean; value?: string | null }>,
+  next: GuardianDecisionInput[],
+): GuardianDecisionChange[] {
+  const changes: GuardianDecisionChange[] = [];
+  for (const box of next) {
+    const prev = previous.get(box.code);
+    const nextValue = box.value ?? null;
+    const previousValue = prev?.value ?? null;
+    if (!prev) {
+      changes.push({ ...box, previousAccepted: null, previousValue: null });
+      continue;
+    }
+    if (prev.accepted !== box.accepted || previousValue !== nextValue) {
+      changes.push({ ...box, previousAccepted: prev.accepted, previousValue });
+    }
+  }
+  return changes;
+}
+
 export type GuardianLinkStale = "used" | "expired" | "invalid";
 
 export function inspectGuardianLink(input: {
@@ -89,9 +139,7 @@ export function inspectGuardianLink(input: {
   const auth = input.authorization;
   if (!auth || auth.status === "SUPERSEDED" || auth.status === "EXPIRED") return "invalid";
   if (input.purpose === "AUTHORIZE" || input.purpose === "PUBLICATION") {
-    if (auth.status === "AUTHORIZED" || auth.status === "REFUSED" || auth.status === "REVOKED") {
-      return "used";
-    }
+    if (auth.status === "REVOKED") return "used";
   }
   if (input.purpose === "REVOKE" && auth.status !== "AUTHORIZED") return "invalid";
   return null;

@@ -9,6 +9,7 @@ import { PublicationChips } from "@/features/consents/ui/PublicationChips";
 import { PageHeader } from "@/shared/ui/PageHeader";
 import { StatusChip } from "@/shared/ui/StatusChip";
 import { WithdrawForm } from "@/features/registrations/ui/WithdrawForm";
+import { ResetGuardianAuthorizationForm } from "@/features/admin/ui/ResetGuardianAuthorizationForm";
 import { authorize } from "@/shared/authz/authorize";
 import { requireStaff } from "@/shared/authz/requireStaff";
 import { shirtSizeLabel } from "@/features/players/domain/shirtSize";
@@ -159,6 +160,20 @@ export default async function AdminPlayerPage({ params }: Props) {
                 </Link>
                 <OpenDocumentButton documentId={document.id} />
               </div>
+            </div>
+          ) : null}
+
+          {registration &&
+          registration.status !== "WITHDRAWN" &&
+          registration.status !== "REMOVED" &&
+          workspace &&
+          workspace.guardianAuthorization !== "none" ? (
+            <div className={styles.sideCard}>
+              <ResetGuardianAuthorizationForm
+                registrationId={registration.id}
+                profileId={id}
+                status={workspace.guardianAuthorization}
+              />
             </div>
           ) : null}
 

@@ -826,6 +826,9 @@ model GuardianAuthorizationDecision {
   authorizationId        String
   code                   String
   accepted               Boolean
+  value                  String?
+  previousAccepted       Boolean?
+  previousValue          String?
   clauseText             String?
   legalDocumentVersionId String?
   createdAt              DateTime @default(now())

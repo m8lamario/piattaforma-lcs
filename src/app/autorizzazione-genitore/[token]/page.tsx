@@ -2,7 +2,12 @@ import { notFound } from "next/navigation";
 import { loadGuardianLink } from "@/features/consents/data/guardianAuth";
 import { openGuardianLinkAction } from "@/features/consents/guardianActions";
 import { GuardianAuthorizeForm } from "@/features/consents/ui/GuardianAuthorizeForm";
-import { enrollmentBoxCodes, publicationBoxCodes } from "@/features/consents/domain/guardianAuth";
+import {
+  enrollmentBoxCodes,
+  isSubmittedAuthorizationStatus,
+  latestGuardianDecisions,
+  publicationBoxCodes,
+} from "@/features/consents/domain/guardianAuth";
 import { CONSENT_BOXES } from "@/features/consents/domain/boxes";
 import { getCurrentLegalVersions } from "@/features/consents/data/legal";
 import { isPartnerBoxVisible } from "@/features/consents/data/partners";
@@ -66,6 +71,17 @@ export default async function GuardianAuthorizePage({ params }: Props) {
   }));
   const playerName = `${row.registration.playerProfile.firstName} ${row.registration.playerProfile.lastName}`.trim();
   const tournamentName = `${row.registration.team.edition.competition.name} — ${row.registration.team.edition.name}`;
+  const latest = latestGuardianDecisions(row.authorization?.decisions ?? []);
+  const currentChoices = [...latest.values()].map((choice) => ({
+    code: choice.code,
+    accepted: choice.accepted,
+    value: choice.value,
+  }));
+  const submittedStatus = isSubmittedAuthorizationStatus(row.authorization?.status ?? "")
+    ? (row.authorization?.status as "AUTHORIZED" | "REFUSED")
+    : null;
+  const g3Raw = latest.get("G3")?.value;
+  const currentG3 = g3Raw === "OTHER_PARENT" || g3Raw === "SOLE" ? g3Raw : "";
 
   return (
     <PublicShell>
@@ -78,6 +94,9 @@ export default async function GuardianAuthorizePage({ params }: Props) {
             tournamentName={tournamentName}
             documents={documents}
             boxes={boxes}
+            currentChoices={currentChoices}
+            currentG3={currentG3}
+            submittedStatus={submittedStatus}
           />
         </div>
       </main>
