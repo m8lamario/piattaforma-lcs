@@ -122,6 +122,11 @@
   margin: 0 auto;
 }
 
+.confirmPanel {
+  display: grid;
+  gap: var(--space-3);
+}
+
 @media (min-width: 640px) {
   .metaGrid {
     grid-template-columns: 1fr 1fr;

@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
+  changedGuardianDecisions,
   enrollmentBoxCodes,
   enrollmentRequiredCodes,
   guardianAuthorizationChecklistStatus,
   inspectGuardianLink,
+  latestGuardianDecisions,
   publicationBoxCodes,
   selfAsGuardianReason,
 } from "./guardianAuth";
@@ -109,7 +111,7 @@ describe("inspectGuardianLink", () => {
     ).toBe("expired");
   });
 
-  it("rifiuta un secondo uso dopo autorizzazione o rifiuto", () => {
+  it("tiene il link di autorizzazione modificabile dopo accettazione o rifiuto", () => {
     expect(
       inspectGuardianLink({
         purpose: "AUTHORIZE",
@@ -118,7 +120,7 @@ describe("inspectGuardianLink", () => {
         authorization: { status: "AUTHORIZED" },
         now,
       }),
-    ).toBe("used");
+    ).toBeNull();
     expect(
       inspectGuardianLink({
         purpose: "PUBLICATION",
@@ -127,7 +129,37 @@ describe("inspectGuardianLink", () => {
         authorization: { status: "REFUSED" },
         now,
       }),
+    ).toBeNull();
+  });
+
+  it("chiude il link se il token è già stato consumato, revocato o scaduto", () => {
+    expect(
+      inspectGuardianLink({
+        purpose: "AUTHORIZE",
+        usedAt: now,
+        expiresAt,
+        authorization: { status: "AUTHORIZED" },
+        now,
+      }),
     ).toBe("used");
+    expect(
+      inspectGuardianLink({
+        purpose: "AUTHORIZE",
+        usedAt: null,
+        expiresAt,
+        authorization: { status: "REVOKED" },
+        now,
+      }),
+    ).toBe("used");
+    expect(
+      inspectGuardianLink({
+        purpose: "AUTHORIZE",
+        usedAt: null,
+        expiresAt: new Date("2026-10-01T00:00:00Z"),
+        authorization: { status: "AUTHORIZED" },
+        now,
+      }),
+    ).toBe("expired");
   });
 
   it("accetta la revoca solo su un’autorizzazione ancora valida", () => {
@@ -149,5 +181,26 @@ describe("inspectGuardianLink", () => {
         now,
       }),
     ).toBeNull();
+  });
+});
+
+describe("storico decisioni genitore", () => {
+  it("tiene l’ultima scelta per codice e segnala solo i cambi", () => {
+    const latest = latestGuardianDecisions([
+      { code: "G9", accepted: true, createdAt: 1 },
+      { code: "G9", accepted: false, createdAt: 2 },
+      { code: "G1", accepted: true, createdAt: 1 },
+    ]);
+    expect(latest.get("G9")?.accepted).toBe(false);
+    expect(
+      changedGuardianDecisions(latest, [
+        { code: "G1", accepted: true },
+        { code: "G9", accepted: true },
+        { code: "G10", accepted: false },
+      ]),
+    ).toEqual([
+      { code: "G9", accepted: true, previousAccepted: false, previousValue: null },
+      { code: "G10", accepted: false, previousAccepted: null, previousValue: null },
+    ]);
   });
 });

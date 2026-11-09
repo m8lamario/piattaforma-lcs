@@ -3,10 +3,12 @@ import { appendBoxSet } from "@/features/consents/data/choices";
 import { getCurrentLegalVersions, recordConsent } from "@/features/consents/data/legal";
 import { privacySlugsFor, MEDIA_RELEASE_SLUG } from "@/features/consents/domain/pack";
 import {
+  changedGuardianDecisions,
   enrollmentRequiredCodes,
   enrollmentBoxCodes,
   inspectGuardianLink,
   isOpenAuthorizationStatus,
+  latestGuardianDecisions,
   publicationBoxCodes,
   revokeBoxCodes,
   type GuardianLinkPurpose,
@@ -17,6 +19,7 @@ import {
   loadPlayerWorkspace,
   persistRegistrationStatus,
 } from "@/features/registrations/data/workspace";
+import { isTerminalRegistrationStatus } from "@/features/registrations/domain/requirements";
 import { isPartnerBoxVisible } from "@/features/consents/data/partners";
 import { dispatchOutboundEmail } from "@/features/emails/data/dispatch";
 import { GUARDIAN_LINK_DAYS, GUARDIAN_REMINDER_DAYS, appOrigin } from "@/shared/config/app";
@@ -268,7 +271,7 @@ export async function loadGuardianLink(token: string, purpose: GuardianLinkPurpo
   const row = await prisma.guardianLinkToken.findUnique({
     where: { tokenHash: hashInviteToken(token) },
     include: {
-      authorization: true,
+      authorization: { include: { decisions: { orderBy: { createdAt: "asc" as const } } } },
       guardian: true,
       registration: {
         include: {
@@ -309,6 +312,7 @@ export async function submitGuardianAuthorization(input: {
   token: string;
   purpose: "AUTHORIZE" | "PUBLICATION";
   refuse: boolean;
+  refuseConfirm?: boolean;
   g3?: G3Value | null;
   boxes: Array<{ code: ConsentBoxCode; accepted: boolean }>;
   versionIds: Record<string, string>;
@@ -325,6 +329,9 @@ export async function submitGuardianAuthorization(input: {
   const expectedType: GuardianAuthorizationType = input.purpose === "PUBLICATION" ? "PUBLICATION" : "ENROLLMENT";
   if (authorization.authorizationType !== expectedType) {
     return { ok: false as const, reason: "invalid" as const };
+  }
+  if (input.refuse && !input.refuseConfirm) {
+    return { ok: false as const, reason: "confirm" as const };
   }
 
   const playerUserId = found.registration.playerProfile.userId;
@@ -347,8 +354,36 @@ export async function submitGuardianAuthorization(input: {
   const slugs = expectedType === "PUBLICATION" ? [MEDIA_RELEASE_SLUG] : [...privacySlugsFor(true), MEDIA_RELEASE_SLUG];
   const actorKind: ActorKind = "GUARDIAN_LINK";
   const actorRole = "GUARDIAN";
+  const previousStatus = authorization.status;
+  const submittedAt = new Date();
+  const status = input.refuse ? "REFUSED" : "AUTHORIZED";
+  const previous = latestGuardianDecisions(authorization.decisions);
+  const g3Value = expectedType === "ENROLLMENT" ? input.g3 ?? null : null;
+  const nextBoxes = submitted.map((box) => ({
+    code: box.code,
+    accepted: box.code === "G3" ? Boolean(g3Value) && !input.refuse : input.refuse ? false : box.accepted,
+    value: box.code === "G3" ? g3Value : null,
+    clauseText: clauseFor(box.code),
+  }));
+  if (g3Value && !nextBoxes.some((box) => box.code === "G3")) {
+    nextBoxes.push({
+      code: "G3",
+      accepted: !input.refuse,
+      value: g3Value,
+      clauseText: clauseFor("G3"),
+    });
+  }
+  const changed = changedGuardianDecisions(previous, nextBoxes);
+  if (changed.length === 0 && previousStatus === status) {
+    return {
+      ok: true as const,
+      registrationUserId: playerUserId,
+      registrationId: found.registrationId,
+      refused: input.refuse,
+    };
+  }
 
-  if (!input.refuse) {
+  if (!input.refuse && previousStatus !== "AUTHORIZED") {
     for (const slug of slugs) {
       const versionId = input.versionIds[slug];
       if (!versionId) continue;
@@ -381,75 +416,107 @@ export async function submitGuardianAuthorization(input: {
     }
   }
 
-  const g3Value = expectedType === "ENROLLMENT" ? input.g3 ?? null : null;
-  const boxesToStore = submitted.map((box) => ({
-    ...box,
-    value: box.code === "G3" ? g3Value : undefined,
-    clauseText: clauseFor(box.code),
-  }));
-  if (g3Value && !boxesToStore.some((box) => box.code === "G3")) {
-    boxesToStore.push({ code: "G3", accepted: true, value: g3Value, clauseText: clauseFor("G3") });
+  if (changed.length > 0) {
+    await appendBoxSet({
+      userId: playerUserId,
+      registrationId: found.registrationId,
+      guardianId: found.guardianId,
+      source: "GUARDIAN_LINK",
+      actorKind,
+      actorRole,
+      ipAddress: input.ipAddress,
+      userAgent: input.userAgent,
+      boxes: changed.map((box) => ({
+        code: box.code as ConsentBoxCode,
+        accepted: box.accepted,
+        value: box.value,
+        clauseText: clauseFor(box.code as ConsentBoxCode),
+      })),
+    });
+
+    await prisma.guardianAuthorizationDecision.createMany({
+      data: changed.map((box) => ({
+        authorizationId: authorization.id,
+        code: box.code,
+        accepted: box.accepted,
+        value: box.value ?? null,
+        previousAccepted: box.previousAccepted,
+        previousValue: box.previousValue,
+        clauseText: clauseFor(box.code as ConsentBoxCode),
+        legalDocumentVersionId: input.versionIds.terms ?? input.versionIds[MEDIA_RELEASE_SLUG] ?? null,
+      })),
+    });
   }
 
-  await appendBoxSet({
-    userId: playerUserId,
-    registrationId: found.registrationId,
-    guardianId: found.guardianId,
-    source: "GUARDIAN_LINK",
-    actorKind,
-    actorRole,
-    ipAddress: input.ipAddress,
-    userAgent: input.userAgent,
-    boxes: input.refuse
-      ? boxesToStore.map((box) => ({
-          ...box,
-          accepted: false,
-        }))
-      : boxesToStore,
-  });
-
-  await prisma.guardianAuthorizationDecision.createMany({
-    data: (input.refuse ? boxesToStore.map((box) => ({ ...box, accepted: false })) : boxesToStore).map((box) => ({
-      authorizationId: authorization.id,
-      code: box.code,
-      accepted: box.accepted,
-      clauseText: box.clauseText,
-      legalDocumentVersionId: input.versionIds.terms ?? input.versionIds[MEDIA_RELEASE_SLUG] ?? null,
-    })),
-  });
-
-  const status = input.refuse ? "REFUSED" : "AUTHORIZED";
   await prisma.guardianAuthorization.update({
     where: { id: authorization.id },
     data: {
       status,
-      authorizedAt: input.refuse ? null : new Date(),
+      authorizedAt: input.refuse ? null : submittedAt,
       ipAddress: input.ipAddress ?? null,
       userAgent: input.userAgent ?? null,
     },
   });
   await prisma.guardianLinkToken.update({
     where: { id: found.id },
-    data: { usedAt: new Date(), ipAddress: input.ipAddress ?? null, userAgent: input.userAgent ?? null },
+    data: { ipAddress: input.ipAddress ?? null, userAgent: input.userAgent ?? null },
   });
 
-  await writeAuditLog({
-    actorKind,
-    actorRole,
-    guardianId: found.guardianId,
-    authorizationId: authorization.id,
-    action: input.refuse ? "GUARDIAN_REFUSE" : "GUARDIAN_AUTHORIZE",
-    entityType: "GuardianAuthorization",
-    entityId: authorization.id,
-    metadata: { type: expectedType, refused: input.refuse },
-    ipAddress: input.ipAddress,
-    userAgent: input.userAgent,
-  });
+  const amending = !isOpenAuthorizationStatus(previousStatus);
+  if (amending) {
+    for (const box of changed) {
+      await writeAuditLog({
+        actorKind,
+        actorRole,
+        guardianId: found.guardianId,
+        authorizationId: authorization.id,
+        action: "GUARDIAN_AMEND",
+        entityType: "GuardianAuthorization",
+        entityId: authorization.id,
+        metadata: {
+          type: expectedType,
+          code: box.code,
+          previousAccepted: box.previousAccepted,
+          accepted: box.accepted,
+          previousValue: box.previousValue,
+          value: box.value ?? null,
+          previousStatus,
+          status,
+        },
+        ipAddress: input.ipAddress,
+        userAgent: input.userAgent,
+      });
+    }
+  } else {
+    await writeAuditLog({
+      actorKind,
+      actorRole,
+      guardianId: found.guardianId,
+      authorizationId: authorization.id,
+      action: input.refuse ? "GUARDIAN_REFUSE" : "GUARDIAN_AUTHORIZE",
+      entityType: "GuardianAuthorization",
+      entityId: authorization.id,
+      metadata: { type: expectedType, refused: input.refuse },
+      ipAddress: input.ipAddress,
+      userAgent: input.userAgent,
+    });
+  }
 
   const playerName = `${found.registration.playerProfile.firstName} ${found.registration.playerProfile.lastName}`.trim();
   const tournamentName = found.registration.team.edition.competition.name;
+  const mediaRevoked = previousStatus === "AUTHORIZED" && status === "AUTHORIZED"
+    ? changed
+        .filter((box) => box.previousAccepted === true && box.accepted === false)
+        .map((box) => box.code)
+        .filter((code) => revokeBoxCodes(partnersPublished).includes(code as ConsentBoxCode))
+    : [];
 
-  if (input.refuse) {
+  if (status === "REFUSED" && previousStatus !== "REFUSED") {
+    await invalidateUnusedTokens({
+      registrationId: found.registrationId,
+      purpose: "REVOKE",
+      guardianId: found.guardianId,
+    });
     await prisma.notification.create({
       data: {
         userId: playerUserId,
@@ -460,7 +527,7 @@ export async function submitGuardianAuthorization(input: {
       },
     });
     await dispatchOutboundEmail({
-      idempotencyKey: `guardian-refused:${authorization.id}`,
+      idempotencyKey: `guardian-refused:${authorization.id}:${submittedAt.toISOString()}`,
       purpose: "GUARDIAN_REFUSED",
       templateKey: "GUARDIAN_REFUSED",
       to: found.registration.playerProfile.user.email,
@@ -474,7 +541,7 @@ export async function submitGuardianAuthorization(input: {
       sourceEntityType: "GuardianAuthorization",
       sourceEntityId: authorization.id,
     });
-  } else {
+  } else if (status === "AUTHORIZED" && previousStatus !== "AUTHORIZED") {
     const revokeIssued = await issueLinkToken({
       purpose: "REVOKE",
       guardianId: found.guardianId,
@@ -483,7 +550,7 @@ export async function submitGuardianAuthorization(input: {
       authorizationId: authorization.id,
     });
     await dispatchOutboundEmail({
-      idempotencyKey: `guardian-authorized:${authorization.id}`,
+      idempotencyKey: `guardian-authorized:${authorization.id}:${revokeIssued.row.id}`,
       purpose: "GUARDIAN_AUTHORIZED",
       templateKey: "GUARDIAN_AUTHORIZED",
       to: found.guardian.email,
@@ -499,7 +566,9 @@ export async function submitGuardianAuthorization(input: {
       sourceEntityType: "GuardianAuthorization",
       sourceEntityId: authorization.id,
     });
+  }
 
+  if (status === "AUTHORIZED") {
     if (expectedType === "ENROLLMENT" && g3Value === "OTHER_PARENT") {
       const secondary = await prisma.guardian.findFirst({
         where: { playerProfileId: found.playerProfileId, kind: "SECONDARY" },
@@ -522,6 +591,15 @@ export async function submitGuardianAuthorization(input: {
         data: { usedAt: new Date() },
       });
     }
+  }
+
+  if (mediaRevoked.length > 0) {
+    await notifyMediaRevocation({
+      registrationId: found.registrationId,
+      playerUserId,
+      playerName,
+      codes: mediaRevoked,
+    });
   }
 
   const workspace = await loadPlayerWorkspace(playerUserId);
@@ -734,4 +812,92 @@ export async function latestEnrollmentAuthorization(registrationId: string) {
     where: { registrationId, authorizationType: "ENROLLMENT" },
     orderBy: { requestedAt: "desc" },
   });
+}
+
+export async function resetEnrollmentAuthorization(input: {
+  registrationId: string;
+  actorUserId: string;
+  ipAddress?: string | null;
+  userAgent?: string | null;
+}) {
+  const registration = await prisma.registration.findUnique({
+    where: { id: input.registrationId },
+    include: {
+      playerProfile: { select: { id: true, userId: true, firstName: true, lastName: true } },
+      team: { include: { edition: { include: { competition: true } } } },
+    },
+  });
+  if (!registration) return { ok: false as const, reason: "not_found" as const };
+  if (isTerminalRegistrationStatus(registration.status)) {
+    return { ok: false as const, reason: "withdrawn" as const };
+  }
+
+  const authorization = await latestEnrollmentAuthorization(input.registrationId);
+  if (!authorization) return { ok: false as const, reason: "not_found" as const };
+
+  const guardian = await prisma.guardian.findUnique({ where: { id: authorization.guardianId } });
+  if (!guardian?.email) return { ok: false as const, reason: "not_found" as const };
+
+  const previousStatus = authorization.status;
+  const issued = await issueLinkToken({
+    purpose: "AUTHORIZE",
+    guardianId: authorization.guardianId,
+    playerProfileId: authorization.playerProfileId,
+    registrationId: input.registrationId,
+    authorizationId: authorization.id,
+  });
+  await prisma.guardianAuthorization.update({
+    where: { id: authorization.id },
+    data: {
+      status: "PENDING",
+      tokenId: issued.row.id,
+      authorizedAt: null,
+      revokedAt: null,
+    },
+  });
+  await invalidateUnusedTokens({
+    registrationId: input.registrationId,
+    purpose: "REVOKE",
+    guardianId: authorization.guardianId,
+  });
+
+  const playerName = `${registration.playerProfile.firstName} ${registration.playerProfile.lastName}`.trim();
+  await dispatchOutboundEmail({
+    idempotencyKey: `guardian-authorize:${issued.row.id}`,
+    purpose: "GUARDIAN_AUTHORIZE",
+    templateKey: "GUARDIAN_AUTHORIZE",
+    to: guardian.email,
+    userId: registration.playerProfile.userId,
+    recipientKind: "GUARDIAN",
+    variables: {
+      title: it.emailGuardianAuthorizeSubject,
+      playerName,
+      teamName: `${registration.team.edition.competition.name} — ${registration.team.edition.name}`,
+      confirmUrl: guardianAuthorizeUrl(issued.token),
+      scadenza: formatExpiry(issued.row.expiresAt),
+      summary: it.emailGuardianAuthorizeSummary,
+    },
+    sourceEntityType: "GuardianAuthorization",
+    sourceEntityId: authorization.id,
+  });
+  await writeAuditLog({
+    actorUserId: input.actorUserId,
+    actorKind: "USER",
+    actorRole: "ADMIN",
+    guardianId: authorization.guardianId,
+    authorizationId: authorization.id,
+    action: "GUARDIAN_RESET",
+    entityType: "GuardianAuthorization",
+    entityId: authorization.id,
+    metadata: { type: "ENROLLMENT", previousStatus, status: "PENDING" },
+    ipAddress: input.ipAddress,
+    userAgent: input.userAgent,
+  });
+
+  const workspace = await loadPlayerWorkspace(registration.playerProfile.userId);
+  if (workspace) {
+    await persistRegistrationStatus(workspace.registration.id, workspace.projectedStatus);
+  }
+
+  return { ok: true as const, authorizationId: authorization.id };
 }

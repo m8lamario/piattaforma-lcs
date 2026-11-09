@@ -93,8 +93,9 @@ Un rappresentante che è anche giocatore ha `TEAM_REPRESENTATIVE` + membership `
 - requestedAt, openedAt, authorizedAt, revokedAt
 - ipAddress, userAgent, legalDocumentVersionId
 - Cambio genitore: nuova riga, precedente SUPERSEDED. Nessun overwrite di una riga già autorizzata.
+- Correzioni del genitore sulla **stessa** riga finché il token AUTHORIZE/PUBLICATION non è scaduto. `REVOKED` resta chiuso. Reset admin: stessa riga a PENDING e nuovo token, senza nuova iscrizione.
 
-**GuardianAuthorizationDecision** — append-only: code, accepted, clauseText, legalDocumentVersionId, createdAt
+**GuardianAuthorizationDecision** — append-only: code, accepted, value, previousAccepted, previousValue, clauseText, legalDocumentVersionId, createdAt. Le correzioni aggiungono righe; le scelte precedenti restano.
 
 **GuardianLinkToken** — hash SHA-256, expiresAt, usedAt, purpose (AUTHORIZE | REVOKE | PUBLICATION), guardianId, playerProfileId. Plaintext solo nell’email.
 
