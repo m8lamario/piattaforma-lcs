@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { SerializedAdminDocumentView, SerializedReviewQueueItem } from "@/features/documents/domain/adminView";
 import { parseReviewQueueItem } from "@/features/documents/domain/adminView";
 import {
@@ -10,6 +10,7 @@ import {
   type ReviewDocumentQueueSuccess,
 } from "@/features/documents/actions";
 import {
+  applyReviewResult,
   reviewDocumentHref,
   reviewDoneHref,
   reviewQueuePosition,
@@ -73,6 +74,17 @@ function birthLabel(iso: string) {
   return new Intl.DateTimeFormat("it-IT", { timeZone: "UTC", dateStyle: "short" }).format(new Date(iso));
 }
 
+function replaceBrowserUrl(href: string) {
+  const state = window.history.state as { __NA?: boolean; _N?: boolean } | null;
+  // Next 16 intercetta replaceState senza __NA e lancia ACTION_RESTORE: rimonta
+  // la pagina sul documento della route e scarta l'id selezionato nel workspace.
+  if (state && (state.__NA || state._N)) {
+    window.history.replaceState(state, "", href);
+    return;
+  }
+  window.history.replaceState(null, "", href);
+}
+
 export function MedicalReviewWorkspace({
   initialDocument,
   initialQueue,
@@ -86,9 +98,17 @@ export function MedicalReviewWorkspace({
     [initialDocument.id]: initialDocument,
   });
   const [done, setDone] = useState(false);
-  const [, startTransition] = useTransition();
   const { ensurePreloaded, get } = useReviewFileCache();
   const reviewStartedAt = useRef<number | null>(null);
+  const viewsRef = useRef(views);
+  const queueRef = useRef(queue);
+  const currentIdRef = useRef(currentId);
+
+  useEffect(() => {
+    viewsRef.current = views;
+    queueRef.current = queue;
+    currentIdRef.current = currentId;
+  });
 
   const parsedQueue = useMemo(() => queue.map(parseReviewQueueItem), [queue]);
   const document = views[currentId];
@@ -96,24 +116,20 @@ export function MedicalReviewWorkspace({
   const pending = document?.status === "PENDING_REVIEW";
   const fileAvailable = canOpen && document && !document.blobPurgedAt;
 
-  const syncUrl = useCallback(
-    (documentId: string) => {
-      const href = reviewDocumentHref(documentId, filters);
-      window.history.replaceState(null, "", href);
-    },
-    [filters],
-  );
-
   const ensureMetadata = useCallback(async (ids: string[]) => {
-    const missing = ids.filter((id) => !views[id]);
-    if (missing.length === 0) return views;
+    const missing = ids.filter((id) => !viewsRef.current[id]);
+    if (missing.length === 0) return viewsRef.current;
     const loaded = await loadReviewDocumentsAction(missing);
-    if (!("documents" in loaded)) return views;
-    const next = { ...views };
-    for (const row of loaded.documents) next[row.id] = row;
-    setViews(next);
+    if (!("documents" in loaded)) return viewsRef.current;
+    let next = viewsRef.current;
+    setViews((current) => {
+      next = { ...current };
+      for (const row of loaded.documents) next[row.id] = row;
+      return next;
+    });
+    viewsRef.current = next;
     return next;
-  }, [views]);
+  }, []);
 
   const runPreload = useCallback(
     async (documentId: string, queueItems: SerializedReviewQueueItem[], viewSnapshot: Record<string, SerializedAdminDocumentView>) => {
@@ -129,19 +145,17 @@ export function MedicalReviewWorkspace({
     [canOpen, ensureMetadata, ensurePreloaded],
   );
 
-  const viewsRef = useRef(views);
-
   useEffect(() => {
-    viewsRef.current = views;
     const timer = window.setTimeout(() => {
       void runPreload(currentId, queue, viewsRef.current);
     }, 0);
     return () => window.clearTimeout(timer);
-  }, [currentId, queue, views, runPreload]);
+  }, [currentId, queue, runPreload]);
 
   useEffect(() => {
-    syncUrl(currentId);
-  }, [currentId, syncUrl]);
+    if (done) return;
+    replaceBrowserUrl(reviewDocumentHref(currentId, filters));
+  }, [currentId, done, filters]);
 
   const goToDocument = useCallback(
     (documentId: string) => {
@@ -159,31 +173,27 @@ export function MedicalReviewWorkspace({
   const handleReviewSuccess = useCallback(
     (result: ReviewDocumentQueueSuccess) => {
       const transitionStart = reviewStartedAt.current ?? performance.now();
-      setQueue(result.queue);
-      if (!result.nextId) {
+      const applied = applyReviewResult(currentIdRef.current, queueRef.current, result);
+      if (applied.status === "ignored") return;
+      setQueue(applied.queue);
+      if (applied.status === "done") {
         setDone(true);
-        window.history.replaceState(null, "", reviewDoneHref(filters));
+        replaceBrowserUrl(reviewDoneHref(filters));
         recordReviewTiming({
           phase: "post_review_transition",
           ms: elapsedMs(transitionStart),
-          documentId: currentId,
+          documentId: currentIdRef.current,
         });
         return;
       }
-      startTransition(() => {
-        void (async () => {
-          await ensureMetadata([result.nextId!]);
-          setCurrentId(result.nextId!);
-          recordReviewTiming({
-            phase: "post_review_transition",
-            ms: elapsedMs(transitionStart),
-            documentId: result.nextId!,
-          });
-          void runPreload(result.nextId!, result.queue, views);
-        })();
+      setCurrentId(applied.currentId);
+      recordReviewTiming({
+        phase: "post_review_transition",
+        ms: elapsedMs(transitionStart),
+        documentId: applied.currentId,
       });
     },
-    [currentId, ensureMetadata, filters, runPreload, views],
+    [filters],
   );
 
   const resyncQueue = useCallback(async () => {
@@ -192,7 +202,7 @@ export function MedicalReviewWorkspace({
     setQueue(refreshed.queue);
     if (refreshed.queue.length === 0) {
       setDone(true);
-      window.history.replaceState(null, "", reviewDoneHref(filters));
+      replaceBrowserUrl(reviewDoneHref(filters));
     }
   }, [filters]);
 

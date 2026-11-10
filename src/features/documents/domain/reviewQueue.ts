@@ -34,13 +34,59 @@ export function reviewQueuePosition(queue: readonly ReviewQueueItem[], documentI
   };
 }
 
+function compareReviewQueue(a: ReviewQueueItem, b: ReviewQueueItem) {
+  const byTime = a.uploadedAt.getTime() - b.uploadedAt.getTime();
+  if (byTime !== 0) return byTime;
+  if (a.id < b.id) return -1;
+  if (a.id > b.id) return 1;
+  return 0;
+}
+
+/**
+ * Id da aprire dopo che `reviewedId` esce dalla coda.
+ * La coda è nello stesso ordine del pulsante Successivo.
+ * In fondo si torna al primo ancora in attesa. Se l'id non è nella coda, null:
+ * non si indovina il primo, che spesso è un certificato già visto.
+ */
+export function selectNextAfterReview(queue: readonly { id: string }[], reviewedId: string): string | null {
+  const index = queue.findIndex((item) => item.id === reviewedId);
+  const remaining = queue.filter((item) => item.id !== reviewedId);
+  if (remaining.length === 0 || index < 0) return null;
+  return remaining[index]?.id ?? remaining[0]?.id ?? null;
+}
+
 export function nextPendingAfter(queue: readonly ReviewQueueItem[], current: ReviewQueueItem) {
-  const later = queue.find(
-    (item) =>
-      item.uploadedAt.getTime() > current.uploadedAt.getTime() ||
-      (item.uploadedAt.getTime() === current.uploadedAt.getTime() && item.id > current.id),
-  );
-  return later?.id ?? queue[0]?.id ?? null;
+  const ordered = [...queue.filter((item) => item.id !== current.id), current].sort(compareReviewQueue);
+  return selectNextAfterReview(ordered, current.id);
+}
+
+export type AppliedReview<T extends { id: string }> =
+  | { status: "ignored" }
+  | { status: "done"; queue: T[] }
+  | { status: "next"; currentId: string; queue: T[] };
+
+/**
+ * Applica l'esito di un'approvazione o di un rifiuto.
+ * Il successore è l'id successivo nella coda che era a schermo, se è ancora in attesa.
+ * Un nextId del server che punta a un certificato già visto non sposta la selezione indietro.
+ */
+export function applyReviewResult<T extends { id: string }>(
+  currentId: string,
+  previousQueue: readonly { id: string }[],
+  result: { reviewedId: string; nextId: string | null; queue: readonly T[] },
+): AppliedReview<T> {
+  if (result.reviewedId !== currentId) return { status: "ignored" };
+  const queue = result.queue.filter((item) => item.id !== result.reviewedId);
+  if (queue.length === 0) return { status: "done", queue };
+
+  const successor = selectNextAfterReview(previousQueue, result.reviewedId);
+  if (successor && queue.some((item) => item.id === successor)) {
+    return { status: "next", currentId: successor, queue };
+  }
+  if (result.nextId && result.nextId !== result.reviewedId && queue.some((item) => item.id === result.nextId)) {
+    return { status: "next", currentId: result.nextId, queue };
+  }
+  return { status: "next", currentId: queue[0]!.id, queue };
 }
 
 export function reviewQueueQuery(filters: { teamId?: string; q?: string }) {

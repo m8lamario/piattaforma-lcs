@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import {
@@ -57,6 +58,7 @@ async function persistWorkspaceStatus(userId: string) {
 
 export type ReviewDocumentQueueSuccess = {
   ok: true;
+  reviewedId: string;
   nextId: string | null;
   queue: SerializedReviewQueueItem[];
 };
@@ -325,30 +327,28 @@ export async function reviewDocumentAction(
   if (!result.ok) return fail("DOCUMENT_ALREADY_REVIEWED");
 
   const flow = String(formData.get("flow") ?? "");
-  const queue = await listPendingMedicalQueue({
+  const listed = await listPendingMedicalQueue({
     teamId: filters.teamId || undefined,
     q: filters.q || undefined,
   });
+  const queue = listed.filter((item) => item.id !== document.id);
   const nextId = nextPendingAfter(queue, { id: document.id, uploadedAt: document.uploadedAt });
   const serializedQueue = queue.map(serializeReviewQueueItem);
-
-  if (flow === "queue") {
-    void afterReviewSideEffects({
-      documentId,
-      decision,
-      playerUserId: document.playerProfile.userId,
-      reviewerId: session.user.id,
-      reason: decision === "REJECTED" ? reason : undefined,
-    });
-    return { ok: true as const, nextId, queue: serializedQueue };
-  }
-
-  await afterReviewSideEffects({
+  const sideEffects = {
     documentId,
     decision,
     playerUserId: document.playerProfile.userId,
     reviewerId: session.user.id,
     reason: decision === "REJECTED" ? reason : undefined,
-  });
+  } satisfies Parameters<typeof afterReviewSideEffects>[0];
+
+  if (flow === "queue") {
+    // Dopo la risposta: così questa action non rivalida la route corrente
+    // e non rimonta il workspace sul certificato appena revisionato.
+    after(() => afterReviewSideEffects(sideEffects));
+    return { ok: true as const, reviewedId: document.id, nextId, queue: serializedQueue };
+  }
+
+  await afterReviewSideEffects(sideEffects);
   redirect(nextId ? reviewDocumentHref(nextId, filters) : reviewDoneHref(filters));
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect } from "react";
+import { useActionState, useEffect, useRef } from "react";
 import { reviewDocumentAction, type ReviewDocumentQueueSuccess } from "@/features/documents/actions";
 import { ActionError } from "@/shared/ui/ActionError";
 import { PendingSubmitButton } from "@/shared/ui/PendingSubmitButton";
@@ -19,7 +19,9 @@ type Props = {
 };
 
 function isQueueSuccess(state: unknown): state is ReviewDocumentQueueSuccess {
-  return Boolean(state && typeof state === "object" && "ok" in state && (state as ReviewDocumentQueueSuccess).ok);
+  if (!state || typeof state !== "object" || !("ok" in state)) return false;
+  const value = state as ReviewDocumentQueueSuccess;
+  return value.ok === true && typeof value.reviewedId === "string" && Array.isArray(value.queue);
 }
 
 function isActionFailure(state: unknown): state is ActionFailure {
@@ -38,24 +40,33 @@ export function ReviewForm({
   const [approveState, approveAction, approvePending] = useActionState(reviewDocumentAction, undefined);
   const [rejectState, rejectAction, rejectPending] = useActionState(reviewDocumentAction, undefined);
   const busy = approvePending || rejectPending;
+  const handledApprove = useRef<unknown>(null);
+  const handledReject = useRef<unknown>(null);
+  const handledStale = useRef<unknown>(null);
 
   useEffect(() => {
-    if (!queueFlow) return;
-    if (isQueueSuccess(approveState)) onQueueSuccess?.(approveState);
+    if (!queueFlow || !isQueueSuccess(approveState) || handledApprove.current === approveState) return;
+    handledApprove.current = approveState;
+    onQueueSuccess?.(approveState);
   }, [approveState, onQueueSuccess, queueFlow]);
 
   useEffect(() => {
-    if (!queueFlow) return;
-    if (isQueueSuccess(rejectState)) onQueueSuccess?.(rejectState);
+    if (!queueFlow || !isQueueSuccess(rejectState) || handledReject.current === rejectState) return;
+    handledReject.current = rejectState;
+    onQueueSuccess?.(rejectState);
   }, [rejectState, onQueueSuccess, queueFlow]);
 
   useEffect(() => {
     if (!queueFlow) return;
-    const stale =
-      (isActionFailure(approveState) && approveState.code === "DOCUMENT_ALREADY_REVIEWED") ||
-      (isActionFailure(rejectState) && rejectState.code === "DOCUMENT_ALREADY_REVIEWED");
-    if (stale) onStaleQueue?.();
-  }, [approveState, rejectState, onStaleQueue, queueFlow]);
+    const staleState = isActionFailure(approveState) && approveState.code === "DOCUMENT_ALREADY_REVIEWED"
+      ? approveState
+      : isActionFailure(rejectState) && rejectState.code === "DOCUMENT_ALREADY_REVIEWED"
+        ? rejectState
+        : null;
+    if (!staleState || handledStale.current === staleState) return;
+    handledStale.current = staleState;
+    onStaleQueue?.();
+  }, [approveState, onStaleQueue, rejectState, queueFlow]);
 
   return (
     <div className={styles.stack}>
