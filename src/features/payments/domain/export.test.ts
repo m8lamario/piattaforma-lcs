@@ -12,6 +12,7 @@ const row = (overrides: Partial<PaymentRegisterRow> = {}): PaymentRegisterRow =>
   lastName: "Rossi",
   email: "ada@example.test",
   billingName: "Ada Rossi",
+  fiscalCode: "RSSDAA80A01L219X",
   residenceLine: "",
   residencePostalCode: "",
   residenceCity: "",
@@ -42,9 +43,11 @@ describe("registro pagamenti", () => {
     expect(identity).toEqual({ firstName: "Ada", lastName: "Rossi", email: "ada@example.test" });
     const csv = paymentsToCsv([row()]);
     const columns = csv.trim().split("\r\n")[1]?.split(";") ?? [];
-    expect(columns[4]).toBe("");
+    expect(columns[4]).toBe("RSSDAA80A01L219X");
     expect(columns[5]).toBe("");
-    expect(columns[8]).toBe("Via Roma 1");
+    expect(columns[6]).toBe("");
+    expect(columns[9]).toBe("Via Roma 1");
+    expect(csv).toContain("Codice fiscale");
     expect(csv).toContain("Metodo");
     expect(csv).toContain("Stripe");
     expect(paymentRoleLabel({ category: "PLAYER", teamFee: false })).toBe("Giocatore");
@@ -59,6 +62,7 @@ describe("registro pagamenti", () => {
         lastName: "",
         email: "",
         billingName: "",
+        fiscalCode: "",
         billingLine: "",
         billingPostalCode: "",
         billingCity: "",
@@ -69,6 +73,8 @@ describe("registro pagamenti", () => {
         status: "In attesa",
       }),
     ]);
+    const columns = csv.trim().split("\r\n")[1]?.split(";") ?? [];
+    expect(columns[4]).toBe("");
     expect(csv).toContain("'=cmd");
     expect(csv).not.toContain("Via Roma");
   });

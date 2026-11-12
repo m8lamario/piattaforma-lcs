@@ -103,7 +103,7 @@ Ogni voce: problema, opzioni, decisione necessaria, conseguenze, impatto sullo s
 ## OD-048 Registro pagamenti e residenza
 
 - **Problema:** la SRL vuole un CSV dei paganti. Il modulo di iscrizione ha nome, cognome ed email, non l’indirizzo di residenza. Stripe può raccogliere l’indirizzo di fatturazione.
-- **Workaround:** nome, cognome ed email del CSV vengono dall’account LCS. L’indirizzo di fatturazione si salva solo dal webhook `checkout.session.completed` con `payment_status=paid` (o pagamento asincrono riuscito). Le colonne di residenza restano vuote. Un rimborso parziale non diventa «rimborsato». Nessuna fatturazione elettronica.
+- **Workaround:** nome, cognome ed email del CSV vengono dall’account LCS. Il codice fiscale viene da `PlayerProfile.fiscalCode` già in anagrafica, non dalla fatturazione Stripe; resta vuoto su quota squadra o se il profilo non lo ha. L’indirizzo di fatturazione si salva solo dal webhook `checkout.session.completed` con `payment_status=paid` (o pagamento asincrono riuscito). Le colonne di residenza restano vuote. Un rimborso parziale non diventa «rimborsato». Nessuna fatturazione elettronica.
 - **Decisione necessaria:** se la residenza va raccolta nel modulo, è un campo nuovo da approvare. Fino ad allora non si inventa.
 
 ## OD-009 Ricevuta
