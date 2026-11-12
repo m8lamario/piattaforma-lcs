@@ -3,6 +3,7 @@ export type PaymentRegisterRow = {
   lastName: string;
   email: string;
   billingName: string;
+  fiscalCode: string;
   residenceLine: string;
   residencePostalCode: string;
   residenceCity: string;
@@ -26,6 +27,7 @@ export const PAYMENT_REGISTER_HEADERS = [
   "Cognome",
   "Email",
   "Nome fatturazione",
+  "Codice fiscale",
   "Indirizzo residenza",
   "CAP residenza",
   "Comune residenza",
@@ -106,6 +108,7 @@ export function paymentsToCsv(rows: PaymentRegisterRow[]) {
         row.lastName,
         row.email,
         row.billingName,
+        row.fiscalCode,
         row.residenceLine,
         row.residencePostalCode,
         row.residenceCity,

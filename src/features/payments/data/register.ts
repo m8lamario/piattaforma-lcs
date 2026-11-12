@@ -35,7 +35,7 @@ export async function buildPaymentRegisterCsv() {
         select: {
           category: true,
           playerProfile: {
-            select: { firstName: true, lastName: true, user: { select: { email: true } } },
+            select: { firstName: true, lastName: true, fiscalCode: true, user: { select: { email: true } } },
           },
         },
       },
@@ -54,6 +54,7 @@ export async function buildPaymentRegisterCsv() {
     return {
       ...identity,
       billingName: payment.billingName?.trim() ?? "",
+      fiscalCode: profile?.fiscalCode?.trim() ?? "",
       residenceLine: "",
       residencePostalCode: "",
       residenceCity: "",
