@@ -47,54 +47,67 @@ function Region({ label, className, children }: RegionProps) {
   );
 }
 
+function HeaderBones({ kicker = true }: { kicker?: boolean }) {
+  return (
+    <div className={styles.header}>
+      {kicker ? <Skeleton width="12rem" /> : null}
+      <Skeleton variant="title" width="16rem" />
+      <Skeleton width="min(28rem, 80%)" />
+    </div>
+  );
+}
+
+function PanelBones({ rows = 3, avatar = false }: { rows?: number; avatar?: boolean }) {
+  return (
+    <div className={styles.card}>
+      <div className={styles.cardHead}>
+        <Skeleton variant="block" className={styles.cardIcon} />
+        <Skeleton width="9rem" height="var(--text-md)" />
+      </div>
+      <ul className={styles.cardRows}>
+        {Array.from({ length: rows }, (_, index) => (
+          <li key={index} className={styles.cardRow}>
+            {avatar ? <Skeleton variant="circle" className={styles.avatar} /> : null}
+            <span className={styles.stack} style={{ gap: "var(--space-1)", flex: 1 }}>
+              <Skeleton width="10rem" />
+              <Skeleton width="7rem" />
+            </span>
+            <Skeleton variant="chip" />
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function HeroBones() {
+  return (
+    <div className={styles.heroCard}>
+      <div className={styles.stack}>
+        <Skeleton width="8rem" />
+        <Skeleton variant="title" width="80%" />
+        <Skeleton width="65%" />
+        <Skeleton variant="button" />
+      </div>
+      <div className={styles.heroAside}>
+        <Skeleton width="7rem" />
+        <Skeleton variant="block" className={styles.progressTrack} />
+      </div>
+    </div>
+  );
+}
+
 export function DashboardSkeleton() {
   return (
     <DelayedSkeleton>
-    <Region label={it.skeletonDashboardLabel} className={styles.dashboard}>
-      <div className={styles.dashboardHead}>
-        <Skeleton width="14rem" />
-        <Skeleton variant="chip" />
-      </div>
-      <Skeleton variant="title" width="12rem" />
-
-      <div className={styles.dashboardLayout}>
-        <div className={styles.dashboardMain}>
-          <div className={styles.dashboardHero}>
-            <Skeleton variant="title" width="80%" />
-            <Skeleton width="70%" />
-            <Skeleton variant="button" />
-          </div>
-          <div className={styles.stack} style={{ marginTop: "var(--space-4)" }}>
-            <Skeleton variant="title" width="8rem" height="var(--text-md)" />
-            <ul className={styles.checklist}>
-              {Array.from({ length: 5 }, (_, index) => (
-                <li key={index} className={styles.checklistItem}>
-                  <span className={styles.stack} style={{ gap: "var(--space-1)", flex: 1 }}>
-                    <Skeleton width="10rem" />
-                    <Skeleton width="8rem" />
-                  </span>
-                  <Skeleton variant="chip" />
-                </li>
-              ))}
-            </ul>
-          </div>
+      <Region label={it.skeletonDashboardLabel} className={styles.dashboard}>
+        <HeaderBones />
+        <HeroBones />
+        <div className={styles.dashboardLayout}>
+          <PanelBones rows={4} />
+          <PanelBones rows={2} />
         </div>
-
-        <div className={styles.dashboardSide}>
-          <Skeleton variant="title" width="9rem" height="var(--text-md)" />
-          <div className={styles.progressBlock}>
-            <Skeleton width="11rem" />
-            <div className={styles.segments}>
-              {Array.from({ length: 5 }, (_, index) => (
-                <Skeleton key={index} variant="block" className={styles.segment} />
-              ))}
-            </div>
-          </div>
-          <Skeleton width="100%" height="3rem" variant="block" />
-          <Skeleton width="100%" height="2rem" variant="block" />
-        </div>
-      </div>
-    </Region>
+      </Region>
     </DelayedSkeleton>
   );
 }
@@ -102,26 +115,25 @@ export function DashboardSkeleton() {
 export function WizardSkeleton() {
   return (
     <DelayedSkeleton>
-    <Region label={it.skeletonWizardLabel} className={styles.wizard}>
-      <div className={styles.wizardLayout}>
-        <div className={styles.stack} style={{ gap: "var(--space-5)" }}>
-          <Skeleton width="8rem" />
-          <header className={styles.heading} style={{ margin: 0 }}>
-            <Skeleton variant="circle" />
-            <span className={styles.stack} style={{ flex: 1, gap: "var(--space-2)" }}>
-              <Skeleton variant="title" width="12rem" />
-              <Skeleton width="70%" />
-            </span>
-          </header>
-          <div className={styles.group}>
-            <Skeleton width="5rem" />
-            <Skeleton width="4rem" />
-            <Skeleton variant="input" />
-            <Skeleton width="5rem" />
-            <Skeleton variant="input" />
+      <Region label={it.skeletonWizardLabel} className={styles.wizard}>
+        <div className={styles.row} style={{ justifyContent: "space-between" }}>
+          <Skeleton width="9rem" />
+          <Skeleton width="10rem" />
+        </div>
+        <div className={styles.steps}>
+          {Array.from({ length: 6 }, (_, index) => (
+            <Skeleton key={index} variant="circle" className={styles.stepMark} />
+          ))}
+        </div>
+        <div className={styles.card} style={{ padding: "var(--space-6)" }}>
+          <div className={styles.stack} style={{ gap: "var(--space-2)" }}>
+            <Skeleton width="8rem" />
+            <Skeleton variant="title" width="12rem" />
+            <Skeleton width="70%" />
           </div>
           <div className={styles.group}>
-            <Skeleton width="8rem" />
+            <Skeleton width="5rem" />
+            <Skeleton variant="input" />
             <Skeleton width="5rem" />
             <Skeleton variant="input" />
           </div>
@@ -130,21 +142,7 @@ export function WizardSkeleton() {
             <Skeleton variant="button" />
           </div>
         </div>
-
-        <div className={styles.dashboardSide}>
-          <Skeleton variant="title" width="10rem" height="var(--text-md)" />
-          <ol className={styles.checklist}>
-            {Array.from({ length: 6 }, (_, index) => (
-              <li key={index} className={styles.checklistItem}>
-                <Skeleton width="7rem" />
-                <Skeleton variant="circle" />
-              </li>
-            ))}
-          </ol>
-          <Skeleton width="100%" height="4rem" variant="block" />
-        </div>
-      </div>
-    </Region>
+      </Region>
     </DelayedSkeleton>
   );
 }
@@ -152,39 +150,18 @@ export function WizardSkeleton() {
 export function TeamSkeleton() {
   return (
     <DelayedSkeleton>
-    <Region label={it.skeletonTeamLabel} className={styles.team}>
-      <div className={styles.hero}>
-        <Skeleton width="16rem" />
-        <Skeleton variant="title" width="18rem" />
-        <Skeleton width="14rem" />
-      </div>
-
-      <div className={styles.teamLayout}>
-        <div className={styles.teamMain}>
-          <div className={styles.stack}>
-            <Skeleton variant="title" width="6rem" height="var(--text-md)" />
-            <Skeleton width="22rem" />
-            <div className={styles.teamRows}>
-              {Array.from({ length: 3 }, (_, index) => (
-                <div key={index} className={styles.teamRow}>
-                  <Skeleton width="12rem" />
-                  <div className={styles.chips}>
-                    <Skeleton variant="chip" />
-                    <Skeleton variant="chip" />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+      <Region label={it.skeletonTeamLabel} className={styles.team}>
+        <HeaderBones kicker={false} />
+        <div className={styles.chips}>
+          {Array.from({ length: 4 }, (_, index) => (
+            <Skeleton key={index} variant="chip" />
+          ))}
         </div>
-
-        <div className={styles.teamSide}>
-          <Skeleton variant="title" width="10rem" height="var(--text-md)" />
-          <Skeleton width="100%" height="3rem" variant="block" />
-          <Skeleton variant="button" />
+        <div className={styles.teamLayout}>
+          <PanelBones rows={5} avatar />
+          <PanelBones rows={1} />
         </div>
-      </div>
-    </Region>
+      </Region>
     </DelayedSkeleton>
   );
 }
@@ -192,18 +169,10 @@ export function TeamSkeleton() {
 export function CommunicationsSkeleton() {
   return (
     <DelayedSkeleton>
-    <Region label={it.skeletonCommunicationsLabel} className={styles.communications}>
-      <Skeleton variant="title" width="12rem" />
-      <div className={styles.messageList}>
-        {Array.from({ length: 3 }, (_, index) => (
-          <div key={index} className={styles.messageItem}>
-            <Skeleton width="16rem" />
-            <Skeleton width="100%" />
-            <Skeleton width="80%" />
-          </div>
-        ))}
-      </div>
-    </Region>
+      <Region label={it.skeletonCommunicationsLabel} className={styles.communications}>
+        <HeaderBones kicker={false} />
+        <PanelBones rows={3} avatar />
+      </Region>
     </DelayedSkeleton>
   );
 }

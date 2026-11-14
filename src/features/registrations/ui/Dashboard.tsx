@@ -3,14 +3,19 @@ import type {
   MedicalEvidence,
   RegistrationStatus,
 } from "@/features/registrations/domain/requirements";
+import type { SportEligibilityReason } from "@/features/registrations/domain/eligibility";
 import { nextHero, type NextHero } from "@/features/registrations/domain/wizard";
 import { it } from "@/shared/i18n/it";
 import { ButtonLink } from "@/shared/ui/Button";
+import { Icon } from "@/shared/ui/Icon";
+import { NextStepHero } from "@/shared/ui/NextStepHero";
 import { PageHeader } from "@/shared/ui/PageHeader";
+import { Panel } from "@/shared/ui/Panel";
+import { ProgressMeter } from "@/shared/ui/ProgressMeter";
 import { StatusChip, type StatusTone } from "@/shared/ui/StatusChip";
 import { IdentityConflictPanel } from "@/features/players/ui/IdentityConflictPanel";
-import { WindowNotice } from "@/features/registrations/ui/WindowNotice";
-import type { EditionWindow } from "@/features/registrations/domain/window";
+import { WindowChip, WindowNotice } from "@/features/registrations/ui/WindowNotice";
+import { isRegistrationWindowOpen, type EditionWindow } from "@/features/registrations/domain/window";
 import { ChecklistLinks } from "./ChecklistLinks";
 import { REQUIREMENT_STEP } from "./wizardCopy";
 import fields from "@/shared/ui/form.module.css";
@@ -40,12 +45,22 @@ const STATUS_TONE: Record<RegistrationStatus, StatusTone> = {
   REMOVED: "neutral",
 };
 
-const SEG_CLASS: Record<ChecklistItem["status"], string | undefined> = {
-  complete: styles.seg_complete,
-  todo: styles.seg_todo,
-  attention: styles.seg_attention,
-  not_applicable: undefined,
+const SEGMENT_TONE: Record<ChecklistItem["status"], StatusTone> = {
+  complete: "complete",
+  todo: "todo",
+  attention: "attention",
+  not_applicable: "neutral",
 };
+
+function eligibilityNotice(reason: SportEligibilityReason | undefined, deadlineLabel: string | null) {
+  if (!reason || reason === "eligible" || reason === "staff") return null;
+  if (reason === "deadline") return it.medicalDeadlineOverdue;
+  if (reason === "rejected") return it.medicalRejected;
+  if (reason === "expired") return it.medicalExpired;
+  if (reason === "pending") return it.medicalPending;
+  if (deadlineLabel) return it.medicalDeadlineDue.replace("{date}", deadlineLabel);
+  return it.medicalDeadlineUnknown;
+}
 
 function heroText(hero: NextHero, medicalStatus?: MedicalEvidence) {
   if (hero.code === "DONE") return it.heroDone;
@@ -72,6 +87,9 @@ type Props = {
   status: RegistrationStatus;
   checklist: ChecklistItem[];
   medicalStatus?: MedicalEvidence;
+  sportEligible?: boolean;
+  medicalDeadline?: Date | null;
+  eligibilityReason?: SportEligibilityReason;
   registrationId: string;
   editionWindow: EditionWindow;
   identityConflict?: { code: string } | null;
@@ -86,6 +104,9 @@ export function RegistrationDashboard({
   status,
   checklist,
   medicalStatus,
+  sportEligible = true,
+  medicalDeadline = null,
+  eligibilityReason,
   registrationId,
   editionWindow,
   identityConflict,
@@ -97,91 +118,114 @@ export function RegistrationDashboard({
   const visible = checklist.filter((item) => item.status !== "not_applicable");
   const doneCount = visible.filter((item) => item.status === "complete").length;
   const blocked = Boolean(identityConflict);
+  const playBlocked = category === "PLAYER" && !sportEligible;
+  const approved = status === "APPROVED" && (category === "STAFF" || sportEligible);
+  const closed = status === "WITHDRAWN" || status === "REMOVED";
+  const checklistDoneButNotEligible = hero.code === "DONE" && playBlocked;
   const settled =
-    hero.code === "DONE" ||
-    status === "APPROVED" ||
-    status === "WITHDRAWN" ||
-    status === "REMOVED" ||
-    blocked;
+    !checklistDoneButNotEligible && (hero.code === "DONE" || approved || closed || blocked);
+  const deadlineLabel = medicalDeadline
+    ? medicalDeadline.toLocaleDateString("it-IT", { dateStyle: "long" })
+    : null;
+  const notice = playBlocked ? eligibilityNotice(eligibilityReason, deadlineLabel) : null;
   const heroCopy = blocked
     ? it.identityHeroBlocked
     : status === "WITHDRAWN"
       ? it.heroWithdrawn
       : status === "REMOVED"
         ? it.heroRemoved
-        : status === "APPROVED"
-          ? it.heroApproved
-          : shirtSizeDue
-            ? it.heroShirtSize
-            : hero.code === "DONE"
-              ? it.heroPendingNow
-              : heroText(hero, medicalStatus);
+        : checklistDoneButNotEligible
+          ? (notice ?? it.heroMedical)
+          : status === "APPROVED" && sportEligible
+            ? it.heroApproved
+            : shirtSizeDue
+              ? it.heroShirtSize
+              : hero.code === "DONE"
+                ? it.heroPendingNow
+                : heroText(hero, medicalStatus);
+  const continueHref = checklistDoneButNotEligible
+    ? "/area/registrazione/certificato"
+    : `/area/registrazione/${hrefStep}`;
+  const heroKicker = blocked
+    ? it.wizardStepAttention
+    : approved
+      ? it.statusAPPROVED
+      : closed
+        ? STATUS_COPY[status]
+        : hero.code === "DONE"
+          ? it.statusPENDING_REVIEW
+          : it.repNextKicker;
+  const progressLabel = it.checklistProgress
+    .replace("{done}", String(doneCount))
+    .replace("{total}", String(visible.length));
 
   return (
     <div className={styles.canvas}>
-      <header className={styles.header}>
-        <PageHeader
-          kicker={`${competitionName} · ${editionName}`}
-          title={category === "STAFF" ? it.staffAreaTitle : it.areaTitle}
-          description={`${category === "STAFF" ? it.categoryStaff : it.categoryPlayer} · ${it.teamTitle}: ${teamName}`}
-          aside={<StatusChip tone={STATUS_TONE[status]}>{STATUS_COPY[status]}</StatusChip>}
-        />
-      </header>
+      <PageHeader
+        kicker={`${competitionName} · ${editionName}`}
+        title={category === "STAFF" ? it.staffAreaTitle : it.areaTitle}
+        description={`${category === "STAFF" ? it.categoryStaff : it.categoryPlayer} · ${it.teamTitle}: ${teamName}`}
+        aside={
+          <div className={styles.chips}>
+            <StatusChip tone={STATUS_TONE[status]}>{STATUS_COPY[status]}</StatusChip>
+            {category === "PLAYER" ? (
+              <StatusChip tone={sportEligible ? "complete" : "attention"}>
+                {sportEligible ? it.medicalEligibilityYes : it.medicalEligibilityNo}
+              </StatusChip>
+            ) : null}
+            {isRegistrationWindowOpen(editionWindow) ? <WindowChip edition={editionWindow} /> : null}
+          </div>
+        }
+      />
 
-      <WindowNotice edition={editionWindow} />
+      {isRegistrationWindowOpen(editionWindow) ? null : <WindowNotice edition={editionWindow} />}
 
       {blocked ? <IdentityConflictPanel registrationId={registrationId} /> : null}
-      {shirtSizeDue && !blocked ? (
+      {notice && notice !== heroCopy ? (
         <p className={`${fields.banner} ${fields.bannerWarn}`} role="status">
-          {it.shirtSizeBanner}
+          {notice}
         </p>
       ) : null}
 
-      <div className={styles.grid}>
-        <section className={styles.mainStage}>
-          <div className={styles.hero}>
-            <p className={styles.heroCopy}>{heroCopy}</p>
-            <div className={styles.heroActions}>
-              {settled ? null : (
-                <ButtonLink href={`/area/registrazione/${hrefStep}`} className={styles.heroPrimary}>
-                  {it.ctaContinue}
-                </ButtonLink>
-              )}
-            </div>
-          </div>
+      <NextStepHero
+        kicker={heroKicker}
+        icon={approved ? "check" : blocked || playBlocked ? "alert" : hero.code === "DONE" ? "clock" : "zap"}
+        tone={blocked || shirtSizeDue || playBlocked ? "warning" : approved ? "done" : "default"}
+        title={heroCopy}
+        actions={
+          settled ? (
+            hero.code === "DONE" && !blocked && !closed ? (
+              <ButtonLink href="/area/registrazione/riepilogo" variant="secondary" icon="summary">
+                {it.stepRiepilogo}
+              </ButtonLink>
+            ) : undefined
+          ) : (
+            <ButtonLink href={continueHref} icon="chevronRight" iconPosition="right">
+              {it.ctaContinue}
+            </ButtonLink>
+          )
+        }
+        aside={
+          closed || visible.length === 0 ? undefined : (
+            <ProgressMeter
+              done={doneCount}
+              total={visible.length}
+              size="lg"
+              label={progressLabel}
+              caption={it.repNextProgress}
+              segments={visible.map((item) => SEGMENT_TONE[item.status])}
+            />
+          )
+        }
+      />
 
-          <div className={styles.checklistSection}>
-            <div className={styles.checklistHeader}>
-              <h2 className={styles.listTitle}>{it.checklistTitle}</h2>
-              <span className={styles.checklistCount}>
-                {it.checklistProgress.replace("{done}", String(doneCount)).replace("{total}", String(visible.length))}
-              </span>
-            </div>
-
-            <ChecklistLinks checklist={checklist} />
-          </div>
-        </section>
-
-        <aside className={styles.rail}>
-          <div className={styles.sideCard}>
-            <div className={styles.progressBlock}>
-              <h3 className={styles.railCardTitle}>{it.wizardJourneyTitle}</h3>
-              <p className={styles.progressLabel}>
-                {it.checklistProgress.replace("{done}", String(doneCount)).replace("{total}", String(visible.length))}
-              </p>
-              <div className={styles.segments} aria-hidden="true">
-                {visible.map((item) => (
-                  <span key={item.code} className={`${styles.segment} ${SEG_CLASS[item.status] ?? ""}`} />
-                ))}
-              </div>
-            </div>
-
-            <div className={styles.noteBlock}>
-              <p className={styles.note}>{it.guardianEmailNote}</p>
-            </div>
-          </div>
-        </aside>
-      </div>
+      <Panel title={it.checklistTitle} description={progressLabel} icon="fileCheck" flush>
+        <ChecklistLinks checklist={checklist} />
+        <p className={styles.note}>
+          <Icon name="info" size={16} />
+          <span>{it.guardianEmailNote}</span>
+        </p>
+      </Panel>
     </div>
   );
 }

@@ -3,7 +3,16 @@ import Link from "next/link";
 import { Icon, type IconName } from "./Icon";
 import styles from "./Button.module.css";
 
-export type ButtonVariant = "primary" | "accent" | "ghost" | "secondary" | "danger" | "success" | "warning";
+export type ButtonVariant =
+  | "primary"
+  | "accent"
+  | "ghost"
+  | "secondary"
+  | "danger"
+  | "success"
+  | "warning"
+  | "quiet"
+  | "dangerQuiet";
 
 type SharedProps = {
   variant?: ButtonVariant;

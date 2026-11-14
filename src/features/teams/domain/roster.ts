@@ -1,6 +1,8 @@
 import type { PublicationFlags } from "@/features/consents/domain/boxes";
 import { staffOccupiesSlot } from "@/features/teams/domain/staff";
 
+export type RosterGuardianState = "na" | "none" | "pending" | "authorized" | "refused";
+
 export type RosterRow = {
   registrationId: string;
   userId?: string;
@@ -18,6 +20,12 @@ export type RosterRow = {
   paymentCovered: boolean;
   consentDue: boolean;
   isCoach: boolean;
+  emailVerified: boolean;
+  guardianState: RosterGuardianState;
+  personalDataComplete: boolean;
+  privacyComplete: boolean;
+  mediaComplete: boolean;
+  sportEligible: boolean;
 };
 
 export type RosterCounts = {
@@ -37,10 +45,14 @@ export const ROSTER_FILTERS = [
   "ok",
   "withdrawn",
   "publication",
+  "unverified",
+  "guardian",
+  "unpaid",
+  "medical",
 ] as const;
 
 export type RosterFilter = (typeof ROSTER_FILTERS)[number];
-export type RosterBucket = Exclude<RosterFilter, "open" | "publication">;
+export type RosterBucket = "invited" | "inProgress" | "attention" | "ok" | "withdrawn";
 
 export function rosterBucket(row: Pick<RosterRow, "registrationStatus" | "medicalStatus">): RosterBucket {
   if (row.registrationStatus === "WITHDRAWN") return "withdrawn";
@@ -66,27 +78,70 @@ export function rosterFilterHref(filter: RosterFilter | null): string {
 }
 
 export function matchesRosterFilter(
-  row: Pick<RosterRow, "registrationStatus" | "medicalStatus" | "publication">,
+  row: Pick<
+    RosterRow,
+    | "registrationStatus"
+    | "medicalStatus"
+    | "publication"
+    | "emailVerified"
+    | "guardianState"
+    | "paymentCovered"
+    | "sportEligible"
+    | "category"
+  >,
   filter: RosterFilter | null,
 ): boolean {
   if (!filter) return true;
+  if (row.registrationStatus === "WITHDRAWN") return filter === "withdrawn";
   if (filter === "publication") return Boolean(row.publication && row.publication.status !== "publishable");
+  if (filter === "unverified") return row.emailVerified === false;
+  if (filter === "guardian") {
+    return row.guardianState === "none" || row.guardianState === "pending" || row.guardianState === "refused";
+  }
+  if (filter === "unpaid") return row.paymentCovered === false;
+  if (filter === "medical") return row.category !== "STAFF" && row.sportEligible === false;
   if (filter === "open") {
     const bucket = rosterBucket(row);
     return bucket === "invited" || bucket === "inProgress" || bucket === "attention";
   }
-  return rosterBucket(row) === filter;
+  const bucket = rosterBucket(row);
+  return bucket === filter;
 }
 
-export function filterRoster<T extends Pick<RosterRow, "registrationStatus" | "medicalStatus" | "publication">>(
-  rows: T[],
-  filter: RosterFilter | null,
-): T[] {
+export function filterRoster<
+  T extends Pick<
+    RosterRow,
+    | "registrationStatus"
+    | "medicalStatus"
+    | "publication"
+    | "emailVerified"
+    | "guardianState"
+    | "paymentCovered"
+    | "sportEligible"
+    | "category"
+  >,
+>(rows: T[], filter: RosterFilter | null): T[] {
   return rows.filter((row) => matchesRosterFilter(row, filter));
 }
 
-export function unpublishedCount(rows: Pick<RosterRow, "publication">[]): number {
-  return rows.filter((row) => row.publication && row.publication.status !== "publishable").length;
+export type RosterCauseCounts = {
+  unverified: number;
+  guardian: number;
+  unpaid: number;
+  medical: number;
+};
+
+export function summarizeRosterCauses(
+  rows: Parameters<typeof matchesRosterFilter>[0][],
+): RosterCauseCounts {
+  const counts: RosterCauseCounts = { unverified: 0, guardian: 0, unpaid: 0, medical: 0 };
+  for (const row of rows) {
+    if (matchesRosterFilter(row, "unverified")) counts.unverified += 1;
+    if (matchesRosterFilter(row, "guardian")) counts.guardian += 1;
+    if (matchesRosterFilter(row, "unpaid")) counts.unpaid += 1;
+    if (matchesRosterFilter(row, "medical")) counts.medical += 1;
+  }
+  return counts;
 }
 
 export function toRosterRow(input: {
@@ -106,6 +161,12 @@ export function toRosterRow(input: {
   paymentCovered?: boolean;
   consentDue?: boolean;
   isCoach?: boolean;
+  emailVerified?: boolean;
+  guardianState?: RosterGuardianState;
+  personalDataComplete?: boolean;
+  privacyComplete?: boolean;
+  mediaComplete?: boolean;
+  sportEligible?: boolean;
 }): RosterRow {
   const medical =
     input.medicalStatus === "APPROVED"
@@ -117,6 +178,7 @@ export function toRosterRow(input: {
           : input.medicalStatus === "PENDING_REVIEW" || input.medicalStatus === "UPLOADED"
             ? "pending"
             : "none";
+  const category = input.category ?? "PLAYER";
   return {
     registrationId: input.registrationId,
     userId: input.userId,
@@ -126,14 +188,20 @@ export function toRosterRow(input: {
     lastName: input.lastName,
     jerseyNumber: input.jerseyNumber ?? null,
     rosterRole: input.rosterRole ?? null,
-    shirtSize: input.category === "STAFF" ? null : (input.shirtSize ?? null),
+    shirtSize: category === "STAFF" ? null : (input.shirtSize ?? null),
     registrationStatus: input.registrationStatus,
     medicalStatus: medical,
     publication: input.publication ?? null,
-    category: input.category ?? "PLAYER",
+    category,
     paymentCovered: input.paymentCovered ?? false,
     consentDue: input.consentDue ?? false,
     isCoach: input.isCoach ?? false,
+    emailVerified: input.emailVerified ?? true,
+    guardianState: input.guardianState ?? "na",
+    personalDataComplete: input.personalDataComplete ?? true,
+    privacyComplete: input.privacyComplete ?? true,
+    mediaComplete: input.mediaComplete ?? true,
+    sportEligible: input.sportEligible ?? (category === "STAFF" || medical === "approved"),
   };
 }
 

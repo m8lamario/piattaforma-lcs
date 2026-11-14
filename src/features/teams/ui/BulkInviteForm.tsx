@@ -12,20 +12,27 @@ export function BulkInviteForm({ teamId }: { teamId: string }) {
   const [state, action, pending] = useActionState(bulkInviteAction, undefined);
 
   return (
-    <section className={styles.card}>
-      <h2>{it.bulkInviteTitle}</h2>
-      <p>{it.bulkInviteHelp}</p>
+    <div className={styles.card}>
+      <p className={styles.help}>{it.bulkInviteHelp}</p>
       <form action={action} className={fields.form} noValidate aria-busy={pending}>
         <input type="hidden" name="teamId" value={teamId} />
         <div className={fields.field}>
           <label className={fields.label} htmlFor="bulk-csv">
             CSV
           </label>
-          <textarea id="bulk-csv" name="csv" className={fields.input} rows={6} required />
+          <textarea
+            id="bulk-csv"
+            name="csv"
+            className={`${fields.input} ${styles.csv}`}
+            rows={6}
+            required
+            placeholder="email,nome,cognome"
+            spellCheck={false}
+          />
         </div>
         {state?.error ? <ActionError error={state.error} code={state.code} /> : null}
         {state?.created ? (
-          <p className={fields.help} role="status">
+          <p className={`${fields.banner} ${fields.bannerInfo}`} role="status">
             {it.bulkInviteCreated.replace("{count}", String(state.created))}
           </p>
         ) : null}
@@ -40,11 +47,11 @@ export function BulkInviteForm({ teamId }: { teamId: string }) {
           </ul>
         ) : null}
         <div className={fields.actions}>
-          <Button type="submit" disabled={pending} aria-busy={pending}>
+          <Button type="submit" variant="secondary" icon="upload" disabled={pending} aria-busy={pending}>
             {pending ? it.sendingInvite : it.bulkInviteSubmit}
           </Button>
         </div>
       </form>
-    </section>
+    </div>
   );
 }

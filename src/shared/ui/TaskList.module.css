@@ -1,0 +1,134 @@
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+}
+
+.list > li + li {
+  border-top: 1px solid var(--color-hairline);
+}
+
+.row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 3.5rem;
+  padding: var(--space-3) var(--space-5);
+  color: inherit;
+  text-decoration: none;
+}
+
+.link {
+  transition: background-color var(--duration-fast) var(--ease-out);
+}
+
+.link:hover {
+  background: var(--color-surface-hover);
+}
+
+.link:hover .title {
+  color: var(--color-link);
+}
+
+.link:focus-visible {
+  outline-offset: -3px;
+}
+
+.flag {
+  box-shadow: inset var(--line-width) 0 0 var(--color-warning);
+}
+
+.lead {
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: var(--radius-md);
+  background: var(--color-surface-inset);
+  color: var(--color-text-muted);
+  font-family: var(--font-brand);
+  font-size: 1.05rem;
+  letter-spacing: 0.04em;
+}
+
+.leadDone {
+  background: var(--color-success-soft);
+  color: var(--color-success);
+}
+
+.leadAttention {
+  background: var(--color-warning-soft);
+  color: var(--color-warning);
+}
+
+.leadDanger {
+  background: var(--color-danger-soft);
+  color: var(--color-danger);
+}
+
+.copy {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.title {
+  font-weight: 650;
+  line-height: 1.35;
+  transition: color var(--duration-fast) var(--ease-out);
+}
+
+.meta {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  line-height: 1.45;
+}
+
+.status {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.chevron {
+  color: var(--color-text-muted);
+}
+
+.empty {
+  padding: var(--space-4) var(--space-5);
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+@media (max-width: 640px) {
+  .row {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    padding: var(--space-3) var(--space-4);
+    gap: var(--space-3);
+  }
+
+  .lead {
+    grid-row: 1 / span 2;
+    align-self: start;
+  }
+
+  .status {
+    grid-column: 2;
+    grid-row: 2;
+    justify-content: flex-start;
+  }
+
+  .chevron {
+    grid-column: 3;
+    grid-row: 1 / span 2;
+  }
+
+  .meta {
+    font-size: var(--text-xs);
+  }
+
+  .empty {
+    padding: var(--space-3) var(--space-4);
+  }
+}

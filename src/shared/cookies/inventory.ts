@@ -1,4 +1,5 @@
 import { ADMIN_VIEW_COOKIE, ADMIN_VIEW_TTL_SECONDS } from "@/features/admin-view/domain/constants";
+import { SCHOOL_ACCESS_COOKIE } from "@/shared/config/app";
 
 /**
  * Inventario tecnico di cookie e risorse esterne del frontend.
@@ -10,6 +11,7 @@ export const SESSION_MAX_AGE_SECONDS = 30 * 24 * 60 * 60;
 export const SESSION_UPDATE_AGE_SECONDS = 24 * 60 * 60;
 
 export const TEAM_COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 365;
+export const SCHOOL_ACCESS_COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 14;
 export const CONSENT_MAX_AGE_SECONDS = 60 * 60 * 24 * 180;
 
 export const CONSENT_COOKIE_NAME = "eph-cookie-consent";
@@ -98,6 +100,21 @@ export const FIRST_PARTY_COOKIES: readonly FirstPartyCookie[] = [
     sameSite: "lax",
     secure: "https-only",
     setWhen: "Solo dopo la selezione esplicita di una squadra. Cancellato all’uscita dall’account.",
+  },
+  {
+    id: "school-access",
+    name: SCHOOL_ACCESS_COOKIE,
+    productionName: SCHOOL_ACCESS_COOKIE,
+    provider: "ESL Player Hub (prima parte)",
+    purpose: "Permettere il reinvio del link di attivazione della scuola sulla stessa richiesta, senza una ricerca pubblica per email",
+    category: "necessary",
+    durationSeconds: SCHOOL_ACCESS_COOKIE_MAX_AGE_SECONDS,
+    durationLabel: "14 giorni",
+    path: "/",
+    httpOnly: true,
+    sameSite: "lax",
+    secure: "https-only",
+    setWhen: "Dopo l’invio del modulo pubblico di richiesta accesso. Serve solo a quella richiesta.",
   },
   {
     id: "admin-view",

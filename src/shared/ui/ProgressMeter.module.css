@@ -1,0 +1,90 @@
+.meter {
+  display: grid;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.labelRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-1) var(--space-3);
+}
+
+.count {
+  font-family: var(--font-brand);
+  font-size: var(--text-xl);
+  letter-spacing: 0.06em;
+  line-height: 1;
+}
+
+.total {
+  font-family: var(--font-sans);
+  font-size: 0.6em;
+  font-weight: 300;
+  letter-spacing: 0;
+  color: var(--color-text-muted);
+}
+
+.caption {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  font-weight: 650;
+}
+
+.large .count {
+  font-size: var(--text-display);
+}
+
+.track {
+  height: 0.4rem;
+  border-radius: var(--radius-pill);
+  background: var(--color-border);
+  overflow: hidden;
+}
+
+.fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--color-line);
+  transition: width var(--duration-med) var(--ease-out);
+}
+
+.segments {
+  display: flex;
+  gap: 3px;
+}
+
+.segment {
+  flex: 1;
+  height: 0.4rem;
+  border-radius: var(--radius-pill);
+  background: var(--color-border);
+}
+
+.segDone {
+  background: var(--color-success);
+}
+
+.segAttention {
+  background: var(--color-warning);
+}
+
+.segDanger {
+  background: var(--color-danger);
+}
+
+.inverse .count {
+  color: var(--color-hero-fg);
+}
+
+.inverse .total,
+.inverse .caption {
+  color: var(--color-hero-muted);
+}
+
+.inverse .track,
+.inverse .segment:not(.segDone):not(.segAttention):not(.segDanger) {
+  background: color-mix(in srgb, var(--color-hero-fg) 22%, transparent);
+}

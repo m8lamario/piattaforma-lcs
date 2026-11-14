@@ -172,6 +172,10 @@ export async function retryEmailAction(
   const { session } = await requireEmailActor("/admin/comunicazioni", "email:send");
   const id = String(formData.get("id") ?? "");
   if (!id) return fail("EMAIL_NOT_FOUND");
+  const rateKey = await clientKey(`email-retry:${session.user.id}`);
+  if (!(await consumeRateLimit(rateKey, RATE_LIMITS.emailRetry.limit, RATE_LIMITS.emailRetry.windowMs))) {
+    return fail("RATE_LIMITED");
+  }
   const result = await retryOutboundEmail(id);
   if (!result) return fail("EMAIL_NOT_FOUND");
   if ("retryable" in result && result.retryable === false) return fail("EMAIL_RETRY_NOT_ALLOWED");

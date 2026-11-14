@@ -1,16 +1,18 @@
 .wrap {
   position: relative;
   display: grid;
-  gap: var(--space-4);
+  gap: var(--space-3);
   justify-items: start;
   align-content: start;
   width: 100%;
-  max-width: var(--content-max-canvas);
+  max-width: var(--content-max-wide);
   padding: var(--space-8);
-  padding-right: calc(var(--space-8) + 3rem);
   background: var(--color-surface-raised);
   border: 1px solid var(--color-hairline);
-  border-left: var(--line-width) solid var(--color-line);
+  border-radius: var(--radius-card);
+  box-shadow:
+    inset var(--line-width) 0 0 var(--color-line),
+    var(--shadow-card);
   overflow: clip;
 }
 
@@ -19,24 +21,25 @@
   place-items: center;
   width: 3rem;
   height: 3rem;
+  margin-bottom: var(--space-1);
+  border-radius: var(--radius-lg);
   color: var(--color-accent);
-  background: var(--color-surface-inset);
-  border: 1px solid var(--color-hairline);
+  background: var(--color-accent-soft);
 }
 
 .title {
   margin: 0;
   font-family: var(--font-brand);
-  font-size: clamp(1.85rem, 4vw, 2.35rem);
+  font-size: clamp(1.6rem, 3.4vw, 2.05rem);
   font-weight: 400;
-  letter-spacing: 0.08em;
-  line-height: 1.15;
+  letter-spacing: 0.06em;
+  line-height: 1.1;
 }
 
 .body {
   display: grid;
   gap: var(--space-2);
-  max-width: 44rem;
+  max-width: 40rem;
   color: var(--color-text-muted);
   line-height: var(--leading-body);
 }
@@ -51,8 +54,7 @@
 
 @media (max-width: 640px) {
   .wrap {
-    padding: var(--space-5) var(--space-4);
-    padding-right: calc(var(--space-4) + 3.25rem);
+    padding: var(--space-6) var(--space-5);
   }
 
   .action {

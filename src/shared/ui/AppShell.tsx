@@ -1,7 +1,7 @@
-import { Suspense, type ReactNode } from "react";
+import type { ReactNode } from "react";
 import { it } from "@/shared/i18n/it";
 import { AppNav } from "./AppNav";
-import { BrandMark } from "./BrandMark";
+import { homeForShellFlags } from "./shellNav";
 import styles from "./AppShell.module.css";
 
 type Props = {
@@ -36,32 +36,24 @@ export function AppShell({
       <a href="#contenuto" className={styles.skip}>
         {it.skipToContent}
       </a>
-      <header className={styles.header}>
-        <BrandMark
-          href={
-            showMedia && !showArea && !mediaUnderAdmin
-              ? "/media"
-              : !showArea && showAdmin
-                ? "/admin"
-                : "/area"
-          }
-          compact
-        />
-        <Suspense>
-          <AppNav
-            email={email}
-            showTeam={showTeam}
-            showAdmin={showAdmin}
-            showPlayerTeam={showPlayerTeam}
-            showConsents={showConsents}
-            showSchool={showSchool}
-            showMedia={showMedia}
-            mediaUnderAdmin={mediaUnderAdmin}
-            showArea={showArea}
-            unreadCount={unreadCount}
-          />
-        </Suspense>
-      </header>
+      <AppNav
+        brandHref={homeForShellFlags({
+          showMedia: Boolean(showMedia),
+          showArea,
+          showAdmin: Boolean(showAdmin),
+          mediaUnderAdmin,
+        })}
+        email={email}
+        showTeam={showTeam}
+        showAdmin={showAdmin}
+        showPlayerTeam={showPlayerTeam}
+        showConsents={showConsents}
+        showSchool={showSchool}
+        showMedia={showMedia}
+        mediaUnderAdmin={mediaUnderAdmin}
+        showArea={showArea}
+        unreadCount={unreadCount}
+      />
       <div id="contenuto" className={styles.content} tabIndex={-1}>
         {children}
       </div>

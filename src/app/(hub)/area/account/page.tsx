@@ -3,7 +3,9 @@ import { AccountPasswordForm } from "@/features/auth/ui/AccountPasswordForm";
 import { isTerminalRegistrationStatus } from "@/features/registrations/domain/requirements";
 import { WithdrawForm } from "@/features/registrations/ui/WithdrawForm";
 import { prisma } from "@/shared/lib/prisma";
+import { Avatar } from "@/shared/ui/Avatar";
 import { PageHeader } from "@/shared/ui/PageHeader";
+import { Panel } from "@/shared/ui/Panel";
 import { it } from "@/shared/i18n/it";
 import fields from "@/shared/ui/form.module.css";
 import styles from "./page.module.css";
@@ -28,17 +30,22 @@ export default async function AccountPage() {
   return (
     <main className={styles.main}>
       <PageHeader title={it.accountTitle} />
-      <p className={fields.readonly}>
-        {it.emailReadOnly}: <strong>{identity.subjectEmail}</strong>
-      </p>
-      {identity.view ? <p className={fields.banner}>{it.adminViewAccountLocked}</p> : <AccountPasswordForm />}
+      <Panel title={it.accountAccessPanel} icon="user">
+        <div className={styles.identity}>
+          <Avatar name={identity.subjectEmail ?? it.accountTitle} />
+          <div className={styles.identityText}>
+            <span className={styles.identityLabel}>{it.emailReadOnly}</span>
+            <strong className={styles.identityEmail}>{identity.subjectEmail}</strong>
+          </div>
+        </div>
+      </Panel>
+      <Panel title={it.accountPasswordPanel} icon="settings">
+        {identity.view ? <p className={fields.banner}>{it.adminViewAccountLocked}</p> : <AccountPasswordForm />}
+      </Panel>
       {!identity.view && withdrawRegistrationId ? (
-        <section className={styles.option} aria-labelledby="account-withdraw-title">
-          <h2 id="account-withdraw-title" className={styles.optionTitle}>
-            {it.withdraw}
-          </h2>
+        <Panel title={it.accountWithdrawPanel} icon="alert" tone="muted">
           <WithdrawForm registrationId={withdrawRegistrationId} />
-        </section>
+        </Panel>
       ) : null}
     </main>
   );

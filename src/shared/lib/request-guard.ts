@@ -21,6 +21,9 @@ export const RATE_LIMITS = {
   mediaSearch: { limit: 60, windowMs: 15 * 60 * 1000 },
   mediaVerify: { limit: 40, windowMs: 15 * 60 * 1000 },
   adminView: { limit: 30, windowMs: 60 * 60 * 1000 },
+  registrationNudge: { limit: 10, windowMs: 60 * 60 * 1000 },
+  mediaPartnerResend: { limit: 10, windowMs: 60 * 60 * 1000 },
+  emailRetry: { limit: 20, windowMs: 60 * 60 * 1000 },
 } as const;
 
 export async function clientKey(prefix: string) {

@@ -1,4 +1,5 @@
 import { it } from "@/shared/i18n/it";
+import { SUPPORT_EMAIL } from "@/shared/config/app";
 import { ERROR_CATALOG, type RecoveryAction } from "./catalog";
 import { type ErrorCode } from "./codes";
 
@@ -58,6 +59,8 @@ export function recoveryHint(action: RecoveryAction): string | null {
       return it.errorHintRequestNewInvite;
     case "wait":
       return it.errorHintWait;
+    case "contact_support":
+      return it.errorHintContactSupport.replace("{email}", SUPPORT_EMAIL);
     case "none":
       return null;
   }

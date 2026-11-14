@@ -61,25 +61,31 @@ Token di supporto (stessi nomi in entrambi i temi): `--color-input`, `--color-pr
 
 Alias di compatibilità nello stesso file: `--control-height` = `--control-min` (44px), `--rail-width` = `--line-width` (3px), `--color-rail` = `--color-line`.
 
-Typography: `--font-sans` (Geist) per UI; `--font-brand` (Barlow Condensed) solo per lockup ESL e numeri di passo, in attesa del kit ufficiale (OD-044). Scale: `--text-xs` … `--text-2xl` (il 2xl resta contenuto, non display enorme). Space: `--space-1` (4px) … `--space-16` (incluso `--space-5`, `--space-10`). Radius: `--radius-xs` … `--radius-lg`; i chip usano raggi piccoli, **non** pill sui bottoni. Bottoni: `--radius-sm`. Target: `--control-min` 44px.
+Typography: `--font-sans` (Geist) per UI; `--font-brand` (Barlow Condensed) solo per lockup ESL e numeri di passo, in attesa del kit ufficiale (OD-044). Scale: `--text-xs` … `--text-2xl` (il 2xl resta contenuto, non display enorme). Space: `--space-1` (4px) … `--space-16` (incluso `--space-5`, `--space-10`). Radius: `--radius-xs` … `--radius-lg`, `--radius-card` per pannelli e schede, `--radius-pill` solo per chip di stato, badge e indicatori. Bottoni: `--radius-md`, **non** pill. Elevazione: `--shadow-card` (pannelli), `--shadow-pop` (menu e fogli). Superfici: `--color-surface-raised` (pannello), `--color-surface-inset` (campo, riga incassata), `--color-surface-hover`. Target: `--control-min` 44px.
 
 ## 3. Layout
 
-- Mobile: colonna singola, nav in menu, CTA sticky sul wizard.
-- Tablet: contenuto max ~40–44rem nel percorso.
-- Desktop: shell con nav laterale nell’area autenticata (sideline sull’item attivo); il wizard resta stretto e guidato.
+- Mobile: colonna singola. Barra in basso con le prime 5 voci del menu; le altre (e l’uscita) stanno nel foglio “Menu” aperto dalla topbar. Nel wizard (`/area/registrazione`, `/area/dati`) la barra in basso sparisce e resta solo la barra azioni sticky del passo.
+- Tablet: contenuto max ~40–46rem nel percorso (`--content-max-form`).
+- Desktop: shell con nav laterale nell’area autenticata (sideline sull’item attivo); il wizard resta stretto, centrato e guidato.
+- Larghezze: pagine operative (panoramica, rosa, inviti) `--content-max-wide`; pagine di lettura o form (consensi, account, comunicazioni, wizard) `--content-max-form`.
+- Griglie a due colonne (contenuto + colonna laterale 18–24rem) solo da 1080px; sotto si impilano con il contenuto principale prima.
 - Pagine pubbliche (`/`, `/accedi`, `/invito`, `/privacy`, `/liberatorie`, informative collegate): topbar con marca LCS su gradiente; footer con Privacy, Liberatorie, Termini e Cookie.
 - Hero di presentazione (landing, pannello marca del login, riquadro stato in area): in scuro titolo teal su carbone `#0E1016`; in chiaro fascia azzurra con titolo bianco. Non applicare questo trattamento ai titoli di form e wizard.
 - Bottoni: **primary** azzurro/blu; **accent** verde acqua per CTA già marcate così; **secondary** fondo tenue + bordo; **ghost** trasparente; **danger** invariato nel ruolo. Hover, active, focus e disabled coerenti.
-- Gerarchia di pagina: kicker tracked + titolo `--text-xl` + lead, con sideline a sinistra. Liste e checklist sono righe divise da hairline, non card innestate.
+- Bottoni aggiuntivi: **quiet** (azione terziaria testuale, es. “Completa più tardi”, “Nuovo link”), **dangerQuiet** (azione distruttiva che apre una conferma: rimuovi, revoca invito, ritira iscrizione). Le azioni distruttive chiedono sempre una seconda conferma esplicita.
+- Gerarchia di pagina: `PageHeader` (kicker tracked + titolo + lead, sideline a sinistra; a destra chip di stato, selettore squadra o CTA). Il contenuto è organizzato in `Panel` (vedi §13); dentro un pannello liste e checklist sono righe divise da hairline, mai card innestate.
+- Avvisi di finestra iscrizioni: aperta = chip nel `PageHeader`; chiusa = banner sotto l’header. Un solo avviso per concetto: niente banner che ripetono la stessa informazione del lead o del titolo.
 
 ## 4. Wizard
 
 Vietato un’unica card con tutti i campi.
 
-- Indicatore di progresso (`completati n/m`) in type brand + percorso cliccabile (fatto / corrente / da fare / attenzione). I passi sono navigabili dopo i dati personali; si può saltare temporaneamente uno step (es. certificato) e tornarci dopo.
-- Titolo umano (“I tuoi dati”) + descrizione. Icona di passo solo se identifica il tema.
-- Indietro verso il passo precedente; Salva e continua; Salva ed esci.
+- Colonna unica centrata su ogni dispositivo. In alto: ritorno (passo precedente o dashboard), avanzamento `completati n/m` con barra, “Chiudi” verso la dashboard.
+- Stepper orizzontale cliccabile: cerchi numerati collegati da una linea (fatto = spunta, attenzione = avviso, corrente = blu con etichetta). Su desktop l’etichetta è visibile solo sul passo corrente, su mobile solo i cerchi; lo stato di ogni passo resta annunciato agli screen reader. I passi sono navigabili dopo i dati personali; si può saltare temporaneamente uno step (es. certificato) e tornarci dopo.
+- Scheda del passo: kicker `Passo x di y · stato`, titolo umano (“I tuoi dati”) + descrizione, suggerimento del passo in un `Disclosure` chiuso (“Informazioni utili”). Icona di passo solo da tablet in su.
+- Barra azioni sticky in fondo alla scheda: Salva e continua (primaria) + Salva ed esci + Completa più tardi. Su mobile la primaria è a tutta larghezza e le due secondarie affiancate sotto.
+- Note lunghe e secondarie (es. cosa caricare per il certificato) in un `Disclosure`, non in banner impilati.
 - Campi in fieldset (identità / contatti; chi è / come lo contattiamo).
 - Validazione inline dopo blur, riepilogo errori in cima (`aria-live` / `role="alert"`).
 - Passo privacy: documento da leggere, versione visibile, checkbox non pre-selezionata, placeholder legale evidente.
@@ -87,9 +93,10 @@ Vietato un’unica card con tutti i campi.
 
 ## 5. Dashboard
 
-- Hero: stato in linguaggio naturale (“Devi caricare il certificato medico”) + CTA primaria, con sideline teal.
+- `NextStepHero` in cima: **una sola** prossima azione in linguaggio naturale (“Devi caricare il certificato medico”) + CTA primaria, con sideline teal; a destra il `ProgressMeter`. Tono `warning` se c’è un blocco, `done` quando tutto è in regola.
 - Progress visivo a segmenti (completo / da fare / attenzione), non solo percentuale.
-- Percorso a elenco numerato: chip di stato (completo, attenzione, da fare) + testo + segno di forma diversa. Ogni voce porta al passo.
+- Percorso a elenco numerato (`TaskList`): chip di stato (completo, attenzione, da fare) + testo + segno di forma diversa. Ogni voce porta al passo.
+- Rappresentante: sotto l’hero, colonna principale con le cose da fare della squadra (aperte in evidenza, completate in un `Disclosure`) e il ruolo personale; colonna laterale con riepilogo rosa (contatori cliccabili verso i filtri), link di iscrizione e non lette.
 
 ## 6. Stati UI obbligatori
 
@@ -133,6 +140,20 @@ L’area admin è più densa ma usa gli stessi token. Elenco a righe con chip di
 
 Un solo set in `src/shared/ui/Icon.tsx`: 24×24, stroke 1.75, cap square. Nav, passi wizard, empty state. Niente icone decorative.
 
-## 12. Email transazionali
+## 12. Componenti condivisi
+
+In `src/shared/ui/`, da preferire a markup ad hoc:
+
+- `Panel`: contenitore standard di sezione (titolo, icona, descrizione, azione a destra, toni `accent` / `primary` / `warning` / `danger` / `muted`, variante `flush` per liste a filo).
+- `TaskList`: righe azionabili con icona o numero, titolo, meta e chip di stato; usata per checklist, squadre, cose da fare.
+- `NextStepHero`: blocco “prossimo passo” delle dashboard.
+- `ProgressMeter`: avanzamento `n/m` con barra o segmenti.
+- `Disclosure`: contenuto secondario richiudibile (`inline` o `boxed`).
+- `Avatar`: iniziali per persone (rosa, inviti, compagni, account).
+- `StatusChip`: stato sintetico a pill; sempre con testo, mai solo colore.
+
+Rosa del rappresentante: schede filtro in alto (Tutti, Da completare, In regola, Da attivare, In corso, Attenzione, Ritirati; compaiono solo se hanno elementi) + filtri per causa; ogni giocatore è una riga compatta con al massimo due chip di attenzione, espandibile per stato completo, maglia e ruolo, promemoria e rimozione.
+
+## 13. Email transazionali
 
 Tutte le email della piattaforma usano un layout HTML comune (`src/features/emails/domain/layout.ts`), con fallback testuale. Header con logo `public/logoLCSw.png`, lockup LCS / Player Hub, barra ai colori della navbar, contenuto con sideline, CTA a bottone e footer con informative. I client di posta non supportano le custom properties: i HEX del layout vivono in `src/features/emails/domain/theme.ts` e restano allineati a questo file (nav scura + contenuto del tema chiaro, per leggibilità). Niente pixel di tracking, niente Adobe Fonts nelle email (Helvetica/Arial). I testi restano in i18n; gli override admin vengono avvolti nello stesso chrome.

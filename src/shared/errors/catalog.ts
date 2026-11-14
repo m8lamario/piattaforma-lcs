@@ -29,6 +29,7 @@ export type RecoveryAction =
   | "withdraw_registration"
   | "request_new_invite"
   | "wait"
+  | "contact_support"
   | "none";
 
 export type ErrorDefinition = {
@@ -202,6 +203,13 @@ export const ERROR_CATALOG: Record<ErrorCode, ErrorDefinition> = {
     "Upload certificato su Registration.category STAFF.",
     400,
     "none",
+  ),
+  DOCUMENT_AGONISTIC_CONFIRM_REQUIRED: def(
+    "DOCUMENTS",
+    "Approvazione senza conferma del certificato agonistico.",
+    400,
+    "correct_input",
+    { retrySafe: true },
   ),
 
   CONSENT_REQUIRED_UNCHECKED: def("CONSENTS", "Checkbox required non tutte confermate.", 400, "correct_input", {
@@ -446,6 +454,14 @@ export const ERROR_CATALOG: Record<ErrorCode, ErrorDefinition> = {
     retrySafe: true,
   }),
   EMAIL_RECIPIENT_REQUIRED: def("EMAILS", "Destinatario non è un User ACTIVE della piattaforma.", 400, "correct_input", {
+    retrySafe: true,
+  }),
+  EMAIL_RESEND_COOLDOWN: def("EMAILS", "Reinvio utente ancora in cooldown.", 429, "wait", { severity: "warning" }),
+  EMAIL_RESEND_EXHAUSTED: def("EMAILS", "Tentativi di reinvio utente esauriti.", 429, "contact_support"),
+  EMAIL_UNDELIVERABLE: def("EMAILS", "Ultimo invio rimbalzato: stesso indirizzo non ritentabile.", 400, "correct_input", {
+    retrySafe: true,
+  }),
+  EMAIL_SEND_FAILED: def("EMAILS", "Provider ha rifiutato l’invio prima dell’accettazione.", 502, "retry", {
     retrySafe: true,
   }),
 };

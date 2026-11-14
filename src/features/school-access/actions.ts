@@ -6,16 +6,23 @@ import { auth } from "@/auth";
 import { authorize } from "@/shared/authz/authorize";
 import { getActorByUserId } from "@/shared/authz/getActor";
 import { dispatchOutboundEmail } from "@/features/emails/data/dispatch";
+import { failUserEmailResend, loadUserEmailDelivery, USER_EMAIL_OPS } from "@/features/emails/data/userDelivery";
+import { userEmailResendIdempotencyKey } from "@/features/emails/domain/delivery";
 import {
   activateSchoolAccessAccount,
   approveSchoolAccessRequest,
   createSchoolAccessRequest,
   findSchoolAccessByActivationToken,
+  getSchoolAccessRequest,
   inspectSchoolAccessActivation,
   issueActivationToken,
   rejectSchoolAccessRequest,
 } from "@/features/school-access/data/requests";
-import { notifyStaffOfSchoolAccessRequest } from "@/features/school-access/data/notify";
+import {
+  dispatchSchoolAccessActivationEmail,
+  notifyStaffOfSchoolAccessRequest,
+} from "@/features/school-access/data/notify";
+import { persistSchoolAccessCookie, readSchoolAccessCookieRequestId } from "@/features/school-access/data/cookie";
 import { activationErrorCode } from "@/features/school-access/domain/activation";
 import {
   activateSchoolAccessSchema,
@@ -81,6 +88,7 @@ export async function submitSchoolAccessAction(_prev: ActionFailure | undefined,
     metadata: { editionId: parsed.data.editionId },
     ...trace,
   });
+  await persistSchoolAccessCookie(created.request.id);
   await notifyStaffOfSchoolAccessRequest({
     requestId: created.request.id,
     schoolName: parsed.data.schoolName,
@@ -103,22 +111,10 @@ export async function approveSchoolAccessAction(_prev: ActionFailure | undefined
   });
   if (!result.ok) return fail(result.code);
 
-  await dispatchOutboundEmail({
-    idempotencyKey: `school-access:${result.request.id}:approved`,
-    purpose: "SCHOOL_ACCESS_APPROVED",
-    templateKey: "SCHOOL_ACCESS_APPROVED",
-    to: result.request.email,
-    userId: result.request.userId,
-    recipientKind: "USER",
-    variables: {
-      nome: result.request.firstName,
-      firstName: result.request.firstName,
-      schoolName: result.request.schoolName,
-      activateUrl: result.activateUrl,
-      scadenza: formatExpiry(result.expiresAt),
-    },
-    sourceEntityType: "SchoolRegistrationRequest",
-    sourceEntityId: result.request.id,
+  await dispatchSchoolAccessActivationEmail({
+    request: result.request,
+    activateUrl: result.activateUrl,
+    expiresAt: result.expiresAt,
     actorUserId: session.user.id,
   });
   const trace = await userAgentAndIp();
@@ -218,6 +214,58 @@ export async function resendSchoolAccessActivationAction(_prev: ActionFailure | 
   });
   revalidatePath(`/admin/richieste/${id}`);
   return {};
+}
+
+export async function resendOwnSchoolAccessActivationAction(
+  _prev: ActionFailure | undefined,
+  formData: FormData,
+): Promise<ActionFailure | { sent: true }> {
+  const denied = await viewWriteDenial();
+  if (denied) return denied;
+
+  const rateKey = await clientKey("school-access-user-resend");
+  if (!(await consumeRateLimit(rateKey, RATE_LIMITS.schoolAccessActivate.limit, RATE_LIMITS.schoolAccessActivate.windowMs))) {
+    return fail("SCHOOL_ACCESS_RATE_LIMITED");
+  }
+
+  const token = String(formData.get("token") ?? "");
+  const fromToken = isWellFormedInviteToken(token) ? await findSchoolAccessByActivationToken(token) : null;
+  const cookieId = fromToken ? null : await readSchoolAccessCookieRequestId();
+  const request = fromToken ?? (cookieId ? await getSchoolAccessRequest(cookieId) : null);
+  if (!request) return fail("SCHOOL_ACCESS_NOT_FOUND");
+
+  const delivery = await loadUserEmailDelivery(USER_EMAIL_OPS.schoolActivate(request.id, request.email));
+  if (!delivery.decision.allow) return failUserEmailResend(delivery.decision.reason);
+
+  const result = await issueActivationToken({ id: request.id, origin: appOrigin() });
+  if (!result.ok) return fail(result.code);
+
+  const dispatched = await dispatchOutboundEmail({
+    idempotencyKey: userEmailResendIdempotencyKey(`school-access:${result.request.id}:${result.expiresAt.getTime()}`),
+    purpose: "SCHOOL_ACCESS_APPROVED",
+    templateKey: "SCHOOL_ACCESS_APPROVED",
+    to: result.request.email,
+    recipientKind: "USER",
+    variables: {
+      nome: result.request.firstName,
+      firstName: result.request.firstName,
+      schoolName: result.request.schoolName,
+      activateUrl: result.activateUrl,
+      scadenza: formatExpiry(result.expiresAt),
+    },
+    sourceEntityType: "SchoolRegistrationRequest",
+    sourceEntityId: result.request.id,
+  });
+  if (dispatched.status === "FAILED") return fail("EMAIL_SEND_FAILED");
+
+  await writeAuditLog({
+    actorKind: "SYSTEM",
+    action: "SCHOOL_ACCESS_RESEND",
+    entityType: "SchoolRegistrationRequest",
+    entityId: result.request.id,
+    metadata: { selfService: true },
+  });
+  return { sent: true as const };
 }
 
 export async function activateSchoolAccessAction(_prev: ActionFailure | undefined, formData: FormData) {

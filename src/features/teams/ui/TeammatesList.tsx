@@ -1,6 +1,7 @@
 import type { TeammateRow } from "@/features/teams/domain/roster";
+import { Avatar } from "@/shared/ui/Avatar";
 import { it } from "@/shared/i18n/it";
-import styles from "@/features/teams/ui/TeamRoster.module.css";
+import styles from "./TeammatesList.module.css";
 
 export function TeammatesList({ rows }: { rows: TeammateRow[] }) {
   if (rows.length === 0) {
@@ -8,16 +9,22 @@ export function TeammatesList({ rows }: { rows: TeammateRow[] }) {
   }
   return (
     <ul className={styles.list}>
-      {rows.map((row) => (
-        <li key={row.userId} className={styles.item}>
-          <strong>
-            {row.firstName} {row.lastName}
-          </strong>
-          <span className={styles.help}>
-            {[row.jerseyNumber, row.rosterRole].filter(Boolean).join(" · ") || "—"}
-          </span>
-        </li>
-      ))}
+      {rows.map((row) => {
+        const name = `${row.firstName} ${row.lastName}`;
+        return (
+          <li key={row.userId} className={styles.item}>
+            <Avatar name={name} />
+            <span className={styles.name}>{name}</span>
+            {row.rosterRole ? <span className={styles.role}>{row.rosterRole}</span> : null}
+            {row.jerseyNumber ? (
+              <span className={styles.jersey}>
+                <span className="srOnly">{it.jerseyNumber} </span>
+                {row.jerseyNumber}
+              </span>
+            ) : null}
+          </li>
+        );
+      })}
     </ul>
   );
 }

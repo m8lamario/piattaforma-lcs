@@ -1,56 +1,40 @@
-.defs {
-  margin: 0;
+.grid {
   display: grid;
+  gap: var(--space-6);
+  align-items: start;
+}
+
+.defs {
+  display: grid;
+  gap: var(--space-4);
+  margin: 0;
 }
 
 .defs > div {
   display: grid;
-  gap: var(--space-1);
-  padding: var(--space-4) 0;
-  border-bottom: 1px solid var(--color-hairline);
+  gap: 2px;
 }
 
 .defs dt {
   color: var(--color-text-muted);
   font-size: var(--text-xs);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  font-weight: 700;
+  font-weight: 650;
 }
 
 .defs dd {
   margin: 0;
   font-weight: 650;
+  overflow-wrap: anywhere;
 }
 
-.teams {
-  display: grid;
-  gap: var(--space-3);
+@media (min-width: 960px) {
+  .grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
 }
 
-.teams h2 {
-  margin: 0;
-  font-size: var(--text-kicker);
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--color-accent);
-}
-
-.teams ul {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.teams li {
-  display: grid;
-  gap: var(--space-1);
-  padding: var(--space-4) 0;
-  border-bottom: 1px solid var(--color-hairline);
-}
-
-.teams span {
-  color: var(--color-text-muted);
-  font-size: var(--text-sm);
+@media (max-width: 640px) {
+  .grid {
+    gap: var(--space-4);
+  }
 }

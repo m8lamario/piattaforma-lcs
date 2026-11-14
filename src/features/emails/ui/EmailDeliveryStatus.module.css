@@ -1,0 +1,9 @@
+.compact {
+  display: grid;
+  gap: var(--space-1);
+  margin-top: var(--space-2);
+}
+
+.compact p {
+  margin: 0;
+}

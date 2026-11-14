@@ -29,9 +29,7 @@ export function InviteForm({ teamId }: { teamId: string }) {
   }
 
   return (
-    <section className={styles.card}>
-      <h2>{it.teamInviteTitle}</h2>
-      <p>{it.teamInviteHelp}</p>
+    <div className={styles.card}>
       <form action={action} className={fields.form} noValidate aria-busy={pending}>
         <input type="hidden" name="teamId" value={teamId} />
         <div className={fields.field}>
@@ -72,11 +70,13 @@ export function InviteForm({ teamId }: { teamId: string }) {
         <div className={styles.success} role="status">
           <p>{copied ? it.copied : it.inviteCreated}</p>
           <code className={styles.url}>{redeemUrl}</code>
-          <Button type="button" variant="accent" icon="plus" onClick={copyLink}>
-            {copied ? it.copiedShort : it.copyLink}
-          </Button>
+          <div className={styles.linkActions}>
+            <Button type="button" variant="secondary" icon={copied ? "check" : "copy"} onClick={copyLink}>
+              {copied ? it.copiedShort : it.copyLink}
+            </Button>
+          </div>
         </div>
       ) : null}
-    </section>
+    </div>
   );
 }

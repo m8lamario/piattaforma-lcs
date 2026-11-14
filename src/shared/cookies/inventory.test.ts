@@ -2,7 +2,7 @@ import { readFileSync, readdirSync, statSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { shouldShowCookieBanner } from "./consent";
-import { clearTeamCookieOptions, shouldUseSecureCookie, teamCookieOptions } from "./options";
+import { clearTeamCookieOptions, schoolAccessCookieOptions, shouldUseSecureCookie, teamCookieOptions } from "./options";
 import {
   ADOBE_FONTS_ORIGINS,
   ADOBE_FONTS_STYLESHEET,
@@ -67,6 +67,8 @@ describe("inventario cookie", () => {
     expect(shouldUseSecureCookie("http")).toBe(false);
     expect(teamCookieOptions(true)).toMatchObject({ httpOnly: true, sameSite: "lax", secure: true, path: "/" });
     expect(clearTeamCookieOptions(true).maxAge).toBe(0);
+    expect(FIRST_PARTY_COOKIES.find((item) => item.id === "school-access")?.durationSeconds).toBe(14 * 24 * 60 * 60);
+    expect(schoolAccessCookieOptions(true)).toMatchObject({ httpOnly: true, sameSite: "lax", secure: true, path: "/" });
   });
 
   it("allinea la pagina cookie, Auth.js e il layout ai nomi reali", () => {

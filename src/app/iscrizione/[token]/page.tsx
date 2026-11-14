@@ -11,6 +11,7 @@ import { TeamJoinForm } from "@/features/teams/ui/TeamJoinForm";
 import { userMessage } from "@/shared/errors";
 import { it } from "@/shared/i18n/it";
 import { Button, ButtonLink } from "@/shared/ui/Button";
+import { Icon } from "@/shared/ui/Icon";
 import { PublicShell } from "@/shared/ui/PublicShell";
 import styles from "@/app/invito/[token]/page.module.css";
 
@@ -26,12 +27,30 @@ function Frame({ children }: { children: ReactNode }) {
   );
 }
 
-function JoinMessage({ title, body }: { title: string; body: string }) {
+function TeamBadge({ teamName, editionLine }: { teamName: string; editionLine: string }) {
+  return (
+    <div className={styles.team}>
+      <span className={styles.teamIcon} aria-hidden="true">
+        <Icon name="trophy" size={20} />
+      </span>
+      <div className={styles.teamText}>
+        <span>{editionLine}</span>
+        <strong>{teamName}</strong>
+      </div>
+    </div>
+  );
+}
+
+function JoinMessage({ title, body, signedIn = false }: { title: string; body: string; signedIn?: boolean }) {
   return (
     <section className={styles.sheet}>
       <h1>{title}</h1>
       <p>{body}</p>
-      <ButtonLink href="/accedi">{it.ctaLogin}</ButtonLink>
+      {signedIn ? (
+        <ButtonLink href="/area">{it.backToArea}</ButtonLink>
+      ) : (
+        <ButtonLink href="/accedi">{it.ctaLogin}</ButtonLink>
+      )}
     </section>
   );
 }
@@ -74,8 +93,8 @@ export default async function TeamJoinPage({ params }: Props) {
     return (
       <Frame>
         <section className={styles.sheet}>
-          <p className={styles.kicker}>{editionLine}</p>
           <h1>{it.inviteCreateAccount}</h1>
+          <TeamBadge teamName={team.name} editionLine={editionLine} />
           <TeamJoinForm token={token} teamName={team.name} />
         </section>
       </Frame>
@@ -96,8 +115,8 @@ export default async function TeamJoinPage({ params }: Props) {
     return (
       <Frame>
         <section className={styles.sheet}>
-          <p className={styles.kicker}>{editionLine}</p>
           <h1>{it.inviteTitle}</h1>
+          <TeamBadge teamName={team.name} editionLine={editionLine} />
           <p>{it.teamJoinSession.replace("{email}", identity.subjectEmail).replace("{team}", team.name)}</p>
           <AttachTeamForm token={token} teamName={team.name} />
         </section>
@@ -108,7 +127,7 @@ export default async function TeamJoinPage({ params }: Props) {
   if (path.path === "already_on_team") {
     return (
       <Frame>
-        <JoinMessage title={it.inviteTitle} body={userMessage("INVITE_ALREADY_ON_TEAM")} />
+        <JoinMessage title={it.inviteTitle} body={userMessage("INVITE_ALREADY_ON_TEAM")} signedIn />
       </Frame>
     );
   }
@@ -117,8 +136,8 @@ export default async function TeamJoinPage({ params }: Props) {
     return (
       <Frame>
         <section className={styles.sheet}>
-          <p className={styles.kicker}>{editionLine}</p>
           <h1>{it.inviteTitle}</h1>
+          <TeamBadge teamName={team.name} editionLine={editionLine} />
           <p>{userMessage("INVITE_WRONG_SESSION")}</p>
           <form action={logoutAction} data-view-allow="logout">
             <input type="hidden" name="next" value={`/iscrizione/${token}`} />
@@ -135,7 +154,7 @@ export default async function TeamJoinPage({ params }: Props) {
 
   return (
     <Frame>
-      <JoinMessage title={it.inviteTitle} body={userMessage("INVITE_EDITION_CONFLICT")} />
+      <JoinMessage title={it.inviteTitle} body={userMessage("INVITE_EDITION_CONFLICT")} signedIn />
     </Frame>
   );
 }

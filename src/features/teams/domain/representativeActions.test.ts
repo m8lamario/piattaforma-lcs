@@ -12,33 +12,22 @@ const empty: RosterCounts = {
 };
 
 describe("representativeNowActions", () => {
-  it("non elenca azioni se la rosa è in regola e non ci sono avvisi", () => {
+  it("non elenca azioni se non restano inviti o messaggi", () => {
     expect(
       representativeNowActions({
-        counts: { ...empty, total: 2, ok: 2 },
-        rows: [{ publication: { status: "publishable", channels: true, promotion: true, sponsor: false, press: false, interviews: false, fullSurname: false } }],
+        counts: { ...empty, total: 2, ok: 2, inProgress: 1, attention: 1 },
         unreadCount: 0,
       }),
     ).toEqual([]);
   });
 
-  it("ordina per urgenza e punta ai filtri della rosa", () => {
+  it("tiene solo inviti da accettare e comunicazioni non lette", () => {
     const actions = representativeNowActions({
       counts: { ...empty, total: 4, invited: 2, inProgress: 1, attention: 1 },
-      rows: [{ publication: { status: "not_publishable", channels: false, promotion: false, sponsor: false, press: false, interviews: false, fullSurname: false } }],
       unreadCount: 3,
-      teamPaymentDue: true,
     });
-    expect(actions.map((action) => action.id)).toEqual([
-      "attention",
-      "invited",
-      "inProgress",
-      "publication",
-      "payment",
-      "unread",
-    ]);
-    expect(actions[0]?.href).toBe("/squadra?stato=attention");
-    expect(actions[3]?.href).toBe("/squadra?stato=publication");
-    expect(actions[5]?.href).toBe("/area/comunicazioni");
+    expect(actions.map((action) => action.id)).toEqual(["invited", "unread"]);
+    expect(actions[0]?.href).toBe("/squadra?stato=invited");
+    expect(actions[1]?.href).toBe("/area/comunicazioni");
   });
 });

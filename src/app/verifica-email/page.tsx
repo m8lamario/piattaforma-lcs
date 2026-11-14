@@ -36,7 +36,7 @@ export default async function VerifyEmailPage({ searchParams }: Props) {
   if (!user) redirect("/accedi");
   if (user.emailVerified) redirect(destination);
 
-  const challenge = await getEmailVerificationChallenge(user.email);
+  const challenge = await getEmailVerificationChallenge({ userId: identity.subjectUserId, email: user.email });
 
   return (
     <PublicShell>
@@ -49,6 +49,9 @@ export default async function VerifyEmailPage({ searchParams }: Props) {
             expiresLabel={challenge.expiresAt ? it.emailVerifyExpires.replace("{when}", formatExpiry(challenge.expiresAt)) : null}
             resendAvailableAt={challenge.resendAvailableAt?.toISOString() ?? null}
             resendCooldownSeconds={EMAIL_VERIFY_RESEND_SECONDS}
+            deliveryState={challenge.delivery.state}
+            remainingResends={challenge.delivery.remainingResends}
+            contactSupport={challenge.delivery.contactSupport}
           />
         </section>
       </main>

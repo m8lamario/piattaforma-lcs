@@ -93,12 +93,26 @@ describe("projectChecklist", () => {
 
   it("segna il certificato in attenzione se è in revisione o rifiutato", () => {
     const pending = projectChecklist(defaultRequirements, evidence({ medicalStatus: "pending" }));
-    const rejected = projectChecklist(defaultRequirements, evidence({ medicalStatus: "rejected" }));
+    const rejectedEvidence = evidence({
+      medicalStatus: "rejected",
+      mediaDecision: "submitted",
+      payment: { mode: "PLAYER", playerSucceeded: true, teamSucceeded: false },
+    });
+    const rejected = projectChecklist(defaultRequirements, rejectedEvidence);
     expect(pending.find((item) => item.code === "MEDICAL_CERT")?.status).toBe("attention");
     expect(rejected.find((item) => item.code === "MEDICAL_CERT")?.status).toBe("attention");
-    expect(projectRegistrationStatus(evidence({ medicalStatus: "rejected" }), rejected)).toBe(
-      "CHANGES_REQUESTED",
-    );
+    expect(projectRegistrationStatus(rejectedEvidence, rejected)).toBe("APPROVED");
+  });
+
+  it("approva amministrativamente un giocatore senza certificato", () => {
+    const data = evidence({
+      medicalStatus: "none",
+      mediaDecision: "submitted",
+      payment: { mode: "PLAYER", playerSucceeded: true, teamSucceeded: false },
+    });
+    const checklist = projectChecklist(defaultRequirements, data);
+    expect(checklist.find((item) => item.code === "MEDICAL_CERT")?.status).toBe("todo");
+    expect(projectRegistrationStatus(data, checklist)).toBe("APPROVED");
   });
 
   it("obbliga il certificato al giocatore e lo esclude dallo staff", () => {
@@ -119,7 +133,9 @@ describe("projectChecklist", () => {
       status: "not_applicable",
     });
     expect(projectRegistrationStatus(staffEvidence, staff)).toBe("APPROVED");
-    expect(projectRegistrationStatus(evidence({ medicalStatus: "none" }), player)).not.toBe("APPROVED");
+    expect(projectRegistrationStatus(evidence({ medicalStatus: "none", mediaDecision: "submitted" }), player)).toBe(
+      "PAYMENT_PENDING",
+    );
   });
 
   it("per lo staff minore resta il consenso del genitore, senza certificato", () => {

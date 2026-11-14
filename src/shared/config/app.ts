@@ -46,3 +46,7 @@ export function appOrigin() {
 export const INVITE_TTL_DAYS = Number(process.env.INVITE_TTL_DAYS ?? 14);
 export const BULK_INVITE_MAX = 50;
 export const TEAM_COOKIE = "eph-team";
+export const SCHOOL_ACCESS_COOKIE = "eph-school-access";
+export const SUPPORT_EMAIL = process.env.SUPPORT_EMAIL ?? "it@estudentsleague.com";
+export const MEDICAL_UPLOAD_LEAD_DAYS = Number(process.env.MEDICAL_UPLOAD_LEAD_DAYS ?? 7);
+export const MEDICAL_DEADLINE_REMINDER_DAYS = [14, 7, 1] as const;

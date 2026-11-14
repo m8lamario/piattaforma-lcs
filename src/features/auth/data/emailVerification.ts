@@ -13,6 +13,8 @@ import {
 } from "@/features/auth/domain/verify";
 import { EMAIL_VERIFY_HOURS, appOrigin } from "@/shared/config/app";
 import { dispatchOutboundEmail } from "@/features/emails/data/dispatch";
+import { userEmailResendIdempotencyKey } from "@/features/emails/domain/delivery";
+import { loadUserEmailDelivery, USER_EMAIL_OPS } from "@/features/emails/data/userDelivery";
 import { it } from "@/shared/i18n/it";
 import { logger } from "@/shared/lib/logger";
 
@@ -32,25 +34,42 @@ function expiryLabel(hours: number) {
   return hours === 1 ? "1 ora" : `${hours} ore`;
 }
 
-export async function getEmailVerificationChallenge(email: string) {
-  const identifier = emailVerifyIdentifier(email);
+export async function getEmailVerificationChallenge(input: { userId: string; email: string }) {
+  const identifier = emailVerifyIdentifier(input.email);
   const rows = await prisma.verificationToken.findMany({ where: { identifier } });
   const newest = rows.reduce<(typeof rows)[number] | null>((current, row) => {
     if (!current || row.createdAt.getTime() > current.createdAt.getTime()) return row;
     return current;
   }, null);
-  if (!newest) return { active: false, expiresAt: null as Date | null, resendAvailableAt: null as Date | null };
+  const delivery = await loadUserEmailDelivery(USER_EMAIL_OPS.verify(input.userId, input.email));
+  if (!newest) {
+    return {
+      active: false,
+      expiresAt: null as Date | null,
+      resendAvailableAt: delivery.resendAvailableAt,
+      delivery,
+    };
+  }
   const now = new Date();
   const active = newest.expires.getTime() > now.getTime();
   const delay = emailVerifyResendDelayMs(newest.createdAt, now);
+  const tokenUntil = delay > 0 ? new Date(now.getTime() + delay) : null;
+  const resendAvailableAt = laterDate(tokenUntil, delivery.resendAvailableAt);
   return {
     active,
     expiresAt: active ? newest.expires : null,
-    resendAvailableAt: delay > 0 ? new Date(now.getTime() + delay) : null,
+    resendAvailableAt,
+    delivery,
   };
 }
 
-export async function sendEmailVerification(input: { userId: string; email: string }) {
+function laterDate(left: Date | null, right: Date | null) {
+  if (!left) return right;
+  if (!right) return left;
+  return left.getTime() >= right.getTime() ? left : right;
+}
+
+export async function sendEmailVerification(input: { userId: string; email: string; userResend?: boolean }) {
   const email = input.email.trim().toLowerCase();
   const identifier = emailVerifyIdentifier(email);
   const existing = await prisma.verificationToken.findMany({ where: { identifier } });
@@ -76,26 +95,27 @@ export async function sendEmailVerification(input: { userId: string; email: stri
     }),
   ]);
 
-  try {
-    await dispatchOutboundEmail({
-      idempotencyKey: `email-verify:${input.userId}:${randomBytes(8).toString("hex")}`,
-      purpose: "EMAIL_VERIFY",
-      templateKey: "EMAIL_VERIFY",
-      to: email,
-      userId: input.userId,
-      recipientKind: "USER",
-      variables: {
-        title: it.emailVerifySubject,
-        codice: code,
-        scadenza: expiryLabel(EMAIL_VERIFY_HOURS),
-        areaUrl: `${appOrigin()}/verifica-email`,
-      },
-      sourceEntityType: "User",
-      sourceEntityId: input.userId,
-    });
-  } catch (error) {
-    await prisma.verificationToken.deleteMany({ where: { identifier, token: codeHash } });
-    throw error;
+  const nonce = randomBytes(8).toString("hex");
+  const dispatched = await dispatchOutboundEmail({
+    idempotencyKey: input.userResend
+      ? userEmailResendIdempotencyKey(`email-verify:${input.userId}:${nonce}`)
+      : `email-verify:${input.userId}:${nonce}`,
+    purpose: "EMAIL_VERIFY",
+    templateKey: "EMAIL_VERIFY",
+    to: email,
+    userId: input.userId,
+    recipientKind: "USER",
+    variables: {
+      title: it.emailVerifySubject,
+      codice: code,
+      scadenza: expiryLabel(EMAIL_VERIFY_HOURS),
+      areaUrl: `${appOrigin()}/verifica-email`,
+    },
+    sourceEntityType: "User",
+    sourceEntityId: input.userId,
+  });
+  if (dispatched.status === "FAILED") {
+    return { sent: false as const, reason: "failed" as const };
   }
 
   return { sent: true as const };

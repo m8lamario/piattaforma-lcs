@@ -30,7 +30,7 @@ export function RemovePlayerForm({ teamId, membershipId, lastName, successLabel 
 
   if (!open) {
     return (
-      <Button type="button" variant="danger" icon="trash" onClick={() => setOpen(true)}>
+      <Button type="button" variant="dangerQuiet" icon="trash" onClick={() => setOpen(true)} className={styles.removeOpen}>
         {it.lifecycleRemoveOpen}
       </Button>
     );

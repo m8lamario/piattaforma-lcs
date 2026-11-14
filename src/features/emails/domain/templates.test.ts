@@ -27,6 +27,13 @@ describe("template email", () => {
     expect(message.html).toContain("https://hub.test/area");
   });
 
+  it("il promemoria agonistico non include il motivo del rifiuto", () => {
+    const message = render("MEDICAL_DEADLINE", { areaUrl: "https://hub.test/area" });
+    expect(message.text.toLowerCase()).not.toContain("diagnosi");
+    expect(message.text.toLowerCase()).not.toContain("motivo");
+    expect(message.html).toContain("https://hub.test/area");
+  });
+
   it("per il certificato indica solo l’area, senza motivo sanitario", () => {
     const approved = render("DOCUMENT_APPROVED", {
       title: "Certificato approvato",
@@ -141,6 +148,7 @@ describe("template email", () => {
       PAYMENT_SUCCEEDED: { areaUrl: "https://hub.test/area" },
       REGISTRATION_WITHDRAWN: { areaUrl: "https://hub.test/area" },
       REGISTRATION_REMINDER: { link: "https://hub.test/area" },
+      MEDICAL_DEADLINE: { areaUrl: "https://hub.test/area" },
       LEGAL_VERSION_NOTICE: { link: "https://hub.test/area" },
       SCHOOL_ACCESS_APPROVED: {
         firstName: "Anna",

@@ -9,6 +9,8 @@ import {
 } from "@/features/auth/actions";
 import { Button } from "@/shared/ui/Button";
 import { ActionError } from "@/shared/ui/ActionError";
+import { EmailDeliveryStatus } from "@/features/emails/ui/EmailDeliveryStatus";
+import type { UserEmailDeliveryState } from "@/features/emails/domain/delivery";
 import { it } from "@/shared/i18n/it";
 import fields from "@/shared/ui/form.module.css";
 import styles from "./EmailVerifyForm.module.css";
@@ -20,6 +22,9 @@ type Props = {
   expiresLabel: string | null;
   resendAvailableAt: string | null;
   resendCooldownSeconds: number;
+  deliveryState: UserEmailDeliveryState;
+  remainingResends: number;
+  contactSupport: boolean;
 };
 
 export function EmailCodeForm({
@@ -29,6 +34,9 @@ export function EmailCodeForm({
   expiresLabel,
   resendAvailableAt,
   resendCooldownSeconds,
+  deliveryState,
+  remainingResends,
+  contactSupport,
 }: Props) {
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
@@ -93,6 +101,12 @@ export function EmailCodeForm({
         <p className={styles.meta}>{it.emailVerifyCheckHint}</p>
         {expiresLabel ? <p className={styles.meta}>{expiresLabel}</p> : null}
         {!active ? <p className={styles.meta}>{it.emailVerifyMissing}</p> : null}
+        <EmailDeliveryStatus
+          state={deliveryState}
+          remainingResends={remainingResends}
+          contactSupport={contactSupport}
+        />
+        <p className={fields.help}>{it.emailTermsEmailHint}</p>
         {verifyError?.error ? <ActionError error={verifyError.error} code={verifyError.code} /> : null}
         <input type="hidden" name="next" value={nextPath} />
         <label className={fields.field}>
@@ -176,7 +190,13 @@ export function EmailCodeForm({
         <Button
           type="submit"
           variant="secondary"
-          disabled={resendPending || remainingSeconds > 0}
+          disabled={
+            resendPending ||
+            remainingSeconds > 0 ||
+            remainingResends <= 0 ||
+            deliveryState === "undeliverable" ||
+            deliveryState === "sending"
+          }
           aria-busy={resendPending}
         >
           {resendPending

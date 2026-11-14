@@ -8,7 +8,7 @@ import { PublicationChips } from "@/features/consents/ui/PublicationChips";
 import { loadPlayerWorkspace } from "@/features/registrations/data/workspace";
 import { PageHeader } from "@/shared/ui/PageHeader";
 import { it } from "@/shared/i18n/it";
-import styles from "../comunicazioni/page.module.css";
+import styles from "./page.module.css";
 
 export default async function ConsentsPage() {
   const identity = await requirePageUser("/area/consensi");
@@ -46,10 +46,18 @@ export default async function ConsentsPage() {
 
   return (
     <main className={styles.main}>
-      <PageHeader title={it.consentsTitle} description={it.consentsHelp} />
-      <p style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
-        <PublicationChips flags={workspace.publication} />
-      </p>
+      <PageHeader
+        title={it.consentsTitle}
+        description={it.consentsHelp}
+        aside={
+          <div className={styles.publication}>
+            <span className={styles.publicationLabel}>{it.consentsPublicationLabel}</span>
+            <div className={styles.chips}>
+              <PublicationChips flags={workspace.publication} />
+            </div>
+          </div>
+        }
+      />
       <ConsentsManager rows={rows} />
     </main>
   );

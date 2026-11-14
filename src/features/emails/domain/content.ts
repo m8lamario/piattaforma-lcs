@@ -199,6 +199,15 @@ const SPECS: Record<EmailTemplateKey, (ctx: SpecContext) => EmailVisualSpec> = {
     ctaUrl: url(vars, "link"),
     tone: "warning",
   }),
+  MEDICAL_DEADLINE: ({ vars, subject }) => ({
+    heading: vars.title || subject,
+    preheader: it.emailMedicalDeadlinePreheader,
+    intro: t(it.emailMedicalDeadlineIntro, vars),
+    details: [],
+    ctaLabel: it.emailCtaOpenArea,
+    ctaUrl: url(vars, "areaUrl"),
+    tone: "warning",
+  }),
   LEGAL_VERSION_NOTICE: ({ vars, subject }) => ({
     heading: vars.title || subject,
     preheader: it.emailLegalVersionPreheader,

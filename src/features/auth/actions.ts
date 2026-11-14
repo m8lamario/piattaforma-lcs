@@ -31,6 +31,15 @@ import {
   safeInternalPath,
 } from "@/features/auth/domain/verify";
 import { dispatchOutboundEmail } from "@/features/emails/data/dispatch";
+import { userEmailResendIdempotencyKey } from "@/features/emails/domain/delivery";
+import {
+  failUserEmailResend,
+  loadPasswordResetAttemptView,
+  loadUserEmailDelivery,
+  recordPasswordResetAttempt,
+  serializeEmailDelivery,
+  USER_EMAIL_OPS,
+} from "@/features/emails/data/userDelivery";
 import { prisma } from "@/shared/lib/prisma";
 import { writeAuditLog } from "@/shared/lib/audit";
 import { RATE_LIMITS, clientKey, consumeRateLimit } from "@/shared/lib/request-guard";
@@ -129,16 +138,51 @@ export async function changePasswordAction(
 }
 
 export async function requestPasswordResetAction(
-  _prev: { error?: string; sent?: boolean } | undefined,
+  _prev:
+    | {
+        error?: string;
+        sent?: boolean;
+        remainingResends?: number;
+        resendAvailableAt?: string | null;
+        exhausted?: boolean;
+        cooldown?: boolean;
+      }
+    | undefined,
   formData: FormData,
 ) {
   const parsed = requestResetSchema.safeParse({ email: formData.get("email") });
-  const generic = { sent: true as const };
-  if (!parsed.success) return generic;
+  const generic = (extra: {
+    remainingResends?: number;
+    resendAvailableAt?: string | null;
+    exhausted?: boolean;
+    cooldown?: boolean;
+  } = {}) => ({
+    sent: true as const,
+    remainingResends: extra.remainingResends ?? 3,
+    resendAvailableAt: extra.resendAvailableAt ?? null,
+    exhausted: extra.exhausted ?? false,
+    cooldown: extra.cooldown ?? false,
+  });
+  if (!parsed.success) return generic();
+  const attempts = await loadPasswordResetAttemptView(parsed.data.email);
+  if (!attempts.decision.allow) {
+    return generic({
+      remainingResends: attempts.remainingResends,
+      resendAvailableAt: attempts.resendAvailableAt?.toISOString() ?? null,
+      exhausted: attempts.decision.reason === "exhausted",
+      cooldown: attempts.decision.reason === "cooldown",
+    });
+  }
   const rateKey = await clientKey(`reset:${parsed.data.email}`);
   if (!(await consumeRateLimit(rateKey, RATE_LIMITS.passwordReset.limit, RATE_LIMITS.passwordReset.windowMs))) {
-    return generic;
+    return generic({
+      remainingResends: attempts.remainingResends,
+      resendAvailableAt: attempts.resendAvailableAt?.toISOString() ?? null,
+      cooldown: true,
+    });
   }
+  await recordPasswordResetAttempt(parsed.data.email);
+  const remaining = Math.max(0, attempts.remainingResends - (attempts.totalSends === 0 ? 0 : 1));
   const user = await prisma.user.findUnique({ where: { email: parsed.data.email } });
   if (user?.passwordHash) {
     const token = createInviteToken();
@@ -146,7 +190,10 @@ export async function requestPasswordResetAction(
     const resetUrl = `${appOrigin()}/recupera-password/${token}`;
     const nonce = createInviteToken();
     await dispatchOutboundEmail({
-      idempotencyKey: `password-reset:${user.id}:${nonce}`,
+      idempotencyKey:
+        attempts.totalSends === 0
+          ? `password-reset:${user.id}:${nonce}`
+          : userEmailResendIdempotencyKey(`password-reset:${user.id}:${nonce}`),
       purpose: "password-reset",
       templateKey: "password-reset",
       to: parsed.data.email,
@@ -157,7 +204,11 @@ export async function requestPasswordResetAction(
       sourceEntityId: user.id,
     });
   }
-  return generic;
+  const nextRemaining = attempts.totalSends === 0 ? attempts.remainingResends : remaining;
+  return generic({
+    remainingResends: nextRemaining,
+    resendAvailableAt: new Date(Date.now() + 60 * 1000).toISOString(),
+  });
 }
 
 export async function resetPasswordAction(
@@ -247,7 +298,9 @@ export async function verifyEmailCodeAction(
   redirect(destination);
 }
 
-export async function resendEmailVerificationAction(): Promise<ActionFailure | { sent: true }> {
+export async function resendEmailVerificationAction(): Promise<
+  ActionFailure | { sent: true; delivery: ReturnType<typeof serializeEmailDelivery> }
+> {
   const denied = await viewWriteDenial();
   if (denied) return denied;
   const session = await auth();
@@ -257,20 +310,30 @@ export async function resendEmailVerificationAction(): Promise<ActionFailure | {
     select: { id: true, email: true, emailVerified: true },
   });
   if (!user) return fail("AUTH_ACCOUNT_MISSING");
-  if (user.emailVerified) return { sent: true };
+  const emptyDelivery = {
+    state: "accepted" as const,
+    remainingResends: 3,
+    resendAvailableAt: null,
+    contactSupport: false,
+  };
+  if (user.emailVerified) return { sent: true, delivery: emptyDelivery };
+  const delivery = await loadUserEmailDelivery(USER_EMAIL_OPS.verify(user.id, user.email));
+  if (!delivery.decision.allow) return failUserEmailResend(delivery.decision.reason);
   const rateKey = await clientKey(`email-verify-resend:${user.id}`);
   if (
     !(await consumeRateLimit(rateKey, RATE_LIMITS.emailVerifyResend.limit, RATE_LIMITS.emailVerifyResend.windowMs))
   ) {
     return fail("AUTH_RATE_LIMITED");
   }
-  try {
-    const sent = await sendEmailVerification({ userId: user.id, email: user.email });
-    if (!sent.sent) return fail("AUTH_EMAIL_CODE_COOLDOWN");
-    return { sent: true };
-  } catch {
-    return fail("SYSTEM_UNEXPECTED");
-  }
+  const sent = await sendEmailVerification({
+    userId: user.id,
+    email: user.email,
+    userResend: delivery.totalSends > 0,
+  });
+  if (!sent.sent && sent.reason === "cooldown") return fail("AUTH_EMAIL_CODE_COOLDOWN");
+  if (!sent.sent) return fail("EMAIL_SEND_FAILED");
+  const next = await loadUserEmailDelivery(USER_EMAIL_OPS.verify(user.id, user.email));
+  return { sent: true, delivery: serializeEmailDelivery(next) };
 }
 
 export async function changeUnverifiedEmailAction(

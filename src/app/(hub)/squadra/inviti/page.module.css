@@ -1,0 +1,40 @@
+.main {
+  width: 100%;
+  max-width: var(--content-max-canvas);
+  display: grid;
+  gap: var(--space-6);
+  align-self: start;
+}
+
+.headerActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-3);
+}
+
+.grid {
+  display: grid;
+  gap: var(--space-6);
+  align-items: start;
+}
+
+.column {
+  display: grid;
+  gap: var(--space-6);
+  min-width: 0;
+}
+
+@media (min-width: 1080px) {
+  .grid {
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .main,
+  .grid,
+  .column {
+    gap: var(--space-4);
+  }
+}

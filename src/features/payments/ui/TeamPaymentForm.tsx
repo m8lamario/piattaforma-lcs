@@ -37,7 +37,9 @@ export function TeamPaymentForm({ teamId, covered, amountLabel, missing, currenc
   return (
     <form className={fields.form} action={action} aria-busy={pending}>
       <h2 className={fields.heading}>{it.paymentTeamTitle}</h2>
-      <p className={fields.help}>{it.paymentHelp}</p>
+      <p className={fields.help}>
+        {it.paymentHelp} {it.termsPointerRefund}
+      </p>
       <p className={fields.amount}>
         <span>{it.paymentAmount}</span>
         <strong>

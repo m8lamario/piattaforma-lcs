@@ -60,7 +60,9 @@ export function PlayerPaymentForm({ covered, teamOnly, amountLabel, missing, cur
           {amountLabel} {currency}
         </strong>
       </p>
-      <p className={fields.help}>{it.paymentHelp}</p>
+      <p className={fields.help}>
+        {it.paymentHelp} {it.termsPointerRefund}
+      </p>
       <p className={fields.help}>{it.paymentFeeConfirm}</p>
       {state?.error ? <ActionError error={state.error} code={state.code} /> : null}
       <div className={`${fields.actions} ${fields.sticky}`}>

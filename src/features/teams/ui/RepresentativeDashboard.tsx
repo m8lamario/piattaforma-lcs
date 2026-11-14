@@ -1,28 +1,60 @@
 import Link from "next/link";
 import { TeamLinkPanel } from "@/features/teams/ui/TeamLinkPanel";
 import { TeamSwitcher } from "@/features/teams/ui/TeamSwitcher";
-import { RosterStrip } from "@/features/teams/ui/RosterStrip";
-import { WindowNotice } from "@/features/registrations/ui/WindowNotice";
+import { WindowChip, WindowNotice } from "@/features/registrations/ui/WindowNotice";
 import { RepresentativeRegistration } from "@/features/teams/ui/RepresentativeRegistration";
-import type { PlayerWorkspace } from "@/features/registrations/data/workspace";
+import type { RepresentativeOwnRegistration } from "@/features/teams/ui/representativeOwn";
 import type { EditionWindow } from "@/features/registrations/domain/window";
-import { representativeNowActions } from "@/features/teams/domain/representativeActions";
-import type { RosterCounts, RosterRow } from "@/features/teams/domain/roster";
+import {
+  rosterFilterHref,
+  summarizeRosterCauses,
+  type RosterCauseCounts,
+  type RosterCounts,
+  type RosterFilter,
+  type RosterRow,
+} from "@/features/teams/domain/roster";
+import { SchoolChecklist } from "@/features/teams/ui/SchoolChecklist";
+import type { SchoolChecklistItem } from "@/features/teams/domain/schoolChecklist";
 import { RepresentativeRoleForm } from "@/features/teams/ui/RepresentativeRoleForm";
 import { STAFF_SLOT_LIMIT } from "@/features/teams/domain/staff";
+import { ButtonLink } from "@/shared/ui/Button";
+import { Icon } from "@/shared/ui/Icon";
+import { NextStepHero } from "@/shared/ui/NextStepHero";
 import { PageHeader } from "@/shared/ui/PageHeader";
+import { Panel } from "@/shared/ui/Panel";
+import { ProgressMeter } from "@/shared/ui/ProgressMeter";
+import { playersLabel } from "@/shared/i18n/format";
 import { it } from "@/shared/i18n/it";
 import styles from "./RepresentativeDashboard.module.css";
 
-const ACTION_COPY: Record<string, string> = {
-  coach: it.areaNowCoach,
-  attention: it.areaNowAttention,
-  invited: it.areaNowInvited,
-  inProgress: it.areaNowProgress,
-  publication: it.areaNowPublication,
-  payment: it.areaNowPayment,
-  unread: it.areaNowUnread,
+const NEXT_COPY: Record<SchoolChecklistItem["id"], (count: number) => string> = {
+  email: () => it.repNextEmail,
+  coach: () => it.repNextCoach,
+  teamPayment: () => it.repNextTeamPayment,
+  personal: (count) => it.repNextPersonal.replace("{players}", playersLabel(count)),
+  guardian: (count) => it.repNextGuardian.replace("{players}", playersLabel(count)),
+  privacy: (count) => it.repNextPrivacy.replace("{players}", playersLabel(count)),
+  media: (count) => it.repNextMedia.replace("{players}", playersLabel(count)),
+  playerPayment: (count) => it.repNextPlayerPayment.replace("{players}", playersLabel(count)),
+  own: () => it.repNextOwn,
+  medical: () => it.schoolChecklistMedical,
 };
+
+const PLAYER_STEPS = new Set<SchoolChecklistItem["id"]>(["personal", "guardian", "privacy", "media", "playerPayment"]);
+
+const STAT_TILES: { filter: RosterFilter; label: string; count: (counts: RosterCounts) => number; tone: string }[] = [
+  { filter: "ok", label: it.rosterCountsOk, count: (counts) => counts.ok, tone: "ok" },
+  { filter: "inProgress", label: it.rosterCountsProgress, count: (counts) => counts.inProgress, tone: "progress" },
+  { filter: "invited", label: it.rosterCountsInvited, count: (counts) => counts.invited, tone: "invited" },
+  { filter: "attention", label: it.rosterCountsAttention, count: (counts) => counts.attention, tone: "attention" },
+];
+
+const CAUSES: { filter: keyof RosterCauseCounts; label: string }[] = [
+  { filter: "unverified", label: it.rosterFilterUnverified },
+  { filter: "guardian", label: it.rosterFilterGuardian },
+  { filter: "unpaid", label: it.rosterFilterUnpaid },
+  { filter: "medical", label: it.rosterFilterMedical },
+];
 
 type TeamOption = { id: string; name: string; edition: { name: string; competition: { name: string } } };
 
@@ -41,16 +73,53 @@ type Props = {
   counts: RosterCounts;
   roster: RosterRow[];
   teams: TeamOption[];
-  teamPaymentDue: boolean;
-  unreadCount: number;
   unread: UnreadItem[];
-  workspace: PlayerWorkspace | null;
+  own: RepresentativeOwnRegistration | null;
   staffUsed: number;
   coachMissing: boolean;
   coachName: string | null;
   canChooseRole: boolean;
   activeCategory: "PLAYER" | "STAFF" | null;
+  schoolChecklist: { items: SchoolChecklistItem[]; administrativeComplete: boolean };
 };
+
+function NextStep({ items, administrativeComplete }: Props["schoolChecklist"]) {
+  const admin = items.filter((item) => item.administrative);
+  const done = admin.filter((item) => item.status === "complete" || item.status === "waiting_on_org").length;
+  const next = admin.find((item) => item.status === "todo" || item.status === "attention");
+
+  return (
+    <NextStepHero
+      kicker={next ? it.repNextKicker : it.schoolChecklistComplete}
+      icon={next ? "zap" : "check"}
+      title={next ? NEXT_COPY[next.id](next.count) : it.repNextDone}
+      lead={next ? undefined : it.repNextDoneLead}
+      actions={
+        next ? (
+          <ButtonLink href={next.href} icon="chevronRight" iconPosition="right">
+            {PLAYER_STEPS.has(next.id) ? it.repNextCtaPlayers : it.repNextCta}
+          </ButtonLink>
+        ) : (
+          <ButtonLink href="/squadra" variant="secondary" icon="chevronRight" iconPosition="right">
+            {it.repNextCtaRoster}
+          </ButtonLink>
+        )
+      }
+      tone={next ? (next.status === "attention" ? "warning" : "default") : "done"}
+      aside={
+        administrativeComplete && admin.length === 0 ? undefined : (
+          <ProgressMeter
+            done={done}
+            total={admin.length}
+            size="lg"
+            label={it.schoolChecklistCount.replace("{done}", String(done)).replace("{total}", String(admin.length))}
+            caption={it.repNextProgress}
+          />
+        )
+      }
+    />
+  );
+}
 
 export function RepresentativeDashboard({
   schoolName,
@@ -65,120 +134,168 @@ export function RepresentativeDashboard({
   counts,
   roster,
   teams,
-  teamPaymentDue,
-  unreadCount,
   unread,
-  workspace,
+  own,
   staffUsed,
   coachMissing,
   coachName,
   canChooseRole,
   activeCategory,
+  schoolChecklist,
 }: Props) {
   const distinctTeam = teamName.trim().toLowerCase() !== schoolName.trim().toLowerCase();
-  const actions = representativeNowActions({
-    counts,
-    rows: roster,
-    unreadCount,
-    teamPaymentDue,
-    coachMissing,
-  });
   const location = schoolCity ? `${schoolName} · ${schoolCity}` : schoolName;
-  const ownWorkspace = workspace && workspace.registration.teamId === teamId ? workspace : null;
-
+  const causes = summarizeRosterCauses(roster);
+  const activeCauses = CAUSES.filter((cause) => causes[cause.filter] > 0);
   return (
     <div className={styles.canvas}>
       <PageHeader
         kicker={`${competitionName} · ${editionName}`}
-        title={schoolName}
-        description={distinctTeam ? `${teamName} · ${location}` : location}
+        title={distinctTeam ? teamName : schoolName}
+        description={distinctTeam ? location : schoolCity ?? undefined}
+        actions={
+          <div className={styles.headerActions}>
+            <WindowChip edition={editionWindow} />
+            <TeamSwitcher teams={teams} selectedId={teamId} />
+          </div>
+        }
       />
-      <TeamSwitcher teams={teams} selectedId={teamId} />
-      <WindowNotice edition={editionWindow} />
+      {windowOpen ? null : <WindowNotice edition={editionWindow} />}
 
-      <section className={styles.section}>
-        {canChooseRole ? <RepresentativeRoleForm teamId={teamId} /> : null}
-        {activeCategory && ownWorkspace ? (
-          <>
-            <h2>{it.repRoleTitle}</h2>
-            <p className={styles.lead}>
-              {activeCategory === "STAFF" ? it.repRoleActiveStaff : it.repRoleActivePlayer}
-            </p>
-            <RepresentativeRegistration teamId={teamId} category={activeCategory} workspace={ownWorkspace} />
-          </>
-        ) : canChooseRole ? null : (
-          <>
-            <h2>{it.repRoleTitle}</h2>
-            <p className={styles.lead}>{it.repRoleNoneHelp}</p>
-          </>
-        )}
-      </section>
+      <NextStep {...schoolChecklist} />
 
-      <section className={styles.section}>
-        <h2>{it.areaTeamStatus}</h2>
-        <RosterStrip counts={counts} />
-        <p className={styles.note}>
-          {it.staffCapacity.replace("{used}", String(staffUsed)).replace("{limit}", String(STAFF_SLOT_LIMIT))}
-          {coachName ? ` · ${it.coachCurrent}: ${coachName}` : ""}
-          {coachMissing ? ` · ${it.coachMissing}` : ""}
-        </p>
-      </section>
+      <div className={styles.grid}>
+        <div className={styles.main}>
+          <Panel
+            title={schoolChecklist.administrativeComplete ? it.schoolChecklistComplete : it.repChecklistTitle}
+            description={it.schoolChecklistLead}
+            icon="fileCheck"
+          >
+            <SchoolChecklist items={schoolChecklist.items} />
+          </Panel>
 
-      <section className={styles.section}>
-        {windowOpen ? (
-          <TeamLinkPanel url={joinUrl} teamName={teamName} title={it.areaInviteTitle} help={it.areaInviteHelp}>
-            <p className={styles.progress}>
-              {it.areaInviteProgress.replace("{done}", String(counts.ok)).replace("{total}", String(counts.total))}
-            </p>
-            <p className={styles.breakdown}>
-              {it.areaInviteBreakdown
-                .replace("{progress}", String(counts.inProgress))
-                .replace("{invited}", String(counts.invited))
-                .replace("{attention}", String(counts.attention))}
-            </p>
-          </TeamLinkPanel>
-        ) : (
-          <>
-            <h2>{it.areaInviteTitle}</h2>
-            <p className={styles.lead}>{it.areaInviteClosed}</p>
-          </>
-        )}
-      </section>
+          {canChooseRole ? (
+            <Panel icon="user">
+              <RepresentativeRoleForm teamId={teamId} />
+            </Panel>
+          ) : (
+            <Panel
+              title={it.repRoleTitle}
+              description={
+                activeCategory && own
+                  ? activeCategory === "STAFF"
+                    ? it.repRoleActiveStaff
+                    : it.repRoleActivePlayer
+                  : it.repRoleNoneHelp
+              }
+              icon="user"
+            >
+              {activeCategory && own ? (
+                <RepresentativeRegistration teamId={teamId} category={activeCategory} own={own} />
+              ) : null}
+            </Panel>
+          )}
+        </div>
 
-      <section className={styles.section}>
-        <h2>{it.areaNowTitle}</h2>
-        {actions.length === 0 ? (
-          <p className={`${styles.note} ${styles.ok}`}>
-            {counts.total === 0 ? it.areaNowEmpty : it.areaNowOk}
-          </p>
-        ) : (
-          <ul className={styles.actions}>
-            {actions.map((action) => (
-              <li key={action.id}>
-                <Link href={action.href}>
-                  {ACTION_COPY[action.id]?.replace("{count}", String(action.count)) ?? action.id}
-                </Link>
+        <aside className={styles.side} aria-label={it.areaTeamStatus}>
+          <Panel
+            title={it.repRosterPanel}
+            description={
+              counts.total === 0
+                ? it.repRosterEmpty
+                : it.repRosterLead.replace("{ok}", String(counts.ok)).replace("{total}", String(counts.total))
+            }
+            icon="users"
+            action={
+              <ButtonLink href="/squadra" variant="ghost">
+                {it.repNextCtaRoster}
+              </ButtonLink>
+            }
+          >
+            <nav className={styles.tiles} aria-label={it.areaTeamStatus}>
+              {STAT_TILES.map((tile) => {
+                const value = tile.count(counts);
+                return (
+                  <Link
+                    key={tile.filter}
+                    href={rosterFilterHref(tile.filter)}
+                    className={styles.tile}
+                    data-tone={value > 0 ? tile.tone : undefined}
+                  >
+                    <strong>{value}</strong>
+                    <span>{tile.label}</span>
+                  </Link>
+                );
+              })}
+            </nav>
+            {activeCauses.length > 0 ? (
+              <nav className={styles.causes} aria-label={it.rosterCauseNav}>
+                <span className={styles.causesLabel}>{it.rosterCauseNav}</span>
+                {activeCauses.map((cause) => (
+                  <Link key={cause.filter} href={rosterFilterHref(cause.filter)} className={styles.cause}>
+                    {cause.label}
+                    <span>{causes[cause.filter]}</span>
+                  </Link>
+                ))}
+              </nav>
+            ) : null}
+            {counts.withdrawn > 0 ? (
+              <Link href={rosterFilterHref("withdrawn")} className={styles.quietLink}>
+                {it.rosterCountsWithdrawn}: {counts.withdrawn}
+              </Link>
+            ) : null}
+            <ul className={styles.facts}>
+              <li>
+                <Icon name="users" size={16} />
+                {it.repStaffLine.replace("{used}", String(staffUsed)).replace("{limit}", String(STAFF_SLOT_LIMIT))}
               </li>
-            ))}
-          </ul>
-        )}
-      </section>
+              {coachName || coachMissing ? (
+                <li data-warn={coachMissing ? "" : undefined}>
+                  <Icon name={coachMissing ? "alert" : "stopwatch"} size={16} />
+                  {coachName ? it.repCoachLine.replace("{name}", coachName) : it.repCoachMissingShort}
+                </li>
+              ) : null}
+            </ul>
+          </Panel>
 
-      {unread.length > 0 ? (
-        <section className={styles.section}>
-          <h2>{it.navCommunications}</h2>
-          <ul className={styles.unreadList}>
-            {unread.map((item) => (
-              <li key={item.id}>
-                <Link href="/area/comunicazioni">
-                  <strong>{item.title}</strong>
-                  <p>{item.body}</p>
+          <Panel
+            title={it.repLinkPanel}
+            description={windowOpen ? it.areaInviteHelp : it.areaInviteClosed}
+            icon="link"
+            tone={windowOpen && counts.total === 0 ? "accent" : "default"}
+          >
+            {windowOpen ? <TeamLinkPanel url={joinUrl} teamName={teamName} /> : null}
+            <Link href="/squadra/inviti" className={styles.quietLink}>
+              {it.repLinkManage}
+              <Icon name="chevronRight" size={16} />
+            </Link>
+          </Panel>
+
+          {unread.length > 0 ? (
+            <Panel
+              title={it.repUnreadPanel}
+              icon="inbox"
+              flush
+              action={
+                <Link href="/area/comunicazioni" className={styles.quietLink}>
+                  {it.repUnreadAll}
                 </Link>
-              </li>
-            ))}
-          </ul>
-        </section>
-      ) : null}
+              }
+            >
+              <ul className={styles.unreadList}>
+                {unread.map((item) => (
+                  <li key={item.id}>
+                    <Link href="/area/comunicazioni">
+                      <strong>{item.title}</strong>
+                      <p>{item.body}</p>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </Panel>
+          ) : null}
+        </aside>
+      </div>
     </div>
   );
 }

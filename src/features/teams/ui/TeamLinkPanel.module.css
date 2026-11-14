@@ -1,0 +1,55 @@
+.root {
+  display: grid;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.field {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+  min-height: 3rem;
+  padding: var(--space-2) var(--space-4);
+  background: var(--color-surface-inset);
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--radius-md);
+}
+
+.glyph {
+  flex-shrink: 0;
+  color: var(--color-accent);
+}
+
+.url {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--text-sm);
+  color: var(--color-text);
+  user-select: all;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.feedback {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+.feedback:empty {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .actions > :global(*) {
+    flex: 1 1 auto;
+  }
+}

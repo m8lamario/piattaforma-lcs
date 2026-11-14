@@ -22,6 +22,8 @@ import {
 import { isTerminalRegistrationStatus } from "@/features/registrations/domain/requirements";
 import { isPartnerBoxVisible } from "@/features/consents/data/partners";
 import { dispatchOutboundEmail } from "@/features/emails/data/dispatch";
+import { userEmailResendIdempotencyKey } from "@/features/emails/domain/delivery";
+import { loadUserEmailDelivery, USER_EMAIL_OPS } from "@/features/emails/data/userDelivery";
 import { GUARDIAN_LINK_DAYS, GUARDIAN_REMINDER_DAYS, appOrigin } from "@/shared/config/app";
 import { writeAuditLog } from "@/shared/lib/audit";
 import { prisma } from "@/shared/lib/prisma";
@@ -179,6 +181,82 @@ export async function requestEnrollmentAuthorization(input: {
   });
 
   return { ok: true as const, authorizationId: authorization.id, reused: false as const };
+}
+
+export async function resendEnrollmentAuthorization(input: {
+  registrationId: string;
+  playerUserId: string;
+}) {
+  const authorization = await prisma.guardianAuthorization.findFirst({
+    where: {
+      registrationId: input.registrationId,
+      authorizationType: "ENROLLMENT",
+      status: { in: ["PENDING", "OPENED"] },
+    },
+    orderBy: { requestedAt: "desc" },
+    include: { guardian: true },
+  });
+  if (!authorization?.guardian.email) {
+    return { ok: false as const, reason: "not_found" as const };
+  }
+
+  const delivery = await loadUserEmailDelivery(
+    USER_EMAIL_OPS.guardianAuthorize(authorization.id, authorization.guardian.email),
+  );
+  if (!delivery.decision.allow) {
+    return { ok: false as const, reason: delivery.decision.reason, delivery };
+  }
+
+  const registration = await prisma.registration.findUnique({
+    where: { id: input.registrationId },
+    include: {
+      playerProfile: { select: { firstName: true, lastName: true, userId: true } },
+      team: { include: { edition: { include: { competition: true } } } },
+    },
+  });
+  if (!registration) return { ok: false as const, reason: "not_found" as const };
+
+  const issued = await issueLinkToken({
+    purpose: "AUTHORIZE",
+    guardianId: authorization.guardianId,
+    playerProfileId: authorization.playerProfileId,
+    registrationId: input.registrationId,
+    authorizationId: authorization.id,
+  });
+  await prisma.guardianAuthorization.update({
+    where: { id: authorization.id },
+    data: { tokenId: issued.row.id },
+  });
+  const tokenPlain = issued.token;
+  const tokenRow = issued.row;
+
+  const nonce = tokenRow.id;
+  const dispatched = await dispatchOutboundEmail({
+    idempotencyKey: userEmailResendIdempotencyKey(`guardian-authorize:${nonce}`),
+    purpose: "GUARDIAN_AUTHORIZE",
+    templateKey: "GUARDIAN_AUTHORIZE",
+    to: authorization.guardian.email,
+    userId: input.playerUserId,
+    recipientKind: "GUARDIAN",
+    variables: {
+      title: it.emailGuardianAuthorizeSubject,
+      playerName: `${registration.playerProfile.firstName} ${registration.playerProfile.lastName}`.trim(),
+      teamName: `${registration.team.edition.competition.name} — ${registration.team.edition.name}`,
+      confirmUrl: guardianAuthorizeUrl(tokenPlain),
+      scadenza: formatExpiry(tokenRow.expiresAt),
+      summary: it.emailGuardianAuthorizeSummary,
+    },
+    sourceEntityType: "GuardianAuthorization",
+    sourceEntityId: authorization.id,
+    actorUserId: input.playerUserId,
+  });
+  if (dispatched.status === "FAILED") {
+    return { ok: false as const, reason: "failed" as const, authorizationId: authorization.id };
+  }
+  const next = await loadUserEmailDelivery(
+    USER_EMAIL_OPS.guardianAuthorize(authorization.id, authorization.guardian.email),
+  );
+  return { ok: true as const, authorizationId: authorization.id, delivery: next };
 }
 
 export async function requestPublicationAuthorization(input: {
@@ -790,7 +868,7 @@ export async function maybeSendGuardianReminder(registrationId: string) {
   const playerName = `${pending.registration.playerProfile.firstName} ${pending.registration.playerProfile.lastName}`.trim();
   await dispatchOutboundEmail({
     idempotencyKey: `guardian-reminder:${issued.row.id}`,
-    purpose: pending.purpose === "PUBLICATION" ? "CONSENT_C1" : "GUARDIAN_AUTHORIZE",
+    purpose: pending.purpose === "PUBLICATION" ? "CONSENT_C1_REMINDER" : "GUARDIAN_REMINDER",
     templateKey: pending.purpose === "PUBLICATION" ? "CONSENT_C1" : "GUARDIAN_AUTHORIZE",
     to: pending.guardian.email,
     userId: pending.registration.playerProfile.userId,

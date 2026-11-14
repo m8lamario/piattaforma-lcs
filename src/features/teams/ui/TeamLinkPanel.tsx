@@ -2,14 +2,13 @@
 
 import { useState, useSyncExternalStore, type ReactNode } from "react";
 import { Button } from "@/shared/ui/Button";
+import { Icon } from "@/shared/ui/Icon";
 import { it } from "@/shared/i18n/it";
-import styles from "./InviteForm.module.css";
+import styles from "./TeamLinkPanel.module.css";
 
 type Props = {
   url: string;
   teamName: string;
-  title?: string;
-  help?: string;
   children?: ReactNode;
 };
 
@@ -21,7 +20,7 @@ function canShareSnapshot() {
   return typeof navigator !== "undefined" && typeof navigator.share === "function";
 }
 
-export function TeamLinkPanel({ url, teamName, title, help, children }: Props) {
+export function TeamLinkPanel({ url, teamName, children }: Props) {
   const [copied, setCopied] = useState(false);
   const canShare = useSyncExternalStore(subscribe, canShareSnapshot, () => false);
 
@@ -47,24 +46,25 @@ export function TeamLinkPanel({ url, teamName, title, help, children }: Props) {
   }
 
   return (
-    <section className={styles.card}>
-      <h2>{title ?? it.teamLinkTitle}</h2>
-      <p>{help ?? it.teamLinkHelp.replace("{team}", teamName)}</p>
-      <div className={styles.success}>
-        <p>{copied ? it.teamLinkCopied : it.copyJoinLink}</p>
+    <div className={styles.root}>
+      <div className={styles.field}>
+        <Icon name="link" size={18} className={styles.glyph} />
         <code className={styles.url}>{url}</code>
-        <div className={styles.linkActions}>
-          <Button type="button" onClick={copyLink}>
-            {copied ? it.copiedShort : it.copyJoinLink}
-          </Button>
-          {canShare ? (
-            <Button type="button" variant="secondary" onClick={shareLink}>
-              {it.shareJoinLink}
-            </Button>
-          ) : null}
-        </div>
       </div>
+      <div className={styles.actions}>
+        <Button type="button" variant={copied ? "success" : "primary"} icon={copied ? "check" : "copy"} onClick={copyLink}>
+          {copied ? it.copiedShort : it.copyJoinLink}
+        </Button>
+        {canShare ? (
+          <Button type="button" variant="secondary" icon="share" onClick={shareLink}>
+            {it.shareJoinLink}
+          </Button>
+        ) : null}
+      </div>
+      <p className={styles.feedback} role="status" aria-live="polite">
+        {copied ? it.teamLinkCopied : ""}
+      </p>
       {children}
-    </section>
+    </div>
   );
 }

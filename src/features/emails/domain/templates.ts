@@ -83,6 +83,11 @@ export function defaultEmailTemplates(): Record<EmailTemplateKey, EmailTemplateS
       subject: it.emailReminderSubject,
       textBody: it.emailReminderText,
     },
+    MEDICAL_DEADLINE: {
+      key: "MEDICAL_DEADLINE",
+      subject: it.emailMedicalDeadlineSubject,
+      textBody: it.emailMedicalDeadlineText,
+    },
     PAYMENT_SUCCEEDED: {
       key: "PAYMENT_SUCCEEDED",
       subject: it.emailPaymentSucceededSubject,

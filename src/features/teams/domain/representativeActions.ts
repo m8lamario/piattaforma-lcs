@@ -1,13 +1,6 @@
-import { rosterFilterHref, unpublishedCount, type RosterCounts, type RosterRow } from "./roster";
+import { rosterFilterHref, type RosterCounts } from "./roster";
 
-export type RepresentativeActionId =
-  | "coach"
-  | "attention"
-  | "invited"
-  | "inProgress"
-  | "publication"
-  | "payment"
-  | "unread";
+export type RepresentativeActionId = "invited" | "unread";
 
 export type RepresentativeAction = {
   id: RepresentativeActionId;
@@ -18,23 +11,9 @@ export type RepresentativeAction = {
 
 export function representativeNowActions(input: {
   counts: RosterCounts;
-  rows: Pick<RosterRow, "publication">[];
   unreadCount: number;
-  teamPaymentDue?: boolean;
-  coachMissing?: boolean;
 }): RepresentativeAction[] {
   const actions: RepresentativeAction[] = [];
-  if (input.coachMissing) {
-    actions.push({ id: "coach", href: "/squadra#allenatore", count: 1, urgency: "high" });
-  }
-  if (input.counts.attention > 0) {
-    actions.push({
-      id: "attention",
-      href: rosterFilterHref("attention"),
-      count: input.counts.attention,
-      urgency: "high",
-    });
-  }
   if (input.counts.invited > 0) {
     actions.push({
       id: "invited",
@@ -42,26 +21,6 @@ export function representativeNowActions(input: {
       count: input.counts.invited,
       urgency: "high",
     });
-  }
-  if (input.counts.inProgress > 0) {
-    actions.push({
-      id: "inProgress",
-      href: rosterFilterHref("inProgress"),
-      count: input.counts.inProgress,
-      urgency: "medium",
-    });
-  }
-  const unpublished = unpublishedCount(input.rows);
-  if (unpublished > 0) {
-    actions.push({
-      id: "publication",
-      href: rosterFilterHref("publication"),
-      count: unpublished,
-      urgency: "medium",
-    });
-  }
-  if (input.teamPaymentDue) {
-    actions.push({ id: "payment", href: "/squadra", count: 1, urgency: "high" });
   }
   if (input.unreadCount > 0) {
     actions.push({

@@ -10,6 +10,8 @@ import { getActorByUserId, representativeTeamIds } from "@/shared/authz/getActor
 import { writeAuditLog } from "@/shared/lib/audit";
 import { logger } from "@/shared/lib/logger";
 import { dispatchOutboundEmail } from "@/features/emails/data/dispatch";
+import { failUserEmailResend, loadUserEmailDelivery, USER_EMAIL_OPS } from "@/features/emails/data/userDelivery";
+import { userEmailResendIdempotencyKey } from "@/features/emails/domain/delivery";
 import { BULK_INVITE_MAX, TEAM_COOKIE, appOrigin } from "@/shared/config/app";
 import { shouldUseSecureCookie, teamCookieOptions } from "@/shared/cookies/options";
 import {
@@ -167,8 +169,8 @@ export async function createInviteAction(
       nome_squadra: invite.team.name,
       redeemUrl,
     },
-    sourceEntityType: "PlayerInvite",
-    sourceEntityId: invite.id,
+    sourceEntityType: "TeamPlayerInvite",
+    sourceEntityId: invite.teamId,
     actorUserId: session.user.id,
   });
 
@@ -677,6 +679,8 @@ export async function resendInviteAction(
   }
   const existing = await getPlayerInviteForTeam(inviteId, teamId);
   if (!existing) return fail("INVITE_NOT_FOUND");
+  const delivery = await loadUserEmailDelivery(USER_EMAIL_OPS.playerInvite(teamId, existing.email));
+  if (!delivery.decision.allow) return failUserEmailResend(delivery.decision.reason);
   const rateKey = await clientKey(`invite:${access.session!.user!.id}`);
   if (!(await consumeRateLimit(rateKey, RATE_LIMITS.inviteCreate.limit, RATE_LIMITS.inviteCreate.windowMs))) {
     return fail("INVITE_RATE_LIMITED");
@@ -689,17 +693,18 @@ export async function resendInviteAction(
     invitedByUserId: access.session!.user!.id,
     origin: appOrigin(),
   });
-  await dispatchOutboundEmail({
-    idempotencyKey: `invite:${invite.id}:create`,
+  const dispatched = await dispatchOutboundEmail({
+    idempotencyKey: userEmailResendIdempotencyKey(`invite:${teamId}:${existing.email}:${invite.id}`),
     purpose: "player-invite",
     templateKey: "player-invite",
     to: existing.email,
     recipientKind: "USER",
     variables: { teamName: invite.team.name, nome_squadra: invite.team.name, redeemUrl },
-    sourceEntityType: "PlayerInvite",
-    sourceEntityId: invite.id,
+    sourceEntityType: "TeamPlayerInvite",
+    sourceEntityId: teamId,
     actorUserId: access.session!.user!.id,
   });
+  if (dispatched.status === "FAILED") return fail("EMAIL_SEND_FAILED");
   await writeAuditLog({
     actorUserId: access.session!.user!.id,
     action: "INVITE_RESEND",
@@ -764,8 +769,8 @@ export async function bulkInviteAction(
       to: row.email,
       recipientKind: "USER",
       variables: { teamName: invite.team.name, nome_squadra: invite.team.name, redeemUrl },
-      sourceEntityType: "PlayerInvite",
-      sourceEntityId: invite.id,
+      sourceEntityType: "TeamPlayerInvite",
+      sourceEntityId: teamId,
       actorUserId: access.session!.user!.id,
     });
     created += 1;
@@ -782,13 +787,20 @@ export async function bulkInviteAction(
   return { created, errors };
 }
 
-export async function nudgeRegistrationAction(formData: FormData) {
+export async function nudgeRegistrationAction(
+  _prev: ActionFailure | undefined,
+  formData: FormData,
+): Promise<ActionFailure | { ok: true }> {
   const teamId = String(formData.get("teamId") ?? "");
   const userId = String(formData.get("userId") ?? "");
   const access = await requireTeamAction(teamId, "team:invite");
-  if (isDenied(access)) return;
+  if (isDenied(access)) return access;
+  const rateKey = await clientKey(`nudge:${access.session.user!.id}`);
+  if (!(await consumeRateLimit(rateKey, RATE_LIMITS.registrationNudge.limit, RATE_LIMITS.registrationNudge.windowMs))) {
+    return fail("RATE_LIMITED");
+  }
   const workspace = await loadPlayerWorkspace(userId);
-  if (!workspace || workspace.registration.teamId !== teamId) return;
+  if (!workspace || workspace.registration.teamId !== teamId) return fail("FORBIDDEN_TEAM_MANAGE");
   const pending = workspace.checklist
     .filter((item) => item.status === "todo" || item.status === "attention")
     .map((item) => item.code);
@@ -807,6 +819,7 @@ export async function nudgeRegistrationAction(formData: FormData) {
     metadata: { teamId },
   });
   revalidatePath("/squadra");
+  return { ok: true as const };
 }
 
 export async function updateRosterRowAction(formData: FormData) {

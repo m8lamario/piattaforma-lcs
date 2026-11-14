@@ -7,7 +7,17 @@ import { parseDateOnly } from "@/features/players/domain/dates";
 import { guardianSchema } from "@/features/players/schemas/guardian";
 import { personalDataSchema, staffPersonalDataSchema, type PersonalDataInput } from "@/features/players/schemas/personal";
 import { loadPlayerWorkspace, persistRegistrationStatus, saveGuardianProfile, savePersonalProfile } from "@/features/registrations/data/workspace";
-import { requestEnrollmentAuthorization } from "@/features/consents/data/guardianAuth";
+import {
+  latestEnrollmentAuthorization,
+  requestEnrollmentAuthorization,
+  resendEnrollmentAuthorization,
+} from "@/features/consents/data/guardianAuth";
+import {
+  failUserEmailResend,
+  loadUserEmailDelivery,
+  serializeEmailDelivery,
+  USER_EMAIL_OPS,
+} from "@/features/emails/data/userDelivery";
 import { selfAsGuardianReason } from "@/features/consents/domain/guardianAuth";
 import { nextStepAfter } from "@/features/registrations/domain/wizard";
 import { workspaceWriteCode } from "@/features/registrations/domain/writeGate";
@@ -185,6 +195,21 @@ export async function saveGuardianAction(
   }
 
   const trace = await userAgentAndIp();
+  const previousSecondary = access.workspace.secondGuardian?.email?.trim().toLowerCase() ?? "";
+  const nextSecondary = parsed.data.secondEmail?.trim().toLowerCase() ?? "";
+  let consumeSecondaryEmailCorrection = true;
+  if (
+    parsed.data.g3 === "OTHER_PARENT" &&
+    previousSecondary &&
+    nextSecondary &&
+    previousSecondary !== nextSecondary
+  ) {
+    const previousDelivery = await loadUserEmailDelivery(
+      USER_EMAIL_OPS.guardianPublication(access.workspace.registration.id, previousSecondary),
+    );
+    consumeSecondaryEmailCorrection =
+      previousDelivery.state === "accepted" || previousDelivery.state === "delivered";
+  }
   const saved = await saveGuardianProfile(access.session.user!.id, {
     firstName: parsed.data.firstName,
     lastName: parsed.data.lastName,
@@ -195,6 +220,7 @@ export async function saveGuardianAction(
     secondFirstName: parsed.data.secondFirstName,
     secondLastName: parsed.data.secondLastName,
     secondEmail: parsed.data.secondEmail,
+    consumeSecondaryEmailCorrection,
     ...trace,
   });
   if (!saved.ok) {
@@ -207,15 +233,21 @@ export async function saveGuardianAction(
   const updated = await loadPlayerWorkspace(access.session.user!.id);
   if (updated) {
     await persistRegistrationStatus(updated.registration.id, updated.projectedStatus);
-    await requestEnrollmentAuthorization({
-      registrationId: updated.registration.id,
-      playerProfileId: updated.profile.id,
-      playerUserId: access.session.user!.id,
-      guardianId: saved.primaryId,
-      guardianEmail: parsed.data.email,
-      playerName: `${updated.profile.firstName} ${updated.profile.lastName}`.trim(),
-      tournamentName: `${updated.registration.competitionName} — ${updated.registration.editionName}`,
-    });
+    const previousEmail = access.workspace.guardian?.email?.trim().toLowerCase() ?? "";
+    const nextEmail = parsed.data.email.trim().toLowerCase();
+    const openAuth = await latestEnrollmentAuthorization(updated.registration.id);
+    const open = openAuth && (openAuth.status === "PENDING" || openAuth.status === "OPENED");
+    if (!open || previousEmail !== nextEmail) {
+      await requestEnrollmentAuthorization({
+        registrationId: updated.registration.id,
+        playerProfileId: updated.profile.id,
+        playerUserId: access.session.user!.id,
+        guardianId: saved.primaryId,
+        guardianEmail: parsed.data.email,
+        playerName: `${updated.profile.firstName} ${updated.profile.lastName}`.trim(),
+        tournamentName: `${updated.registration.competitionName} — ${updated.registration.editionName}`,
+      });
+    }
   }
 
   await writeAuditLog({
@@ -229,4 +261,41 @@ export async function saveGuardianAction(
   revalidatePath("/area");
   revalidatePath("/area/registrazione");
   redirectAfterSave(parsed.data.intent, "tutore", updated?.checklist ?? access.workspace.checklist);
+}
+
+export async function resendGuardianAuthorizationAction(
+  prev: ActionFailure | { sent: true; delivery: ReturnType<typeof serializeEmailDelivery> } | undefined,
+): Promise<ActionFailure | { sent: true; delivery: ReturnType<typeof serializeEmailDelivery> }> {
+  void prev;
+  const access = await requireWritableRegistration();
+  if (access.failure || !access.workspace) {
+    return access.failure ?? fail("FORBIDDEN_REGISTRATION_WRITE");
+  }
+  if (!access.workspace.evidence.isMinor) {
+    return fail("REGISTRATION_STEP_NOT_REQUIRED");
+  }
+  const rateKey = await clientKey(`guardian-resend:${access.session.user!.id}`);
+  if (!(await consumeRateLimit(rateKey, RATE_LIMITS.profileWrite.limit, RATE_LIMITS.profileWrite.windowMs))) {
+    return fail("RATE_LIMITED");
+  }
+  const result = await resendEnrollmentAuthorization({
+    registrationId: access.workspace.registration.id,
+    playerUserId: access.session.user!.id,
+  });
+  if (!result.ok) {
+    if (result.reason === "not_found") return fail("GUARDIAN_AUTHORIZATION_REQUIRED");
+    if (result.reason === "failed") return fail("EMAIL_SEND_FAILED");
+    if (
+      result.reason === "cooldown" ||
+      result.reason === "exhausted" ||
+      result.reason === "undeliverable" ||
+      result.reason === "sending" ||
+      result.reason === "blocked"
+    ) {
+      return failUserEmailResend(result.reason);
+    }
+    return fail("SYSTEM_UNEXPECTED");
+  }
+  revalidatePath("/area/registrazione/tutore");
+  return { sent: true, delivery: serializeEmailDelivery(result.delivery) };
 }
