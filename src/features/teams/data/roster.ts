@@ -1,17 +1,22 @@
 import { prisma } from "@/shared/lib/prisma";
 import { isMinor, needsMediaAgreement } from "@/features/players/domain/age";
-import { latestChoices, publicationFlags } from "@/features/consents/domain/boxes";
+import { g3Value, latestChoices, mediaBoxesRecorded, privacyBoxesComplete, publicationFlags } from "@/features/consents/domain/boxes";
+import { isPartnerBoxVisible } from "@/features/consents/data/partners";
+import { isMediaComplete, isPrivacyPackComplete, type CurrentConsent } from "@/features/consents/domain/pack";
+import { hasCompletePersonalData, hasMinorGuardianRequirement } from "@/features/players/domain/personal";
+import { isMedicalExpired } from "@/features/documents/domain/retention";
+import { projectSportEligibility } from "@/features/registrations/domain/eligibility";
 import { isPaymentCovered } from "@/features/registrations/domain/requirements";
 import { staffOccupiesSlot } from "@/features/teams/domain/staff";
-import { toRosterRow, toTeammateRow } from "@/features/teams/domain/roster";
+import { toRosterRow, toTeammateRow, type RosterGuardianState } from "@/features/teams/domain/roster";
 
 export async function listTeamRoster(teamId: string) {
-  const [team, registrations, memberships] = await Promise.all([
+  const [team, registrations, memberships, partnersPublished] = await Promise.all([
     prisma.team.findUnique({
       where: { id: teamId },
       select: {
         coachRegistrationId: true,
-        edition: { select: { paymentMode: true } },
+        edition: { select: { paymentMode: true, startsAt: true } },
         payments: {
           where: { registrationId: null, status: "SUCCEEDED" },
           select: { id: true },
@@ -23,18 +28,47 @@ export async function listTeamRoster(teamId: string) {
       where: { teamId },
       orderBy: { createdAt: "asc" },
       include: {
-        playerProfile: { select: { firstName: true, lastName: true, userId: true, birthDate: true, shirtSize: true } },
+        playerProfile: {
+          select: {
+            firstName: true,
+            lastName: true,
+            userId: true,
+            birthDate: true,
+            shirtSize: true,
+            fiscalCode: true,
+            phone: true,
+            user: { select: { emailVerified: true } },
+            guardians: {
+              select: { firstName: true, lastName: true, relationship: true, email: true, phone: true, kind: true },
+            },
+          },
+        },
         documents: {
           where: { status: { not: "REPLACED" }, type: { code: "MEDICAL_CERTIFICATE" } },
-          select: { status: true },
+          select: { status: true, expiresAt: true, blobPurgedAt: true },
           take: 1,
           orderBy: { uploadedAt: "desc" },
         },
         payments: { select: { status: true } },
         consentChoices: { select: { code: true, accepted: true, value: true, createdAt: true } },
+        consentRecords: {
+          select: {
+            accepted: true,
+            legalDocumentVersion: {
+              select: { isCurrent: true, legalDocument: { select: { slug: true } } },
+            },
+          },
+        },
+        authorizations: {
+          where: { authorizationType: "ENROLLMENT" },
+          orderBy: { requestedAt: "desc" },
+          take: 1,
+          select: { status: true },
+        },
       },
     }),
     prisma.teamMembership.findMany({ where: { teamId } }),
+    isPartnerBoxVisible(),
   ]);
 
   const membershipByUser = new Map(memberships.map((row) => [row.userId, row]));
@@ -53,6 +87,52 @@ export async function listTeamRoster(teamId: string) {
         })),
       );
       const isStaff = registration.category === "STAFF";
+      const consents: CurrentConsent[] = registration.consentRecords.map((record) => ({
+        slug: record.legalDocumentVersion.legalDocument.slug,
+        versionId: record.legalDocumentVersion.legalDocument.slug,
+        isCurrent: record.legalDocumentVersion.isCurrent,
+        accepted: record.accepted,
+      }));
+      const enrollment = registration.authorizations[0] ?? null;
+      const primaryGuardian =
+        registration.playerProfile.guardians.find((row) => row.kind !== "SECONDARY") ??
+        registration.playerProfile.guardians[0] ??
+        null;
+      const secondaryGuardian = registration.playerProfile.guardians.find((row) => row.kind === "SECONDARY") ?? null;
+      const contactComplete = hasMinorGuardianRequirement({
+        primary: primaryGuardian,
+        secondaryEmail: secondaryGuardian?.email,
+        g3: g3Value(map),
+      });
+      const guardianState: RosterGuardianState = !isMinorPlayer
+        ? "na"
+        : enrollment?.status === "AUTHORIZED"
+          ? "authorized"
+          : enrollment?.status === "REFUSED"
+            ? "refused"
+            : enrollment || contactComplete
+              ? "pending"
+              : "none";
+      const medicalRow = registration.documents[0];
+      const medicalExpired = medicalRow?.status === "APPROVED" && isMedicalExpired(medicalRow.expiresAt);
+      const medicalStatus = isStaff ? null : medicalExpired ? "EXPIRED" : medicalRow?.status;
+      const mappedMedical =
+        medicalStatus === "APPROVED"
+          ? "approved"
+          : medicalStatus === "REJECTED"
+            ? "rejected"
+            : medicalStatus === "EXPIRED"
+              ? "expired"
+              : medicalStatus === "PENDING_REVIEW" || medicalStatus === "UPLOADED"
+                ? "pending"
+                : "none";
+      const eligibility = projectSportEligibility({
+        category: registration.category,
+        medicalStatus: mappedMedical,
+        medicalExpiresAt: medicalRow?.expiresAt ?? null,
+        hasFile: Boolean(medicalRow && !medicalRow.blobPurgedAt),
+        startsAt: team?.edition.startsAt ?? null,
+      });
       return toRosterRow({
         registrationId: registration.id,
         userId: registration.playerProfile.userId,
@@ -65,7 +145,7 @@ export async function listTeamRoster(teamId: string) {
         rosterRole: membership?.rosterRole,
         shirtSize: isStaff ? null : registration.playerProfile.shirtSize,
         registrationStatus: registration.status,
-        medicalStatus: isStaff ? null : registration.documents[0]?.status,
+        medicalStatus,
         paymentCovered: isPaymentCovered({
           mode: team?.edition.paymentMode ?? "PLAYER",
           playerSucceeded: registration.payments.some((payment) => payment.status === "SUCCEEDED"),
@@ -85,6 +165,14 @@ export async function listTeamRoster(teamId: string) {
           needsAgreement: birthDate ? needsMediaAgreement(birthDate) : false,
           map,
         }),
+        emailVerified: Boolean(registration.playerProfile.user.emailVerified),
+        guardianState,
+        personalDataComplete: hasCompletePersonalData(registration.playerProfile, { requireShirtSize: !isStaff }),
+        privacyComplete:
+          isPrivacyPackComplete(isMinorPlayer, consents) &&
+          privacyBoxesComplete(isMinorPlayer, partnersPublished, map, registration.category),
+        mediaComplete: isMediaComplete(true, mediaBoxesRecorded(isMinorPlayer, map) ? "submitted" : "none"),
+        sportEligible: eligibility.eligible,
       });
     })
     .filter((row) => Boolean(row.membershipId) && row.registrationStatus !== "REMOVED");

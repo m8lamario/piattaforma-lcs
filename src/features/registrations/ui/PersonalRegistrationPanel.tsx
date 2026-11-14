@@ -2,10 +2,10 @@ import type { ChecklistItem, MedicalEvidence, RegistrationStatus } from "@/featu
 import type { PublicationFlags } from "@/features/consents/domain/boxes";
 import { PublicationChips } from "@/features/consents/ui/PublicationChips";
 import { ChecklistLinks } from "@/features/registrations/ui/ChecklistLinks";
+import { ProgressMeter } from "@/shared/ui/ProgressMeter";
 import { StatusChip, type StatusTone } from "@/shared/ui/StatusChip";
 import { it } from "@/shared/i18n/it";
-import styles from "@/features/teams/ui/RepresentativeDashboard.module.css";
-import progress from "@/features/registrations/ui/Dashboard.module.css";
+import styles from "./PersonalRegistrationPanel.module.css";
 
 const STATUS_COPY: Record<RegistrationStatus, string> = {
   INVITED: it.statusINVITED,
@@ -39,17 +39,18 @@ const MEDICAL: Record<MedicalEvidence, string> = {
   expired: it.rosterMedicalExpired,
 };
 
-const SEG_CLASS: Record<ChecklistItem["status"], string | undefined> = {
-  complete: progress.seg_complete,
-  todo: progress.seg_todo,
-  attention: progress.seg_attention,
-  not_applicable: undefined,
+const SEGMENT_TONE: Record<ChecklistItem["status"], StatusTone> = {
+  complete: "complete",
+  todo: "todo",
+  attention: "attention",
+  not_applicable: "neutral",
 };
 
 type Props = {
   status: RegistrationStatus;
   checklist: ChecklistItem[];
   medicalStatus: MedicalEvidence;
+  sportEligible?: boolean;
   category?: "PLAYER" | "STAFF";
   publication?: PublicationFlags | null;
   shirtSizeDue?: boolean;
@@ -59,39 +60,45 @@ export function PersonalRegistrationPanel({
   status,
   checklist,
   medicalStatus,
+  sportEligible = true,
   category = "PLAYER",
   publication,
   shirtSizeDue = false,
 }: Props) {
   const visible = checklist.filter((item) => item.status !== "not_applicable");
   const doneCount = visible.filter((item) => item.status === "complete").length;
-  const settled = status === "APPROVED" || status === "WITHDRAWN" || status === "REMOVED";
+  const settled =
+    status === "WITHDRAWN" ||
+    status === "REMOVED" ||
+    (status === "APPROVED" && (category === "STAFF" || sportEligible));
   return (
-    <div className={styles.section}>
-      <div className={styles.personalChips}>
+    <div className={styles.panel}>
+      <div className={styles.chips}>
         <StatusChip tone={STATUS_TONE[status]}>{STATUS_COPY[status]}</StatusChip>
         <StatusChip tone="neutral">{category === "STAFF" ? it.categoryStaff : it.categoryPlayer}</StatusChip>
         {category === "STAFF" ? null : (
-          <StatusChip tone={medicalStatus === "approved" ? "complete" : medicalStatus === "none" ? "todo" : "attention"}>
-            {MEDICAL[medicalStatus]}
-          </StatusChip>
+          <>
+            <StatusChip tone={medicalStatus === "approved" ? "complete" : medicalStatus === "none" ? "todo" : "attention"}>
+              {MEDICAL[medicalStatus]}
+            </StatusChip>
+            <StatusChip tone={sportEligible ? "complete" : "attention"}>
+              {sportEligible ? it.medicalEligibilityYes : it.medicalEligibilityNo}
+            </StatusChip>
+          </>
         )}
         {publication ? <PublicationChips flags={publication} compact /> : null}
       </div>
-      <p className={styles.personalMeta}>
-        {settled
-          ? it.areaPersonalDone
-          : shirtSizeDue
-            ? it.shirtSizeBanner
-            : it.checklistProgress.replace("{done}", String(doneCount)).replace("{total}", String(visible.length))}
-      </p>
-      {settled ? null : (
+      {settled ? (
+        <p className={styles.meta}>{it.areaPersonalDone}</p>
+      ) : (
         <>
-          <div className={progress.segments} aria-hidden="true">
-            {visible.map((item) => (
-              <span key={item.code} className={`${progress.segment} ${SEG_CLASS[item.status] ?? ""}`} />
-            ))}
-          </div>
+          <ProgressMeter
+            done={doneCount}
+            total={visible.length}
+            label={it.checklistProgress.replace("{done}", String(doneCount)).replace("{total}", String(visible.length))}
+            caption={shirtSizeDue ? it.shirtSizeBanner : it.repNextProgress}
+            segments={visible.map((item) => SEGMENT_TONE[item.status])}
+          />
           <ChecklistLinks checklist={checklist} />
         </>
       )}

@@ -6,6 +6,8 @@ import { authorize } from "@/shared/authz/authorize";
 import { TeammatesList } from "@/features/teams/ui/TeammatesList";
 import { loadAppShell } from "@/shared/ui/loadAppShell";
 import { PageHeader } from "@/shared/ui/PageHeader";
+import { Panel } from "@/shared/ui/Panel";
+import { StatusChip } from "@/shared/ui/StatusChip";
 import { it } from "@/shared/i18n/it";
 import styles from "../comunicazioni/page.module.css";
 
@@ -35,7 +37,18 @@ export default async function PlayerTeamPage() {
         title={workspace?.registration.teamName ?? it.navPlayerTeam}
         description={it.teammatesHelp}
       />
-      <TeammatesList rows={rows} />
+      <Panel
+        title={it.navPlayerTeam}
+        icon="users"
+        flush
+        action={
+          rows.length > 0 ? (
+            <StatusChip tone="neutral">{it.teammatesCount.replace("{count}", String(rows.length))}</StatusChip>
+          ) : null
+        }
+      >
+        <TeammatesList rows={rows} />
+      </Panel>
     </main>
   );
 }

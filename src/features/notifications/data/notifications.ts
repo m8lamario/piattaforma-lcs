@@ -12,7 +12,7 @@ function metadataString(metadata: unknown, key: string): string | null {
   return typeof value === "string" ? value : null;
 }
 
-async function hasNotification(input: {
+export async function hasNotification(input: {
   userId: string;
   type: string;
   key: string;

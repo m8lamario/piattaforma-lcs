@@ -1,6 +1,39 @@
 import { dispatchOutboundEmail } from "@/features/emails/data/dispatch";
+import { userEmailResendIdempotencyKey } from "@/features/emails/domain/delivery";
 import { prisma } from "@/shared/lib/prisma";
 import { it } from "@/shared/i18n/it";
+
+function formatExpiry(value: Date) {
+  return value.toLocaleString("it-IT", { dateStyle: "long", timeStyle: "short" });
+}
+
+export async function dispatchSchoolAccessActivationEmail(input: {
+  request: { id: string; firstName: string; email: string; schoolName: string };
+  activateUrl: string;
+  expiresAt: Date;
+  actorUserId?: string;
+  userResend?: boolean;
+}) {
+  return dispatchOutboundEmail({
+    idempotencyKey: input.userResend
+      ? userEmailResendIdempotencyKey(`school-access:${input.request.id}:${input.expiresAt.getTime()}`)
+      : `school-access:${input.request.id}:approved`,
+    purpose: "SCHOOL_ACCESS_APPROVED",
+    templateKey: "SCHOOL_ACCESS_APPROVED",
+    to: input.request.email,
+    recipientKind: "USER",
+    variables: {
+      nome: input.request.firstName,
+      firstName: input.request.firstName,
+      schoolName: input.request.schoolName,
+      activateUrl: input.activateUrl,
+      scadenza: formatExpiry(input.expiresAt),
+    },
+    sourceEntityType: "SchoolRegistrationRequest",
+    sourceEntityId: input.request.id,
+    actorUserId: input.actorUserId,
+  });
+}
 
 export async function notifyStaffOfSchoolAccessRequest(input: {
   requestId: string;

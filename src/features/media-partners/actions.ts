@@ -220,6 +220,10 @@ export async function resendMediaPartnerActivationAction(_prev: ActionFailure | 
   const { session } = await requireMediaManager();
   const id = String(formData.get("id") ?? "");
   if (!id) return fail("MEDIA_PARTNER_NOT_FOUND");
+  const rateKey = await clientKey(`media-partner-resend:${session.user.id}`);
+  if (!(await consumeRateLimit(rateKey, RATE_LIMITS.mediaPartnerResend.limit, RATE_LIMITS.mediaPartnerResend.windowMs))) {
+    return fail("MEDIA_PARTNER_RATE_LIMITED");
+  }
 
   const result = await issueMediaPartnerActivation({ id, origin: appOrigin() });
   if (!result.ok) return fail(result.code);

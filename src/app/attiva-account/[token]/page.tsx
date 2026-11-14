@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { ActivationForm } from "@/features/school-access/ui/ActivationForm";
+import { SchoolAccessResendPanel } from "@/features/school-access/ui/SchoolAccessResendPanel";
+import { loadUserEmailDelivery, USER_EMAIL_OPS } from "@/features/emails/data/userDelivery";
 import {
   findSchoolAccessByActivationToken,
   inspectSchoolAccessActivation,
@@ -35,13 +37,29 @@ export default async function ActivateAccountPage({ params }: Props) {
   const outcome = inspectSchoolAccessActivation(found);
   if (outcome !== "ok" || !found) {
     const code = activationErrorCode(outcome === "ok" ? "invalid" : outcome);
+    const canResend = found && outcome === "expired";
+    const delivery = canResend
+      ? await loadUserEmailDelivery(USER_EMAIL_OPS.schoolActivate(found.id, found.email))
+      : null;
     return (
       <PublicShell>
         <main className={styles.main}>
           <section className={styles.sheet}>
             <h1>{it.schoolAccessActivateTitle}</h1>
             <p className={styles.lead}>{userMessage(code)}</p>
-            <ButtonLink href="/accedi">{it.ctaLogin}</ButtonLink>
+            {canResend && delivery ? (
+              <SchoolAccessResendPanel
+                email={found.email}
+                token={token}
+                pendingApproval={false}
+                deliveryState={delivery.state}
+                remainingResends={delivery.remainingResends}
+                contactSupport={delivery.contactSupport}
+                resendAvailableAt={delivery.resendAvailableAt?.toISOString() ?? null}
+              />
+            ) : (
+              <ButtonLink href="/accedi">{it.ctaLogin}</ButtonLink>
+            )}
           </section>
         </main>
       </PublicShell>

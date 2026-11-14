@@ -6,67 +6,60 @@
   align-self: start;
 }
 
+.headerActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-3);
+}
+
 .teamGrid {
   display: grid;
-  gap: var(--gap-canvas);
+  gap: var(--space-6);
   align-items: start;
 }
 
 .rosterSection {
-  width: 100%;
   display: grid;
-  gap: var(--space-6);
-}
-
-.capacity {
-  margin: 0;
-  color: var(--color-text-muted);
-  font-size: var(--text-sm);
+  gap: var(--space-5);
+  min-width: 0;
 }
 
 .sideRail {
   display: grid;
-  gap: var(--space-4);
+  gap: var(--space-6);
+  min-width: 0;
 }
 
 .sideCard {
-  background: var(--color-surface-raised);
-  border: 1px solid var(--color-hairline);
-  padding: var(--space-5);
-  display: grid;
-  gap: var(--space-4);
   position: sticky;
-  top: calc(var(--space-4) + 1px);
+  top: calc(var(--shell-sticky-top, 0px) + var(--space-4));
 }
 
-.invitesGrid {
-  display: grid;
-  gap: var(--gap-canvas);
-  align-items: start;
-}
-
-.formsCol {
-  display: grid;
-  gap: var(--space-6);
-  width: 100%;
-}
-
-.listCol {
-  width: 100%;
-}
-
-@media (min-width: 1024px) {
+@media (min-width: 1080px) {
   .teamGrid {
-    grid-template-columns: minmax(0, 1fr) minmax(19rem, 23rem);
-  }
-
-  .invitesGrid {
-    grid-template-columns: minmax(20rem, 25rem) minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr) minmax(18rem, 22rem);
   }
 }
 
-@media (max-width: 1023px) {
+@media (max-width: 1079px) {
   .sideCard {
     position: static;
+  }
+
+  .sideRail {
+    grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .main,
+  .teamGrid,
+  .sideRail {
+    gap: var(--space-4);
+  }
+
+  .headerActions > :global(a) {
+    flex: 1 1 100%;
   }
 }

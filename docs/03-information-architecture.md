@@ -109,11 +109,14 @@ Le liberatorie foto/video **non** sono un link minore in footer. Hanno uno step 
 
 Menu principale:
 
-1. **Panoramica** (`/area`) — squadra attiva, link di iscrizione, azioni richieste, eventuale iscrizione personale
-2. **Squadra** — Rosa (`/squadra`), stato iscrizioni (`/squadra?stato=open`), link (`/squadra/inviti`)
-3. **Comunicazioni** — archivio; le non lette compaiono anche in panoramica
-4. **Scuola** (`/squadra/scuola`) — istituto, referente, squadre/competizioni accessibili
-5. **Account**
+1. **Panoramica** (`/area`) — prossimo passo, cose da fare della squadra, riepilogo rosa, link di iscrizione, eventuale iscrizione personale
+2. **Rosa** (`/squadra`) — giocatori e staff, allenatore, quota squadra. Lo stato iscrizioni non è una pagina a parte: sono le schede filtro della rosa (`/squadra?stato=open|ok|invited|inProgress|attention|withdrawn`; le cause usano lo stesso parametro: `unverified`, `guardian`, `unpaid`, `medical`)
+3. **Inviti** (`/squadra/inviti`) — link di squadra (azione principale), invito per email o CSV, inviti inviati
+4. **Comunicazioni** — archivio; le non lette compaiono anche in panoramica
+5. **Scuola** (`/squadra/scuola`) — istituto, referente, squadre/competizioni accessibili
+6. **Account**
+
+Su mobile le prime cinque voci stanno nella barra in basso, le altre nel foglio “Menu”. Rosa e Inviti sono voci di primo livello: non c’è più una sotto-navigazione della squadra.
 
 `Consensi` compare solo se il rappresentante ha un’iscrizione da giocatore. `Compagni` non è nel menu del rappresentante: maglia e ruolo stanno nella rosa, unica fonte di verità (stato iscrizione, certificato, pubblicabilità). Il giocatore senza ruolo rappresentante continua a vedere i compagni in `/area/squadra` senza stato medico.
 

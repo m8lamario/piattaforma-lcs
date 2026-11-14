@@ -105,6 +105,7 @@ export function PersonalDataForm({
   const serverError = stuckWithoutIdentity ? undefined : state?.error;
 
   return (
+    <div className={fields.form}>
     <form className={fields.form} noValidate aria-busy={pending} onSubmit={(event) => event.preventDefault()}>
       {stuckWithoutIdentity ? (
         <IdentityConflictPanel registrationId={registrationId} showFormHint={false} section="alert" />
@@ -254,6 +255,7 @@ export function PersonalDataForm({
           </div>
         </fieldset>
       ) : null}
+    </form>
 
       {stuckWithoutIdentity ? (
         <IdentityConflictPanel registrationId={registrationId} showFormHint={false} section="recovery" />
@@ -277,6 +279,6 @@ export function PersonalDataForm({
           </>
         )}
       </div>
-    </form>
+    </div>
   );
 }

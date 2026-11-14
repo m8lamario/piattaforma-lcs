@@ -5,6 +5,9 @@ import { requirePageUser } from "@/shared/authz/requestIdentity";
 import { loadAppShell } from "@/shared/ui/loadAppShell";
 import { authorize } from "@/shared/authz/authorize";
 import { GuardianForm } from "@/features/players/ui/GuardianForm";
+import { GuardianEmailPanel } from "@/features/players/ui/GuardianEmailPanel";
+import { latestEnrollmentAuthorization } from "@/features/consents/data/guardianAuth";
+import { loadUserEmailDelivery, USER_EMAIL_OPS } from "@/features/emails/data/userDelivery";
 import { PersonalDataForm } from "@/features/players/ui/PersonalDataForm";
 import { loadPlayerWorkspace } from "@/features/registrations/data/workspace";
 import { isPaymentCovered, isTerminalRegistrationStatus } from "@/features/registrations/domain/requirements";
@@ -29,7 +32,9 @@ import { PlaceholderStep } from "@/features/registrations/ui/PlaceholderStep";
 import { SummaryStep } from "@/features/registrations/ui/SummaryStep";
 import { WizardShell } from "@/features/registrations/ui/WizardShell";
 import { WindowNotice } from "@/features/registrations/ui/WindowNotice";
+import { isRegistrationWindowOpen } from "@/features/registrations/domain/window";
 import { it } from "@/shared/i18n/it";
+import fields from "@/shared/ui/form.module.css";
 
 type Props = {
   params: Promise<{ step: string }>;
@@ -79,6 +84,12 @@ export default async function WizardStepPage({ params }: Props) {
       : raw === "liberatorie"
         ? await getCurrentLegalVersions([MEDIA_RELEASE_SLUG])
         : [];
+  const enrollmentAuth =
+    raw === "tutore" ? await latestEnrollmentAuthorization(workspace.registration.id) : null;
+  const guardianDelivery =
+    enrollmentAuth && workspace.guardian?.email
+      ? await loadUserEmailDelivery(USER_EMAIL_OPS.guardianAuthorize(enrollmentAuth.id, workspace.guardian.email))
+      : null;
   const toView = (slug: string) => {
     const version = legalVersions.find((entry) => entry.legalDocument.slug === slug);
     if (!version) return null;
@@ -106,37 +117,59 @@ export default async function WizardStepPage({ params }: Props) {
       break;
     case "tutore":
       body = (
-        <GuardianForm
-          defaults={{
-            firstName: workspace.guardian?.firstName ?? "",
-            lastName: workspace.guardian?.lastName ?? "",
-            relationship: workspace.guardian?.relationship ?? "GENITORE",
-            email: workspace.guardian?.email ?? "",
-            phone: workspace.guardian?.phone ?? "",
-            g3: workspace.g3,
-            secondFirstName: workspace.secondGuardian?.firstName ?? "",
-            secondLastName: workspace.secondGuardian?.lastName ?? "",
-            secondEmail: workspace.secondGuardian?.email ?? "",
-          }}
-        />
+        <>
+          <GuardianForm
+            defaults={{
+              firstName: workspace.guardian?.firstName ?? "",
+              lastName: workspace.guardian?.lastName ?? "",
+              relationship: workspace.guardian?.relationship ?? "GENITORE",
+              email: workspace.guardian?.email ?? "",
+              phone: workspace.guardian?.phone ?? "",
+              g3: workspace.g3,
+              secondFirstName: workspace.secondGuardian?.firstName ?? "",
+              secondLastName: workspace.secondGuardian?.lastName ?? "",
+              secondEmail: workspace.secondGuardian?.email ?? "",
+            }}
+          />
+          {guardianDelivery && workspace.guardian?.email ? (
+            <GuardianEmailPanel
+              email={workspace.guardian.email}
+              deliveryState={guardianDelivery.state}
+              remainingResends={guardianDelivery.remainingResends}
+              contactSupport={guardianDelivery.contactSupport}
+              resendAvailableAt={guardianDelivery.resendAvailableAt?.toISOString() ?? null}
+            />
+          ) : null}
+        </>
       );
       break;
-    case "certificato":
+    case "certificato": {
+      const deadline = workspace.sportEligibility.uploadDeadline;
+      const deadlineLabel = deadline
+        ? deadline.toLocaleDateString("it-IT", { dateStyle: "long" })
+        : null;
       body = (
-        <MedicalUploadForm
-          document={workspace.medicalDocument}
-          readOnly={Boolean(identity.view)}
-          allowFileOpen={canReadMedicalFile({
-            viewing: Boolean(identity.view),
-            viewerAllowed: authorize(identity.sessionActor, "document:read_file", {
-              ownerUserId: userId,
-              teamId: workspace.registration.teamId,
-            }).allow,
-            subjectAllowed: true,
-          })}
-        />
+        <>
+          <div className={`${fields.banner} ${fields.bannerInfo}`}>
+            <p>{deadlineLabel ? it.medicalStepBox.replace("{date}", deadlineLabel) : it.medicalStepBoxNoDate}</p>
+            <p className={fields.help}>{it.termsPointerMedical}</p>
+          </div>
+          <MedicalUploadForm
+            document={workspace.medicalDocument}
+            readOnly={Boolean(identity.view)}
+            allowFileOpen={canReadMedicalFile({
+              viewing: Boolean(identity.view),
+              viewerAllowed: authorize(identity.sessionActor, "document:read_file", {
+                ownerUserId: userId,
+                teamId: workspace.registration.teamId,
+              }).allow,
+              subjectAllowed: true,
+            })}
+          />
+        </>
       );
       break;
+    }
     case "privacy": {
       const documents = privacySlugs
         .map(toView)
@@ -251,15 +284,15 @@ export default async function WizardStepPage({ params }: Props) {
       break;
   }
 
+  const editionWindow = {
+    isActive: workspace.registration.isActive,
+    registrationOpensAt: workspace.registration.registrationOpensAt,
+    registrationClosesAt: workspace.registration.registrationClosesAt,
+  };
+
   return (
     <>
-      <WindowNotice
-        edition={{
-          isActive: workspace.registration.isActive,
-          registrationOpensAt: workspace.registration.registrationOpensAt,
-          registrationClosesAt: workspace.registration.registrationClosesAt,
-        }}
-      />
+      {isRegistrationWindowOpen(editionWindow) ? null : <WindowNotice edition={editionWindow} />}
       {!workspace.user.emailVerified ? <EmailVerifyNotice /> : null}
       <WizardShell step={raw} steps={steps} checklist={workspace.checklist}>
         {body}

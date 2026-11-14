@@ -36,7 +36,15 @@ export type IconName =
   | "trophy"
   | "stopwatch"
   | "fileCheck"
-  | "zap";
+  | "zap"
+  | "chevronRight"
+  | "chevronDown"
+  | "copy"
+  | "share"
+  | "link"
+  | "logout"
+  | "mail"
+  | "clock";
 
 const PATHS: Record<IconName, ReactNode> = {
   menu: (
@@ -254,6 +262,53 @@ const PATHS: Record<IconName, ReactNode> = {
   zap: (
     <>
       <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+    </>
+  ),
+  chevronRight: (
+    <>
+      <path d="M10 6.5 15.5 12 10 17.5" />
+    </>
+  ),
+  chevronDown: (
+    <>
+      <path d="M6.5 10 12 15.5 17.5 10" />
+    </>
+  ),
+  copy: (
+    <>
+      <rect x="8.5" y="8.5" width="11" height="11" rx="1.5" />
+      <path d="M15.5 8.5V5.5a1 1 0 0 0-1-1h-9a1 1 0 0 0-1 1v9a1 1 0 0 0 1 1h3" />
+    </>
+  ),
+  share: (
+    <>
+      <path d="M12 15V4.5" />
+      <path d="M8 8.5 12 4.5l4 4" />
+      <path d="M6.5 11.5h-1v8h13v-8h-1" />
+    </>
+  ),
+  link: (
+    <>
+      <path d="M10 14a3.5 3.5 0 0 0 5 0l3-3a3.5 3.5 0 0 0-5-5l-1 1" />
+      <path d="M14 10a3.5 3.5 0 0 0-5 0l-3 3a3.5 3.5 0 0 0 5 5l1-1" />
+    </>
+  ),
+  logout: (
+    <>
+      <path d="M14 5.5H6.5v13H14" />
+      <path d="M11 12h9M17 8.5l3.5 3.5-3.5 3.5" />
+    </>
+  ),
+  mail: (
+    <>
+      <rect x="3.5" y="6" width="17" height="12" rx="1.2" />
+      <path d="m4 7 8 6 8-6" />
+    </>
+  ),
+  clock: (
+    <>
+      <circle cx="12" cy="12" r="8" />
+      <path d="M12 7.5V12l3 2" />
     </>
   ),
 };

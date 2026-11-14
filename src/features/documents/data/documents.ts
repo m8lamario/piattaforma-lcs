@@ -210,7 +210,10 @@ export async function reviewMedicalDocument(input: {
         documentId: input.documentId,
         reviewerId: input.reviewerId,
         decision: input.decision,
-        reason: input.reason?.trim() || null,
+        reason:
+          input.decision === "APPROVED"
+            ? "AGONISTIC_FOOTBALL_CERTIFICATE"
+            : input.reason?.trim() || null,
       },
     });
     return tx.document.findUnique({ where: { id: input.documentId } });

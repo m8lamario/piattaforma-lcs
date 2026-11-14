@@ -314,6 +314,9 @@ export async function reviewDocumentAction(
   }
 
   if (decision !== "APPROVED" && decision !== "REJECTED") return fail("VALIDATION_INVALID_INPUT");
+  if (decision === "APPROVED" && formData.get("agonisticConfirm") !== "on") {
+    return fail("DOCUMENT_AGONISTIC_CONFIRM_REQUIRED");
+  }
 
   const result = await reviewMedicalDocument({
     documentId,

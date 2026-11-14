@@ -38,6 +38,7 @@ export function emailPurposeLabel(purpose: string) {
     PAYMENT_SUCCEEDED: it.emailPurposePAYMENT_SUCCEEDED,
     REGISTRATION_WITHDRAWN: it.emailPurposeREGISTRATION_WITHDRAWN,
     REGISTRATION_REMINDER: it.emailPurposeREGISTRATION_REMINDER,
+    MEDICAL_DEADLINE: it.emailPurposeMEDICAL_DEADLINE,
     LEGAL_VERSION_NOTICE: it.emailPurposeLEGAL_VERSION_NOTICE,
     MANUAL: it.emailPurposeMANUAL,
   };

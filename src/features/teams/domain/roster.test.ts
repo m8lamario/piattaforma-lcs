@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { filterRoster, parseRosterFilter, rosterBucket, summarizeRoster, toRosterRow, toStaffRosterView, toTeammateRow } from "./roster";
+import { filterRoster, parseRosterFilter, rosterBucket, summarizeRoster, summarizeRosterCauses, toRosterRow, toStaffRosterView, toTeammateRow } from "./roster";
 
 describe("team roster projection", () => {
   it("espone solo nome, stato iscrizione e stato certificato", () => {
@@ -27,6 +27,12 @@ describe("team roster projection", () => {
       paymentCovered: false,
       consentDue: false,
       isCoach: false,
+      emailVerified: true,
+      guardianState: "na",
+      personalDataComplete: true,
+      privacyComplete: true,
+      mediaComplete: true,
+      sportEligible: false,
     });
     expect(Object.keys(row)).not.toContain("fiscalCode");
     expect(Object.keys(row)).not.toContain("storageKey");
@@ -104,7 +110,35 @@ describe("team roster projection", () => {
     expect(filterRoster(rows, "ok")).toHaveLength(1);
     expect(filterRoster(rows, "open").map((row) => row.registrationId)).toEqual(["2", "3"]);
     expect(parseRosterFilter("attention")).toBe("attention");
+    expect(parseRosterFilter("unverified")).toBe("unverified");
     expect(parseRosterFilter("nope")).toBeNull();
+    expect(
+      filterRoster(
+        [
+          toRosterRow({
+            registrationId: "u",
+            firstName: "D",
+            lastName: "D",
+            registrationStatus: "IN_PROGRESS",
+            emailVerified: false,
+          }),
+        ],
+        "unverified",
+      ),
+    ).toHaveLength(1);
+    expect(
+      summarizeRosterCauses([
+        toRosterRow({
+          registrationId: "u",
+          firstName: "D",
+          lastName: "D",
+          registrationStatus: "IN_PROGRESS",
+          emailVerified: false,
+          paymentCovered: false,
+          sportEligible: false,
+        }),
+      ]),
+    ).toEqual({ unverified: 1, guardian: 0, unpaid: 1, medical: 1 });
   });
 
   it("nella vista compagni non espone stato medico", () => {

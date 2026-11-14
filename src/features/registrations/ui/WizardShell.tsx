@@ -13,6 +13,7 @@ import {
   type WizardStepId,
 } from "@/features/registrations/domain/wizard";
 import { it } from "@/shared/i18n/it";
+import { Disclosure } from "@/shared/ui/Disclosure";
 import { Icon } from "@/shared/ui/Icon";
 import { ButtonLink, type ButtonVariant } from "@/shared/ui/Button";
 import {
@@ -38,7 +39,7 @@ export function useWizard() {
 
 export function WizardLaterButton({
   className,
-  variant = "secondary",
+  variant = "quiet",
 }: {
   className?: string;
   variant?: ButtonVariant;
@@ -73,25 +74,15 @@ function statusCopy(status: ChecklistItem["status"], active: boolean) {
   return it.wizardStepUpcoming;
 }
 
-function StepMark({
-  index,
-  status,
-  active,
-  className,
-}: {
-  index: number;
-  status: ChecklistItem["status"];
-  active: boolean;
-  className: string;
-}) {
-  const doneTick = status === "complete";
+function StepMark({ index, status, active }: { index: number; status: ChecklistItem["status"]; active: boolean }) {
+  const doneTick = status === "complete" && !active;
   const attention = status === "attention" && !active;
   return (
     <span
-      className={`${className} ${doneTick ? styles.markDone : ""} ${active ? styles.markActive : ""} ${attention ? styles.markAttention : ""}`}
+      className={`${styles.mark} ${doneTick ? styles.markDone : ""} ${active ? styles.markActive : ""} ${attention ? styles.markAttention : ""}`}
       aria-hidden="true"
     >
-      {doneTick ? <Icon name="check" size={12} /> : attention ? <Icon name="alert" size={12} /> : index + 1}
+      {doneTick ? <Icon name="check" size={14} /> : attention ? <Icon name="alert" size={14} /> : index + 1}
     </span>
   );
 }
@@ -100,14 +91,22 @@ export function WizardShell({ step, steps, checklist, children }: Props) {
   const reduceMotion = useReducedMotion();
   const headingRef = useRef<HTMLHeadingElement>(null);
   const activeStepRef = useRef<HTMLLIElement>(null);
-  const previous = steps[steps.indexOf(step) - 1];
+  const position = steps.indexOf(step);
+  const previous = steps[position - 1];
   const { done, total } = completedStepCount(checklist);
   const progress = it.wizardProgress.replace("{done}", String(done)).replace("{total}", String(total));
   const featured = step === "liberatorie";
   const solemn = step === "privacy";
   const fill = total === 0 ? "0%" : `${Math.round((done / total) * 100)}%`;
-  const kicker = solemn ? it.wizardKickerPrivacy : featured ? it.wizardKickerMedia : null;
   const laterHref = laterHrefFor(step, checklist);
+  const kicker = solemn
+    ? it.wizardKickerPrivacy
+    : featured
+      ? it.wizardKickerMedia
+      : statusCopy(statusForWizardStep(step, checklist), false);
+  const stepOf = it.wizardStepOf
+    .replace("{current}", String(position + 1))
+    .replace("{total}", String(steps.length));
 
   useEffect(() => {
     headingRef.current?.focus();
@@ -120,140 +119,89 @@ export function WizardShell({ step, steps, checklist, children }: Props) {
   return (
     <WizardContext.Provider value={{ step, steps, checklist, laterHref }}>
       <div className={styles.canvas}>
-        <div className={styles.mobileProgress}>
-          <div className={styles.progressRow}>
-            <p className={styles.progress}>
-              <span className="srOnly">{progress}</span>
-              <span aria-hidden="true">
-                {done}
-                <span className={styles.of}>/{total}</span>
-              </span>
-            </p>
-            <div className={styles.track} aria-hidden="true">
+        <div className={styles.topbar}>
+          {previous ? (
+            <Link href={`/area/registrazione/${previous}`} className={styles.back}>
+              <Icon name="back" size={16} />
+              {it.wizardBack}
+            </Link>
+          ) : (
+            <Link href="/area" className={styles.back}>
+              <Icon name="back" size={16} />
+              {it.backToArea}
+            </Link>
+          )}
+          <div className={styles.progress}>
+            <span className={styles.progressText}>{progress}</span>
+            <span className={styles.track} aria-hidden="true">
               <span className={styles.trackFill} style={{ width: fill }} />
-            </div>
+            </span>
           </div>
-
-          <ol className={styles.steps} aria-label={progress}>
-            {steps.map((id, index) => {
-              const active = id === step;
-              const status = statusForWizardStep(id, checklist);
-              const statusLabel = statusCopy(status, active);
-              return (
-                <li key={id} className={styles.stepItem} ref={active ? activeStepRef : undefined}>
-                  <Link
-                    href={`/area/registrazione/${id}`}
-                    className={`${styles.step} ${active ? styles.stepActive : ""}`}
-                    aria-current={active ? "step" : undefined}
-                  >
-                    <StepMark index={index} status={status} active={active} className={styles.tick} />
-                    <span className={styles.stepLabel}>
-                      {WIZARD_STEP_LABELS[id]}
-                      <span className="srOnly">{` (${statusLabel})`}</span>
-                    </span>
-                  </Link>
-                </li>
-              );
-            })}
-          </ol>
+          {previous ? (
+            <Link href="/area" className={styles.exit} title={it.backToArea}>
+              <Icon name="close" size={18} />
+              <span className={styles.exitLabel}>{it.wizardExit}</span>
+            </Link>
+          ) : null}
         </div>
 
-        <div className={styles.grid}>
-          <section className={`${styles.mainStage} ${featured ? styles.featured : ""} ${solemn ? styles.solemn : ""}`}>
-            <div className={styles.stageTop}>
-              {previous ? (
-                <Link href={`/area/registrazione/${previous}`} className={styles.back}>
-                  <Icon name="back" size={16} />
-                  {it.wizardBack}
+        <ol className={styles.steps} aria-label={progress}>
+          {steps.map((id, index) => {
+            const active = id === step;
+            const status = statusForWizardStep(id, checklist);
+            const statusLabel = statusCopy(status, active);
+            return (
+              <li
+                key={id}
+                className={styles.stepItem}
+                data-done={status === "complete" || undefined}
+                ref={active ? activeStepRef : undefined}
+              >
+                <Link
+                  href={`/area/registrazione/${id}`}
+                  className={`${styles.step} ${active ? styles.stepActive : ""}`}
+                  aria-current={active ? "step" : undefined}
+                  title={active ? undefined : WIZARD_STEP_LABELS[id]}
+                >
+                  <StepMark index={index} status={status} active={active} />
+                  <span className={styles.stepLabel}>
+                    {WIZARD_STEP_LABELS[id]}
+                    <span className="srOnly">{` (${statusLabel})`}</span>
+                  </span>
                 </Link>
-              ) : (
-                <Link href="/area" className={styles.back}>
-                  <Icon name="back" size={16} />
-                  {it.backToArea}
-                </Link>
-              )}
+              </li>
+            );
+          })}
+        </ol>
+
+        <section className={`${styles.stage} ${featured ? styles.featured : ""} ${solemn ? styles.solemn : ""}`}>
+          <header className={styles.heading}>
+            <span className={styles.headingIcon} aria-hidden="true">
+              <Icon name={WIZARD_STEP_ICONS[step]} size={22} />
+            </span>
+            <div className={styles.headingText}>
+              <p className={styles.kicker}>{`${stepOf} · ${kicker}`}</p>
+              <h1 ref={headingRef} tabIndex={-1}>
+                {WIZARD_STEP_LABELS[step]}
+              </h1>
+              <p className={styles.lead}>{WIZARD_STEP_LEADS[step]}</p>
             </div>
+          </header>
 
-            <header className={styles.heading}>
-              <span className={styles.headingIcon} aria-hidden="true">
-                <Icon name={WIZARD_STEP_ICONS[step]} size={22} />
-              </span>
-              <div className={styles.headingText}>
-                {kicker ? <p className={styles.kicker}>{kicker}</p> : null}
-                <h1 ref={headingRef} tabIndex={-1}>
-                  {WIZARD_STEP_LABELS[step]}
-                </h1>
-                <p className={styles.lead}>{WIZARD_STEP_LEADS[step]}</p>
-              </div>
-            </header>
+          <Disclosure summary={it.wizardTipsTitle} icon="info" variant="inline" className={styles.tip}>
+            <p>{WIZARD_STEP_TIPS[step]}</p>
+          </Disclosure>
 
-            <motion.div
-              key={step}
-              className={styles.stageBody}
-              initial={reduceMotion ? false : { opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: reduceMotion ? 0 : 0.24 }}
-            >
-              {children}
-            </motion.div>
-          </section>
-
-          <aside className={styles.rail}>
-            <div className={styles.railCard}>
-              <div className={styles.railHeader}>
-                <h2 className={styles.railTitle}>{it.wizardJourneyTitle}</h2>
-                <span className={styles.railProgressText}>{progress}</span>
-              </div>
-
-              <div className={styles.railTrack} aria-hidden="true">
-                <span className={styles.railTrackFill} style={{ width: fill }} />
-              </div>
-
-              <ol className={styles.journeyList} aria-label={it.wizardJourneyTitle}>
-                {steps.map((id, index) => {
-                  const active = id === step;
-                  const status = statusForWizardStep(id, checklist);
-                  const statusLabel = statusCopy(status, active);
-
-                  return (
-                    <li key={id} className={`${styles.journeyItem} ${active ? styles.journeyItemActive : ""}`}>
-                      <Link
-                        href={`/area/registrazione/${id}`}
-                        className={styles.journeyLink}
-                        aria-current={active ? "step" : undefined}
-                      >
-                        <StepMark index={index} status={status} active={active} className={styles.journeyTick} />
-                        <span className={styles.journeyInfo}>
-                          <span className={styles.journeyLabel}>{WIZARD_STEP_LABELS[id]}</span>
-                          <span className={styles.journeyStatus}>{statusLabel}</span>
-                        </span>
-                      </Link>
-                    </li>
-                  );
-                })}
-              </ol>
-
-              <div className={styles.tipBox}>
-                <div className={styles.tipHeader}>
-                  <Icon name="summary" size={16} />
-                  <strong>{it.wizardTipsTitle}</strong>
-                </div>
-                <p className={styles.tipText}>{WIZARD_STEP_TIPS[step]}</p>
-              </div>
-
-              <div className={styles.railFooter}>
-                {laterHref ? (
-                  <Link href={laterHref} className={styles.railLaterLink}>
-                    {it.completeLater}
-                  </Link>
-                ) : null}
-                <Link href="/area" className={styles.railBackLink}>
-                  {it.backToArea}
-                </Link>
-              </div>
-            </div>
-          </aside>
-        </div>
+          <motion.div
+            key={step}
+            className={styles.stageBody}
+            initial={reduceMotion ? false : { opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: reduceMotion ? 0 : 0.24 }}
+          >
+            {children}
+          </motion.div>
+        </section>
       </div>
     </WizardContext.Provider>
   );

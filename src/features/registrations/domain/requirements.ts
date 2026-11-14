@@ -154,6 +154,10 @@ export function isBlocking(item: ChecklistItem) {
   return item.status !== "complete";
 }
 
+export function isAdministrativeBlocking(item: ChecklistItem) {
+  return item.code !== "MEDICAL_CERT" && isBlocking(item);
+}
+
 export function isTerminalRegistrationStatus(status: string) {
   return status === "WITHDRAWN" || status === "REMOVED";
 }
@@ -169,25 +173,11 @@ export function projectRegistrationStatus(
   if (!evidence.hasAccount) return "INVITED";
   if (!evidence.hasPersonalData) return "ACCOUNT_CREATED";
 
-  const medicalItem = checklist.find((item) => item.code === "MEDICAL_CERT");
-  const medicalRequired = Boolean(medicalItem && medicalItem.required && medicalItem.status !== "not_applicable");
-
-  if (medicalRequired && (evidence.medicalStatus === "rejected" || evidence.medicalStatus === "expired")) {
-    return "CHANGES_REQUESTED";
-  }
-
-  const blocking = checklist.filter(isBlocking);
+  const blocking = checklist.filter(isAdministrativeBlocking);
   const payment = blocking.find((item) => item.code === "PAYMENT");
   const others = blocking.filter((item) => item.code !== "PAYMENT");
 
   if (others.length === 0 && payment) return "PAYMENT_PENDING";
-  if (
-    medicalRequired &&
-    evidence.medicalStatus === "pending" &&
-    others.every((item) => item.code === "MEDICAL_CERT")
-  ) {
-    return "PENDING_REVIEW";
-  }
   if (others.length > 0) return "IN_PROGRESS";
   return "APPROVED";
 }

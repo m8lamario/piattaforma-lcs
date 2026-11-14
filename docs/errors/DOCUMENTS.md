@@ -11,3 +11,4 @@
 | DOCUMENT_REJECT_REASON_REQUIRED | DOCUMENTS | Rifiuto senza motivo | Admin | Devi indicare un motivo | Correggi | review |
 | DOCUMENT_ALREADY_REVIEWED | DOCUMENTS | Non più in revisione | Un altro revisore ha già deciso | Decisione non registrata di nuovo | Nessuno | review |
 | STAFF_MEDICAL_NOT_REQUIRED | DOCUMENTS | Upload medico su staff | category STAFF | Il certificato non è richiesto | Nessuno | `uploadMedicalCertificateAction` |
+| DOCUMENT_AGONISTIC_CONFIRM_REQUIRED | DOCUMENTS | Approvazione senza conferma agonistica | Checkbox assente | Conferma che il file è un certificato agonistico | Correggi | review |

@@ -19,6 +19,7 @@ import {
   hasMinorGuardianRequirement,
 } from "@/features/players/domain/personal";
 import { isValidShirtSize } from "@/features/players/domain/shirtSize";
+import { projectSportEligibility } from "@/features/registrations/domain/eligibility";
 import {
   DEFAULT_EDITION_REQUIREMENTS,
   isTerminalRegistrationStatus,
@@ -129,6 +130,7 @@ export async function loadPlayerWorkspace(userId: string) {
         teamFeeAmount: true,
         staffFeeAmount: true,
         isActive: true,
+        startsAt: true,
         registrationOpensAt: true,
         registrationClosesAt: true,
       },
@@ -168,6 +170,7 @@ export async function loadPlayerWorkspace(userId: string) {
         originalFilename: true,
         uploadedAt: true,
         expiresAt: true,
+        blobPurgedAt: true,
         typeId: true,
       },
     }),
@@ -385,12 +388,20 @@ export async function loadPlayerWorkspace(userId: string) {
       teamFeeCents: team.teamFeeCents,
       pendingPaymentCents: decimalToCents(payments.find((payment) => payment.status === "PENDING")?.amount),
       isActive: edition.isActive,
+      startsAt: edition.startsAt,
       registrationOpensAt: edition.registrationOpensAt,
       registrationClosesAt: edition.registrationClosesAt,
     },
     evidence,
     checklist,
     projectedStatus: projected,
+    sportEligibility: projectSportEligibility({
+      category: registration.category,
+      medicalStatus: evidence.medicalStatus,
+      medicalExpiresAt: medicalRow?.expiresAt ?? null,
+      hasFile: Boolean(medicalRow && !medicalRow.blobPurgedAt),
+      startsAt: edition.startsAt,
+    }),
     medicalDocument: isStaff
       ? null
       : medicalRow
@@ -586,6 +597,7 @@ export async function saveGuardianProfile(
     secondFirstName?: string;
     secondLastName?: string;
     secondEmail?: string;
+    consumeSecondaryEmailCorrection?: boolean;
     ipAddress?: string | null;
     userAgent?: string | null;
   },
@@ -644,14 +656,16 @@ export async function saveGuardianProfile(
     };
     if (secondary) {
       const emailChanged = secondary.email !== secondData.email;
-      if (emailChanged && secondary.emailCorrectionUsed) {
+      const consumeCorrection = input.consumeSecondaryEmailCorrection !== false;
+      if (emailChanged && secondary.emailCorrectionUsed && consumeCorrection) {
         return { ok: false as const, reason: "email_correction_used" as const };
       }
       await prisma.guardian.update({
         where: { id: secondary.id },
         data: {
           ...secondData,
-          emailCorrectionUsed: emailChanged ? true : secondary.emailCorrectionUsed,
+          emailCorrectionUsed:
+            emailChanged && consumeCorrection ? true : secondary.emailCorrectionUsed,
         },
       });
     } else {

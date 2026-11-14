@@ -1,7 +1,10 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { resendInviteAction, revokeInviteAction } from "@/features/teams/actions";
+import { EmailDeliveryStatus } from "@/features/emails/ui/EmailDeliveryStatus";
+import type { UserEmailDeliveryState } from "@/features/emails/domain/delivery";
+import { Avatar } from "@/shared/ui/Avatar";
 import { Button } from "@/shared/ui/Button";
 import { ActionError } from "@/shared/ui/ActionError";
 import { PendingSubmitButton } from "@/shared/ui/PendingSubmitButton";
@@ -16,6 +19,10 @@ type Invite = {
   lastName: string | null;
   status: string;
   createdAt: Date;
+  deliveryState: UserEmailDeliveryState;
+  remainingResends: number;
+  contactSupport: boolean;
+  resendAvailableAt: string | null;
 };
 
 const STATUS_LABEL: Record<string, string> = {
@@ -34,10 +41,11 @@ const STATUS_TONE: Record<string, StatusTone> = {
 
 export function InviteList({ teamId, invites }: { teamId: string; invites: Invite[] }) {
   const [state, action, pending] = useActionState(resendInviteAction, undefined);
+  const [now] = useState(() => Date.now());
+  const [confirmId, setConfirmId] = useState<string | null>(null);
 
   return (
-    <section className={styles.list}>
-      <h2>{it.pendingInvites}</h2>
+    <div className={styles.list}>
       {state?.redeemUrl ? (
         <div className={styles.success} role="status">
           <p>{it.inviteCreated}</p>
@@ -46,46 +54,87 @@ export function InviteList({ teamId, invites }: { teamId: string; invites: Invit
       ) : null}
       {state?.error ? <ActionError error={state.error} code={state.code} /> : null}
       {invites.length === 0 ? <p className={styles.empty}>{it.emptyInvites}</p> : null}
-      {invites.map((invite) => (
-        <div key={invite.id} className={styles.row}>
-          <div>
-            <strong>
-              {invite.firstName || invite.lastName
-                ? `${invite.firstName ?? ""} ${invite.lastName ?? ""}`.trim()
-                : invite.email}
-            </strong>
-            <p className={styles.meta}>{invite.email}</p>
-            <p className={styles.status}>
-              <StatusChip tone={STATUS_TONE[invite.status] ?? "neutral"}>
-                {STATUS_LABEL[invite.status] ?? invite.status}
-              </StatusChip>
-            </p>
-          </div>
-          {invite.status === "PENDING" || invite.status === "EXPIRED" ? (
-            <div className={styles.actions}>
-              <form action={action}>
-                <input type="hidden" name="teamId" value={teamId} />
-                <input type="hidden" name="inviteId" value={invite.id} />
-                <Button type="submit" variant="ghost" icon="send" disabled={pending} aria-busy={pending}>
-                  {pending ? it.resendingInvite : it.resendInvite}
-                </Button>
-              </form>
-              {invite.status === "PENDING" ? (
-                <form action={revokeInviteAction}>
-                  <input type="hidden" name="teamId" value={teamId} />
-                  <input type="hidden" name="inviteId" value={invite.id} />
-                  <PendingSubmitButton
-                    idle={it.revoke}
-                    pendingLabel={it.loadingRevoke}
-                    variant="danger"
-                    icon="close"
-                  />
-                </form>
-              ) : null}
-            </div>
-          ) : null}
-        </div>
-      ))}
-    </section>
+      {invites.length > 0 ? (
+        <ul className={styles.rows}>
+          {invites.map((invite) => {
+            const waiting = invite.resendAvailableAt ? new Date(invite.resendAvailableAt).getTime() > now : false;
+            const blocked =
+              invite.deliveryState === "undeliverable" ||
+              invite.remainingResends <= 0 ||
+              invite.deliveryState === "sending" ||
+              waiting;
+            const name =
+              invite.firstName || invite.lastName ? `${invite.firstName ?? ""} ${invite.lastName ?? ""}`.trim() : null;
+            const open = invite.status === "PENDING" || invite.status === "EXPIRED";
+            return (
+              <li key={invite.id} className={styles.row}>
+                <Avatar name={name ?? invite.email} size="sm" muted={!open && invite.status !== "ACCEPTED"} />
+                <div className={styles.who}>
+                  <strong>{name ?? invite.email}</strong>
+                  {name ? <span className={styles.meta}>{invite.email}</span> : null}
+                  {open ? (
+                    <EmailDeliveryStatus
+                      state={invite.deliveryState}
+                      remainingResends={invite.remainingResends}
+                      contactSupport={invite.contactSupport}
+                      compact
+                    />
+                  ) : null}
+                </div>
+                <div className={styles.rowSide}>
+                  <StatusChip tone={STATUS_TONE[invite.status] ?? "neutral"}>
+                    {STATUS_LABEL[invite.status] ?? invite.status}
+                  </StatusChip>
+                  {open ? (
+                    <div className={styles.actions}>
+                      <form action={action}>
+                        <input type="hidden" name="teamId" value={teamId} />
+                        <input type="hidden" name="inviteId" value={invite.id} />
+                        <Button
+                          type="submit"
+                          variant="quiet"
+                          icon="send"
+                          disabled={pending || blocked}
+                          aria-busy={pending}
+                        >
+                          {pending ? it.resendingInvite : it.resendInvite}
+                        </Button>
+                      </form>
+                      {invite.status === "PENDING" && confirmId === invite.id ? (
+                        <form action={revokeInviteAction} className={styles.confirm}>
+                          <p>{it.revokeConfirm}</p>
+                          <input type="hidden" name="teamId" value={teamId} />
+                          <input type="hidden" name="inviteId" value={invite.id} />
+                          <div className={styles.actions}>
+                            <PendingSubmitButton
+                              idle={it.revokeConfirmSubmit}
+                              pendingLabel={it.loadingRevoke}
+                              variant="danger"
+                              icon="close"
+                            />
+                            <Button type="button" variant="ghost" onClick={() => setConfirmId(null)}>
+                              {it.revokeKeep}
+                            </Button>
+                          </div>
+                        </form>
+                      ) : invite.status === "PENDING" ? (
+                        <Button
+                          type="button"
+                          variant="dangerQuiet"
+                          icon="close"
+                          onClick={() => setConfirmId(invite.id)}
+                        >
+                          {it.revoke}
+                        </Button>
+                      ) : null}
+                    </div>
+                  ) : null}
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+      ) : null}
+    </div>
   );
 }

@@ -17,10 +17,13 @@ import { applyPendingSnapshot, decimalToCents, resolveTeamFee } from "@/features
 import { getTeamForActor } from "@/features/teams/data/invites";
 import { listTeamRoster, listTeamsByIds } from "@/features/teams/data/roster";
 import { splitRoster, summarizeRoster } from "@/features/teams/domain/roster";
+import { projectSchoolChecklist } from "@/features/teams/domain/schoolChecklist";
+import { isAdministrativeBlocking } from "@/features/registrations/domain/requirements";
 import { staffOccupiesSlot, teamCoachCompleteness } from "@/features/teams/domain/staff";
 import { LiveRefresh } from "@/features/teams/ui/LiveRefresh";
 import { resolveSelectedTeamId } from "@/features/teams/domain/selection";
 import { RepresentativeDashboard } from "@/features/teams/ui/RepresentativeDashboard";
+import { toRepresentativeOwnRegistration } from "@/features/teams/ui/representativeOwn";
 import { authorize } from "@/shared/authz/authorize";
 import { representativeTeamIds } from "@/shared/authz/getActor";
 import { appOrigin, TEAM_COOKIE } from "@/shared/config/app";
@@ -62,7 +65,7 @@ export default async function AreaPage() {
     const jar = await cookies();
     const teamId = resolveSelectedTeamId(teamIds, jar.get(TEAM_COOKIE)?.value);
     if (teamId) {
-      const [workspace, team, teamPayment, pendingTeamPayment, roster, teams, unread] = await Promise.all([
+      const [workspace, team, teamPayment, pendingTeamPayment, roster, teams, unread, account] = await Promise.all([
         workspacePromise,
         getTeamForActor(teamId),
         prisma.payment.findFirst({ where: { teamId, registrationId: null, status: "SUCCEEDED" }, select: { id: true } }),
@@ -74,6 +77,7 @@ export default async function AreaPage() {
         listTeamRoster(teamId),
         listTeamsByIds(teamIds),
         listUnreadNotifications(userId),
+        prisma.user.findUnique({ where: { id: userId }, select: { emailVerified: true } }),
       ]);
       scheduleWorkspaceFollowUp(workspace, viewing);
       if (
@@ -104,6 +108,30 @@ export default async function AreaPage() {
         });
         const own = roster.find((row) => row.userId === userId);
         const activeOwn = own && staffOccupiesSlot(own.registrationStatus) ? own : null;
+        const ownRegistration =
+          workspace && workspace.registration.teamId === team.id
+            ? toRepresentativeOwnRegistration(workspace)
+            : null;
+        const schoolChecklist = projectSchoolChecklist({
+          representativeEmailVerified: Boolean(account?.emailVerified),
+          coachMissing: !coach.complete,
+          paymentMode: team.edition.paymentMode,
+          teamFee:
+            teamFee.status === "ready" ? { status: "ready", cents: teamFee.cents } : { status: teamFee.status },
+          teamPaymentSucceeded: Boolean(teamPayment),
+          players: parts.players.map((row) => ({
+            withdrawn: row.registrationStatus === "WITHDRAWN",
+            personalDataComplete: row.personalDataComplete,
+            guardianState: row.guardianState,
+            privacyComplete: row.privacyComplete,
+            mediaComplete: row.mediaComplete,
+            paymentCovered: row.paymentCovered,
+            medicalOk: row.sportEligible,
+          })),
+          ownRegistrationDue: Boolean(
+            ownRegistration?.checklist.some((item) => isAdministrativeBlocking(item)),
+          ),
+        });
         return (
           <>
             <LiveRefresh />
@@ -121,10 +149,8 @@ export default async function AreaPage() {
               counts={summarizeRoster(parts.players)}
               roster={parts.players}
               teams={teams}
-              teamPaymentDue={teamFee.status === "ready" && !teamPayment}
-              unreadCount={shell.unreadCount}
               unread={unread}
-              workspace={workspace}
+              own={ownRegistration}
               staffUsed={parts.staffUsed}
               coachMissing={!coach.complete}
               coachName={
@@ -134,6 +160,7 @@ export default async function AreaPage() {
               }
               canChooseRole={!activeOwn && isRegistrationWindowOpen(editionWindow)}
               activeCategory={activeOwn?.category ?? null}
+              schoolChecklist={schoolChecklist}
             />
           </>
         );
@@ -168,6 +195,9 @@ export default async function AreaPage() {
           checklist={workspace.checklist}
           category={workspace.registration.category}
           medicalStatus={workspace.evidence.medicalStatus}
+          sportEligible={workspace.sportEligibility.eligible}
+          medicalDeadline={workspace.sportEligibility.uploadDeadline}
+          eligibilityReason={workspace.sportEligibility.reason}
           registrationId={workspace.registration.id}
           editionWindow={{
             isActive: workspace.registration.isActive,

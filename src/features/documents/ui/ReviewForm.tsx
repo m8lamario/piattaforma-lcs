@@ -86,6 +86,10 @@ export function ReviewForm({
           {it.adminExpiry}
         </label>
         <input id="expiresAt" name="expiresAt" type="date" className={styles.date} required />
+        <label className={styles.confirm} htmlFor="agonisticConfirm">
+          <input id="agonisticConfirm" name="agonisticConfirm" type="checkbox" required />
+          {it.adminAgonisticConfirm}
+        </label>
         {isActionFailure(approveState) ? (
           <ActionError error={approveState.error} code={approveState.code} />
         ) : null}

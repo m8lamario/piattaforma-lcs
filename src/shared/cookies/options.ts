@@ -1,4 +1,4 @@
-import { TEAM_COOKIE_MAX_AGE_SECONDS } from "@/shared/cookies/inventory";
+import { SCHOOL_ACCESS_COOKIE_MAX_AGE_SECONDS, TEAM_COOKIE_MAX_AGE_SECONDS } from "@/shared/cookies/inventory";
 
 export function shouldUseSecureCookie(proto: string | null | undefined) {
   if (proto === "https") return true;
@@ -20,5 +20,15 @@ export function clearTeamCookieOptions(secure: boolean) {
   return {
     ...teamCookieOptions(secure),
     maxAge: 0,
+  };
+}
+
+export function schoolAccessCookieOptions(secure: boolean) {
+  return {
+    path: "/",
+    sameSite: "lax" as const,
+    maxAge: SCHOOL_ACCESS_COOKIE_MAX_AGE_SECONDS,
+    httpOnly: true,
+    secure,
   };
 }

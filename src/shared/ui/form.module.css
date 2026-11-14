@@ -20,11 +20,10 @@
 .legend {
   padding: 0;
   margin: 0 0 var(--space-1);
-  font-size: var(--text-kicker);
+  font-size: var(--text-md);
   font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--color-accent);
+  line-height: 1.35;
+  color: var(--color-text);
 }
 
 .pair,
@@ -46,14 +45,23 @@
 .input,
 .select,
 .textarea {
-  min-height: var(--control-min);
+  min-height: 3rem;
   width: 100%;
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  padding: 0 var(--space-3);
+  border-radius: var(--radius-md);
+  padding: 0 var(--space-4);
   font: inherit;
   background: var(--color-input);
   color: var(--color-text);
+  transition:
+    border-color var(--duration-fast) var(--ease-out),
+    box-shadow var(--duration-fast) var(--ease-out);
+}
+
+.input:hover:not(:disabled),
+.select:hover:not(:disabled),
+.textarea:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--color-text) 28%, var(--color-border));
 }
 
 .textarea {
@@ -65,9 +73,9 @@
 .input:focus-visible,
 .select:focus-visible,
 .textarea:focus-visible {
-  outline: 3px solid var(--color-focus);
-  outline-offset: 1px;
-  border-color: var(--color-primary);
+  outline: 0;
+  border-color: var(--color-focus);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-focus) 35%, transparent);
 }
 
 .readonly {
@@ -94,8 +102,8 @@
   min-height: var(--control-min);
   padding: var(--space-4);
   background: var(--color-surface-raised);
-  border: 1.5px solid var(--color-hairline);
-  border-radius: var(--radius-md);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-lg);
   font-size: var(--text-sm);
   line-height: 1.5;
   cursor: pointer;
@@ -200,8 +208,9 @@
   display: grid;
   gap: var(--space-2);
   padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
   background: var(--color-danger-soft);
-  border-left: var(--line-width) solid var(--color-danger);
+  box-shadow: inset var(--line-width) 0 0 var(--color-danger);
 }
 
 .summaryTitle {
@@ -227,7 +236,8 @@
   gap: var(--space-3);
   margin: 0;
   padding: var(--space-3) var(--space-4);
-  border-left: var(--line-width) solid var(--color-primary);
+  border-radius: var(--radius-md);
+  box-shadow: inset var(--line-width) 0 0 var(--color-primary);
   background: var(--color-primary-soft);
   color: var(--color-text);
   font-size: var(--text-sm);
@@ -241,8 +251,9 @@
 .notice {
   margin: 0;
   padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
   background: var(--color-accent-soft);
-  border-left: var(--line-width) solid var(--color-line);
+  box-shadow: inset var(--line-width) 0 0 var(--color-line);
   font-weight: 650;
   font-size: var(--text-sm);
 }
@@ -250,9 +261,23 @@
 .banner {
   margin: 0;
   padding: var(--space-3) var(--space-4);
-  border-left: var(--line-width) solid currentColor;
+  border-radius: var(--radius-md);
+  background: var(--color-surface-inset);
+  box-shadow:
+    inset var(--line-width) 0 0 currentColor,
+    inset 0 0 0 1px color-mix(in srgb, currentColor 18%, transparent);
   font-size: var(--text-sm);
+  font-weight: 500;
   line-height: var(--leading-body);
+}
+
+div.banner {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.banner > p {
+  margin: 0;
 }
 
 .bannerOk {
@@ -273,6 +298,9 @@
 .bannerInfo {
   background: var(--color-primary-soft);
   color: var(--color-text);
+  box-shadow:
+    inset var(--line-width) 0 0 var(--color-primary),
+    inset 0 0 0 1px color-mix(in srgb, var(--color-primary) 22%, transparent);
 }
 
 .actions {
@@ -283,23 +311,24 @@
 
 .heading {
   margin: 0;
-  font-size: var(--text-kicker);
+  font-size: var(--text-md);
   font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--color-accent);
+  line-height: 1.35;
+  color: var(--color-text);
 }
 
 .sticky {
   position: sticky;
-  bottom: 0;
+  bottom: var(--sticky-bottom, 0px);
   z-index: 4;
   justify-self: stretch;
   width: auto;
   max-width: none;
-  margin-inline: calc(var(--space-page-x-sm) * -1);
-  padding: var(--space-4) var(--space-page-x-sm) var(--space-3);
-  background: var(--color-surface-inset);
+  margin-inline: calc(var(--sticky-bleed, var(--space-page-x-sm)) * -1);
+  padding: var(--space-3) var(--sticky-bleed, var(--space-page-x-sm));
+  background: var(--color-chrome);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border-top: 1px solid var(--color-hairline);
 }
 
@@ -343,23 +372,32 @@
   }
 
   .sticky {
-    margin-left: 0;
-    margin-right: 0;
-    padding-left: 0;
-    padding-right: 0;
+    margin-inline: calc(var(--sticky-bleed, 0px) * -1);
+    padding-inline: var(--sticky-bleed, 0px);
   }
 }
 
 @media (max-width: 639px) {
-  .actions,
-  .sticky {
+  .actions:not(.sticky) {
     display: grid;
   }
 
   .actions :global(button),
-  .actions :global(a),
-  .sticky :global(button),
-  .sticky :global(a) {
+  .actions :global(a) {
     width: 100%;
+  }
+
+  .sticky.actions {
+    gap: var(--space-2);
+  }
+
+  .sticky.actions > :first-child {
+    flex: 1 1 100%;
+  }
+
+  .sticky.actions > :not(:first-child) {
+    flex: 1 1 0;
+    min-width: 0;
+    padding-inline: var(--space-3);
   }
 }

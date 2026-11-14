@@ -5,6 +5,7 @@ import { uploadMedicalCertificateAction } from "@/features/documents/actions";
 import { OpenDocumentButton } from "@/features/documents/ui/OpenDocumentButton";
 import { MAX_UPLOAD_BYTES } from "@/shared/config/app";
 import { Button } from "@/shared/ui/Button";
+import { Disclosure } from "@/shared/ui/Disclosure";
 import { FileDropzone } from "@/shared/ui/FileDropzone";
 import { ActionError } from "@/shared/ui/ActionError";
 import { WizardLaterButton } from "@/features/registrations/ui/WizardShell";
@@ -38,23 +39,25 @@ export function MedicalUploadForm({ document, readOnly = false, allowFileOpen = 
   const [state, action, pending] = useActionState(uploadMedicalCertificateAction, undefined);
   const mustUpload = !document || document.status === "REJECTED" || document.status === "EXPIRED";
   const maxMb = Math.round(MAX_UPLOAD_BYTES / (1024 * 1024));
-  const banner = document ? statusBanner(document) : { copy: it.medicalNone, className: fields.bannerInfo };
+  const banner = document ? statusBanner(document) : null;
 
   return (
     <form className={fields.form} action={action} aria-busy={pending}>
       {state?.error ? <ActionError error={state.error} code={state.code} /> : null}
 
-      <p className={`${fields.banner} ${banner.className}`} role="status">
-        {banner.copy}
-      </p>
+      {banner ? (
+        <p className={`${fields.banner} ${banner.className}`} role="status">
+          {banner.copy}
+        </p>
+      ) : null}
       {readOnly && !allowFileOpen ? (
         <p className={`${fields.banner} ${fields.bannerWarn}`}>{it.adminViewFileHidden}</p>
       ) : null}
 
-      <div className={fields.bannerStack}>
+      <Disclosure summary={it.medicalNotesToggle} icon="info" variant="boxed">
         <p>{it.medicalCopyNotice}</p>
         <p>{it.medicalPaperNote}</p>
-      </div>
+      </Disclosure>
 
       <FileDropzone
         id="file"

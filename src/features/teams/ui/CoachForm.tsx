@@ -23,9 +23,8 @@ export function CoachForm({ teamId, rows, coachRegistrationId, incomplete, coach
   const selected = eligible.some((row) => row.registrationId === coachRegistrationId) ? coachRegistrationId : "";
 
   return (
-    <section id="allenatore">
-      <h2>{it.coachTitle}</h2>
-      <p className={fields.help}>{it.coachHelp}</p>
+    <form action={action} className={fields.form} noValidate aria-busy={pending}>
+      <input type="hidden" name="teamId" value={teamId} />
       {incomplete ? (
         <p className={`${fields.banner} ${fields.bannerWarn}`} role="status">
           {it.coachMissing}
@@ -35,39 +34,36 @@ export function CoachForm({ teamId, rows, coachRegistrationId, incomplete, coach
           {it.coachCurrent}: <strong>{coachName}</strong>
         </p>
       ) : null}
-      <form action={action} className={fields.form} noValidate aria-busy={pending}>
-        <input type="hidden" name="teamId" value={teamId} />
-        {state && "error" in state && state.error ? <ActionError error={state.error} code={state.code} /> : null}
-        {state && "done" in state && state.done ? (
-          <p className={`${fields.banner} ${fields.bannerOk}`} role="status">
-            {it.coachCurrent}
-            {coachName ? `: ${coachName}` : ""}
-          </p>
-        ) : null}
-        <div className={fields.field}>
-          <label className={fields.label} htmlFor="coachRegistrationId">
-            {it.categoryCoach}
-          </label>
-          <select
-            id="coachRegistrationId"
-            name="registrationId"
-            className={fields.input}
-            defaultValue={selected ?? ""}
-            required
-            disabled={eligible.length === 0 || pending}
-          >
-            <option value="">{it.coachPlaceholder}</option>
-            {eligible.map((row) => (
-              <option key={row.registrationId} value={row.registrationId}>
-                {row.firstName} {row.lastName}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div className={fields.actions}>
-          <PendingSubmitButton idle={it.coachSave} pendingLabel={it.coachSaving} />
-        </div>
-      </form>
-    </section>
+      {state && "error" in state && state.error ? <ActionError error={state.error} code={state.code} /> : null}
+      {state && "done" in state && state.done ? (
+        <p className={`${fields.banner} ${fields.bannerOk}`} role="status">
+          {it.coachCurrent}
+          {coachName ? `: ${coachName}` : ""}
+        </p>
+      ) : null}
+      <div className={fields.field}>
+        <label className={fields.label} htmlFor="coachRegistrationId">
+          {it.categoryCoach}
+        </label>
+        <select
+          id="coachRegistrationId"
+          name="registrationId"
+          className={fields.input}
+          defaultValue={selected ?? ""}
+          required
+          disabled={eligible.length === 0 || pending}
+        >
+          <option value="">{it.coachPlaceholder}</option>
+          {eligible.map((row) => (
+            <option key={row.registrationId} value={row.registrationId}>
+              {row.firstName} {row.lastName}
+            </option>
+          ))}
+        </select>
+      </div>
+      <div className={fields.actions}>
+        <PendingSubmitButton idle={it.coachSave} pendingLabel={it.coachSaving} variant="secondary" />
+      </div>
+    </form>
   );
 }
