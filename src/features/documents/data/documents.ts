@@ -1,18 +1,70 @@
 import { createHash, randomBytes } from "node:crypto";
+import type { DocumentStatus, MedicalCertificateKind } from "@generated/client";
 import { MAX_UPLOAD_BYTES } from "@/shared/config/app";
 import { prisma } from "@/shared/lib/prisma";
 import { storageAdapter } from "@/shared/adapters";
 import { adminDocumentSelect } from "@/features/documents/domain/adminView";
 import { sanitizeFilename, stubScan } from "@/features/documents/domain/filename";
 import { declaredMimeMatches, detectAllowedMime } from "@/features/documents/domain/magic";
+import {
+  approvalReasonCode,
+  isMedicalCertificateKind,
+  parseMedicalCertificateKind,
+  QUEUE_DOCUMENT_STATUSES,
+  REVIEWABLE_DOCUMENT_STATUSES,
+} from "@/features/documents/domain/medicalRequirement";
+import { INSPECTION_ANOMALIES, type InspectionAnomaly } from "@/features/documents/domain/certificatePolicy";
+import type { ReviewQueueFilters } from "@/features/documents/domain/reviewQueue";
+import { inspectStoredCertificate } from "@/features/documents/data/inspect";
+
+const REVIEW_STATUSES = [
+  "UPLOADED",
+  "PROCESSING",
+  "PENDING_REVIEW",
+  "PREVALIDATED",
+  "APPROVED",
+  "REJECTED",
+  "EXPIRED",
+] as const;
+
+export function medicalFiltersFromQueue(filters: ReviewQueueFilters): MedicalDocumentFilters {
+  const status = filters.status && (REVIEW_STATUSES as readonly string[]).includes(filters.status)
+    ? (filters.status as DocumentStatus)
+    : undefined;
+  const requiredKind =
+    filters.requiredKind && isMedicalCertificateKind(filters.requiredKind) ? filters.requiredKind : undefined;
+  const anomaly =
+    filters.anomaly && (INSPECTION_ANOMALIES as readonly string[]).includes(filters.anomaly)
+      ? (filters.anomaly as InspectionAnomaly)
+      : undefined;
+  return {
+    teamId: filters.teamId,
+    q: filters.q,
+    editionId: filters.editionId,
+    schoolId: filters.schoolId,
+    requiredKind,
+    status,
+    anomaly,
+  };
+}
+
+export type MedicalDocumentFilters = {
+  teamId?: string;
+  q?: string;
+  editionId?: string;
+  schoolId?: string;
+  requiredKind?: MedicalCertificateKind;
+  status?: DocumentStatus;
+  anomaly?: InspectionAnomaly;
+};
 
 export async function ensureMedicalDocumentType() {
   return prisma.documentType.upsert({
     where: { code: "MEDICAL_CERTIFICATE" },
-    update: { maxSizeBytes: MAX_UPLOAD_BYTES },
+    update: { maxSizeBytes: MAX_UPLOAD_BYTES, name: "Certificato medico" },
     create: {
       code: "MEDICAL_CERTIFICATE",
-      name: "Certificato medico agonistico",
+      name: "Certificato medico",
       allowedMime: ["application/pdf", "image/jpeg", "image/png"],
       maxSizeBytes: MAX_UPLOAD_BYTES,
       requiresExpiry: false,
@@ -41,17 +93,32 @@ export async function getDocumentById(documentId: string) {
     include: {
       type: true,
       playerProfile: { include: { user: true } },
-      registration: { include: { team: true } },
+      registration: {
+        include: {
+          team: { include: { school: true, edition: true } },
+        },
+      },
       reviews: { orderBy: { createdAt: "desc" }, take: 1 },
+      inspection: true,
     },
   });
 }
 
-function pendingMedicalWhere(filters: { teamId?: string; q?: string }) {
+function medicalDocumentWhere(filters: MedicalDocumentFilters = {}) {
+  const statuses = filters.status ? [filters.status] : [...QUEUE_DOCUMENT_STATUSES];
+  const teamFilter =
+    filters.schoolId || filters.requiredKind
+      ? {
+          schoolId: filters.schoolId,
+          edition: filters.requiredKind
+            ? { medicalCertificateKind: filters.requiredKind }
+            : undefined,
+        }
+      : undefined;
   return {
-    status: "PENDING_REVIEW" as const,
     type: { code: "MEDICAL_CERTIFICATE" },
-    registration: filters.teamId ? { teamId: filters.teamId } : undefined,
+    status: { in: statuses },
+    inspection: filters.anomaly ? { anomalies: { has: filters.anomaly } } : undefined,
     playerProfile: filters.q
       ? {
           OR: [
@@ -60,20 +127,25 @@ function pendingMedicalWhere(filters: { teamId?: string; q?: string }) {
           ],
         }
       : undefined,
+    registration: {
+      teamId: filters.teamId,
+      editionId: filters.editionId,
+      team: teamFilter,
+    },
   };
 }
 
-export async function listPendingMedicalDocuments(filters: { teamId?: string; q?: string } = {}) {
+export async function listPendingMedicalDocuments(filters: MedicalDocumentFilters = {}) {
   return prisma.document.findMany({
-    where: pendingMedicalWhere(filters),
+    where: medicalDocumentWhere(filters),
     orderBy: [{ uploadedAt: "asc" }, { id: "asc" }],
     select: adminDocumentSelect,
   });
 }
 
-export async function listPendingMedicalQueue(filters: { teamId?: string; q?: string } = {}) {
+export async function listPendingMedicalQueue(filters: MedicalDocumentFilters = {}) {
   return prisma.document.findMany({
-    where: pendingMedicalWhere(filters),
+    where: medicalDocumentWhere({ ...filters, status: filters.status }),
     orderBy: [{ uploadedAt: "asc" }, { id: "asc" }],
     select: { id: true, uploadedAt: true },
   });
@@ -113,6 +185,9 @@ export async function storeMedicalCertificate(input: {
   fileName: string;
   declaredMime: string;
   body: Buffer;
+  requiredKind: MedicalCertificateKind;
+  playerFirstName: string;
+  playerLastName: string;
 }) {
   const detected = detectAllowedMime(input.body);
   if (!detected) {
@@ -139,6 +214,7 @@ export async function storeMedicalCertificate(input: {
 
   const checksum = createHash("sha256").update(input.body).digest("hex");
   const filename = sanitizeFilename(input.fileName);
+  const requiredKind = parseMedicalCertificateKind(input.requiredKind);
 
   const document = await prisma.$transaction(async (tx) => {
     const current = await tx.document.findFirst({
@@ -158,7 +234,8 @@ export async function storeMedicalCertificate(input: {
         sizeBytes: input.body.length,
         checksumSha256: checksum,
         originalFilename: filename,
-        status: "PENDING_REVIEW",
+        status: "UPLOADED",
+        requiredKindAtUpload: requiredKind,
       },
     });
     if (current) {
@@ -175,7 +252,41 @@ export async function storeMedicalCertificate(input: {
     await purgeDocumentBlob(document.replacedId);
   }
 
-  return { ok: true as const, document: document.created };
+  try {
+    await inspectStoredCertificate({
+      documentId: document.created.id,
+      body: input.body,
+      mimeType: detected,
+      requiredKind,
+      playerFirstName: input.playerFirstName,
+      playerLastName: input.playerLastName,
+    });
+  } catch {
+    await prisma.document.update({
+      where: { id: document.created.id },
+      data: { status: "PENDING_REVIEW" },
+    });
+    await prisma.medicalInspection.upsert({
+      where: { documentId: document.created.id },
+      create: {
+        documentId: document.created.id,
+        adapter: "failed",
+        inspectedKind: requiredKind,
+        nameMatch: "UNKNOWN",
+        stampPresence: "UNKNOWN",
+        anomalies: ["INSPECTOR_FAILED"],
+      },
+      update: {
+        adapter: "failed",
+        inspectedKind: requiredKind,
+        anomalies: ["INSPECTOR_FAILED"],
+        inspectedAt: new Date(),
+      },
+    });
+  }
+
+  const refreshed = await prisma.document.findUnique({ where: { id: document.created.id } });
+  return { ok: true as const, document: refreshed ?? document.created };
 }
 
 export async function reviewMedicalDocument(input: {
@@ -184,6 +295,7 @@ export async function reviewMedicalDocument(input: {
   decision: "APPROVED" | "REJECTED";
   reason?: string;
   expiresAt?: Date | null;
+  requiredKind: MedicalCertificateKind;
 }) {
   if (input.decision === "REJECTED" && !input.reason?.trim()) {
     return { ok: false as const, reason: "reason_required" as const };
@@ -196,9 +308,10 @@ export async function reviewMedicalDocument(input: {
     }
   }
 
+  const requiredKind = parseMedicalCertificateKind(input.requiredKind);
   const updated = await prisma.$transaction(async (tx) => {
     const claimed = await tx.document.updateMany({
-      where: { id: input.documentId, status: "PENDING_REVIEW" },
+      where: { id: input.documentId, status: { in: [...REVIEWABLE_DOCUMENT_STATUSES] } },
       data: {
         status: input.decision,
         expiresAt: input.decision === "APPROVED" ? input.expiresAt : null,
@@ -210,10 +323,9 @@ export async function reviewMedicalDocument(input: {
         documentId: input.documentId,
         reviewerId: input.reviewerId,
         decision: input.decision,
+        requiredKindAtDecision: requiredKind,
         reason:
-          input.decision === "APPROVED"
-            ? "AGONISTIC_FOOTBALL_CERTIFICATE"
-            : input.reason?.trim() || null,
+          input.decision === "APPROVED" ? approvalReasonCode(requiredKind) : input.reason?.trim() || null,
       },
     });
     return tx.document.findUnique({ where: { id: input.documentId } });

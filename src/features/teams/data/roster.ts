@@ -123,7 +123,10 @@ export async function listTeamRoster(teamId: string) {
             ? "rejected"
             : medicalStatus === "EXPIRED"
               ? "expired"
-              : medicalStatus === "PENDING_REVIEW" || medicalStatus === "UPLOADED"
+              : medicalStatus === "PENDING_REVIEW" ||
+                  medicalStatus === "UPLOADED" ||
+                  medicalStatus === "PROCESSING" ||
+                  medicalStatus === "PREVALIDATED"
                 ? "pending"
                 : "none";
       const eligibility = projectSportEligibility({

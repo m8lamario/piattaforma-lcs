@@ -20,6 +20,7 @@ type Props = {
   grouped?: boolean;
   showHelp?: boolean;
   showFootnote?: boolean;
+  labels?: Partial<Record<string, string>>;
 };
 
 function boxClass(box: ConsentBoxDef) {
@@ -33,11 +34,13 @@ function BoxRow({
   checked,
   disabled,
   onToggle,
+  label,
 }: {
   box: ConsentBoxDef;
   checked: boolean;
   disabled?: boolean;
   onToggle: (code: string, accepted: boolean) => void;
+  label: string;
 }) {
   return (
     <label className={boxClass(box)} htmlFor={`box-${box.code}`}>
@@ -53,7 +56,7 @@ function BoxRow({
         <span className={styles.boxCode}>
           {box.code} · {KIND_COPY[box.kind]}
         </span>
-        {it[box.labelKey]}
+        {label}
       </span>
     </label>
   );
@@ -67,12 +70,20 @@ export function ConsentBoxList({
   grouped = false,
   showHelp = true,
   showFootnote = true,
+  labels,
 }: Props) {
   if (boxes.length === 0) return null;
 
   function renderBoxes(list: ConsentBoxDef[]) {
     return list.map((box) => (
-      <BoxRow key={box.code} box={box} checked={Boolean(values[box.code])} disabled={disabled} onToggle={onToggle} />
+      <BoxRow
+        key={box.code}
+        box={box}
+        checked={Boolean(values[box.code])}
+        disabled={disabled}
+        onToggle={onToggle}
+        label={labels?.[box.code] ?? it[box.labelKey]}
+      />
     ));
   }
 

@@ -6,6 +6,7 @@ import { requireStaff } from "@/shared/authz/requireStaff";
 import { EditionForm } from "@/features/admin/ui/EditionForm";
 import { PageHeader } from "@/shared/ui/PageHeader";
 import { it } from "@/shared/i18n/it";
+import { medicalKindLabel } from "@/features/documents/domain/medicalRequirement";
 import styles from "@/features/admin/ui/admin.module.css";
 
 export default async function AdminEditionsPage() {
@@ -28,7 +29,9 @@ export default async function AdminEditionsPage() {
                       <strong>
                         {competition.name} · {edition.name}
                       </strong>
-                      <span className={styles.meta}>{edition.year}</span>
+                      <span className={styles.meta}>
+                        {edition.year} · {it.adminMedicalKind}: {medicalKindLabel(edition.medicalCertificateKind)}
+                      </span>
                     </span>
                   </Link>
                 </li>

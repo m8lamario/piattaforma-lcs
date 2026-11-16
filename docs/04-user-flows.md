@@ -130,9 +130,9 @@ Fuori dalla finestra `registrationOpensAt`/`registrationClosesAt`: il link di sq
 1. Upload (PDF/JPEG/PNG, limite size — valori in config, default proposto 10 MB).
 2. Validazione MIME reale + estensione; virus scanning è OPEN_DECISIONS.
 3. Metadata persistiti; blob privato.
-4. Stato `UPLOADED` / `PENDING_REVIEW`.
-5. Solo `MEDICAL_REVIEWER` e Super Admin aprono il file via signed URL (TTL breve), audit `DOCUMENT_VIEW`. Org Admin e rappresentante vedono lo stato.
-6. Approve oppure reject + motivo obbligatorio (incluso «contenuto sanitario eccedente il certificato richiesto») → giocatore vede CTA “carica di nuovo”.
+4. Stato `UPLOADED` → `PROCESSING` → `PREVALIDATED` o `PENDING_REVIEW`. L’idoneità resta solo dopo `APPROVED`.
+5. Solo `MEDICAL_REVIEWER` e Super Admin aprono il file via signed URL (TTL breve), audit `DOCUMENT_VIEW`. Org Admin e rappresentante vedono lo stato. L’ispezione automatica scrive `DOCUMENT_INSPECT` senza testo del file.
+6. Approve oppure reject + motivo obbligatorio (incluso «contenuto sanitario eccedente il certificato richiesto») da `PENDING_REVIEW` o `PREVALIDATED` → giocatore vede CTA “carica di nuovo”. La pre-validazione locale (text layer PDF) segnala anomalie e **non** approva né rifiuta.
 7. Replace: il documento precedente passa a `REPLACED`. Il blob sostituito o rifiutato si cancella dallo storage; la riga di esito resta (`blobPurgedAt`).
 8. A 90 giorni da `Edition.endsAt` (e in anticipo sul ritiro) il job di retention cancella il file approvato e conserva l’esito di verifica. `EXPIRED` quando `expiresAt` è passato.
 
@@ -140,7 +140,7 @@ La base giuridica della **copia** del certificato resta OD-035: **DA VALIDARE LE
 
 Il rappresentante vede solo lo stato, mai l’URL.
 
-Sul passo upload compare un **avviso operativo**: la piattaforma conserva una copia per la revisione. L’informativa resta in `document-processing`; la casella salute M3 (adulto) o G4 (genitore del minore) è distinta dalla presa visione. La revisione del file è **umana** (accetta/rifiuta): nessuna verifica automatica o AI.
+Sul passo upload compare un **avviso operativo**: la piattaforma conserva una copia per la revisione. L’informativa resta in `document-processing`; la casella salute M3 (adulto) o G4 (genitore del minore) è distinta dalla presa visione. La decisione sul file è **umana** (accetta/rifiuta). Una pre-validazione locale e sostituibile può segnalare anomalie; non è una verifica medico-legale e non usa un OCR a pagamento.
 
 ## 6. Review organizzazione
 

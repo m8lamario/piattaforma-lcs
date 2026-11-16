@@ -7,6 +7,7 @@ import { createResendEmailAdapter } from "./live/resend";
 import { createR2StorageAdapter } from "./live/r2";
 import { createStripePaymentAdapter } from "./live/stripe";
 import {
+  certificateInspectorDriver,
   emailDriver,
   paymentDriver,
   r2Configured,
@@ -15,7 +16,15 @@ import {
   stripeConfigured,
 } from "@/shared/config/drivers";
 import { logger } from "@/shared/lib/logger";
-import type { EmailAdapter, MonitoringAdapter, PaymentAdapter, StorageAdapter } from "./types";
+import type {
+  CertificateInspector,
+  EmailAdapter,
+  MonitoringAdapter,
+  PaymentAdapter,
+  StorageAdapter,
+} from "./types";
+import { stubCertificateInspector } from "./stub/certificateInspector";
+import { localCertificateInspector } from "./local/certificateInspector";
 
 function createEmailAdapter(): EmailAdapter {
   if (emailDriver() === "resend") {
@@ -44,7 +53,13 @@ function createPaymentAdapter(): PaymentAdapter {
   return stubPaymentAdapter;
 }
 
+function createCertificateInspector(): CertificateInspector {
+  if (certificateInspectorDriver() === "stub") return stubCertificateInspector;
+  return localCertificateInspector;
+}
+
 export const emailAdapter: EmailAdapter = createEmailAdapter();
 export const storageAdapter: StorageAdapter = createStorageAdapter();
 export const paymentAdapter: PaymentAdapter = createPaymentAdapter();
 export const monitoringAdapter: MonitoringAdapter = stubMonitoringAdapter;
+export const certificateInspector: CertificateInspector = createCertificateInspector();

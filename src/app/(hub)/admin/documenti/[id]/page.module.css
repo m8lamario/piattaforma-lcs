@@ -78,6 +78,15 @@
   color: var(--color-text);
 }
 
+.mismatch {
+  margin: 0;
+  padding: var(--space-3);
+  border-left: var(--line-width) solid var(--color-warning);
+  background: var(--color-warning-soft);
+  font-size: var(--text-sm);
+  font-weight: 650;
+}
+
 .back {
   display: inline-flex;
   align-items: center;

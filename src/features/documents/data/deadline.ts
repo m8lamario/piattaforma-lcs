@@ -1,4 +1,5 @@
 import { MEDICAL_DEADLINE_REMINDER_DAYS } from "@/shared/config/app";
+import { medicalDeadlineNotifyBody, parseMedicalCertificateKind } from "@/features/documents/domain/medicalRequirement";
 import { createNotification, hasNotification } from "@/features/notifications/data/notifications";
 import {
   medicalDeadlineFingerprint,
@@ -9,16 +10,11 @@ import {
 } from "@/features/registrations/domain/eligibility";
 import { it } from "@/shared/i18n/it";
 import { prisma } from "@/shared/lib/prisma";
-import { isMedicalExpired } from "@/features/documents/domain/retention";
+import { medicalEvidenceFromStatus } from "@/features/documents/domain/inspection";
 
 function medicalStatusOf(document: { status: string; expiresAt: Date | null } | undefined) {
-  if (!document) return "none" as const;
-  if (document.status === "APPROVED" && isMedicalExpired(document.expiresAt)) return "expired" as const;
-  if (document.status === "APPROVED") return "approved" as const;
-  if (document.status === "REJECTED" || document.status === "CHANGES_REQUESTED") return "rejected" as const;
-  if (document.status === "EXPIRED") return "expired" as const;
-  if (document.status === "PENDING_REVIEW" || document.status === "UPLOADED") return "pending" as const;
-  return "none" as const;
+  if (!document) return "none";
+  return medicalEvidenceFromStatus(document.status, document.expiresAt);
 }
 
 export async function runMedicalDeadlineReminders(now = new Date()) {
@@ -26,6 +22,7 @@ export async function runMedicalDeadlineReminders(now = new Date()) {
     where: { startsAt: { not: null } },
     select: {
       startsAt: true,
+      medicalCertificateKind: true,
       teams: {
         select: {
           id: true,
@@ -52,6 +49,8 @@ export async function runMedicalDeadlineReminders(now = new Date()) {
   let representatives = 0;
 
   for (const edition of editions) {
+    const requiredKind = parseMedicalCertificateKind(edition.medicalCertificateKind);
+    const notifyBody = medicalDeadlineNotifyBody(requiredKind);
     const uploadDeadline = medicalUploadDeadline(edition.startsAt);
     if (!uploadDeadline) continue;
     const daysDue = medicalDeadlineReminderDaysDue({
@@ -98,7 +97,7 @@ export async function runMedicalDeadlineReminders(now = new Date()) {
             userId: player.userId,
             type: "MEDICAL_DEADLINE",
             title: it.notifyMedicalDeadlineTitle,
-            body: it.notifyMedicalDeadlineBody,
+            body: notifyBody,
             metadata: {
               registrationId: player.registrationId,
               reminderDay: String(day),

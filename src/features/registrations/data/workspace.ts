@@ -26,7 +26,6 @@ import {
   projectChecklist,
   projectRegistrationStatus,
   type EditionRequirement,
-  type MedicalEvidence,
   type RegistrationEvidence,
   type RegistrationStatus,
 } from "@/features/registrations/domain/requirements";
@@ -47,24 +46,8 @@ import {
 import { prisma } from "@/shared/lib/prisma";
 import { logger } from "@/shared/lib/logger";
 
-import { isMedicalExpired } from "@/features/documents/domain/retention";
-
-function medicalFromStatus(status: string | undefined, expiresAt?: Date | null): MedicalEvidence {
-  if (status === "APPROVED" && isMedicalExpired(expiresAt ?? null)) return "expired";
-  switch (status) {
-    case "APPROVED":
-      return "approved";
-    case "REJECTED":
-      return "rejected";
-    case "EXPIRED":
-      return "expired";
-    case "UPLOADED":
-    case "PENDING_REVIEW":
-      return "pending";
-    default:
-      return "none";
-  }
-}
+import { medicalEvidenceFromStatus } from "@/features/documents/domain/inspection";
+import { parseMedicalCertificateKind } from "@/features/documents/domain/medicalRequirement";
 
 export async function loadPlayerWorkspace(userId: string) {
   const [user, profile, registration] = await Promise.all([
@@ -133,6 +116,7 @@ export async function loadPlayerWorkspace(userId: string) {
         startsAt: true,
         registrationOpensAt: true,
         registrationClosesAt: true,
+        medicalCertificateKind: true,
       },
     }),
     prisma.competition.findFirst({
@@ -303,7 +287,7 @@ export async function loadPlayerWorkspace(userId: string) {
     hasGuardian: guardianAuthorization === "authorized",
     hasGuardianContact: contactComplete,
     guardianAuthorization,
-    medicalStatus: isStaff ? "none" : medicalFromStatus(medicalRow?.status, medicalRow?.expiresAt),
+    medicalStatus: isStaff ? "none" : medicalEvidenceFromStatus(medicalRow?.status, medicalRow?.expiresAt),
     privacyAccepted,
     mediaDecision,
     payment: {
@@ -391,6 +375,7 @@ export async function loadPlayerWorkspace(userId: string) {
       startsAt: edition.startsAt,
       registrationOpensAt: edition.registrationOpensAt,
       registrationClosesAt: edition.registrationClosesAt,
+      medicalCertificateKind: parseMedicalCertificateKind(edition.medicalCertificateKind),
     },
     evidence,
     checklist,

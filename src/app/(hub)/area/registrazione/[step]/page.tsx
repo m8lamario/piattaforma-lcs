@@ -34,6 +34,7 @@ import { WizardShell } from "@/features/registrations/ui/WizardShell";
 import { WindowNotice } from "@/features/registrations/ui/WindowNotice";
 import { isRegistrationWindowOpen } from "@/features/registrations/domain/window";
 import { it } from "@/shared/i18n/it";
+import { medicalStepBox, parseMedicalCertificateKind } from "@/features/documents/domain/medicalRequirement";
 import fields from "@/shared/ui/form.module.css";
 
 type Props = {
@@ -148,14 +149,16 @@ export default async function WizardStepPage({ params }: Props) {
       const deadlineLabel = deadline
         ? deadline.toLocaleDateString("it-IT", { dateStyle: "long" })
         : null;
+      const requiredKind = parseMedicalCertificateKind(workspace.registration.medicalCertificateKind);
       body = (
         <>
           <div className={`${fields.banner} ${fields.bannerInfo}`}>
-            <p>{deadlineLabel ? it.medicalStepBox.replace("{date}", deadlineLabel) : it.medicalStepBoxNoDate}</p>
+            <p>{medicalStepBox(requiredKind, deadlineLabel)}</p>
             <p className={fields.help}>{it.termsPointerMedical}</p>
           </div>
           <MedicalUploadForm
             document={workspace.medicalDocument}
+            requiredKind={requiredKind}
             readOnly={Boolean(identity.view)}
             allowFileOpen={canReadMedicalFile({
               viewing: Boolean(identity.view),
@@ -194,6 +197,7 @@ export default async function WizardStepPage({ params }: Props) {
               documents={documents}
               boxes={waitBoxes}
               currentBoxes={currentBoxes}
+              medicalKind={parseMedicalCertificateKind(workspace.registration.medicalCertificateKind)}
             />
           ) : (
             <PlaceholderStep title={it.stepPrivacy} body={it.placeholderPrivacy} />
@@ -207,6 +211,7 @@ export default async function WizardStepPage({ params }: Props) {
             extraBoxes={extraBoxes}
             currentBoxes={currentBoxes}
             registrationId={workspace.registration.id}
+            medicalKind={parseMedicalCertificateKind(workspace.registration.medicalCertificateKind)}
           />
         ) : (
           <PlaceholderStep title={it.stepPrivacy} body={it.placeholderPrivacy} />
@@ -227,6 +232,7 @@ export default async function WizardStepPage({ params }: Props) {
               documents={[media]}
               boxes={mediaUses}
               currentBoxes={currentUses}
+              medicalKind={parseMedicalCertificateKind(workspace.registration.medicalCertificateKind)}
             />
             {g14.length > 0 ? (
               <MediaConsentForm document={media} uses={g14} currentUses={currentUses} submitted={Boolean(currentUses.G14)} />
@@ -294,7 +300,12 @@ export default async function WizardStepPage({ params }: Props) {
     <>
       {isRegistrationWindowOpen(editionWindow) ? null : <WindowNotice edition={editionWindow} />}
       {!workspace.user.emailVerified ? <EmailVerifyNotice /> : null}
-      <WizardShell step={raw} steps={steps} checklist={workspace.checklist}>
+      <WizardShell
+        step={raw}
+        steps={steps}
+        checklist={workspace.checklist}
+        medicalKind={parseMedicalCertificateKind(workspace.registration.medicalCertificateKind)}
+      >
         {body}
       </WizardShell>
     </>

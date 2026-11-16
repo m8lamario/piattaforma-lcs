@@ -77,11 +77,30 @@ enum PaymentStatus {
 
 enum DocumentStatus {
   UPLOADED
+  PROCESSING
   PENDING_REVIEW
+  PREVALIDATED
   APPROVED
   REJECTED
   EXPIRED
   REPLACED
+}
+
+enum MedicalCertificateKind {
+  COMPETITIVE
+  NON_COMPETITIVE
+}
+
+enum MedicalNameMatch {
+  MATCH
+  MISMATCH
+  UNKNOWN
+}
+
+enum MedicalStampPresence {
+  PRESENT
+  ABSENT
+  UNKNOWN
 }
 
 enum ReviewDecision {
@@ -410,6 +429,7 @@ model Edition {
   staffFeeAmount  Decimal     @default(5) @db.Decimal(10, 2)
   currency        String      @default("EUR")
   paymentMode     PaymentMode @default(PLAYER)
+  medicalCertificateKind MedicalCertificateKind @default(COMPETITIVE)
   isActive        Boolean     @default(true)
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
@@ -648,34 +668,57 @@ model Document {
   sizeBytes        Int
   checksumSha256   String
   originalFilename String
-  status           DocumentStatus @default(UPLOADED)
-  uploadedAt       DateTime       @default(now())
-  expiresAt        DateTime?
-  replacedById     String?        @unique
-  blobPurgedAt     DateTime?
-  createdAt        DateTime       @default(now())
-  updatedAt        DateTime       @updatedAt
+  status               DocumentStatus         @default(UPLOADED)
+  requiredKindAtUpload MedicalCertificateKind @default(COMPETITIVE)
+  uploadedAt           DateTime               @default(now())
+  expiresAt            DateTime?
+  replacedById         String?                @unique
+  blobPurgedAt         DateTime?
+  createdAt            DateTime               @default(now())
+  updatedAt            DateTime               @updatedAt
 
-  registration  Registration     @relation(fields: [registrationId], references: [id], onDelete: Cascade)
-  playerProfile PlayerProfile    @relation(fields: [playerProfileId], references: [id], onDelete: Cascade)
-  type          DocumentType     @relation(fields: [typeId], references: [id], onDelete: Restrict)
-  replacedBy    Document?        @relation("DocumentReplacement", fields: [replacedById], references: [id])
-  replaces      Document?        @relation("DocumentReplacement")
+  registration  Registration      @relation(fields: [registrationId], references: [id], onDelete: Cascade)
+  playerProfile PlayerProfile     @relation(fields: [playerProfileId], references: [id], onDelete: Cascade)
+  type          DocumentType      @relation(fields: [typeId], references: [id], onDelete: Restrict)
+  replacedBy    Document?         @relation("DocumentReplacement", fields: [replacedById], references: [id])
+  replaces      Document?         @relation("DocumentReplacement")
   reviews       DocumentReview[]
+  inspection    MedicalInspection?
 
   @@index([registrationId, status])
   @@index([playerProfileId])
   @@index([typeId])
 }
 
+model MedicalInspection {
+  id             String                 @id @default(cuid())
+  documentId     String                 @unique
+  adapter        String
+  inspectedKind  MedicalCertificateKind
+  recognizedKind MedicalCertificateKind?
+  issuedAt       DateTime?
+  expiresAt      DateTime?
+  nameMatch      MedicalNameMatch
+  stampPresence  MedicalStampPresence
+  anomalies      String[]
+  inspectedAt    DateTime               @default(now())
+  createdAt      DateTime               @default(now())
+  updatedAt      DateTime               @updatedAt
+
+  document Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@index([inspectedKind])
+}
+
 model DocumentReview {
-  id           String         @id @default(cuid())
-  documentId   String
-  reviewerId   String
-  decision     ReviewDecision
-  reason       String?
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
+  id                     String                  @id @default(cuid())
+  documentId             String
+  reviewerId             String
+  decision               ReviewDecision
+  reason                 String?
+  requiredKindAtDecision MedicalCertificateKind?
+  createdAt              DateTime                @default(now())
+  updatedAt              DateTime                @updatedAt
 
   document Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
   reviewer User     @relation(fields: [reviewerId], references: [id], onDelete: Restrict)

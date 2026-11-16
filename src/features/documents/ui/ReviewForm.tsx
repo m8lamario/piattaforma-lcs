@@ -6,10 +6,15 @@ import { ActionError } from "@/shared/ui/ActionError";
 import { PendingSubmitButton } from "@/shared/ui/PendingSubmitButton";
 import type { ActionFailure } from "@/shared/errors";
 import { it } from "@/shared/i18n/it";
+import { medicalAdminConfirm, type MedicalCertificateKind } from "@/features/documents/domain/medicalRequirement";
+import type { ReviewQueueFilters } from "@/features/documents/domain/reviewQueue";
 import styles from "./ReviewForm.module.css";
 
 type Props = {
   documentId: string;
+  requiredKind: MedicalCertificateKind;
+  suggestedExpiry?: string;
+  filters?: ReviewQueueFilters;
   teamId?: string;
   queueQ?: string;
   queueFlow?: boolean;
@@ -28,8 +33,26 @@ function isActionFailure(state: unknown): state is ActionFailure {
   return Boolean(state && typeof state === "object" && "error" in state);
 }
 
+function FilterFields({ filters }: { filters?: ReviewQueueFilters }) {
+  if (!filters) return null;
+  return (
+    <>
+      {filters.teamId ? <input type="hidden" name="teamId" value={filters.teamId} /> : null}
+      {filters.q ? <input type="hidden" name="queueQ" value={filters.q} /> : null}
+      {filters.editionId ? <input type="hidden" name="editionId" value={filters.editionId} /> : null}
+      {filters.schoolId ? <input type="hidden" name="schoolId" value={filters.schoolId} /> : null}
+      {filters.requiredKind ? <input type="hidden" name="requiredKind" value={filters.requiredKind} /> : null}
+      {filters.status ? <input type="hidden" name="queueStatus" value={filters.status} /> : null}
+      {filters.anomaly ? <input type="hidden" name="anomaly" value={filters.anomaly} /> : null}
+    </>
+  );
+}
+
 export function ReviewForm({
   documentId,
+  requiredKind,
+  suggestedExpiry,
+  filters,
   teamId,
   queueQ,
   queueFlow,
@@ -80,15 +103,21 @@ export function ReviewForm({
         <input type="hidden" name="documentId" value={documentId} />
         <input type="hidden" name="decision" value="APPROVED" />
         {queueFlow ? <input type="hidden" name="flow" value="queue" /> : null}
-        {teamId ? <input type="hidden" name="teamId" value={teamId} /> : null}
-        {queueQ ? <input type="hidden" name="queueQ" value={queueQ} /> : null}
+        <FilterFields filters={filters ?? { teamId, q: queueQ }} />
         <label className={styles.label} htmlFor="expiresAt">
           {it.adminExpiry}
         </label>
-        <input id="expiresAt" name="expiresAt" type="date" className={styles.date} required />
-        <label className={styles.confirm} htmlFor="agonisticConfirm">
-          <input id="agonisticConfirm" name="agonisticConfirm" type="checkbox" required />
-          {it.adminAgonisticConfirm}
+        <input
+          id="expiresAt"
+          name="expiresAt"
+          type="date"
+          className={styles.date}
+          required
+          defaultValue={suggestedExpiry}
+        />
+        <label className={styles.confirm} htmlFor="kindConfirm">
+          <input id="kindConfirm" name="kindConfirm" type="checkbox" required />
+          {medicalAdminConfirm(requiredKind)}
         </label>
         {isActionFailure(approveState) ? (
           <ActionError error={approveState.error} code={approveState.code} />
@@ -112,8 +141,7 @@ export function ReviewForm({
         <input type="hidden" name="documentId" value={documentId} />
         <input type="hidden" name="decision" value="REJECTED" />
         {queueFlow ? <input type="hidden" name="flow" value="queue" /> : null}
-        {teamId ? <input type="hidden" name="teamId" value={teamId} /> : null}
-        {queueQ ? <input type="hidden" name="queueQ" value={queueQ} /> : null}
+        <FilterFields filters={filters ?? { teamId, q: queueQ }} />
         <label className={styles.label} htmlFor="reason">
           {it.adminRejectReason}
         </label>

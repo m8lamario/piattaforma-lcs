@@ -2,7 +2,14 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { SerializedAdminDocumentView, SerializedReviewQueueItem } from "@/features/documents/domain/adminView";
+import {
+  documentKindMismatch,
+  type SerializedAdminDocumentView,
+  type SerializedReviewQueueItem,
+} from "@/features/documents/domain/adminView";
+import { proposedCertificateExpiry } from "@/features/documents/domain/certificatePolicy";
+import { isReviewableDocumentStatus, medicalKindLabel } from "@/features/documents/domain/medicalRequirement";
+import type { ReviewQueueFilters } from "@/features/documents/domain/reviewQueue";
 import { parseReviewQueueItem } from "@/features/documents/domain/adminView";
 import {
   loadReviewDocumentsAction,
@@ -31,7 +38,7 @@ import styles from "@/app/(hub)/admin/documenti/[id]/page.module.css";
 type Props = {
   initialDocument: SerializedAdminDocumentView;
   initialQueue: SerializedReviewQueueItem[];
-  filters: { teamId?: string; q?: string };
+  filters: ReviewQueueFilters;
   canReview: boolean;
   canOpen: boolean;
 };
@@ -40,13 +47,39 @@ function statusLabel(status: string) {
   if (status === "APPROVED") return it.statusDocumentAPPROVED;
   if (status === "REJECTED") return it.statusDocumentREJECTED;
   if (status === "EXPIRED") return it.statusDocumentEXPIRED;
+  if (status === "PREVALIDATED") return it.statusDocumentPREVALIDATED;
+  if (status === "PROCESSING") return it.statusDocumentPROCESSING;
+  if (status === "UPLOADED") return it.statusDocumentUPLOADED;
   return it.statusDocumentPENDING_REVIEW;
 }
 
 function statusTone(status: string): StatusTone {
   if (status === "APPROVED") return "complete";
   if (status === "REJECTED") return "danger";
+  if (status === "PREVALIDATED") return "complete";
   return "attention";
+}
+
+function anomalyLabel(code: string) {
+  if (code === "UNREADABLE") return it.anomalyUNREADABLE;
+  if (code === "INCOMPLETE") return it.anomalyINCOMPLETE;
+  if (code === "KIND_MISMATCH") return it.anomalyKIND_MISMATCH;
+  if (code === "NAME_MISMATCH") return it.anomalyNAME_MISMATCH;
+  if (code === "EXPIRY_UNREADABLE") return it.anomalyEXPIRY_UNREADABLE;
+  if (code === "APPARENTLY_EXPIRED") return it.anomalyAPPARENTLY_EXPIRED;
+  if (code === "UNCLASSIFIED") return it.anomalyUNCLASSIFIED;
+  if (code === "INSPECTOR_FAILED") return it.anomalyINSPECTOR_FAILED;
+  return code;
+}
+
+function dateInputValue(iso: string | null) {
+  return iso ? iso.slice(0, 10) : undefined;
+}
+
+function nameMatchLabel(value: string) {
+  if (value === "MATCH") return it.adminReviewNameMATCH;
+  if (value === "MISMATCH") return it.adminReviewNameMISMATCH;
+  return it.adminReviewNameUNKNOWN;
 }
 
 function fileSize(bytes: number) {
@@ -113,7 +146,7 @@ export function MedicalReviewWorkspace({
   const parsedQueue = useMemo(() => queue.map(parseReviewQueueItem), [queue]);
   const document = views[currentId];
   const position = reviewQueuePosition(parsedQueue, currentId);
-  const pending = document?.status === "PENDING_REVIEW";
+  const pending = document ? isReviewableDocumentStatus(document.status) : false;
   const fileAvailable = canOpen && document && !document.blobPurgedAt;
 
   const ensureMetadata = useCallback(async (ids: string[]) => {
@@ -233,6 +266,13 @@ export function MedicalReviewWorkspace({
   const editionLabel = `${team.edition.competition.name} · ${team.edition.name}`;
   const rejectReason = document.reviews[0]?.decision === "REJECTED" ? document.reviews[0].reason : null;
   const cachedFile = get(document.id);
+  const suggestedExpiry = dateInputValue(
+    proposedCertificateExpiry({
+      requiredKind: team.edition.medicalCertificateKind,
+      issuedAt: document.inspection?.issuedAt ? new Date(document.inspection.issuedAt) : null,
+      expiresAt: document.inspection?.expiresAt ? new Date(document.inspection.expiresAt) : null,
+    })?.toISOString() ?? document.expiresAt,
+  );
 
   return (
     <>
@@ -296,11 +336,56 @@ export function MedicalReviewWorkspace({
               </strong>
             </p>
             <p className={styles.meta}>
+              {it.adminReviewSchool}: <strong>{team.school.name}</strong>
+            </p>
+            <p className={styles.meta}>
               {it.adminTeam}: <strong>{team.name}</strong>
             </p>
             <p className={styles.meta}>
               {it.adminEdition}: <strong>{editionLabel}</strong>
             </p>
+            <p className={styles.meta}>
+              {it.adminReviewRequiredKind}:{" "}
+              <strong>{medicalKindLabel(team.edition.medicalCertificateKind)}</strong>
+            </p>
+            <p className={styles.meta}>
+              {it.adminReviewRequiredKindAtUpload}:{" "}
+              <strong>{medicalKindLabel(document.requiredKindAtUpload)}</strong>
+            </p>
+            <p className={styles.meta}>
+              {it.adminReviewRecognizedKind}:{" "}
+              <strong>
+                {document.inspection?.recognizedKind
+                  ? medicalKindLabel(document.inspection.recognizedKind)
+                  : it.adminReviewUnknownKind}
+              </strong>
+            </p>
+            <p className={styles.meta}>
+              {it.adminReviewIssuedAt}:{" "}
+              <strong>
+                {document.inspection?.issuedAt ? dateInputValue(document.inspection.issuedAt) : "—"}
+              </strong>
+            </p>
+            <p className={styles.meta}>
+              {it.adminReviewDetectedExpiry}:{" "}
+              <strong>
+                {document.inspection?.expiresAt ? dateInputValue(document.inspection.expiresAt) : "—"}
+              </strong>
+            </p>
+            {document.inspection ? (
+              <p className={styles.meta}>
+                {it.adminReviewNameMatch}: <strong>{nameMatchLabel(document.inspection.nameMatch)}</strong>
+              </p>
+            ) : null}
+            {document.inspection?.anomalies.length ? (
+              <p className={styles.meta}>
+                {it.adminReviewAnomalies}:{" "}
+                <strong>{document.inspection.anomalies.map(anomalyLabel).join(", ")}</strong>
+              </p>
+            ) : (
+              <p className={styles.meta}>{it.adminReviewNoAnomalies}</p>
+            )}
+            {documentKindMismatch(document) ? <p className={styles.mismatch}>{it.adminReviewMismatch}</p> : null}
             <p className={styles.meta}>
               {it.adminReviewFile}: <strong>{fileKind(document.mimeType)}</strong>
               {" · "}
@@ -321,8 +406,9 @@ export function MedicalReviewWorkspace({
               <ReviewForm
                 key={document.id}
                 documentId={document.id}
-                teamId={filters.teamId}
-                queueQ={filters.q}
+                requiredKind={team.edition.medicalCertificateKind}
+                suggestedExpiry={suggestedExpiry}
+                filters={filters}
                 queueFlow
                 onQueueSuccess={handleReviewSuccess}
                 onQueueAttempt={() => {

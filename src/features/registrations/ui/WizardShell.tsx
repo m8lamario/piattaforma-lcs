@@ -22,6 +22,7 @@ import {
   WIZARD_STEP_LEADS,
   WIZARD_STEP_TIPS,
 } from "./wizardCopy";
+import { medicalStepLead, medicalStepTip, type MedicalCertificateKind } from "@/features/documents/domain/medicalRequirement";
 import styles from "./WizardShell.module.css";
 
 type WizardContextValue = {
@@ -57,6 +58,7 @@ type Props = {
   step: WizardStepId;
   steps: WizardStepId[];
   checklist: ChecklistItem[];
+  medicalKind?: MedicalCertificateKind;
   children: ReactNode;
 };
 
@@ -87,7 +89,9 @@ function StepMark({ index, status, active }: { index: number; status: ChecklistI
   );
 }
 
-export function WizardShell({ step, steps, checklist, children }: Props) {
+export function WizardShell({ step, steps, checklist, medicalKind = "COMPETITIVE", children }: Props) {
+  const lead = step === "certificato" ? medicalStepLead(medicalKind) : WIZARD_STEP_LEADS[step];
+  const tip = step === "certificato" ? medicalStepTip(medicalKind) : WIZARD_STEP_TIPS[step];
   const reduceMotion = useReducedMotion();
   const headingRef = useRef<HTMLHeadingElement>(null);
   const activeStepRef = useRef<HTMLLIElement>(null);
@@ -184,12 +188,12 @@ export function WizardShell({ step, steps, checklist, children }: Props) {
               <h1 ref={headingRef} tabIndex={-1}>
                 {WIZARD_STEP_LABELS[step]}
               </h1>
-              <p className={styles.lead}>{WIZARD_STEP_LEADS[step]}</p>
+              <p className={styles.lead}>{lead}</p>
             </div>
           </header>
 
           <Disclosure summary={it.wizardTipsTitle} icon="info" variant="inline" className={styles.tip}>
-            <p>{WIZARD_STEP_TIPS[step]}</p>
+            <p>{tip}</p>
           </Disclosure>
 
           <motion.div

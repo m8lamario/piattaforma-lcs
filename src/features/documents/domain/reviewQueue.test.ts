@@ -1,7 +1,36 @@
 import { describe, expect, it } from "vitest";
-import { applyReviewResult, nextPendingAfter, reviewQueuePosition, type ReviewQueueItem } from "./reviewQueue";
+import {
+  applyReviewResult,
+  nextPendingAfter,
+  parseReviewQueueFilters,
+  reviewQueuePosition,
+  type ReviewQueueItem,
+} from "./reviewQueue";
 
 const item = (id: string, iso: string): ReviewQueueItem => ({ id, uploadedAt: new Date(iso) });
+
+describe("filtri coda revisione", () => {
+  it("conserva edizione, scuola, kind, stato e anomalia", () => {
+    expect(
+      parseReviewQueueFilters({
+        editionId: "ed-1",
+        schoolId: "sc-1",
+        requiredKind: "NON_COMPETITIVE",
+        status: "PREVALIDATED",
+        anomaly: "KIND_MISMATCH",
+        q: "  mario  ",
+      }),
+    ).toEqual({
+      teamId: undefined,
+      q: "mario",
+      editionId: "ed-1",
+      schoolId: "sc-1",
+      requiredKind: "NON_COMPETITIVE",
+      status: "PREVALIDATED",
+      anomaly: "KIND_MISMATCH",
+    });
+  });
+});
 
 describe("coda di revisione certificati", () => {
   const queue = [item("a", "2026-10-01"), item("b", "2026-10-02"), item("c", "2026-10-03")];

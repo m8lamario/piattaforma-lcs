@@ -14,6 +14,7 @@ export const editionFormSchema = z.object({
   editionName: z.string().trim().min(1, "Inserisci il nome dell’edizione.").max(80),
   year: z.coerce.number().int().min(2000).max(2100),
   paymentMode: z.enum(["PLAYER", "TEAM", "BOTH"]),
+  medicalCertificateKind: z.enum(["COMPETITIVE", "NON_COMPETITIVE"]),
   playerFeeAmount: z.string().optional(),
   staffFeeAmount: z.string().optional(),
   teamFeeAmount: z.string().optional(),

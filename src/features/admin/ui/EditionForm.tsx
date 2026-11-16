@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useActionState } from "react";
 import { createEditionAction, deleteEditionAction, updateEditionAction } from "@/features/admin/actions";
 import { REQUIREMENT_CODES } from "@/features/admin/schemas/org";
+import { MEDICAL_CERTIFICATE_KINDS } from "@/features/documents/domain/medicalRequirement";
 import { Button } from "@/shared/ui/Button";
 import { ActionError } from "@/shared/ui/ActionError";
 import { PendingSubmitButton } from "@/shared/ui/PendingSubmitButton";
@@ -30,6 +31,7 @@ type Props = {
     name: string;
     year: number;
     paymentMode: string;
+    medicalCertificateKind?: string;
     playerFeeAmount: string | null;
     staffFeeAmount: string | null;
     teamFeeAmount: string | null;
@@ -83,6 +85,25 @@ export function EditionForm({ mode, edition, canManageFees = false }: Props) {
           <option value="TEAM">{it.paymentModeTEAM}</option>
           <option value="BOTH">{it.paymentModeBOTH}</option>
         </select>
+      </div>
+      <div className={fields.field}>
+        <label className={fields.label} htmlFor="medicalCertificateKind">
+          {it.adminMedicalKind}
+        </label>
+        <select
+          id="medicalCertificateKind"
+          name="medicalCertificateKind"
+          className={fields.input}
+          required
+          defaultValue={edition?.medicalCertificateKind ?? "COMPETITIVE"}
+        >
+          {MEDICAL_CERTIFICATE_KINDS.map((kind) => (
+            <option key={kind} value={kind}>
+              {kind === "COMPETITIVE" ? it.medicalKindCOMPETITIVE : it.medicalKindNON_COMPETITIVE}
+            </option>
+          ))}
+        </select>
+        <p className={fields.help}>{it.adminMedicalKindHelp}</p>
       </div>
       {canManageFees ? (
         <div className={fields.pair}>

@@ -210,7 +210,7 @@ async function main() {
     update: { maxSizeBytes: MAX_UPLOAD_BYTES },
     create: {
       code: "MEDICAL_CERTIFICATE",
-      name: "Certificato medico agonistico",
+      name: "Certificato medico",
       allowedMime: ["application/pdf", "image/jpeg", "image/png"],
       maxSizeBytes: MAX_UPLOAD_BYTES,
       requiresExpiry: false,

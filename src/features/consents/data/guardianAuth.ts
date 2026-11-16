@@ -38,7 +38,10 @@ function formatExpiry(date: Date) {
   return date.toISOString().replace("T", " ").slice(0, 16);
 }
 
-function clauseFor(code: ConsentBoxCode) {
+function clauseFor(code: ConsentBoxCode, kind?: "COMPETITIVE" | "NON_COMPETITIVE") {
+  if ((code === "M3" || code === "G4") && kind) {
+    return kind === "NON_COMPETITIVE" ? it[`box${code}NON_COMPETITIVE`] : it[`box${code}`];
+  }
   return it[`box${code}`];
 }
 
@@ -413,6 +416,7 @@ export async function submitGuardianAuthorization(input: {
   }
 
   const playerUserId = found.registration.playerProfile.userId;
+  const medicalKind = found.registration.team.edition.medicalCertificateKind;
   const partnersPublished = await isPartnerBoxVisible();
   const category = found.registration.category;
   const allowedCodes = new Set(
@@ -441,7 +445,7 @@ export async function submitGuardianAuthorization(input: {
     code: box.code,
     accepted: box.code === "G3" ? Boolean(g3Value) && !input.refuse : input.refuse ? false : box.accepted,
     value: box.code === "G3" ? g3Value : null,
-    clauseText: clauseFor(box.code),
+    clauseText: clauseFor(box.code, medicalKind),
   }));
   if (g3Value && !nextBoxes.some((box) => box.code === "G3")) {
     nextBoxes.push({
@@ -508,7 +512,7 @@ export async function submitGuardianAuthorization(input: {
         code: box.code as ConsentBoxCode,
         accepted: box.accepted,
         value: box.value,
-        clauseText: clauseFor(box.code as ConsentBoxCode),
+        clauseText: clauseFor(box.code as ConsentBoxCode, medicalKind),
       })),
     });
 
@@ -520,7 +524,7 @@ export async function submitGuardianAuthorization(input: {
         value: box.value ?? null,
         previousAccepted: box.previousAccepted,
         previousValue: box.previousValue,
-        clauseText: clauseFor(box.code as ConsentBoxCode),
+        clauseText: clauseFor(box.code as ConsentBoxCode, medicalKind),
         legalDocumentVersionId: input.versionIds.terms ?? input.versionIds[MEDIA_RELEASE_SLUG] ?? null,
       })),
     });

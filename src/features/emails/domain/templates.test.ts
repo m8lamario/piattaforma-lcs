@@ -27,7 +27,7 @@ describe("template email", () => {
     expect(message.html).toContain("https://hub.test/area");
   });
 
-  it("il promemoria agonistico non include il motivo del rifiuto", () => {
+  it("il promemoria certificato non include il motivo del rifiuto", () => {
     const message = render("MEDICAL_DEADLINE", { areaUrl: "https://hub.test/area" });
     expect(message.text.toLowerCase()).not.toContain("diagnosi");
     expect(message.text.toLowerCase()).not.toContain("motivo");

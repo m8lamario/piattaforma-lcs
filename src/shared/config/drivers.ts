@@ -13,6 +13,10 @@ export function paymentDriver() {
   return process.env.PAYMENT_DRIVER === "stripe" ? "stripe" : "stub";
 }
 
+export function certificateInspectorDriver() {
+  return process.env.CERTIFICATE_INSPECTOR_DRIVER === "stub" ? "stub" : "local";
+}
+
 export function paymentProviderName() {
   if (
     paymentDriver() === "stripe" &&

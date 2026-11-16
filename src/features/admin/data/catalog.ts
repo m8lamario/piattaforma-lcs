@@ -1,5 +1,12 @@
 import { randomBytes } from "node:crypto";
-import type { PaymentMode, RegistrationStatus, RequirementAudience, RequirementCode } from "@generated/client";
+import type {
+  MedicalCertificateKind,
+  PaymentMode,
+  RegistrationStatus,
+  RequirementAudience,
+  RequirementCode,
+} from "@generated/client";
+import { QUEUE_DOCUMENT_STATUSES } from "@/features/documents/domain/medicalRequirement";
 import { prisma } from "@/shared/lib/prisma";
 
 export function toSlug(value: string) {
@@ -30,7 +37,9 @@ export async function uniqueCompetitionSlug(name: string) {
 
 export async function adminHubStats() {
   const [pendingDocuments, registrations, byStatus, pendingSchoolRequests] = await Promise.all([
-    prisma.document.count({ where: { status: "PENDING_REVIEW", type: { code: "MEDICAL_CERTIFICATE" } } }),
+    prisma.document.count({
+      where: { status: { in: [...QUEUE_DOCUMENT_STATUSES] }, type: { code: "MEDICAL_CERTIFICATE" } },
+    }),
     prisma.registration.count(),
     prisma.registration.groupBy({ by: ["status"], _count: { _all: true } }),
     prisma.schoolRegistrationRequest.count({ where: { status: "PENDING" } }),
@@ -221,6 +230,7 @@ export async function createCompetitionWithEdition(input: {
   isActive: boolean;
   registrationOpensAt: Date | null;
   registrationClosesAt: Date | null;
+  medicalCertificateKind: MedicalCertificateKind;
   requirements: { code: RequirementCode; required: boolean; appliesTo: RequirementAudience }[];
 }) {
   const slug = await uniqueCompetitionSlug(input.competitionName);
@@ -239,6 +249,7 @@ export async function createCompetitionWithEdition(input: {
           isActive: input.isActive,
           registrationOpensAt: input.registrationOpensAt,
           registrationClosesAt: input.registrationClosesAt,
+          medicalCertificateKind: input.medicalCertificateKind,
           requirements: { create: input.requirements },
         },
       },
@@ -258,6 +269,7 @@ export async function updateEditionAdmin(input: {
   isActive: boolean;
   registrationOpensAt: Date | null;
   registrationClosesAt: Date | null;
+  medicalCertificateKind: MedicalCertificateKind;
   requirements: { code: RequirementCode; required: boolean; appliesTo: RequirementAudience }[];
 }) {
   await prisma.$transaction(async (tx) => {
@@ -273,6 +285,7 @@ export async function updateEditionAdmin(input: {
         isActive: input.isActive,
         registrationOpensAt: input.registrationOpensAt,
         registrationClosesAt: input.registrationClosesAt,
+        medicalCertificateKind: input.medicalCertificateKind,
       },
     });
     await tx.editionRequirement.deleteMany({ where: { editionId: input.id } });
@@ -322,7 +335,7 @@ export async function deleteEditionAdmin(id: string) {
 }
 
 export async function filterOptions() {
-  const [editions, teams] = await Promise.all([
+  const [editions, teams, schools] = await Promise.all([
     prisma.edition.findMany({
       orderBy: [{ year: "desc" }, { name: "asc" }],
       select: { id: true, name: true, year: true, competition: { select: { name: true } } },
@@ -335,6 +348,10 @@ export async function filterOptions() {
         edition: { select: { name: true, competition: { select: { name: true } } } },
       },
     }),
+    prisma.school.findMany({
+      orderBy: { name: "asc" },
+      select: { id: true, name: true },
+    }),
   ]);
-  return { editions, teams };
+  return { editions, teams, schools };
 }

@@ -98,6 +98,8 @@ export const it = {
   stepDatiLead: "Nome, codice fiscale e come contattarti. L’email è quella dell’account.",
   stepTutoreLead: "Serve un contatto di un genitore o tutore. L’account resta il tuo.",
   stepCertificatoLead: "Carica il certificato agonistico. Il rappresentante vede solo lo stato, non il file.",
+  stepCertificatoLeadNON_COMPETITIVE:
+    "Carica il certificato non agonistico. Il rappresentante vede solo lo stato, non il file.",
   stepPrivacyLead:
     "Leggi ogni informativa e conferma solo se l’hai presa visione.",
   stepLiberatorieLead:
@@ -107,6 +109,8 @@ export const it = {
   stepDatiTip: "Inserisci i dati esattamente come riportati su documento e tessera sanitaria per consentire il tesseramento.",
   stepTutoreTip: "Obbligatorio per i minorenni. Riceverà per trasparenza il titolo delle comunicazioni di servizio.",
   stepCertificatoTip: "Accettati file PDF, JPEG o PNG fino a 10 MB. Deve attestare l’idoneità alla pratica sportiva agonistica per il calcio.",
+  stepCertificatoTipNON_COMPETITIVE:
+    "Accettati file PDF, JPEG o PNG fino a 10 MB. Deve attestare l’idoneità alla pratica sportiva non agonistica.",
   stepPrivacyTip: "La presa visione e l’accettazione sono necessarie per la gestione della scheda atleta e della coppa.",
   stepLiberatorieTip: "Facoltativo: riguarda solo riprese audio/video e foto per la cronaca sportiva sui canali della manifestazione.",
   stepPagamentoTip: "Transazione protetta. La conferma a schermo arriva quando il pagamento risulta riuscito; finché è in verifica non è un esito definitivo.",
@@ -220,6 +224,8 @@ export const it = {
   navAdminDocuments: "Documenti",
   navCommunications: "Comunicazioni",
   medicalNone: "Carica il certificato medico agonistico. Il rappresentante di squadra vedrà solo lo stato, non il file.",
+  medicalNoneNON_COMPETITIVE:
+    "Carica il certificato medico non agonistico. Il rappresentante di squadra vedrà solo lo stato, non il file.",
   medicalPaperNote:
     "Il caricamento sulla piattaforma non sostituisce automaticamente un’eventuale consegna o verifica del documento in formato cartaceo durante le attività della competizione. Le modalità definitive restano definite dall’organizzazione.",
   medicalAccept: "Formati ammessi: PDF, JPEG o PNG. Dimensione massima",
@@ -251,6 +257,31 @@ export const it = {
   adminReviewFileMissing: "Il file del certificato non è disponibile.",
   adminReviewUploaded: "Caricato il",
   adminReviewFile: "Documento",
+  adminReviewSchool: "Scuola",
+  adminReviewRequiredKind: "Certificato richiesto",
+  adminReviewRequiredKindAtUpload: "Richiesto al caricamento",
+  adminReviewRecognizedKind: "Tipologia riconosciuta",
+  adminReviewIssuedAt: "Data di rilascio letta",
+  adminReviewDetectedExpiry: "Scadenza letta in automatico",
+  adminReviewAnomalies: "Anomalie segnalate",
+  adminReviewMismatch: "Il certificato caricato non corrisponde al requisito attuale dell’edizione. Lo storico delle decisioni già registrate non cambia.",
+  adminReviewNoAnomalies: "Nessuna anomalia automatica. La decisione resta dell’amministratore.",
+  adminReviewUnknownKind: "Non classificata",
+  adminReviewNameMatch: "Nominativo",
+  adminReviewNameMATCH: "Corrisponde",
+  adminReviewNameMISMATCH: "Non corrisponde",
+  adminReviewNameUNKNOWN: "Non verificabile",
+  adminFilterKind: "Tipologia richiesta",
+  adminFilterStatus: "Stato del documento",
+  adminFilterAnomaly: "Motivo della revisione",
+  anomalyUNREADABLE: "Illeggibile o sfocato",
+  anomalyINCOMPLETE: "Incompleto",
+  anomalyKIND_MISMATCH: "Tipologia non corrispondente",
+  anomalyNAME_MISMATCH: "Nominativo non corrispondente",
+  anomalyEXPIRY_UNREADABLE: "Scadenza non riconoscibile",
+  anomalyAPPARENTLY_EXPIRED: "Apparentemente scaduto",
+  anomalyUNCLASSIFIED: "Non riconosciuto",
+  anomalyINSPECTOR_FAILED: "Pre-validazione non riuscita",
   adminRecentDocuments: "Revisioni recenti",
   adminDocumentTitle: "Revisione certificato",
   adminDocumentClosed: "Questo documento non è più in attesa di revisione.",
@@ -264,6 +295,9 @@ export const it = {
   adminPlayer: "Giocatore",
   adminTeam: "Squadra",
   statusDocumentPENDING_REVIEW: "In revisione",
+  statusDocumentPREVALIDATED: "Pre-validato",
+  statusDocumentPROCESSING: "Elaborazione",
+  statusDocumentUPLOADED: "Caricato",
   statusDocumentAPPROVED: "Approvato",
   statusDocumentREJECTED: "Rifiutato",
   statusDocumentEXPIRED: "Scaduto",
@@ -424,7 +458,7 @@ export const it = {
   staffConsentOk: "Consensi registrati",
   staffPaymentDue: "Pagamento da completare",
   staffPaymentOk: "Pagamento registrato",
-  staffNoMedical: "Per lo staff tecnico il certificato medico agonistico non è richiesto.",
+  staffNoMedical: "Per lo staff tecnico il certificato medico non è richiesto.",
   staffFeeNote: "Quota dello staff tecnico per questa edizione. L’importo è fissato dall’organizzazione e non si modifica da questa pagina.",
   staffAreaTitle: "La tua iscrizione",
   areaNowCoach: "Designa l’allenatore tra lo staff tecnico.",
@@ -725,6 +759,9 @@ export const it = {
   adminOpensAt: "Iscrizioni dal",
   adminClosesAt: "Iscrizioni fino al",
   adminEditionActive: "Edizione attiva",
+  adminMedicalKind: "Certificato medico richiesto",
+  adminMedicalKindHelp:
+    "Il tipo di certificato che i giocatori devono caricare. Lo staff tecnico non lo carica. Cambiare il valore non modifica i certificati già approvati.",
   adminRequirements: "Requisiti",
   adminCreateEdition: "Nuova edizione",
   adminEditionsHelp: "Crea competizioni e finestre di iscrizione. Non cancellare un’edizione con iscritti.",
@@ -1018,6 +1055,8 @@ export const it = {
   errorDOCUMENT_ALREADY_REVIEWED: "Questo certificato è già stato revisionato. La decisione non è stata registrata di nuovo.",
   errorDOCUMENT_AGONISTIC_CONFIRM_REQUIRED:
     "Per approvare conferma che il file è un certificato di idoneità sportiva agonistica per il calcio, in corso di validità.",
+  errorDOCUMENT_KIND_CONFIRM_REQUIRED:
+    "Per approvare conferma che il file è il certificato richiesto da questa edizione, in corso di validità.",
   errorCONSENT_REQUIRED_UNCHECKED: "Devi confermare ogni informativa di questo passo. Nessuna è preselezionata.",
   errorCONSENT_VERSION_STALE: "Il testo è stato aggiornato. Rileggi la versione corrente e conferma di nuovo.",
   errorCONSENT_MEDIA_DECISION_REQUIRED: "Scegli se accettare o non accettare la liberatoria.",
@@ -1235,6 +1274,8 @@ export const it = {
   boxM2: "Ho letto l’informativa privacy.",
   boxM3:
     "Certificato medico — Acconsento che ESL acquisisca e conservi la copia del mio certificato medico di idoneità sportiva agonistica per il calcio, per verificarne l’idoneità e la scadenza (dato relativo alla salute). La copia resta fino a 90 giorni dopo la conclusione del torneo locale.",
+  boxM3NON_COMPETITIVE:
+    "[INSERIRE CLAUSOLA M3 PER CERTIFICATO NON AGONISTICO] — Acconsento che ESL acquisisca e conservi la copia del mio certificato medico di idoneità sportiva non agonistica, per verificarne l’idoneità e la scadenza (dato relativo alla salute). Testo legale da validare.",
   boxM4:
     "Marketing ESL — Acconsento a ricevere da ESL comunicazioni promozionali e di marketing su tornei, eventi, iniziative e offerte, tramite email, SMS, WhatsApp e telefono. Il consenso vale dopo il clic nell’email di conferma.",
   boxM5:
@@ -1250,6 +1291,8 @@ export const it = {
   boxG3: "Scelta sul secondo genitore",
   boxG4:
     "Certificato medico — Acconsento che ESL acquisisca e conservi la copia del certificato medico di idoneità sportiva agonistica per il calcio, per verificarne l’idoneità e la scadenza (dato relativo alla salute). La copia resta fino a 90 giorni dopo la conclusione del torneo locale.",
+  boxG4NON_COMPETITIVE:
+    "[INSERIRE CLAUSOLA G4 PER CERTIFICATO NON AGONISTICO] — Acconsento che ESL acquisisca e conservi la copia del certificato medico di idoneità sportiva non agonistica, per verificarne l’idoneità e la scadenza (dato relativo alla salute). Testo legale da validare.",
   boxG5:
     "Cognome completo — Acconsento alla pubblicazione di nome e cognome completi in classifiche, tabellini e statistiche su sito, app e social del torneo. Senza questo consenso compariranno nome e iniziale del cognome.",
   boxG6:
@@ -1279,6 +1322,8 @@ export const it = {
   consentMediaSave: "Salva le scelte e continua",
   medicalCopyNotice:
     "Carica solo il certificato di idoneità sportiva agonistica per il calcio. Non allegare referti, cartelle o esami. La copia resta fino a 90 giorni dopo la conclusione del torneo locale. La casella sul trattamento è nel passo privacy.",
+  medicalCopyNoticeNON_COMPETITIVE:
+    "Carica solo il certificato di idoneità sportiva non agonistica. Non allegare referti, cartelle o esami. La copia resta fino a 90 giorni dopo la conclusione del torneo locale. La casella sul trattamento è nel passo privacy.",
   consentsTitle: "I tuoi consensi",
   consentsHelp:
     "Ogni casella facoltativa si toglie con un clic. Le obbligatorie e il certificato non si modificano da qui.",
@@ -1373,9 +1418,9 @@ export const it = {
   schoolChecklistMedia: "Liberatorie dei giocatori",
   schoolChecklistPlayerPayment: "Quote dei giocatori",
   schoolChecklistOwn: "Completa la tua iscrizione personale",
-  schoolChecklistMedical: "Certificati medici agonistici",
+  schoolChecklistMedical: "Certificati medici",
   schoolChecklistMedicalHelp:
-    "Il certificato agonistico non blocca il completamento amministrativo. Va caricato almeno 7 giorni prima dell’inizio della competizione. Vedi Termini, §6.",
+    "Il certificato medico non blocca il completamento amministrativo. Va caricato almeno 7 giorni prima dell’inizio della competizione. Vedi Termini, §6.",
   schoolChecklistCount: "{done}/{total} completati",
   schoolChecklistWaitingOrg: "In attesa dell’organizzazione",
   rosterEmailUnverified: "Email da verificare",
@@ -1389,6 +1434,12 @@ export const it = {
   rosterFilterUnpaid: "Quota",
   rosterFilterMedical: "Certificato",
   rosterCauseNav: "Da controllare",
+  medicalKindCOMPETITIVE: "Agonistico",
+  medicalKindNON_COMPETITIVE: "Non agonistico",
+  medicalBannerCOMPETITIVE:
+    "Serve il certificato medico per attività sportiva agonistica per il calcio, in corso di validità. Non è sufficiente un certificato generico, uno non agonistico o un’autocertificazione.",
+  medicalBannerNON_COMPETITIVE:
+    "Serve il certificato medico per attività sportiva non agonistica, in corso di validità. Non è sufficiente un certificato generico di buona salute, di sana e robusta costituzione o un’autocertificazione.",
   medicalAgonisticBanner:
     "Serve il certificato medico per attività sportiva agonistica per il calcio, in corso di validità. Non è sufficiente un certificato generico, uno non agonistico o un’autocertificazione.",
   medicalDeadlineHelp: "Caricalo almeno 7 giorni prima dell’inizio della competizione ({date}). Fino ad allora l’iscrizione amministrativa può risultare completa.",
@@ -1400,21 +1451,33 @@ export const it = {
     "Carica il certificato di idoneità agonistica per il calcio. Va caricato almeno 7 giorni prima dell’inizio della competizione ({date}). Non blocca l’iscrizione amministrativa.",
   medicalStepBoxNoDate:
     "Carica il certificato di idoneità agonistica per il calcio. La data di inizio non è ancora impostata: il termine dei 7 giorni non è calcolabile. Non blocca l’iscrizione amministrativa.",
+  medicalStepBoxNON_COMPETITIVE:
+    "Carica il certificato di idoneità sportiva non agonistica. Va caricato almeno 7 giorni prima dell’inizio della competizione ({date}). Non blocca l’iscrizione amministrativa.",
+  medicalStepBoxNoDateNON_COMPETITIVE:
+    "Carica il certificato di idoneità sportiva non agonistica. La data di inizio non è ancora impostata: il termine dei 7 giorni non è calcolabile. Non blocca l’iscrizione amministrativa.",
   medicalEligibilityYes: "Idoneità sportiva: in regola",
   medicalEligibilityNo: "Idoneità sportiva: non in regola",
   adminAgonisticConfirm: "Confermo che il file è un certificato di idoneità sportiva agonistica per il calcio, in corso di validità.",
+  adminConfirmCOMPETITIVE:
+    "Confermo che il file è un certificato di idoneità sportiva agonistica per il calcio, in corso di validità.",
+  adminConfirmNON_COMPETITIVE:
+    "Confermo che il file è un certificato di idoneità sportiva non agonistica, in corso di validità.",
   termsPointerMedical: "Obbligo e natura del certificato: Termini, §6.",
   termsPointerRefund: "Quote e rimborsi: Termini, §7 e §11.",
   termsPointerResponsibility: "La correttezza dei dati e il rispetto delle scadenze restano a carico di chi si iscrive. Le condizioni economiche sono nei Termini.",
-  emailMedicalDeadlineSubject: "Manca il certificato medico agonistico",
+  emailMedicalDeadlineSubject: "Manca il certificato medico",
   emailMedicalDeadlineText:
-    "Carica il certificato di idoneità sportiva agonistica per il calcio almeno 7 giorni prima dell’inizio della competizione.\n\n{{link}}",
-  emailMedicalDeadlinePreheader: "Promemoria certificato agonistico",
-  emailMedicalDeadlineIntro: "Manca ancora il certificato medico agonistico richiesto per giocare.",
-  notifyMedicalDeadlineTitle: "Certificato agonistico da caricare",
-  notifyMedicalDeadlineBody: "Carica il certificato di idoneità sportiva agonistica almeno 7 giorni prima dell’inizio della competizione.",
-  notifyMedicalDeadlineRepTitle: "Certificati agonistici in scadenza",
-  notifyMedicalDeadlineRepBody: "Alcuni giocatori della tua scuola non hanno ancora un certificato agonistico valido.",
+    "Carica il certificato medico richiesto dalla tua edizione almeno 7 giorni prima dell’inizio della competizione.\n\n{{link}}",
+  emailMedicalDeadlinePreheader: "Promemoria certificato medico",
+  emailMedicalDeadlineIntro: "Manca ancora il certificato medico richiesto per giocare.",
+  notifyMedicalDeadlineTitle: "Certificato medico da caricare",
+  notifyMedicalDeadlineBody: "Carica il certificato medico richiesto dalla tua edizione almeno 7 giorni prima dell’inizio della competizione.",
+  notifyMedicalDeadlineBodyCOMPETITIVE:
+    "Carica il certificato agonistico richiesto dalla tua edizione almeno 7 giorni prima dell’inizio della competizione.",
+  notifyMedicalDeadlineBodyNON_COMPETITIVE:
+    "Carica il certificato non agonistico richiesto dalla tua edizione almeno 7 giorni prima dell’inizio della competizione.",
+  notifyMedicalDeadlineRepTitle: "Certificati medici in scadenza",
+  notifyMedicalDeadlineRepBody: "Alcuni giocatori della tua scuola non hanno ancora un certificato medico valido.",
   emailGuardianAuthorizeSubject: "Autorizzazione per un minore iscritto al torneo",
   emailGuardianAuthorizeSummary:
     "Ti chiediamo di leggere le informative e di compiere gli atti di iscrizione, salute e liberatorie per il minore indicato.",
@@ -1634,7 +1697,7 @@ export const it = {
   emailPurposePAYMENT_SUCCEEDED: "Pagamento",
   emailPurposeREGISTRATION_WITHDRAWN: "Iscrizione ritirata",
   emailPurposeREGISTRATION_REMINDER: "Sollecito iscrizione",
-  emailPurposeMEDICAL_DEADLINE: "Promemoria certificato agonistico",
+  emailPurposeMEDICAL_DEADLINE: "Promemoria certificato medico",
   emailPurposeLEGAL_VERSION_NOTICE: "Versione informativa",
   emailPurposeMANUAL: "Comunicazione manuale",
   emailPurposeEMAIL_VERIFY: "Verifica email",
