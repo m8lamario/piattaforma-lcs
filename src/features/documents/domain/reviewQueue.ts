@@ -89,22 +89,63 @@ export function applyReviewResult<T extends { id: string }>(
   return { status: "next", currentId: queue[0]!.id, queue };
 }
 
-export function reviewQueueQuery(filters: { teamId?: string; q?: string }) {
+export function parseReviewQueueFilters(input: {
+  teamId?: string;
+  q?: string;
+  editionId?: string;
+  schoolId?: string;
+  requiredKind?: string;
+  status?: string;
+  anomaly?: string;
+}): ReviewQueueFilters {
+  const trim = (value?: string) => value?.trim() || undefined;
+  return {
+    teamId: trim(input.teamId),
+    q: trim(input.q)?.slice(0, 80),
+    editionId: trim(input.editionId),
+    schoolId: trim(input.schoolId),
+    requiredKind: trim(input.requiredKind),
+    status: trim(input.status),
+    anomaly: trim(input.anomaly),
+  };
+}
+
+export type ReviewQueueFilters = {
+  teamId?: string;
+  q?: string;
+  editionId?: string;
+  schoolId?: string;
+  requiredKind?: string;
+  status?: string;
+  anomaly?: string;
+};
+
+export function reviewQueueQuery(filters: ReviewQueueFilters) {
   const params = new URLSearchParams();
   if (filters.teamId) params.set("teamId", filters.teamId);
   if (filters.q) params.set("q", filters.q);
+  if (filters.editionId) params.set("editionId", filters.editionId);
+  if (filters.schoolId) params.set("schoolId", filters.schoolId);
+  if (filters.requiredKind) params.set("requiredKind", filters.requiredKind);
+  if (filters.status) params.set("status", filters.status);
+  if (filters.anomaly) params.set("anomaly", filters.anomaly);
   const text = params.toString();
   return text ? `?${text}` : "";
 }
 
-export function reviewDocumentHref(id: string, filters: { teamId?: string; q?: string }) {
+export function reviewDocumentHref(id: string, filters: ReviewQueueFilters) {
   return `/admin/documenti/${id}${reviewQueueQuery(filters)}`;
 }
 
-export function reviewDoneHref(filters: { teamId?: string; q?: string }) {
+export function reviewDoneHref(filters: ReviewQueueFilters) {
   const params = new URLSearchParams();
   if (filters.teamId) params.set("teamId", filters.teamId);
   if (filters.q) params.set("q", filters.q);
+  if (filters.editionId) params.set("editionId", filters.editionId);
+  if (filters.schoolId) params.set("schoolId", filters.schoolId);
+  if (filters.requiredKind) params.set("requiredKind", filters.requiredKind);
+  if (filters.status) params.set("status", filters.status);
+  if (filters.anomaly) params.set("anomaly", filters.anomaly);
   params.set("done", "1");
   return `/admin/documenti?${params.toString()}`;
 }

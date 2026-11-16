@@ -12,3 +12,4 @@
 | DOCUMENT_ALREADY_REVIEWED | DOCUMENTS | Non più in revisione | Un altro revisore ha già deciso | Decisione non registrata di nuovo | Nessuno | review |
 | STAFF_MEDICAL_NOT_REQUIRED | DOCUMENTS | Upload medico su staff | category STAFF | Il certificato non è richiesto | Nessuno | `uploadMedicalCertificateAction` |
 | DOCUMENT_AGONISTIC_CONFIRM_REQUIRED | DOCUMENTS | Approvazione senza conferma agonistica | Checkbox assente | Conferma che il file è un certificato agonistico | Correggi | review |
+| DOCUMENT_KIND_CONFIRM_REQUIRED | DOCUMENTS | Approvazione senza conferma del tipo richiesto | Checkbox assente | Conferma che il file è il certificato richiesto dall’edizione | Correggi | review |

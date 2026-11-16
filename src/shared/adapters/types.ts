@@ -96,3 +96,16 @@ export interface PaymentAdapter {
 export interface MonitoringAdapter {
   captureError(error: unknown, context?: Record<string, string>): void;
 }
+
+export type CertificateExtractReason = "text" | "image" | "unreadable" | "failed";
+
+export type CertificateExtractResult = {
+  adapter: string;
+  reason: CertificateExtractReason;
+  text: string | null;
+};
+
+export interface CertificateInspector {
+  readonly driver: string;
+  extractText(input: { mimeType: string; body: Buffer }): Promise<CertificateExtractResult>;
+}

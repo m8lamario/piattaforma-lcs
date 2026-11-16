@@ -10,6 +10,10 @@ import { FileDropzone } from "@/shared/ui/FileDropzone";
 import { ActionError } from "@/shared/ui/ActionError";
 import { WizardLaterButton } from "@/features/registrations/ui/WizardShell";
 import { it } from "@/shared/i18n/it";
+import {
+  medicalCopyNotice,
+  type MedicalCertificateKind,
+} from "@/features/documents/domain/medicalRequirement";
 import fields from "@/shared/ui/form.module.css";
 
 type DocumentState = {
@@ -23,6 +27,7 @@ type Props = {
   document: DocumentState | null;
   readOnly?: boolean;
   allowFileOpen?: boolean;
+  requiredKind?: MedicalCertificateKind;
 };
 
 function statusBanner(document: DocumentState) {
@@ -35,7 +40,12 @@ function statusBanner(document: DocumentState) {
   return { copy: it.medicalPending, className: fields.bannerWarn };
 }
 
-export function MedicalUploadForm({ document, readOnly = false, allowFileOpen = true }: Props) {
+export function MedicalUploadForm({
+  document,
+  readOnly = false,
+  allowFileOpen = true,
+  requiredKind = "COMPETITIVE",
+}: Props) {
   const [state, action, pending] = useActionState(uploadMedicalCertificateAction, undefined);
   const mustUpload = !document || document.status === "REJECTED" || document.status === "EXPIRED";
   const maxMb = Math.round(MAX_UPLOAD_BYTES / (1024 * 1024));
@@ -55,7 +65,7 @@ export function MedicalUploadForm({ document, readOnly = false, allowFileOpen = 
       ) : null}
 
       <Disclosure summary={it.medicalNotesToggle} icon="info" variant="boxed">
-        <p>{it.medicalCopyNotice}</p>
+        <p>{medicalCopyNotice(requiredKind)}</p>
         <p>{it.medicalPaperNote}</p>
       </Disclosure>
 

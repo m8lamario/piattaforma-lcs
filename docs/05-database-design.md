@@ -112,6 +112,7 @@ Un rappresentante che è anche giocatore ha `TEAM_REPRESENTATIVE` + membership `
 - `staffFeeAmount` Decimal, default `5`: quota individuale dello staff tecnico per quell’edizione. Il partecipante non la invia.
 - Queste tre quote sono la **predefinita dell’edizione**. Una squadra può sostituirle con `playerFeeCents`, `staffFeeCents`, `teamFeeCents` (interi, centesimi, null = usa la predefinita). Cambiare la predefinita non riscrive le quote già personalizzate. La risoluzione è: quota squadra, altrimenti quota edizione. Senza un importo positivo il checkout non parte.
 - `isActive`
+- `medicalCertificateKind` `COMPETITIVE` | `NON_COMPETITIVE`, default `COMPETITIVE`: tipo di certificato medico richiesto ai giocatori di quell’edizione. Non è duplicato sulla squadra né sul documento come requisito corrente: al caricamento si fotografa `Document.requiredKindAtUpload`. Un cambio successivo non riscrive i documenti già `APPROVED` / `REJECTED` / `EXPIRED` / `REPLACED`.
 
 **EditionRequirement**
 
@@ -162,13 +163,21 @@ Vincolo di database, non solo applicativo: `Registration (teamId, editionId)` �
 - registrationId, playerProfileId, typeId
 - storageKey, mimeType, sizeBytes, checksumSha256
 - originalFilename (sanitizzato)
-- status UPLOADED|PENDING_REVIEW|APPROVED|REJECTED|EXPIRED|REPLACED
+- status UPLOADED|PROCESSING|PENDING_REVIEW|PREVALIDATED|APPROVED|REJECTED|EXPIRED|REPLACED
+- `requiredKindAtUpload` fotografia del requisito dell’edizione al caricamento
 - uploadedAt, expiresAt, replacedById, blobPurgedAt
 - **nessun byte del file**
 
+`PROCESSING` e `PREVALIDATED` sono evidenza di pre-validazione, non di idoneità. L’idoneità sportiva resta `APPROVED` con scadenza. `PREVALIDATED` è in coda di revisione umana insieme a `PENDING_REVIEW`.
+
+**MedicalInspection** (1:1 Document)
+
+- adapter, inspectedKind, recognizedKind, issuedAt, expiresAt, nameMatch, stampPresence, anomalies[], inspectedAt
+- Nessun testo OCR, nessun byte. Serve al revisore per confrontare il file con il requisito dell’edizione.
+
 **DocumentReview**
 
-- documentId, reviewerUserId, decision APPROVED|REJECTED, reason, createdAt
+- documentId, reviewerUserId, decision APPROVED|REJECTED, reason, `requiredKindAtDecision` nullable (le review precedenti restano `null`), createdAt
 
 ## 8. Consensi
 
@@ -245,7 +254,7 @@ Indici: `EmailMessage` status+queuedAt, purpose+queuedAt, userId, actorUserId, p
 
 - actorUserId nullable (sistema)
 - actorKind USER|GUARDIAN_LINK|SYSTEM, actorRole, guardianId, authorizationId, legalDocumentVersionId
-- action (enum string: DOCUMENT_VIEW, CONSENT_ACCEPT, GUARDIAN_AUTHORIZE, …)
+- action (enum string: DOCUMENT_VIEW, DOCUMENT_INSPECT, CONSENT_ACCEPT, GUARDIAN_AUTHORIZE, …). `DOCUMENT_INSPECT` non contiene testo OCR.
 - entityType, entityId
 - metadata Json redatto
 - ip, userAgent

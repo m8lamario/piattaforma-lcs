@@ -6,6 +6,7 @@ import { auth } from "@/auth";
 import { appendBoxSet, appendConsentChoice } from "@/features/consents/data/choices";
 import { notifyMediaRevocation } from "@/features/consents/data/guardianAuth";
 import { it } from "@/shared/i18n/it";
+import { consentClauseText } from "@/features/documents/domain/medicalRequirement";
 import { ensureC1Sent, ensureMarketingOptIn } from "@/features/consents/data/followup";
 import { recordConsent } from "@/features/consents/data/legal";
 import { isPartnerBoxVisible } from "@/features/consents/data/partners";
@@ -214,7 +215,10 @@ export async function savePrivacyConsentsAction(
     legalDocumentVersionId: termsVersionId,
     actorKind: "USER",
     actorRole: "PLAYER",
-    boxes: boxes.map((box) => ({ ...box, clauseText: it[`box${box.code}`] })),
+    boxes: boxes.map((box) => ({
+      ...box,
+      clauseText: consentClauseText(box.code, workspace.registration.medicalCertificateKind),
+    })),
     ...trace,
   });
 

@@ -50,3 +50,5 @@ export const SCHOOL_ACCESS_COOKIE = "eph-school-access";
 export const SUPPORT_EMAIL = process.env.SUPPORT_EMAIL ?? "it@estudentsleague.com";
 export const MEDICAL_UPLOAD_LEAD_DAYS = Number(process.env.MEDICAL_UPLOAD_LEAD_DAYS ?? 7);
 export const MEDICAL_DEADLINE_REMINDER_DAYS = [14, 7, 1] as const;
+/** Durata operativa proposta per il non agonistico (mesi dal rilascio). Non è una norma certificata. */
+export const NON_COMPETITIVE_VALIDITY_MONTHS = Number(process.env.NON_COMPETITIVE_VALIDITY_MONTHS ?? 12);

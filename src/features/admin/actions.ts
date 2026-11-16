@@ -37,6 +37,8 @@ import { appOrigin } from "@/shared/config/app";
 import { parseEuroToCents } from "@/features/payments/domain/fees";
 import { saveEditionDefaultFees, saveTeamFeeOverrides } from "@/features/admin/data/team-fees";
 import { resetEnrollmentAuthorization } from "@/features/consents/data/guardianAuth";
+import { realignOpenDocumentsForEdition } from "@/features/documents/data/inspect";
+import { parseMedicalCertificateKind } from "@/features/documents/domain/medicalRequirement";
 import { it } from "@/shared/i18n/it";
 
 function parseOptionalDate(value?: string) {
@@ -100,12 +102,14 @@ export async function createEditionAction(_prev: ActionFailure | undefined, form
     isActive: formData.get("isActive") || undefined,
     registrationOpensAt: formData.get("registrationOpensAt") || undefined,
     registrationClosesAt: formData.get("registrationClosesAt") || undefined,
+    medicalCertificateKind: formData.get("medicalCertificateKind") || "COMPETITIVE",
   });
   if (!parsed.success) {
     return failValidation(parsed.error.issues[0]?.message);
   }
   const created = await createCompetitionWithEdition({
     ...parsed.data,
+    medicalCertificateKind: parseMedicalCertificateKind(parsed.data.medicalCertificateKind),
     playerFeeAmount: canFees ? parseOptionalAmount(parsed.data.playerFeeAmount) : null,
     staffFeeAmount: canFees ? (parseOptionalAmount(parsed.data.staffFeeAmount) ?? 5) : 5,
     teamFeeAmount: canFees ? parseOptionalAmount(parsed.data.teamFeeAmount) : null,
@@ -142,15 +146,19 @@ export async function updateEditionAction(_prev: ActionFailure | undefined, form
     isActive: formData.get("isActive") || undefined,
     registrationOpensAt: formData.get("registrationOpensAt") || undefined,
     registrationClosesAt: formData.get("registrationClosesAt") || undefined,
+    medicalCertificateKind: formData.get("medicalCertificateKind") || "COMPETITIVE",
   });
   if (!parsed.success) {
     return failValidation(parsed.error.issues[0]?.message);
   }
+  const nextKind = parseMedicalCertificateKind(parsed.data.medicalCertificateKind);
+  const previousKind = existing.medicalCertificateKind;
   await updateEditionAdmin({
     id,
     name: parsed.data.editionName,
     year: parsed.data.year,
     paymentMode: parsed.data.paymentMode,
+    medicalCertificateKind: nextKind,
     playerFeeAmount: canFees ? parseOptionalAmount(parsed.data.playerFeeAmount) : decimalAmount(existing.playerFeeAmount),
     staffFeeAmount: canFees
       ? (parseOptionalAmount(parsed.data.staffFeeAmount) ?? 5)
@@ -161,14 +169,22 @@ export async function updateEditionAction(_prev: ActionFailure | undefined, form
     registrationClosesAt: parseOptionalDate(parsed.data.registrationClosesAt),
     requirements: requirementsFromForm(formData),
   });
+  if (previousKind !== nextKind) {
+    await realignOpenDocumentsForEdition({ editionId: id, requiredKindNow: nextKind });
+  }
   await writeAuditLog({
     actorUserId: session.user.id,
     action: "EDITION_UPDATE",
     entityType: "Edition",
     entityId: id,
+    metadata:
+      previousKind === nextKind
+        ? undefined
+        : { medicalCertificateKindFrom: previousKind, medicalCertificateKindTo: nextKind },
   });
   revalidatePath("/admin/edizioni");
   revalidatePath(`/admin/edizioni/${id}`);
+  revalidatePath("/admin/documenti");
   return {};
 }
 

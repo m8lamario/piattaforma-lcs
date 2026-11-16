@@ -8,6 +8,7 @@ import { Icon } from "@/shared/ui/Icon";
 import { it } from "@/shared/i18n/it";
 import fields from "@/shared/ui/form.module.css";
 import type { ConsentBoxDef } from "@/features/consents/domain/boxes";
+import { healthConsentLabels, type MedicalCertificateKind } from "@/features/documents/domain/medicalRequirement";
 import { ConsentBoxList } from "./ConsentBoxList";
 import { LegalReader } from "./LegalReader";
 import { WizardLaterButton } from "@/features/registrations/ui/WizardShell";
@@ -32,9 +33,17 @@ type Props = {
   extraBoxes: ConsentBoxDef[];
   currentBoxes: Record<string, boolean>;
   registrationId: string;
+  medicalKind?: MedicalCertificateKind;
 };
 
-export function PrivacyConsentForm({ documents, extraBoxes, currentBoxes, registrationId }: Props) {
+export function PrivacyConsentForm({
+  documents,
+  extraBoxes,
+  currentBoxes,
+  registrationId,
+  medicalKind = "COMPETITIVE",
+}: Props) {
+  const healthLabels = healthConsentLabels(medicalKind);
   const [state, action, pending] = useActionState(savePrivacyConsentsAction, undefined);
   const [focusSlug, setFocusSlug] = useState<string | null>(null);
   const versionIds = useMemo(
@@ -159,6 +168,7 @@ export function PrivacyConsentForm({ documents, extraBoxes, currentBoxes, regist
           values={view.boxValues}
           disabled={pending}
           grouped
+          labels={healthLabels}
           onToggle={(code, accepted) => commit({ boxValues: { ...view.boxValues, [code]: accepted } })}
         />
       ) : null}
@@ -177,7 +187,7 @@ export function PrivacyConsentForm({ documents, extraBoxes, currentBoxes, regist
               <li key={document.slug}>{document.title}</li>
             ))}
             {missingBoxes.map((box) => (
-              <li key={box.code}>{it[box.labelKey]}</li>
+              <li key={box.code}>{healthLabels[box.code] ?? it[box.labelKey]}</li>
             ))}
           </ul>
         ) : null}

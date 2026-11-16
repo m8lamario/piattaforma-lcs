@@ -57,10 +57,10 @@ Ogni voce: problema, opzioni, decisione necessaria, conseguenze, impatto sullo s
 
 ## OD-005 Regole certificato agonistico
 
-- **Problema:** Validità, tipo visita, sport, scadenza, cosa rifiutare.
-- **Opzioni:** sola presenza file; scadenza obbligatoria; controlli manuali admin.
-- **Decisione necessaria:** organizzazione sanitaria/regolamenti.
-- **Impatto:** DocumentType flags. Workaround: metadata + review umana, expiry opzionale. Verifica automatica/AI **non in v1**.
+- **Problema:** Validità, tipo visita, sport, scadenza, cosa rifiutare. Ogni edizione sceglie `COMPETITIVE` o `NON_COMPETITIVE`.
+- **Opzioni:** sola presenza file; scadenza obbligatoria; controlli manuali admin; pre-validazione locale.
+- **Decisione necessaria:** organizzazione sanitaria/regolamenti. La durata di 12 mesi sul non agonistico è una regola di prodotto configurabile (`NON_COMPETITIVE_VALIDITY_MONTHS`), non una norma certificata.
+- **Impatto:** `Edition.medicalCertificateKind` default `COMPETITIVE`. Workaround: metadata + review umana, expiry obbligatoria in approvazione. Pre-validazione locale (text layer PDF) **non** equivale a validità medico-legale. OCR/AI esterni **non** collegati (art. 9 GDPR).
 
 ## OD-006 Provider pagamenti
 
@@ -269,7 +269,7 @@ Già coperti: no PWA in M0; scan OD-021.
 - **Opzioni:** da far scrivere al legale; non copiare formule da altri siti.
 - **Decisione necessaria:** legale, con OD-005 e OD-030. I moduli 2026-27 usano il consenso esplicito art. 9.2.a e vietano la copia; il hub conserva il file.
 - **Conseguenze:** testo in `document-processing` e visibilità stato al rappresentante.
-- **Impatto:** casella salute M3/G4 nel passo privacy, distinta dalla presa visione. Workaround: copy operativa sulla copia in piattaforma; `[INSERIRE BASE GIURIDICA PER DATI SANITARI / CERTIFICATO]`.
+- **Impatto:** casella salute M3/G4 nel passo privacy, distinta dalla presa visione. Workaround: copy operativa sulla copia in piattaforma; `[INSERIRE BASE GIURIDICA PER DATI SANITARI / CERTIFICATO]`. Per un’edizione `NON_COMPETITIVE` le caselle mostrano un placeholder `[INSERIRE CLAUSOLA … NON AGONISTICO]`; non si inventa un testo legale e non si riscrivono i consensi già salvati.
 
 ## OD-036 Marketing e comunicazioni non di servizio
 
@@ -410,12 +410,13 @@ Già coperti: no PWA in M0; scan OD-021.
 | M3-D2 | `STORAGE_DRIVER=local` fuori produzione (directory `.local-storage`); in produzione resta lo stub (OD-010). |
 | M3-D3 | MIME dichiarato vuoto o `application/octet-stream`: si accetta il MIME rilevato dai magic bytes. Mismatch dichiarato vs magic = rifiuto. |
 | M3-D4 | Antivirus: `stubScan` sempre ok (OD-021). |
-| M3-D5 | Review solo da `PENDING_REVIEW`. Rifiuto senza motivo trim rifiutato. |
+| M3-D5 | Review da `PENDING_REVIEW` o `PREVALIDATED`. Rifiuto senza motivo trim rifiutato. La pre-validazione non è un’approvazione. |
 | M3-D6 | Il gate del wizard blocca solo i **dati personali** ancora `todo`. Certificato, tutore e passi successivi sono apribili; `APPROVED` resta vietato finché i required non sono completi. |
 | M3-D7 | Storage key opaca `documents/{registrationId}/{random}`. Replace marca il precedente `REPLACED` e non cancella il blob. |
 | M3-D8 | Audit `DOCUMENT_VIEW` sul GET del file, non sulla sola emissione del token. |
-| M3-D9 | Scadenza certificato non calcolata in v1 (OD-005). |
+| M3-D9 | La scadenza di approvazione la inserisce il revisore. La pre-validazione può leggere date dal foglio; per il non agonistico propone il minimo tra scadenza scritta e rilascio + mesi configurabili (`NON_COMPETITIVE_VALIDITY_MONTHS`, OD-005), senza valore medico-legale. |
 | M3-D10 | Upload consentito solo con `emailVerified`. |
+| M3-D11 | Requisito medico per edizione (`COMPETITIVE` default). Cambio kind: riallinea solo documenti aperti; gli `APPROVED` restano idonei. |
 
 ## Decisioni autonome chiuse in M1 (2026-09-19)
 

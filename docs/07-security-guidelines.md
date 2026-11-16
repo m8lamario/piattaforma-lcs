@@ -116,7 +116,7 @@ Non loggare: password, token, CF completo (mascherare), body documenti, Authoriz
 - Upload solo con sessione, `registration:write` sul proprio profilo e `emailVerified`.
 - Magic bytes PDF/JPEG/PNG; size da `DocumentType`; filename sanitizzato; blob fuori da `public/`.
 - Token HMAC TTL 60s; URL senza storage key; GET 404 opaco se sessione/token/authz non coincidono.
-- `DOCUMENT_UPLOAD` / `DOCUMENT_VIEW` / `DOCUMENT_APPROVE` / `DOCUMENT_REJECT` in AuditLog. View sul GET.
+- `DOCUMENT_UPLOAD` / `DOCUMENT_INSPECT` / `DOCUMENT_VIEW` / `DOCUMENT_APPROVE` / `DOCUMENT_REJECT` in AuditLog. View sul GET. `DOCUMENT_INSPECT` registra solo id, adattatore, stato e codici anomalia, mai il testo del certificato.
 - Rappresentante: nessuna voce admin, `document:read_file` denied, `/admin/documenti` redirige a `/area`.
 - Lista admin senza `storageKey` nel select.
 - Rate limit upload 20/h (in-process).

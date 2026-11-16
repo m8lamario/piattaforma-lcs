@@ -5,6 +5,7 @@ import type { ConsentDocumentView } from "./PrivacyConsentForm";
 import { StatusChip, type StatusTone } from "@/shared/ui/StatusChip";
 import { ButtonLink } from "@/shared/ui/Button";
 import { WizardLaterButton } from "@/features/registrations/ui/WizardShell";
+import { healthConsentLabels, type MedicalCertificateKind } from "@/features/documents/domain/medicalRequirement";
 import styles from "./ConsentForm.module.css";
 import fields from "@/shared/ui/form.module.css";
 
@@ -13,6 +14,7 @@ type Props = {
   documents: ConsentDocumentView[];
   boxes: ConsentBoxDef[];
   currentBoxes: Record<string, boolean>;
+  medicalKind?: MedicalCertificateKind;
 };
 
 function labelFor(code: string, current: Record<string, boolean>, status: Props["status"]) {
@@ -29,7 +31,14 @@ function toneFor(code: string, current: Record<string, boolean>, status: Props["
   return "attention";
 }
 
-export function GuardianWaitingView({ status, documents, boxes, currentBoxes }: Props) {
+export function GuardianWaitingView({
+  status,
+  documents,
+  boxes,
+  currentBoxes,
+  medicalKind = "COMPETITIVE",
+}: Props) {
+  const healthLabels = healthConsentLabels(medicalKind);
   return (
     <div className={fields.form}>
       <p className={`${fields.banner} ${status === "refused" ? fields.bannerDanger : fields.bannerInfo}`} role="status">
@@ -45,7 +54,7 @@ export function GuardianWaitingView({ status, documents, boxes, currentBoxes }: 
         {boxes.map((box) => (
           <div key={box.code} className={styles.check}>
             <span className={styles.boxCode}>{box.code}</span>
-            <span style={{ flex: 1 }}>{it[box.labelKey]}</span>
+            <span style={{ flex: 1 }}>{healthLabels[box.code] ?? it[box.labelKey]}</span>
             <StatusChip tone={toneFor(box.code, currentBoxes, status)}>
               {labelFor(box.code, currentBoxes, status)}
             </StatusChip>

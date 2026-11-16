@@ -9,10 +9,16 @@ import {
   getCurrentMedicalDocument,
   getDocumentById,
   listPendingMedicalQueue,
+  medicalFiltersFromQueue,
   reviewMedicalDocument,
   storeMedicalCertificate,
 } from "@/features/documents/data/documents";
-import { nextPendingAfter, reviewDocumentHref, reviewDoneHref } from "@/features/documents/domain/reviewQueue";
+import {
+  nextPendingAfter,
+  parseReviewQueueFilters,
+  reviewDocumentHref,
+  reviewDoneHref,
+} from "@/features/documents/domain/reviewQueue";
 import {
   REVIEW_METADATA_BATCH_LIMIT,
   REVIEW_PRELOAD_AHEAD,
@@ -159,12 +165,15 @@ export async function uploadMedicalCertificateAction(
 
   if (hasFile && file instanceof File) {
     const body = Buffer.from(await file.arrayBuffer());
-      const stored = await storeMedicalCertificate({
-        registrationId: workspace.registration.id,
-        playerProfileId: workspace.profile.id,
+    const stored = await storeMedicalCertificate({
+      registrationId: workspace.registration.id,
+      playerProfileId: workspace.profile.id,
       fileName: file.name,
       declaredMime: file.type || "application/octet-stream",
       body,
+      requiredKind: workspace.registration.medicalCertificateKind,
+      playerFirstName: workspace.profile.firstName,
+      playerLastName: workspace.profile.lastName,
     });
     if (!stored.ok) {
       if (stored.reason === "size") {
@@ -266,7 +275,7 @@ export async function loadReviewDocumentsAction(documentIds: string[]) {
   return { documents };
 }
 
-export async function refreshReviewQueueAction(filters: { teamId?: string; q?: string }) {
+export async function refreshReviewQueueAction(filters: Parameters<typeof parseReviewQueueFilters>[0]) {
   const session = await auth();
   if (!session?.user?.id) return fail("AUTH_SESSION_REQUIRED");
   const actor = await getActorByUserId(session.user.id);
@@ -276,7 +285,7 @@ export async function refreshReviewQueueAction(filters: { teamId?: string; q?: s
   if (!staff.allow && !reviewer.allow) {
     return fail("FORBIDDEN_DOCUMENT_FILE");
   }
-  const queue = await listPendingMedicalQueue(filters);
+  const queue = await listPendingMedicalQueue(medicalFiltersFromQueue(parseReviewQueueFilters(filters)));
   return { queue: queue.map(serializeReviewQueueItem) };
 }
 
@@ -293,10 +302,15 @@ export async function reviewDocumentAction(
 
   const documentId = String(formData.get("documentId") ?? "");
   const decision = String(formData.get("decision") ?? "");
-  const filters = {
-    teamId: String(formData.get("teamId") ?? "").trim(),
-    q: String(formData.get("queueQ") ?? "").trim().slice(0, 80),
-  };
+  const filters = parseReviewQueueFilters({
+    teamId: String(formData.get("teamId") ?? ""),
+    q: String(formData.get("queueQ") ?? ""),
+    editionId: String(formData.get("editionId") ?? ""),
+    schoolId: String(formData.get("schoolId") ?? ""),
+    requiredKind: String(formData.get("requiredKind") ?? ""),
+    status: String(formData.get("queueStatus") ?? ""),
+    anomaly: String(formData.get("anomaly") ?? ""),
+  });
   let reason = String(formData.get("reason") ?? "");
   if (formData.get("excessHealth") === "on") {
     reason = reason.trim() ? `${MEDICAL_EXCESS_REASON}. ${reason.trim()}` : MEDICAL_EXCESS_REASON;
@@ -314,8 +328,11 @@ export async function reviewDocumentAction(
   }
 
   if (decision !== "APPROVED" && decision !== "REJECTED") return fail("VALIDATION_INVALID_INPUT");
-  if (decision === "APPROVED" && formData.get("agonisticConfirm") !== "on") {
-    return fail("DOCUMENT_AGONISTIC_CONFIRM_REQUIRED");
+  const requiredKind = document.registration.team.edition.medicalCertificateKind;
+  const confirmed =
+    formData.get("kindConfirm") === "on" || formData.get("agonisticConfirm") === "on";
+  if (decision === "APPROVED" && !confirmed) {
+    return fail(requiredKind === "COMPETITIVE" ? "DOCUMENT_AGONISTIC_CONFIRM_REQUIRED" : "DOCUMENT_KIND_CONFIRM_REQUIRED");
   }
 
   const result = await reviewMedicalDocument({
@@ -324,16 +341,14 @@ export async function reviewDocumentAction(
     decision,
     reason,
     expiresAt,
+    requiredKind,
   });
   if (!result.ok && result.reason === "reason_required") return fail("DOCUMENT_REJECT_REASON_REQUIRED");
   if (!result.ok && result.reason === "expiry_required") return fail("VALIDATION_INVALID_INPUT", it.adminExpiryRequired);
   if (!result.ok) return fail("DOCUMENT_ALREADY_REVIEWED");
 
   const flow = String(formData.get("flow") ?? "");
-  const listed = await listPendingMedicalQueue({
-    teamId: filters.teamId || undefined,
-    q: filters.q || undefined,
-  });
+  const listed = await listPendingMedicalQueue(medicalFiltersFromQueue(filters));
   const queue = listed.filter((item) => item.id !== document.id);
   const nextId = nextPendingAfter(queue, { id: document.id, uploadedAt: document.uploadedAt });
   const serializedQueue = queue.map(serializeReviewQueueItem);

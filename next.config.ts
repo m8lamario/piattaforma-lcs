@@ -12,6 +12,7 @@ const generatedClient = "./generated/client.ts";
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  serverExternalPackages: ["unpdf"],
   experimental: {
     staleTimes: {
       dynamic: 30,

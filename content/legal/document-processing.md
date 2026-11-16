@@ -24,7 +24,7 @@ Nella versione 1 non ci sono altri obblighi federali o assicurativi oltre questa
 
 ## 3. Che cosa si tratta
 
-Tipo in piattaforma: certificato medico di idoneità sportiva agonistica per il calcio.
+Tipo in piattaforma: certificato medico. L’edizione indica se è richiesto il certificato per attività sportiva agonistica o non agonistica. [INSERIRE TESTO LEGALE DISTINTO PER IL CERTIFICATO NON AGONISTICO].
 
 - Formati: PDF, JPEG, PNG.
 - Dimensione massima: 10 MB (configurabile).
@@ -33,7 +33,7 @@ Tipo in piattaforma: certificato medico di idoneità sportiva agonistica per il 
 
 Altri tipi di documento (identità, autocertificazioni, nulla osta scuola): non previsti in v1.
 
-Istruzioni all’utente: caricare esclusivamente il certificato medico sportivo agonistico. Non caricare referti, cartelle cliniche, risultati di esami, prescrizioni o altra documentazione sanitaria non richiesta.
+Istruzioni all’utente: caricare esclusivamente il certificato medico sportivo richiesto dall’edizione (agonistico o non agonistico). [INSERIRE TESTO LEGALE DISTINTO PER IL CERTIFICATO NON AGONISTICO]. Non caricare referti, cartelle cliniche, risultati di esami, prescrizioni o altra documentazione sanitaria non richiesta.
 
 ---
 

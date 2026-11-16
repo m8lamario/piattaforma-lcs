@@ -14,6 +14,7 @@ import { isPartnerBoxVisible } from "@/features/consents/data/partners";
 import { MEDIA_RELEASE_SLUG, privacySlugsFor } from "@/features/consents/domain/pack";
 import { isWellFormedInviteToken } from "@/features/teams/domain/token";
 import { it } from "@/shared/i18n/it";
+import { parseMedicalCertificateKind } from "@/features/documents/domain/medicalRequirement";
 import { PublicShell } from "@/shared/ui/PublicShell";
 import styles from "./page.module.css";
 
@@ -97,6 +98,7 @@ export default async function GuardianAuthorizePage({ params }: Props) {
             currentChoices={currentChoices}
             currentG3={currentG3}
             submittedStatus={submittedStatus}
+            medicalKind={parseMedicalCertificateKind(row.registration.team.edition.medicalCertificateKind)}
           />
         </div>
       </main>

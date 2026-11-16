@@ -175,7 +175,10 @@ export function toRosterRow(input: {
         ? "rejected"
         : input.medicalStatus === "EXPIRED"
           ? "expired"
-          : input.medicalStatus === "PENDING_REVIEW" || input.medicalStatus === "UPLOADED"
+          : input.medicalStatus === "PENDING_REVIEW" ||
+              input.medicalStatus === "UPLOADED" ||
+              input.medicalStatus === "PROCESSING" ||
+              input.medicalStatus === "PREVALIDATED"
             ? "pending"
             : "none";
   const category = input.category ?? "PLAYER";

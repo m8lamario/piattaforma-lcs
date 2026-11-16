@@ -19,6 +19,10 @@ const REDACT_KEYS = new Set([
   "html",
   "htmlBody",
   "apiKey",
+  "extractedText",
+  "ocrText",
+  "certificateText",
+  "textLayer",
 ]);
 
 function redact(fields?: LogFields): LogFields | undefined {

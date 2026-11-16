@@ -5,6 +5,7 @@ import { submitGuardianAuthorizationAction } from "@/features/consents/guardianA
 import { ConsentBoxList } from "@/features/consents/ui/ConsentBoxList";
 import { LegalReader } from "@/features/consents/ui/LegalReader";
 import type { ConsentBoxDef } from "@/features/consents/domain/boxes";
+import { healthConsentLabels, type MedicalCertificateKind } from "@/features/documents/domain/medicalRequirement";
 import { Button } from "@/shared/ui/Button";
 import { ActionError } from "@/shared/ui/ActionError";
 import { Icon } from "@/shared/ui/Icon";
@@ -27,6 +28,7 @@ type Props = {
   currentChoices?: CurrentChoice[];
   currentG3?: "OTHER_PARENT" | "SOLE" | "";
   submittedStatus?: "AUTHORIZED" | "REFUSED" | null;
+  medicalKind?: MedicalCertificateKind;
 };
 
 export function GuardianAuthorizeForm({
@@ -39,7 +41,9 @@ export function GuardianAuthorizeForm({
   currentChoices = [],
   currentG3 = "",
   submittedStatus = null,
+  medicalKind = "COMPETITIVE",
 }: Props) {
+  const healthLabels = healthConsentLabels(medicalKind);
   const [mode, setMode] = useState<"form" | "summary">(
     currentChoices.length > 0 || submittedStatus ? "summary" : "form",
   );
@@ -175,6 +179,7 @@ export function GuardianAuthorizeForm({
                 disabled={pending}
                 showHelp={false}
                 showFootnote={false}
+                labels={healthLabels}
                 onToggle={(code, accepted) => setValues((current) => ({ ...current, [code]: accepted }))}
               />
             </>
@@ -214,6 +219,7 @@ export function GuardianAuthorizeForm({
             disabled={pending}
             grouped
             showHelp={false}
+            labels={healthLabels}
             onToggle={(code, accepted) => setValues((current) => ({ ...current, [code]: accepted }))}
           />
         </>

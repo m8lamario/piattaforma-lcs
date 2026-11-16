@@ -194,7 +194,7 @@ export const ERROR_CATALOG: Record<ErrorCode, ErrorDefinition> = {
   }),
   DOCUMENT_ALREADY_REVIEWED: def(
     "DOCUMENTS",
-    "Document non più PENDING_REVIEW: updateMany non ha scritto una seconda review.",
+    "Document non più in revisione (PENDING_REVIEW o PREVALIDATED): updateMany non ha scritto una seconda review.",
     409,
     "none",
   ),
@@ -207,6 +207,13 @@ export const ERROR_CATALOG: Record<ErrorCode, ErrorDefinition> = {
   DOCUMENT_AGONISTIC_CONFIRM_REQUIRED: def(
     "DOCUMENTS",
     "Approvazione senza conferma del certificato agonistico.",
+    400,
+    "correct_input",
+    { retrySafe: true },
+  ),
+  DOCUMENT_KIND_CONFIRM_REQUIRED: def(
+    "DOCUMENTS",
+    "Approvazione senza conferma del certificato richiesto dall’edizione.",
     400,
     "correct_input",
     { retrySafe: true },

@@ -56,6 +56,7 @@ export default async function AdminEditionDetailPage({ params }: Props) {
           name: edition.name,
           year: edition.year,
           paymentMode: edition.paymentMode,
+          medicalCertificateKind: edition.medicalCertificateKind,
           playerFeeAmount: decimalText(edition.playerFeeAmount),
           staffFeeAmount: decimalText(edition.staffFeeAmount),
           teamFeeAmount: decimalText(edition.teamFeeAmount),
