@@ -6,7 +6,11 @@ import { ActionError } from "@/shared/ui/ActionError";
 import { PendingSubmitButton } from "@/shared/ui/PendingSubmitButton";
 import type { ActionFailure } from "@/shared/errors";
 import { it } from "@/shared/i18n/it";
-import { medicalAdminConfirm, type MedicalCertificateKind } from "@/features/documents/domain/medicalRequirement";
+import {
+  medicalAdminConfirm,
+  reviewerChecklistItems,
+  type MedicalCertificateKind,
+} from "@/features/documents/domain/medicalRequirement";
 import type { ReviewQueueFilters } from "@/features/documents/domain/reviewQueue";
 import styles from "./ReviewForm.module.css";
 
@@ -104,6 +108,12 @@ export function ReviewForm({
         <input type="hidden" name="decision" value="APPROVED" />
         {queueFlow ? <input type="hidden" name="flow" value="queue" /> : null}
         <FilterFields filters={filters ?? { teamId, q: queueQ }} />
+        <p className={styles.label}>{it.reviewChecklistTitle}</p>
+        <ul className={styles.checklist}>
+          {reviewerChecklistItems(requiredKind).map((item) => (
+            <li key={item}>{item}</li>
+          ))}
+        </ul>
         <label className={styles.label} htmlFor="expiresAt">
           {it.adminExpiry}
         </label>
@@ -112,9 +122,12 @@ export function ReviewForm({
           name="expiresAt"
           type="date"
           className={styles.date}
-          required
+          required={requiredKind === "COMPETITIVE"}
           defaultValue={suggestedExpiry}
         />
+        {requiredKind === "NON_COMPETITIVE" ? (
+          <p className={styles.help}>{it.adminExpiryHelpNON_COMPETITIVE}</p>
+        ) : null}
         <label className={styles.confirm} htmlFor="kindConfirm">
           <input id="kindConfirm" name="kindConfirm" type="checkbox" required />
           {medicalAdminConfirm(requiredKind)}
@@ -146,6 +159,9 @@ export function ReviewForm({
           {it.adminRejectReason}
         </label>
         <textarea id="reason" name="reason" className={styles.textarea} rows={3} required />
+        <label className={styles.label} htmlFor="kindMismatch">
+          <input id="kindMismatch" name="kindMismatch" type="checkbox" /> {it.medicalKindMismatchReason}
+        </label>
         <label className={styles.label} htmlFor="excessHealth">
           <input id="excessHealth" name="excessHealth" type="checkbox" /> {it.medicalExcessReason}
         </label>

@@ -49,6 +49,21 @@ sequenceDiagram
   Sys->>MP: stati usi liberatoria, senza dossier
 ```
 
+## 1c. Supervisore di lega
+
+```mermaid
+sequenceDiagram
+  participant OA as OrgAdmin
+  participant LS as LeagueSupervisor
+  participant Sys as Hub
+  OA->>Sys: invita email nuova su una Edition
+  Sys->>LS: email attiva account
+  LS->>Sys: /attiva-supervisore/[token]
+  LS->>Sys: /lega scuole e giocatori
+  Sys->>Sys: where Team.editionId = assegnazione
+  Sys->>LS: stati sintetici, senza file
+```
+
 ## 2. Link di iscrizione della squadra (ingresso unico v1)
 
 ```mermaid

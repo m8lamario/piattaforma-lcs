@@ -12,6 +12,7 @@ import { WizardLaterButton } from "@/features/registrations/ui/WizardShell";
 import { it } from "@/shared/i18n/it";
 import {
   medicalCopyNotice,
+  medicalKindLabel,
   type MedicalCertificateKind,
 } from "@/features/documents/domain/medicalRequirement";
 import fields from "@/shared/ui/form.module.css";
@@ -63,6 +64,10 @@ export function MedicalUploadForm({
       {readOnly && !allowFileOpen ? (
         <p className={`${fields.banner} ${fields.bannerWarn}`}>{it.adminViewFileHidden}</p>
       ) : null}
+
+      <p className={fields.help}>
+        {it.medicalRequiredKind}: <strong>{medicalKindLabel(requiredKind)}</strong>
+      </p>
 
       <Disclosure summary={it.medicalNotesToggle} icon="info" variant="boxed">
         <p>{medicalCopyNotice(requiredKind)}</p>

@@ -56,7 +56,7 @@ Ogni documento: testo scrollabile, versione, avviso placeholder, checkbox **non*
 
 ### 3.3 Certificato (`/area/registrazione/certificato`)
 
-Upload del file (il hub conserva la copia per la revisione). L’informativa documenti resta nel pacchetto privacy. La casella salute M3 (adulto) o G4 (genitore del minore) è distinta dalla presa visione. Avviso operativo: esiste una copia in piattaforma. Il rappresentante e l’Org Admin in `/squadra` e in admin vedono solo lo **stato**, mai il file. Apre il file solo `MEDICAL_REVIEWER` o Super Admin. Base giuridica della copia: **DA VALIDARE LEGALMENTE** (OD-035).
+Upload del file (il hub conserva la copia per la revisione). L’informativa documenti resta nel pacchetto privacy. La casella salute M3 (adulto) o G4 (genitore del minore) è distinta dalla presa visione. Avviso operativo: esiste una copia in piattaforma. Il rappresentante, l’Org Admin e il supervisore di lega vedono solo lo **stato** sintetico, mai il file. Il supervisore non riceve date di scadenza in chiaro, motivi di revisione, ispezioni né URL. Apre il file solo `MEDICAL_REVIEWER` o Super Admin. Base giuridica della copia: **DA VALIDARE LEGALMENTE** (OD-035).
 
 ### 3.4 Pagine pubbliche
 
@@ -152,7 +152,7 @@ Il flag **pubblicabile** è calcolato: per i maggiorenni vale l’uso «canali d
 
 ## 9. Certificati
 
-Informative in `document-processing.md`. Accesso file: titolare, `MEDICAL_REVIEWER`, Super Admin. Org Admin e rappresentante: stato only. Retention: job a 90 giorni da `endsAt`, cancellazione al ritiro, purge dei sostituiti; esito di verifica conservato. Base giuridica della copia: OD-035, **DA VALIDARE LEGALMENTE**.
+Informative in `document-processing.md`. Accesso file: titolare, `MEDICAL_REVIEWER`, Super Admin. Org Admin, rappresentante e supervisore di lega: stato only. Retention: job a 90 giorni da `endsAt`, cancellazione al ritiro, purge dei sostituiti; esito di verifica conservato. Base giuridica della copia: OD-035, **DA VALIDARE LEGALMENTE**.
 
 ## 10. Diritti e cancellazione
 

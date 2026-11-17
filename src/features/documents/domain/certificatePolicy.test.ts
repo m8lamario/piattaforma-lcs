@@ -77,7 +77,7 @@ describe("policy certificato medico", () => {
     expect(statusFromAnomalies(facts.anomalies)).toBe("PENDING_REVIEW");
   });
 
-  it("4. edizione non agonistica con certificato agonistico segnala KIND_MISMATCH", () => {
+  it("4. edizione non agonistica accetta un certificato agonistico valido", () => {
     const facts = inspectCertificateText({
       text: competitiveText(),
       requiredKind: "NON_COMPETITIVE",
@@ -85,7 +85,9 @@ describe("policy certificato medico", () => {
       playerLastName: "Rossi",
       now: NOW,
     });
-    expect(facts.anomalies).toContain("KIND_MISMATCH");
+    expect(facts.recognizedKind).toBe("COMPETITIVE");
+    expect(facts.anomalies).not.toContain("KIND_MISMATCH");
+    expect(statusFromAnomalies(facts.anomalies)).toBe("PREVALIDATED");
   });
 
   it("5. scadenza nel passato è apparentemente scaduto, non un rifiuto", () => {
@@ -152,13 +154,12 @@ describe("policy certificato medico", () => {
     expect(facts.nameMatch).toBe("MISMATCH");
   });
 
-  it("non agonistico usa il tetto dei 12 mesi dal rilascio", () => {
+  it("non agonistico senza scadenza scritta usa il rilascio più 12 mesi", () => {
     const facts = inspectCertificateText({
       text: [
         "Si certifica che Mario Rossi è idoneo alla pratica sportiva non agonistica.",
         "Data di rilascio 01/09/2025.",
-        "Scadenza 01/09/2028.",
-        "Firma e timbro del medico sportivo.",
+        "Firma e timbro del medico sportivo visibili sul documento.",
       ].join(" "),
       requiredKind: "NON_COMPETITIVE",
       playerFirstName: "Mario",
@@ -167,22 +168,32 @@ describe("policy certificato medico", () => {
       nonCompetitiveValidityMonths: 12,
     });
     expect(facts.anomalies).toContain("APPARENTLY_EXPIRED");
+    expect(facts.anomalies).not.toContain("EXPIRY_UNREADABLE");
   });
 
   it("9. il cambio di requisito riallinea solo i documenti aperti", () => {
     const open = realignOpenDocument({
       status: "PREVALIDATED",
-      requiredKindNow: "NON_COMPETITIVE",
-      recognizedKind: "COMPETITIVE",
+      requiredKindNow: "COMPETITIVE",
+      recognizedKind: "NON_COMPETITIVE",
       anomalies: [],
     });
     expect(open.anomalies).toContain("KIND_MISMATCH");
     expect(open.status).toBe("PENDING_REVIEW");
 
-    const approved = realignOpenDocument({
-      status: "APPROVED",
+    const acceptedCompetitive = realignOpenDocument({
+      status: "PREVALIDATED",
       requiredKindNow: "NON_COMPETITIVE",
       recognizedKind: "COMPETITIVE",
+      anomalies: [],
+    });
+    expect(acceptedCompetitive.anomalies).not.toContain("KIND_MISMATCH");
+    expect(acceptedCompetitive.status).toBe("PREVALIDATED");
+
+    const approved = realignOpenDocument({
+      status: "APPROVED",
+      requiredKindNow: "COMPETITIVE",
+      recognizedKind: "NON_COMPETITIVE",
       anomalies: [],
     });
     expect(approved.status).toBe("APPROVED");
@@ -202,36 +213,38 @@ describe("policy certificato medico", () => {
     expect(statusFromAnomalies(facts.anomalies)).toBe("PENDING_REVIEW");
   });
 
-  it("il non agonistico propone il minimo tra scadenza scritta e rilascio più 12 mesi", () => {
+  it("il non agonistico propone la scadenza scritta, altrimenti il rilascio più 12 mesi", () => {
     const issuedAt = new Date("2026-09-01T00:00:00.000Z");
     const written = new Date("2028-09-01T00:00:00.000Z");
-    const proposed = proposedCertificateExpiry({
-      requiredKind: "NON_COMPETITIVE",
-      issuedAt,
-      expiresAt: written,
-      nonCompetitiveValidityMonths: 12,
-    });
-    expect(proposed?.toISOString().slice(0, 10)).toBe("2027-09-01");
     expect(
       proposedCertificateExpiry({
-        requiredKind: "COMPETITIVE",
+        requiredKind: "NON_COMPETITIVE",
         issuedAt,
         expiresAt: written,
+        nonCompetitiveValidityMonths: 12,
       })?.toISOString().slice(0, 10),
     ).toBe("2028-09-01");
+    expect(
+      proposedCertificateExpiry({
+        requiredKind: "NON_COMPETITIVE",
+        issuedAt,
+        expiresAt: null,
+        nonCompetitiveValidityMonths: 12,
+      })?.toISOString().slice(0, 10),
+    ).toBe("2027-09-01");
   });
 
   it("10. un documento già approvato resta approvato dopo il cambio di requisito", () => {
     const next = realignInspectionAnomalies({
-      requiredKindNow: "NON_COMPETITIVE",
-      recognizedKind: "COMPETITIVE",
+      requiredKindNow: "COMPETITIVE",
+      recognizedKind: "NON_COMPETITIVE",
       anomalies: [],
     });
     expect(next).toContain("KIND_MISMATCH");
     const kept = realignOpenDocument({
       status: "APPROVED",
-      requiredKindNow: "NON_COMPETITIVE",
-      recognizedKind: "COMPETITIVE",
+      requiredKindNow: "COMPETITIVE",
+      recognizedKind: "NON_COMPETITIVE",
       anomalies: next,
     });
     expect(kept.status).toBe("APPROVED");

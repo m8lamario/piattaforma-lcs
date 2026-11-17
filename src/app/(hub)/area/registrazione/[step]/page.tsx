@@ -34,7 +34,11 @@ import { WizardShell } from "@/features/registrations/ui/WizardShell";
 import { WindowNotice } from "@/features/registrations/ui/WindowNotice";
 import { isRegistrationWindowOpen } from "@/features/registrations/domain/window";
 import { it } from "@/shared/i18n/it";
-import { medicalStepBox, parseMedicalCertificateKind } from "@/features/documents/domain/medicalRequirement";
+import {
+  medicalKindLabel,
+  medicalStepBox,
+  parseMedicalCertificateKind,
+} from "@/features/documents/domain/medicalRequirement";
 import fields from "@/shared/ui/form.module.css";
 
 type Props = {
@@ -153,6 +157,9 @@ export default async function WizardStepPage({ params }: Props) {
       body = (
         <>
           <div className={`${fields.banner} ${fields.bannerInfo}`}>
+            <p>
+              {it.medicalRequiredKind}: <strong>{medicalKindLabel(requiredKind)}</strong>
+            </p>
             <p>{medicalStepBox(requiredKind, deadlineLabel)}</p>
             <p className={fields.help}>{it.termsPointerMedical}</p>
           </div>

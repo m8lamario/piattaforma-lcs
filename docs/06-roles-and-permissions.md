@@ -13,6 +13,7 @@ Principio: **deny by default**. Se un controllo non è esplicito, la risposta è
 | SUPER_ADMIN | globale | bootstrap |
 | COMPETITION_ORGANIZER | competitionId | schema pronto, UI non in v1 |
 | MEDIA_PARTNER | competitionId[] via organizzazione | Super Admin |
+| LEAGUE_SUPERVISOR | editionId via `LeagueSupervisor` | Org Admin / Super Admin |
 
 Lo staff tecnico non è un ruolo di questa tabella. È `Registration.category = STAFF`. Il referente che partecipa come giocatore o come staff tiene `TEAM_REPRESENTATIVE` e lo stesso account, con una sola `Registration` per edizione. L’allenatore è una designazione sulla squadra, non un permesso. Chi non è referente usa il permesso già esistente sulla propria iscrizione.
 
@@ -102,7 +103,9 @@ type Action =
   | "email:compose"
   | "media:manage"
   | "media:verify"
-  | "user:view_as";
+  | "user:view_as"
+  | "league:read"
+  | "league:manage";
 
 function authorize(actor: Actor, action: Action, resource: Resource): Decision
 ```
@@ -122,3 +125,5 @@ Nessun bypass `if (role === SUPER_ADMIN) return true` sparso nelle pagine: il su
 - `team:remove_player` scoped a `teamId`: il rappresentante non tocca altre squadre né account altrui.
 - `audit:delete` è sempre deny, Super Admin compreso: i log non si cancellano da prodotto.
 - `user:view_as` solo Super Admin. Apre l’interfaccia dell’account scelto senza sostituire la sessione Auth.js e senza usare la password dell’utente. Ogni scrittura Prisma è rifiutata. Il file medico resta su `document:read_file` dell’amministratore, non del soggetto visualizzato. Org Admin e revisore non ricevono il permesso.
+- `league:read` solo se `resource.editionId` arriva dal record caricato e coincide con `LeagueSupervisor.editionId` dell’account ACTIVE e attivato. Senza quell’id l’accesso è negato. Non riceve `admin:manage`, `registration:read`, `document:read_status`, `document:read_file` né azioni di scrittura. Fuori dalla propria edizione: 404 uniforme.
+- `league:manage` per Org Admin e Super Admin: invito, associazione all’edizione, sospensione (cancella le sessioni), riattivazione. Il supervisore non crea altri supervisori e non cambia la propria edizione.

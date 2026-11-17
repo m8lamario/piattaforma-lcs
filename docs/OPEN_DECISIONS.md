@@ -61,6 +61,7 @@ Ogni voce: problema, opzioni, decisione necessaria, conseguenze, impatto sullo s
 - **Opzioni:** sola presenza file; scadenza obbligatoria; controlli manuali admin; pre-validazione locale.
 - **Decisione necessaria:** organizzazione sanitaria/regolamenti. La durata di 12 mesi sul non agonistico è una regola di prodotto configurabile (`NON_COMPETITIVE_VALIDITY_MONTHS`), non una norma certificata.
 - **Impatto:** `Edition.medicalCertificateKind` default `COMPETITIVE`. Workaround: metadata + review umana, expiry obbligatoria in approvazione. Pre-validazione locale (text layer PDF) **non** equivale a validità medico-legale. OCR/AI esterni **non** collegati (art. 9 GDPR).
+- **Testo certificato non agonistico:** DA VALIDARE LEGALMENTE (riferimenti D.M. 24/4/2013 e D.M. 8/8/2014).
 
 ## OD-006 Provider pagamenti
 

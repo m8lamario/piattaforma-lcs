@@ -46,7 +46,7 @@ async function upsertUser(email: string, password: string, name: string) {
   });
 }
 
-async function ensureRole(userId: string, role: "SUPER_ADMIN" | "ORGANIZATION_ADMIN") {
+async function ensureRole(userId: string, role: "SUPER_ADMIN" | "ORGANIZATION_ADMIN" | "LEAGUE_SUPERVISOR") {
   const existing = await prisma.userRole.findFirst({ where: { userId, role } });
   if (!existing) {
     await prisma.userRole.create({ data: { userId, role } });
@@ -181,9 +181,15 @@ async function main() {
     "CiaoCiao",
     "Rappresentante Demo",
   );
+  const supervisor = await upsertUser(
+    "supervisore@estudentsleague.it",
+    "CiaoCiao",
+    "Supervisore Demo",
+  );
 
   await ensureRole(superAdmin.id, "SUPER_ADMIN");
   await ensureRole(orgAdmin.id, "ORGANIZATION_ADMIN");
+  await ensureRole(supervisor.id, "LEAGUE_SUPERVISOR");
 
   await removeEslDemoCup();
 
@@ -245,10 +251,22 @@ async function main() {
     }
   }
 
+  await prisma.leagueSupervisor.upsert({
+    where: { userId: supervisor.id },
+    update: { editionId: leonessaEdition.id, status: "ACTIVE", activatedAt: new Date() },
+    create: {
+      userId: supervisor.id,
+      editionId: leonessaEdition.id,
+      status: "ACTIVE",
+      activatedAt: new Date(),
+    },
+  });
+
   console.info("Seed completato.");
   console.info("Super Admin:", superAdmin.email);
   console.info("Organization Admin:", orgAdmin.email);
   console.info("Rappresentante:", rep.email, "→", repTeam.name, "(Leonessa Cup 2026)");
+  console.info("Supervisore:", supervisor.email, "→ Leonessa Cup 2026");
   console.info("Coppe:", cups.map((cup) => cup.name).join(", "));
 }
 

@@ -78,6 +78,30 @@ export function medicalAdminConfirm(kind: MedicalCertificateKind) {
   return kind === "COMPETITIVE" ? it.adminConfirmCOMPETITIVE : it.adminConfirmNON_COMPETITIVE;
 }
 
+export function reviewerChecklistItems(kind: MedicalCertificateKind) {
+  if (kind === "NON_COMPETITIVE") {
+    return [
+      it.reviewCheckName,
+      it.reviewCheckKindNON_COMPETITIVE,
+      it.reviewCheckIssued,
+      it.reviewCheckExpiryNON_COMPETITIVE,
+      it.reviewCheckFitnessNON_COMPETITIVE,
+      it.reviewCheckStamp,
+      it.reviewCheckReadable,
+    ];
+  }
+  return [
+    it.reviewCheckName,
+    it.reviewCheckKindCOMPETITIVE,
+    it.reviewCheckFootball,
+    it.reviewCheckIssued,
+    it.reviewCheckExpiry,
+    it.reviewCheckFitnessCOMPETITIVE,
+    it.reviewCheckStamp,
+    it.reviewCheckReadable,
+  ];
+}
+
 export function medicalHealthConsentText(code: "M3" | "G4", kind: MedicalCertificateKind) {
   if (kind === "NON_COMPETITIVE") {
     return code === "M3" ? it.boxM3NON_COMPETITIVE : it.boxG4NON_COMPETITIVE;

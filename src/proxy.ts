@@ -10,7 +10,7 @@ import {
   optionalTechnologies,
 } from "@/shared/cookies/inventory";
 
-const protectedPrefixes = ["/area", "/squadra", "/admin"];
+const protectedPrefixes = ["/area", "/squadra", "/admin", "/lega"];
 
 function csp(nonce: string) {
   const isDev = process.env.NODE_ENV === "development";

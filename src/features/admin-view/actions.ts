@@ -8,7 +8,7 @@ import { sealViewCookie, viewCookieSecret } from "@/features/admin-view/domain/c
 import { decideAdminViewStart, highestStaffRole } from "@/features/admin-view/domain/policy";
 import { openAdminView, supersedeOpenViews } from "@/features/admin-view/data/sessions";
 import { authorize } from "@/shared/authz/authorize";
-import { getActorByUserId, isMedicalReviewer, isStaff, isSuperAdmin, representativeTeamIds } from "@/shared/authz/getActor";
+import { getActorByUserId, isLeagueSupervisorRole, isMedicalReviewer, isStaff, isSuperAdmin, representativeTeamIds } from "@/shared/authz/getActor";
 import type { Role } from "@/shared/authz/types";
 import { fail, type ActionFailure } from "@/shared/errors";
 import { closeAdminView, loadActiveAdminView } from "@/shared/lib/readOnlyGuard";
@@ -42,6 +42,7 @@ async function landingFor(userId: string) {
       hasPlayerRegistration: Boolean(profile?.registrations.length),
       canVerifyMedia: authorize(actor, "media:verify").allow,
       isSuperAdmin: isSuperAdmin(actor),
+      isLeagueSupervisor: isLeagueSupervisorRole(actor),
     }),
   );
 }

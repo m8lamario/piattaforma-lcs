@@ -29,6 +29,7 @@ M12: Playwright CI (`npm run test:e2e`) su postgres di servizio + seed.
 - Staff invite scaduto/revocato non concede TEAM_REPRESENTATIVE.
 - Reset password: secondo uso dello stesso token rifiutato.
 - Giocatore non ritira l’iscrizione di un altro.
+- Supervisore di lega: `league:read` solo con `editionId` della propria assegnazione; altra edizione 404; niente `document:read_file`; CSV senza `storageKey`.
 
 ## 3. Sicurezza nei test
 

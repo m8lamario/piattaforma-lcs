@@ -4,7 +4,7 @@
 
 Monolite Next.js **feature-based**, non un mucchio di componenti globali. Un’unica piattaforma, un unico database. Le coppe locali sono `Competition` + `Edition`, non tenant isolati.
 
-I permessi sono **resource-scoped** (`userId`, `teamId`, `competitionId`) per poter aggiungere `CompetitionOrganizer` senza riscrivere l’authz.
+I permessi sono **resource-scoped** (`userId`, `teamId`, `competitionId`, `editionId` sulla risorsa) per poter aggiungere `CompetitionOrganizer` e `LeagueSupervisor` senza riscrivere l’authz. `UserRole` non ha `editionId` (ADR-025): lo scope del supervisore sta su `LeagueSupervisor`.
 
 ## 2. Stack
 
@@ -43,6 +43,7 @@ src/
     notifications/
     emails/
     admin/
+    league/
   shared/
     ui/                         # primitive design system
     authz/                      # deny-by-default
@@ -209,6 +210,7 @@ Principio cardine:
 | ADR-025 | Team appartiene a una Edition. Registration e Payment non possono citare un’altra Edition: FK composta `(teamId, editionId)` e, per il pagamento individuale, `(registrationId, editionId)`. `UserRole` non ha `editionId`. `Competition.parentId` non è un’edizione. |
 | ADR-026 | Email secondaria: `EmailMessage` / `EmailEvent` / override template; adapter restituisce `providerMessageId`; tracking aperture spendibile; campagna su nuova versione legale solo da azione admin confermata |
 | ADR-027 | Richiesta pubblica scuola (`SchoolRegistrationRequest`) → approvazione `admin:manage` → User senza password + token di attivazione hashato; `StaffInvite` non copre la scuola assente |
+| ADR-028 | Supervisore di lega: ruolo `LEAGUE_SUPERVISOR`, scope su `LeagueSupervisor.editionId` (una Edition), area `/lega` in sola lettura. `league:read` richiede `resource.editionId` dal record server-side. Nessun file medico. Account esclusivo, invito con token hashato. |
 
 ## 12. Nota audit M0
 

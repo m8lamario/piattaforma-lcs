@@ -28,6 +28,7 @@ const CATEGORIES: ErrorCategory[] = [
   "EMAILS",
   "SCHOOL_ACCESS",
   "MEDIA_PARTNER",
+  "LEAGUE",
 ];
 
 describe("error catalog", () => {

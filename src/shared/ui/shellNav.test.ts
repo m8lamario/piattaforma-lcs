@@ -19,6 +19,7 @@ describe("shellNavFlags", () => {
       showMedia: false,
       mediaUnderAdmin: false,
       showArea: true,
+      showLeague: false,
     });
   });
 
@@ -69,6 +70,7 @@ describe("shellNavFlags", () => {
       showMedia: true,
       mediaUnderAdmin: true,
       showArea: false,
+      showLeague: false,
     });
   });
 
@@ -88,6 +90,20 @@ describe("shellNavFlags", () => {
       canVerifyMedia: true,
     });
     expect(homeForShellFlags(partner)).toBe("/media");
+    const supervisor = shellNavFlags({
+      isRepresentative: false,
+      isStaffOrReviewer: false,
+      hasMembership: false,
+      hasPlayerRegistration: false,
+      isLeagueSupervisor: true,
+    });
+    expect(supervisor).toMatchObject({
+      showLeague: true,
+      showArea: false,
+      showAdmin: false,
+      showTeam: false,
+    });
+    expect(homeForShellFlags(supervisor)).toBe("/lega");
   });
 
   it("per il solo giocatore mostra consensi e compagni", () => {

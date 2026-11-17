@@ -6,6 +6,7 @@ export const ROLES = [
   "SUPER_ADMIN",
   "COMPETITION_ORGANIZER",
   "MEDIA_PARTNER",
+  "LEAGUE_SUPERVISOR",
 ] as const;
 
 export type Role = (typeof ROLES)[number];
@@ -37,6 +38,8 @@ export const ACTIONS = [
   "media:manage",
   "media:verify",
   "user:view_as",
+  "league:read",
+  "league:manage",
 ] as const;
 
 export type Action = (typeof ACTIONS)[number];
@@ -61,12 +64,14 @@ export type Actor = {
   roles: ActorRole[];
   membershipTeamIds: string[];
   mediaPartner?: ActorMediaPartner | null;
+  leagueEditionId?: string | null;
 };
 
 export type Resource = {
   ownerUserId?: string;
   teamId?: string;
   competitionId?: string;
+  editionId?: string;
 };
 
 export type Decision = { allow: true } | { allow: false; reason: string };

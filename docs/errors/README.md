@@ -34,6 +34,7 @@ Le categorie sono file separati: si può aggiungere un file nuovo (es. `LIFECYCL
 | [EMAILS.md](EMAILS.md) | Invio, storico, webhook Resend |
 | [SCHOOL_ACCESS.md](SCHOOL_ACCESS.md) | Richiesta accesso scuole, approvazione, attivazione |
 | [MEDIA_PARTNER.md](MEDIA_PARTNER.md) | Account media partner e verifica liberatorie |
+| [LEAGUE.md](LEAGUE.md) | Supervisore di lega, attivazione e area `/lega` |
 
 
 ## Principi

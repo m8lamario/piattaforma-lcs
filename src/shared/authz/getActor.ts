@@ -9,6 +9,7 @@ export const getActorByUserId = cache(async (userId: string): Promise<Actor | nu
     include: {
       roles: true,
       teamMemberships: true,
+      leagueSupervisor: true,
       mediaPartnerAccount: {
         include: {
           organization: {
@@ -33,8 +34,20 @@ export const getActorByUserId = cache(async (userId: string): Promise<Actor | nu
     roles,
     membershipTeamIds: user.teamMemberships.map((membership) => membership.teamId),
     mediaPartner: toMediaPartner(user.mediaPartnerAccount),
+    leagueEditionId: toLeagueEditionId(user.leagueSupervisor),
   };
 });
+
+function toLeagueEditionId(
+  account: {
+    editionId: string;
+    status: "ACTIVE" | "SUSPENDED";
+    activatedAt: Date | null;
+  } | null,
+) {
+  if (!account || account.status !== "ACTIVE" || !account.activatedAt) return null;
+  return account.editionId;
+}
 
 function toMediaPartner(
   account: {
@@ -82,4 +95,17 @@ export function isSuperAdmin(actor: Actor) {
 
 export function isMediaPartner(actor: Actor) {
   return Boolean(actor.mediaPartner) || actor.roles.some((role) => role.role === "MEDIA_PARTNER");
+}
+
+export function isLeagueSupervisorRole(actor: Actor) {
+  return actor.roles.some((role) => role.role === "LEAGUE_SUPERVISOR");
+}
+
+export function isActiveLeagueSupervisor(actor: Actor) {
+  return isLeagueSupervisorRole(actor) && Boolean(actor.leagueEditionId);
+}
+
+export function deniedHome(actor: Actor) {
+  if (isLeagueSupervisorRole(actor)) return "/lega";
+  return "/area";
 }

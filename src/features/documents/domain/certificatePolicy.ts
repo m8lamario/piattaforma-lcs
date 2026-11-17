@@ -215,18 +215,21 @@ export function inspectCertificateText(input: CertificateInspectionInput): Certi
   if (nameMatch !== "MATCH") anomalies.push("NAME_MISMATCH");
   if (stampPresence !== "PRESENT") anomalies.push("INCOMPLETE");
 
-  if (recognizedKind && recognizedKind !== input.requiredKind) {
-    anomalies.push("KIND_MISMATCH");
-  } else if (!recognizedKind) {
+  if (!recognizedKind) {
     anomalies.push("UNCLASSIFIED");
+  } else if (!certificateKindSatisfies(input.requiredKind, recognizedKind)) {
+    anomalies.push("KIND_MISMATCH");
   }
 
-  if (!issuedAt || !expiresAt) {
+  if (input.requiredKind === "NON_COMPETITIVE") {
+    if (!issuedAt && !expiresAt) anomalies.push("EXPIRY_UNREADABLE");
+  } else if (!issuedAt || !expiresAt) {
     anomalies.push("EXPIRY_UNREADABLE");
   }
 
   const proposedExpiry = proposedCertificateExpiry({
     requiredKind: input.requiredKind,
+    recognizedKind,
     issuedAt,
     expiresAt,
     nonCompetitiveValidityMonths: months,
@@ -245,18 +248,30 @@ export function inspectCertificateText(input: CertificateInspectionInput): Certi
   };
 }
 
-/** Validità proposta al revisore. Per il non agonistico è la data più vicina tra scadenza scritta e rilascio + N mesi. */
+/** Un certificato agonistico valido soddisfa anche un’edizione non agonistica. */
+export function certificateKindSatisfies(
+  requiredKind: MedicalCertificateKind,
+  recognizedKind: MedicalCertificateKind | null,
+) {
+  if (!recognizedKind) return false;
+  if (recognizedKind === requiredKind) return true;
+  return requiredKind === "NON_COMPETITIVE" && recognizedKind === "COMPETITIVE";
+}
+
+/** Scadenza proposta al revisore. Per il non agonistico, se manca la data scritta, è rilascio + N mesi. */
 export function proposedCertificateExpiry(input: {
   requiredKind: MedicalCertificateKind;
+  recognizedKind?: MedicalCertificateKind | null;
   issuedAt: Date | null;
   expiresAt: Date | null;
   nonCompetitiveValidityMonths?: number;
 }) {
+  if (input.expiresAt) return input.expiresAt;
   const months = input.nonCompetitiveValidityMonths ?? NON_COMPETITIVE_VALIDITY_MONTHS;
-  if (input.requiredKind !== "NON_COMPETITIVE" || !input.issuedAt) return input.expiresAt;
-  const cap = addUtcMonths(input.issuedAt, months);
-  if (!input.expiresAt) return cap;
-  return cap.getTime() < input.expiresAt.getTime() ? cap : input.expiresAt;
+  if (input.requiredKind === "NON_COMPETITIVE" && input.issuedAt) {
+    return addUtcMonths(input.issuedAt, months);
+  }
+  return null;
 }
 
 export function uniqueAnomalies(anomalies: InspectionAnomaly[]) {
@@ -273,7 +288,7 @@ export function realignInspectionAnomalies(input: {
   anomalies: readonly InspectionAnomaly[];
 }) {
   const next: InspectionAnomaly[] = input.anomalies.filter((code) => code !== "KIND_MISMATCH");
-  if (input.recognizedKind && input.recognizedKind !== input.requiredKindNow) {
+  if (input.recognizedKind && !certificateKindSatisfies(input.requiredKindNow, input.recognizedKind)) {
     next.push("KIND_MISMATCH");
   }
   return uniqueAnomalies(next);

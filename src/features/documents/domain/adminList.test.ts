@@ -21,5 +21,12 @@ describe("admin document list projection", () => {
         inspection: { recognizedKind: "NON_COMPETITIVE", anomalies: [] },
       }),
     ).toBe(false);
+    expect(
+      documentKindMismatch({
+        requiredKindAtUpload: "NON_COMPETITIVE",
+        registration: { team: { edition: { medicalCertificateKind: "NON_COMPETITIVE" } } },
+        inspection: { recognizedKind: "COMPETITIVE", anomalies: [] },
+      }),
+    ).toBe(false);
   });
 });

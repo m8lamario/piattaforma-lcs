@@ -30,6 +30,7 @@ type Props = {
   showMedia?: boolean;
   mediaUnderAdmin?: boolean;
   showArea?: boolean;
+  showLeague?: boolean;
   unreadCount?: number;
 };
 
@@ -56,6 +57,7 @@ function isActive(href: string, pathname: string) {
   }
   if (href === "/squadra") return pathname === "/squadra";
   if (href === "/admin") return pathname === "/admin" || pathname.startsWith("/admin/");
+  if (href === "/lega") return pathname === "/lega";
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
@@ -73,8 +75,16 @@ function buildItems({
   showMedia,
   mediaUnderAdmin,
   showArea,
+  showLeague,
   unreadCount,
 }: Omit<Props, "brandHref" | "email">): NavItem[] {
+  if (showLeague) {
+    return [
+      { href: "/lega", label: it.navOverview, short: it.navOverview, icon: "area" },
+      { href: "/lega/scuole", label: it.navLeagueSchools, short: it.navLeagueSchools, icon: "org" },
+      { href: "/lega/giocatori", label: it.navLeaguePlayers, short: it.navLeaguePlayers, icon: "users" },
+    ];
+  }
   return [
     ...(showMedia && !mediaUnderAdmin
       ? [{ href: "/media", label: it.navMedia, short: it.navMediaShort, icon: "camera" as const }]

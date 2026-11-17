@@ -1,0 +1,154 @@
+.main {
+  width: 100%;
+  max-width: var(--content-max-canvas);
+  display: grid;
+  gap: var(--space-6);
+  align-self: flex-start;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10.5rem, 1fr));
+  gap: var(--space-3);
+}
+
+.stat {
+  display: grid;
+  gap: var(--space-1);
+  padding: var(--space-4);
+  background: var(--color-surface-raised);
+  border: 1px solid var(--color-hairline);
+}
+
+.statValue {
+  font-size: var(--text-xl);
+  font-weight: 750;
+  line-height: 1.1;
+}
+
+.statLabel {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+.filters {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.filtersRow {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  gap: var(--space-3);
+  align-items: end;
+}
+
+.cards {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.card {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background: var(--color-surface-raised);
+  border: 1px solid var(--color-hairline);
+  text-decoration: none;
+  color: inherit;
+}
+
+.card:hover,
+.card:focus-visible {
+  border-color: var(--color-border);
+}
+
+.cardHead {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  align-items: center;
+  justify-content: space-between;
+}
+
+.cardMeta {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+.counts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+}
+
+.tableWrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th,
+.table td {
+  text-align: left;
+  padding: var(--space-3) var(--space-2);
+  border-bottom: 1px solid var(--color-hairline);
+  vertical-align: top;
+}
+
+.table th {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  font-weight: 650;
+}
+
+.num {
+  text-align: right;
+}
+
+.detail {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-5);
+  background: var(--color-surface-raised);
+  border: 1px solid var(--color-hairline);
+}
+
+.detailRow {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.detailLabel {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.desktopOnly {
+  display: none;
+}
+
+.mobileOnly {
+  display: grid;
+}
+
+@media (min-width: 768px) {
+  .desktopOnly {
+    display: block;
+  }
+
+  .mobileOnly {
+    display: none;
+  }
+}

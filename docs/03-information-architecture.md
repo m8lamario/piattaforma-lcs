@@ -9,6 +9,7 @@
 | Rappresentante | Team Representative | `/area` (console) e `/squadra` | sì + ruolo |
 | Organizzazione | Org Admin / Super Admin | `/admin` | sì + ruolo |
 | Media partner | Media Partner | `/media` | sì + ruolo + org attiva |
+| Supervisore di lega | League Supervisor | `/lega` | sì + ruolo + assegnazione attiva |
 
 Un utente può avere più ruoli (es. rappresentante che è anche giocatore). La navigazione mostra solo le aree per cui è autorizzato.
 
@@ -72,9 +73,19 @@ Un utente può avere più ruoli (es. rappresentante che è anche giocatore). La 
 /admin/audit
 /admin/media-partner
 /admin/media-partner/[id]
+/admin/supervisori             account supervisore di lega (`league:manage`)
 
 /media                         verifica liberatorie (media partner)
 /attiva-media/[token]          password del media partner
+
+/lega                          panoramica edizione del supervisore (sola lettura)
+/lega/scuole
+/lega/scuole/[schoolId]
+/lega/giocatori
+/lega/giocatori/[registrationId]
+/lega/export/giocatori
+/lega/export/riepilogo
+/attiva-supervisore/[token]    password del supervisore di lega
 ```
 
 M0: `/`, `/accedi`, layout token, shell autenticata.

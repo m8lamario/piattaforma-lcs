@@ -16,7 +16,7 @@ Contatti privacy: **privacy@legacalciostudenti.it** — PEC **europeanstudentsle
 
 ## 2. Perché si raccolgono i documenti
 
-Per verificare il certificato medico di idoneità sportiva agonistica per il calcio e per tracciare la revisione umana (approvazione o rifiuto con motivazione visibile al giocatore).
+Per verificare il certificato medico di idoneità sportiva, agonistica o non agonistica secondo quanto richiesto dall'edizione e per tracciare la revisione umana (approvazione o rifiuto con motivazione visibile al giocatore).
 
 Nella versione 1 non ci sono altri obblighi federali o assicurativi oltre questa verifica. In caso di infortunio, e solo su richiesta della pratica assicurativa, il certificato può essere trasmesso al soggetto assicurativo o a chi è legittimato a chiederlo, limitatamente a quanto serve a quella pratica.
 
@@ -24,7 +24,13 @@ Nella versione 1 non ci sono altri obblighi federali o assicurativi oltre questa
 
 ## 3. Che cosa si tratta
 
-Tipo in piattaforma: certificato medico. L’edizione indica se è richiesto il certificato per attività sportiva agonistica o non agonistica. [INSERIRE TESTO LEGALE DISTINTO PER IL CERTIFICATO NON AGONISTICO].
+Tipo in piattaforma: certificato medico. L’edizione indica se è richiesto il certificato per attività sportiva agonistica o non agonistica.
+
+Certificato agonistico. Se l'edizione richiede l'attività agonistica, va caricato il certificato di idoneità alla pratica sportiva agonistica per il calcio, previsto dal D.M. 18 febbraio 1982. Lo rilascia un medico specialista in medicina dello sport, presso una struttura pubblica o un centro autorizzato.
+
+Certificato non agonistico. Se l'edizione richiede l'attività non agonistica, va caricato il certificato di idoneità all'attività sportiva non agonistica, previsto dal D.M. 24 aprile 2013 e dalle relative Linee guida del Ministero della Salute (D.M. 8 agosto 2014). Lo rilascia il medico di medicina generale, il pediatra di libera scelta (per i minori assistiti) o un medico specialista in medicina dello sport. Il certificato deve riportare almeno: nome e cognome del partecipante, data di emissione, giudizio di idoneità all'attività sportiva non agonistica, timbro e firma del medico. Salvo diversa indicazione del medico, vale un anno dalla data di emissione. Il certificato agonistico in corso di validità è accettato al posto di quello non agonistico. Non sono invece accettati certificati generici di «sana e robusta costituzione», autocertificazioni o certificati per attività ludico-motoria.
+
+Per entrambi i tipi ESL tratta soltanto le informazioni necessarie a verificare l'idoneità e la scadenza (art. 5.1.c GDPR). Non tratta diagnosi, esiti di esami o altre informazioni sanitarie che il certificato non deve contenere.
 
 - Formati: PDF, JPEG, PNG.
 - Dimensione massima: 10 MB (configurabile).
@@ -33,7 +39,7 @@ Tipo in piattaforma: certificato medico. L’edizione indica se è richiesto il 
 
 Altri tipi di documento (identità, autocertificazioni, nulla osta scuola): non previsti in v1.
 
-Istruzioni all’utente: caricare esclusivamente il certificato medico sportivo richiesto dall’edizione (agonistico o non agonistico). [INSERIRE TESTO LEGALE DISTINTO PER IL CERTIFICATO NON AGONISTICO]. Non caricare referti, cartelle cliniche, risultati di esami, prescrizioni o altra documentazione sanitaria non richiesta.
+Istruzioni all’utente: caricare esclusivamente il certificato medico sportivo richiesto dall’edizione (agonistico o non agonistico). Se l'edizione richiede il certificato non agonistico, caricare il certificato di idoneità all'attività sportiva non agonistica rilasciato dal proprio medico di base, dal pediatra o da un medico dello sport, oppure un certificato agonistico valido. Non caricare il certificato di «sana e robusta costituzione», autocertificazioni o il libretto sanitario. Non caricare referti, cartelle cliniche, risultati di esami, prescrizioni o altra documentazione sanitaria non richiesta.
 
 ---
 
@@ -84,7 +90,7 @@ Nessun medico esterno accede ai certificati.
 6. L’iscrizione può proseguire mentre il certificato è in revisione o rifiutato: il passo privacy non aspetta l’approvazione.
 7. In approvazione lo staff registra la data di scadenza letta sul certificato.
 
-Lo staff approva solo se verifica: nome e cognome del partecipante; indicazione di certificato medico sportivo agonistico; riferimento al calcio; data di emissione; data di scadenza; idoneità alla pratica agonistica; timbro, firma o altro elemento del medico o della struttura; leggibilità e completezza.
+Lo staff approva solo se verifica: nome e cognome del partecipante; indicazione del tipo di certificato richiesto dall'edizione (agonistico o non agonistico); riferimento al calcio (solo per il certificato agonistico); data di emissione; data di scadenza; giudizio di idoneità corrispondente al tipo richiesto; timbro, firma o altro elemento del medico o della struttura; leggibilità e completezza.
 
 I file caricati sono sottoposti a scansione antivirus tramite Cloudflare Malicious Uploads Detection.
 

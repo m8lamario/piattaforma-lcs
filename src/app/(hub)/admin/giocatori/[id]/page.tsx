@@ -13,6 +13,7 @@ import { ResetGuardianAuthorizationForm } from "@/features/admin/ui/ResetGuardia
 import { authorize } from "@/shared/authz/authorize";
 import { requireStaff } from "@/shared/authz/requireStaff";
 import { shirtSizeLabel } from "@/features/players/domain/shirtSize";
+import { medicalKindLabel, parseMedicalCertificateKind } from "@/features/documents/domain/medicalRequirement";
 import { it } from "@/shared/i18n/it";
 import styles from "@/features/admin/ui/admin.module.css";
 
@@ -147,19 +148,32 @@ export default async function AdminPlayerPage({ params }: Props) {
               <h2 className={styles.sectionTitle}>{it.stepCertificato}</h2>
               <p className={styles.meta}>{it.staffNoMedical}</p>
             </div>
-          ) : document ? (
+          ) : registration?.category === "PLAYER" || document ? (
             <div className={styles.sideCard}>
               <h2 className={styles.sectionTitle}>{it.adminDocumentTitle}</h2>
-              <p className={styles.meta}>
-                {it.adminStatus}: <StatusChip tone={document.status === "APPROVED" ? "complete" : "attention"}>{document.status}</StatusChip>
-              </p>
-              <p className={styles.meta}>{document.originalFilename}</p>
-              <div style={{ display: "flex", gap: "var(--space-3)", flexWrap: "wrap", marginTop: "var(--space-2)" }}>
-                <Link href={`/admin/documenti/${document.id}`} className={styles.item} style={{ padding: "var(--space-2) var(--space-3)", border: "1px solid var(--color-hairline)" }}>
-                  <strong>{it.navAdminDocuments}</strong>
-                </Link>
-                <OpenDocumentButton documentId={document.id} />
-              </div>
+              {workspace ? (
+                <p className={styles.meta}>
+                  {it.medicalRequiredKind}:{" "}
+                  <strong>
+                    {medicalKindLabel(parseMedicalCertificateKind(workspace.registration.medicalCertificateKind))}
+                  </strong>
+                </p>
+              ) : null}
+              {document ? (
+                <>
+                  <p className={styles.meta}>
+                    {it.adminStatus}:{" "}
+                    <StatusChip tone={document.status === "APPROVED" ? "complete" : "attention"}>{document.status}</StatusChip>
+                  </p>
+                  <p className={styles.meta}>{document.originalFilename}</p>
+                  <div style={{ display: "flex", gap: "var(--space-3)", flexWrap: "wrap", marginTop: "var(--space-2)" }}>
+                    <Link href={`/admin/documenti/${document.id}`} className={styles.item} style={{ padding: "var(--space-2) var(--space-3)", border: "1px solid var(--color-hairline)" }}>
+                      <strong>{it.navAdminDocuments}</strong>
+                    </Link>
+                    <OpenDocumentButton documentId={document.id} />
+                  </div>
+                </>
+              ) : null}
             </div>
           ) : null}
 

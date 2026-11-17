@@ -18,6 +18,12 @@ export async function AuthenticatedShell({ children }: Props) {
   if (identity.view && pathname.startsWith("/admin") && !shell.showAdmin) {
     redirect(homeForShellFlags(shell));
   }
+  if (shell.showLeague && (pathname.startsWith("/admin") || pathname.startsWith("/area") || pathname.startsWith("/squadra") || pathname.startsWith("/media"))) {
+    redirect("/lega");
+  }
+  if (pathname.startsWith("/lega") && !shell.showLeague) {
+    redirect(homeForShellFlags(shell));
+  }
 
   return (
     <AppShell
@@ -30,6 +36,7 @@ export async function AuthenticatedShell({ children }: Props) {
       showMedia={shell.showMedia}
       mediaUnderAdmin={shell.mediaUnderAdmin}
       showArea={shell.showArea}
+      showLeague={shell.showLeague}
       unreadCount={shell.unreadCount}
     >
       {children}

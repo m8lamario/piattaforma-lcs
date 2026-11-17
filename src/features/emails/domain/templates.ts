@@ -123,6 +123,11 @@ export function defaultEmailTemplates(): Record<EmailTemplateKey, EmailTemplateS
       subject: it.emailMediaPartnerActivateSubject,
       textBody: it.emailMediaPartnerActivateText,
     },
+    LEAGUE_SUPERVISOR_ACTIVATE: {
+      key: "LEAGUE_SUPERVISOR_ACTIVATE",
+      subject: it.emailLeagueActivateSubject,
+      textBody: it.emailLeagueActivateText,
+    },
     MANUAL: {
       key: "MANUAL",
       subject: it.emailManualSubject,

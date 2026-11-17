@@ -1,6 +1,7 @@
 import { cache } from "react";
 import { redirect } from "next/navigation";
 import { authorize } from "@/shared/authz/authorize";
+import { deniedHome, isLeagueSupervisorRole, isMedicalReviewer, isStaff } from "@/shared/authz/getActor";
 import { getRequestIdentity } from "@/shared/authz/requestIdentity";
 import type { Action } from "@/shared/authz/types";
 
@@ -25,7 +26,7 @@ export const requireAction = cache(async (nextPath: string, action: Action) => {
 
   const actor = identity.subjectActor;
   const allowed = authorize(actor, action);
-  if (!allowed.allow) redirect("/area");
+  if (!allowed.allow) redirect(deniedHome(actor));
 
   return { session: sessionOf(identity), actor, identity };
 });
@@ -46,7 +47,7 @@ export const requireMediaPartner = cache(async (nextPath = "/media") => {
     return { session: sessionOf(identity), actor, identity, suspended: true as const };
   }
 
-  redirect("/area");
+  redirect(deniedHome(actor));
 });
 
 export const requireStaffOrReviewer = cache(async (nextPath = "/admin/documenti") => {
@@ -57,6 +58,29 @@ export const requireStaffOrReviewer = cache(async (nextPath = "/admin/documenti"
   const actor = identity.subjectActor;
   const staff = authorize(actor, "admin:manage");
   const reviewer = authorize(actor, "document:review");
-  if (!staff.allow && !reviewer.allow) redirect("/area");
+  if (!staff.allow && !reviewer.allow) redirect(deniedHome(actor));
   return { session: sessionOf(identity), actor, identity };
+});
+
+export const requireLeagueAccount = cache(async (nextPath = "/lega") => {
+  const identity = await getRequestIdentity();
+  if (!identity) {
+    redirect(`/accedi?next=${encodeURIComponent(nextPath)}`);
+  }
+  const actor = identity.subjectActor;
+  if (!isLeagueSupervisorRole(actor)) {
+    if (isStaff(actor) || isMedicalReviewer(actor)) redirect("/admin");
+    if (authorize(actor, "media:verify").allow) redirect("/media");
+    redirect("/area");
+  }
+  return { session: sessionOf(identity), actor, identity };
+});
+
+export const requireLeagueSupervisor = cache(async (nextPath = "/lega") => {
+  const { session, actor, identity } = await requireLeagueAccount(nextPath);
+  const editionId = actor.leagueEditionId;
+  if (!editionId || !authorize(actor, "league:read", { editionId }).allow) {
+    redirect("/lega");
+  }
+  return { session, actor, identity, editionId };
 });

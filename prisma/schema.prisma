@@ -15,6 +15,12 @@ enum Role {
   SUPER_ADMIN
   COMPETITION_ORGANIZER
   MEDIA_PARTNER
+  LEAGUE_SUPERVISOR
+}
+
+enum LeagueSupervisorStatus {
+  ACTIVE
+  SUSPENDED
 }
 
 enum AdminViewMode {
@@ -228,6 +234,8 @@ model User {
   schoolAccessReviews    SchoolRegistrationRequest[] @relation("SchoolRequestReviewer")
   schoolAccessAccount    SchoolRegistrationRequest[] @relation("SchoolRequestAccount")
   mediaPartnerAccount       MediaPartnerAccount?
+  leagueSupervisor          LeagueSupervisor?
+  createdLeagueSupervisors  LeagueSupervisor[] @relation("LeagueSupervisorCreator")
   adminViewSessionsAsAdmin  AdminViewSession[] @relation("AdminViewActor")
   adminViewSessionsAsTarget AdminViewSession[] @relation("AdminViewTarget")
 
@@ -283,6 +291,7 @@ model VerificationToken {
 /// TEAM_REPRESENTATIVE richiede teamId (l'edizione si legge da Team, non si duplica).
 /// COMPETITION_ORGANIZER richiede competitionId e copre tutte le Edition di quella Competition.
 /// MEDIA_PARTNER non usa teamId/competitionId: le coppe stanno su MediaPartnerCompetition.
+/// LEAGUE_SUPERVISOR non usa teamId/competitionId: l'edizione sta su LeagueSupervisor.
 /// Non c'è editionId: un ruolo per edizione duplicherebbe Team.editionId e potrebbe divergere.
 model UserRole {
   id            String   @id @default(cuid())
@@ -370,6 +379,29 @@ model Competition {
   @@index([parentId])
 }
 
+/// Supervisore di una Edition. Lo scope non sta su UserRole (ADR-025): editionId vive solo qui.
+/// Lettura consentita solo se status ACTIVE e activatedAt valorizzato.
+model LeagueSupervisor {
+  id                   String                  @id @default(cuid())
+  userId               String                  @unique
+  editionId            String
+  status               LeagueSupervisorStatus  @default(ACTIVE)
+  activationTokenHash  String?                 @unique
+  activationExpiresAt  DateTime?
+  activatedAt          DateTime?
+  createdByUserId      String?
+  createdAt            DateTime                @default(now())
+  updatedAt            DateTime                @updatedAt
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  edition   Edition  @relation(fields: [editionId], references: [id], onDelete: Restrict)
+  createdBy User?    @relation("LeagueSupervisorCreator", fields: [createdByUserId], references: [id], onDelete: SetNull)
+
+  @@index([editionId])
+  @@index([status])
+  @@index([createdByUserId])
+}
+
 model MediaPartner {
   id        String             @id @default(cuid())
   name      String
@@ -441,6 +473,7 @@ model Edition {
   payments     Payment[]
   bankTransfers TeamBankTransfer[]
   schoolAccessRequests SchoolRegistrationRequest[]
+  leagueSupervisors    LeagueSupervisor[]
 
   @@unique([competitionId, year, name])
   @@index([competitionId])

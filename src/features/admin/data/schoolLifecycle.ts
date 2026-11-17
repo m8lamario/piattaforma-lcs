@@ -22,6 +22,7 @@ const PLATFORM_ROLES = new Set([
   "SUPER_ADMIN",
   "COMPETITION_ORGANIZER",
   "MEDIA_PARTNER",
+  "LEAGUE_SUPERVISOR",
 ]);
 
 function token(prefix: string) {
