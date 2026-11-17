@@ -269,6 +269,7 @@ export function MedicalReviewWorkspace({
   const suggestedExpiry = dateInputValue(
     proposedCertificateExpiry({
       requiredKind: team.edition.medicalCertificateKind,
+      recognizedKind: document.inspection?.recognizedKind ?? null,
       issuedAt: document.inspection?.issuedAt ? new Date(document.inspection.issuedAt) : null,
       expiresAt: document.inspection?.expiresAt ? new Date(document.inspection.expiresAt) : null,
     })?.toISOString() ?? document.expiresAt,

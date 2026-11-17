@@ -247,6 +247,18 @@ const SPECS: Record<EmailTemplateKey, (ctx: SpecContext) => EmailVisualSpec> = {
     ctaUrl: url(vars, "link"),
     tone: "warning",
   }),
+  LEAGUE_SUPERVISOR_ACTIVATE: ({ vars, subject }) => ({
+    heading: subject,
+    preheader: it.emailLeagueActivatePreheader,
+    intro: t(it.emailLeagueActivateIntro, vars),
+    details: [
+      detail(it.emailLabelEdition, vars.title),
+      detail(it.emailLabelExpiry, vars.scadenza),
+    ].filter(Boolean) as EmailVisualSpec["details"],
+    ctaLabel: it.emailCtaActivateAccount,
+    ctaUrl: url(vars, "activateUrl"),
+    tone: "success",
+  }),
   MEDIA_PARTNER_ACTIVATE: ({ vars, subject }) => ({
     heading: subject,
     preheader: it.emailMediaPartnerActivatePreheader,

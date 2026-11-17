@@ -16,6 +16,7 @@ import { StatusChip, type StatusTone } from "@/shared/ui/StatusChip";
 import { IdentityConflictPanel } from "@/features/players/ui/IdentityConflictPanel";
 import { WindowChip, WindowNotice } from "@/features/registrations/ui/WindowNotice";
 import { isRegistrationWindowOpen, type EditionWindow } from "@/features/registrations/domain/window";
+import { medicalKindLabel, type MedicalCertificateKind } from "@/features/documents/domain/medicalRequirement";
 import { ChecklistLinks } from "./ChecklistLinks";
 import { REQUIREMENT_STEP } from "./wizardCopy";
 import fields from "@/shared/ui/form.module.css";
@@ -95,6 +96,7 @@ type Props = {
   identityConflict?: { code: string } | null;
   category?: "PLAYER" | "STAFF";
   shirtSizeDue?: boolean;
+  medicalCertificateKind?: MedicalCertificateKind;
 };
 
 export function RegistrationDashboard({
@@ -112,6 +114,7 @@ export function RegistrationDashboard({
   identityConflict,
   category = "PLAYER",
   shirtSizeDue = false,
+  medicalCertificateKind,
 }: Props) {
   const hero = nextHero(checklist);
   const hrefStep = hero.code === "DONE" ? "riepilogo" : (REQUIREMENT_STEP[hero.code] ?? "dati");
@@ -218,6 +221,12 @@ export function RegistrationDashboard({
           )
         }
       />
+
+      {category === "PLAYER" && medicalCertificateKind ? (
+        <p className={styles.note}>
+          {it.medicalRequiredKind}: <strong>{medicalKindLabel(medicalCertificateKind)}</strong>
+        </p>
+      ) : null}
 
       <Panel title={it.checklistTitle} description={progressLabel} icon="fileCheck" flush>
         <ChecklistLinks checklist={checklist} />

@@ -19,6 +19,10 @@ const HUB_SECTIONS = [
   { href: "/admin/informative", titleKey: "navAdminLegal", descKey: "adminLegalHelp" },
 ] as const;
 
+const LEAGUE_SECTIONS = [
+  { href: "/admin/supervisori", titleKey: "navAdminSupervisors", descKey: "adminSupervisorsHelp" },
+] as const;
+
 const SUPER_SECTIONS = [
   { href: "/media", titleKey: "navMedia", descKey: "mediaDashboardLead" },
   { href: "/admin/media-partner", titleKey: "navAdminMediaPartners", descKey: "adminMediaPartnersHelp" },
@@ -53,7 +57,11 @@ export default async function AdminHubPage() {
       </div>
 
       <nav className={styles.hubNavGrid} aria-label={it.adminHubTitle}>
-        {[...HUB_SECTIONS, ...(authorize(actor, "media:manage").allow ? SUPER_SECTIONS : [])].map((sec) => (
+        {[
+          ...HUB_SECTIONS,
+          ...(authorize(actor, "league:manage").allow ? LEAGUE_SECTIONS : []),
+          ...(authorize(actor, "media:manage").allow ? SUPER_SECTIONS : []),
+        ].map((sec) => (
           <Link key={sec.href} href={sec.href} className={styles.hubTile}>
             <strong>{it[sec.titleKey]}</strong>
             <span>{it[sec.descKey]}</span>

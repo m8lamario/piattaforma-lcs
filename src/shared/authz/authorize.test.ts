@@ -248,6 +248,40 @@ describe("authorize deny-by-default", () => {
     expect(authorize(superAdmin, "media:verify", { competitionId: "competition-b" }).allow).toBe(true);
   });
 
+  it("isola il supervisore di lega sulla propria edizione in sola lettura", () => {
+    const supervisor: Actor = {
+      userId: "supervisor-1",
+      roles: [{ role: "LEAGUE_SUPERVISOR" }],
+      membershipTeamIds: [],
+      leagueEditionId: "edition-a",
+    };
+    const otherEdition = { editionId: "edition-b", teamId: "team-b", ownerUserId: "player-1" };
+
+    expect(authorize(supervisor, "league:read", { editionId: "edition-a" }).allow).toBe(true);
+    expect(authorize(supervisor, "league:read").allow).toBe(false);
+    expect(authorize(supervisor, "league:read", { editionId: "edition-b" }).allow).toBe(false);
+    expect(authorize(supervisor, "league:manage").allow).toBe(false);
+    expect(authorize(supervisor, "admin:manage").allow).toBe(false);
+    expect(authorize(supervisor, "registration:read", ownDoc).allow).toBe(false);
+    expect(authorize(supervisor, "registration:write", ownDoc).allow).toBe(false);
+    expect(authorize(supervisor, "document:read_status", ownDoc).allow).toBe(false);
+    expect(authorize(supervisor, "document:read_file", ownDoc).allow).toBe(false);
+    expect(authorize(supervisor, "document:review", ownDoc).allow).toBe(false);
+    expect(authorize(supervisor, "team:read", { teamId: "team-1", competitionId: "competition-a" }).allow).toBe(false);
+    expect(authorize(supervisor, "team:invite", { teamId: "team-1" }).allow).toBe(false);
+    expect(authorize(supervisor, "payment:create_player", ownDoc).allow).toBe(false);
+    expect(authorize(supervisor, "payment:record_transfer").allow).toBe(false);
+    expect(authorize(supervisor, "registration:read", otherEdition).allow).toBe(false);
+
+    const suspended: Actor = { ...supervisor, leagueEditionId: null };
+    expect(authorize(suspended, "league:read", { editionId: "edition-a" }).allow).toBe(false);
+
+    expect(authorize(orgAdmin, "league:manage").allow).toBe(true);
+    expect(authorize(orgAdmin, "document:read_file", ownDoc).allow).toBe(false);
+    expect(authorize(player, "league:read", { editionId: "edition-a" }).allow).toBe(false);
+    expect(authorize(rep, "league:manage").allow).toBe(false);
+  });
+
   it("riserva la gestione email allo staff e il corpo libero al super admin", () => {
     expect(authorize(player, "email:read").allow).toBe(false);
     expect(authorize(rep, "email:send").allow).toBe(false);

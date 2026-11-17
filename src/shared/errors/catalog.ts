@@ -15,7 +15,8 @@ export type ErrorCategory =
   | "LIFECYCLE"
   | "EMAILS"
   | "SCHOOL_ACCESS"
-  | "MEDIA_PARTNER";
+  | "MEDIA_PARTNER"
+  | "LEAGUE";
 
 export type ErrorSeverity = "info" | "warning" | "error" | "critical";
 
@@ -450,6 +451,25 @@ export const ERROR_CATALOG: Record<ErrorCode, ErrorDefinition> = {
     404,
     "none",
   ),
+
+  LEAGUE_FORBIDDEN: def("LEAGUE", "Attore senza league:read o league:manage.", 403, "none"),
+  LEAGUE_NOT_FOUND: def("LEAGUE", "Account supervisore assente.", 404, "none"),
+  LEAGUE_EMAIL_TAKEN: def("LEAGUE", "User.email già presente: niente nuovo account supervisore.", 409, "correct_input"),
+  LEAGUE_EDITION_NOT_FOUND: def("LEAGUE", "Edition assente.", 404, "correct_input"),
+  LEAGUE_TOKEN_INVALID: def("LEAGUE", "Token attivazione sconosciuto o malformato.", 400, "contact_org"),
+  LEAGUE_TOKEN_EXPIRED: def("LEAGUE", "activationExpiresAt superato.", 410, "contact_org"),
+  LEAGUE_TOKEN_USED: def("LEAGUE", "Token già consumato (activatedAt).", 409, "login"),
+  LEAGUE_ALREADY_ACTIVATED: def("LEAGUE", "User già con passwordHash.", 409, "login"),
+  LEAGUE_RATE_LIMITED: def("LEAGUE", "Rate limit attivazione o reinvio supervisore.", 429, "wait", {
+    severity: "warning",
+  }),
+  LEAGUE_RESEND_NOT_ALLOWED: def(
+    "LEAGUE",
+    "Reinvio attivazione solo se account attivo senza password.",
+    409,
+    "none",
+  ),
+  LEAGUE_SUSPENDED: def("LEAGUE", "Account supervisore sospeso.", 403, "contact_org"),
 
   EMAIL_WEBHOOK_INVALID: def("EMAILS", "Firma o payload webhook Resend invalidi.", 400, "none"),
   EMAIL_NOT_FOUND: def("EMAILS", "EmailMessage id assente dopo authz staff.", 404, "none"),

@@ -5,6 +5,7 @@ import {
   isStaff,
   isMedicalReviewer,
   isSuperAdmin,
+  isLeagueSupervisorRole,
   representativeTeamIds,
 } from "@/shared/authz/getActor";
 import { countUnreadNotifications } from "@/features/notifications/data/notifications";
@@ -34,6 +35,7 @@ export const loadAppShell = cache(async (userId: string) => {
     hasPlayerRegistration: Boolean(registration),
     canVerifyMedia: actor ? authorize(actor, "media:verify").allow : false,
     isSuperAdmin: actor ? isSuperAdmin(actor) : false,
+    isLeagueSupervisor: actor ? isLeagueSupervisorRole(actor) : false,
   });
 
   return {

@@ -24,3 +24,5 @@ export function isMedicalExpired(expiresAt: Date | null, now = new Date()) {
 }
 
 export const MEDICAL_EXCESS_REASON = "Contenuto sanitario eccedente il certificato richiesto";
+export const MEDICAL_KIND_MISMATCH_REASON =
+  "tipo di certificato non conforme a quello richiesto dall'edizione";

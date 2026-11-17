@@ -22,6 +22,21 @@
   font-weight: 650;
 }
 
+.checklist {
+  margin: 0;
+  padding-left: 1.2rem;
+  display: grid;
+  gap: var(--space-1);
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+.help {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
 .confirm {
   display: flex;
   gap: var(--space-2);

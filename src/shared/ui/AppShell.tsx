@@ -14,6 +14,7 @@ type Props = {
   showMedia?: boolean;
   mediaUnderAdmin?: boolean;
   showArea?: boolean;
+  showLeague?: boolean;
   unreadCount?: number;
   children: ReactNode;
 };
@@ -28,6 +29,7 @@ export function AppShell({
   showMedia,
   mediaUnderAdmin = false,
   showArea = true,
+  showLeague = false,
   unreadCount,
   children,
 }: Props) {
@@ -42,6 +44,7 @@ export function AppShell({
           showArea,
           showAdmin: Boolean(showAdmin),
           mediaUnderAdmin,
+          showLeague,
         })}
         email={email}
         showTeam={showTeam}
@@ -52,6 +55,7 @@ export function AppShell({
         showMedia={showMedia}
         mediaUnderAdmin={mediaUnderAdmin}
         showArea={showArea}
+        showLeague={showLeague}
         unreadCount={unreadCount}
       />
       <div id="contenuto" className={styles.content} tabIndex={-1}>

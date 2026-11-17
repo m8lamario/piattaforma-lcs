@@ -52,6 +52,12 @@ function canMediaVerify(actor: Actor, competitionId?: string) {
   return actor.mediaPartner.competitionIds.includes(competitionId);
 }
 
+function isLeagueSupervisorFor(actor: Actor, editionId?: string) {
+  if (!editionId || !actor.leagueEditionId) return false;
+  if (!actor.roles.some((role) => role.role === "LEAGUE_SUPERVISOR")) return false;
+  return actor.leagueEditionId === editionId;
+}
+
 const SUPER_ONLY: Action[] = [
   "platform:admin",
   "user:delete",
@@ -116,7 +122,12 @@ export function authorize(
     case "user:anonymize":
     case "media:manage":
     case "user:view_as":
+    case "league:manage":
       return deny("Permesso negato.");
+    case "league:read":
+      return isLeagueSupervisorFor(actor, resource.editionId)
+        ? { allow: true }
+        : deny("Non puoi vedere questa lega.");
     case "media:verify":
       return canMediaVerify(actor, resource.competitionId)
         ? { allow: true }

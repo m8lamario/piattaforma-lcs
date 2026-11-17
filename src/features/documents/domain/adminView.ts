@@ -1,4 +1,5 @@
 import type { ReviewQueueItem } from "@/features/documents/domain/reviewQueue";
+import { certificateKindSatisfies } from "./certificatePolicy";
 import type { MedicalCertificateKind } from "./medicalRequirement";
 
 export const adminDocumentSelect = {
@@ -207,6 +208,11 @@ export function documentKindMismatch(document: {
 }) {
   const requiredNow = document.registration.team.edition.medicalCertificateKind;
   if (document.requiredKindAtUpload !== requiredNow) return true;
-  if (document.inspection?.recognizedKind && document.inspection.recognizedKind !== requiredNow) return true;
+  if (
+    document.inspection?.recognizedKind &&
+    !certificateKindSatisfies(requiredNow, document.inspection.recognizedKind)
+  ) {
+    return true;
+  }
   return Boolean(document.inspection?.anomalies.includes("KIND_MISMATCH"));
 }

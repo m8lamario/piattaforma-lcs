@@ -59,8 +59,11 @@ Tabelle `User`, `Account`, `Session`, `VerificationToken` secondo Auth.js Prisma
 | SUPER_ADMIN | null | null |
 | COMPETITION_ORGANIZER | null | required |
 | MEDIA_PARTNER | null | null (le coppe stanno su `MediaPartnerCompetition`) |
+| LEAGUE_SUPERVISOR | null | null (l’edizione sta su `LeagueSupervisor`) |
 
 Lo scope del rappresentante è la squadra: edizione e competition si leggono da `Team`, senza un `editionId` sul ruolo. L’organizer copre tutte le edizioni della propria competition. `ORGANIZATION_ADMIN` e `SUPER_ADMIN` restano di piattaforma (ESL/LCS), non di una singola coppa. Il media partner è scoped all’organizzazione: `MediaPartner` + `MediaPartnerAccount` + `MediaPartnerCompetition`. Account o organizzazione `SUSPENDED` toglie le grant.
+
+**LeagueSupervisor** — account dedicato, 1:1 con `User`. `editionId` obbligatorio (`onDelete: Restrict`). `status` ACTIVE | SUSPENDED. Attivazione come il media partner: token SHA-256, `activatedAt`, niente plaintext in DB. Check SQL: `UserRole` con `LEAGUE_SUPERVISOR` ha `teamId` e `competitionId` null. Più supervisori per la stessa edizione; un utente ha al più una riga. La scuola resta globale: l’isolamento filtra `Team.editionId`, non `School`.
 
 Un rappresentante che è anche giocatore ha `TEAM_REPRESENTATIVE` + membership `PLAYER` (e profilo).
 

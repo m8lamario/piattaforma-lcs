@@ -172,6 +172,12 @@ describe("template email", () => {
         activateUrl: "https://hub.test/attiva-media/token",
         scadenza: "21 ottobre 2026, 18:00",
       },
+      LEAGUE_SUPERVISOR_ACTIVATE: {
+        firstName: "Marco",
+        title: "Leonessa Cup · 2026",
+        activateUrl: "https://hub.test/attiva-supervisore/token",
+        scadenza: "21 ottobre 2026, 18:00",
+      },
       MANUAL: { title: "Avviso", body: "Testo operativo", link: "https://hub.test/area" },
     };
 

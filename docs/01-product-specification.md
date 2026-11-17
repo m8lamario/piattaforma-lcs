@@ -14,6 +14,7 @@ Oggi le iscrizioni a coppe studentesche locali sono frammentate. ESL/LCS opera a
 | Organization Admin | Revisionare e sbloccare le iscrizioni | Documenti sparsi, nessuna traccia |
 | Super Admin | Configurare piattaforma, ruoli, informative | Errori di configurazione su dati sensibili |
 | Media Partner | Verificare in campo se un giocatore è autorizzato a foto, video e social | Vedere dati non necessari o coppe non assegnate |
+| Supervisore di lega | Capire in pochi secondi lo stato delle iscrizioni della propria edizione | Vedere altre leghe, file medici o dati personali non necessari |
 
 ## 3. Promessa v1
 
@@ -71,6 +72,12 @@ Il giocatore entra **solo con il link della propria squadra**, indica la propria
 - Cercare per nome o cognome i giocatori (e lo staff tecnico) delle sole competizioni autorizzate.
 - Vedere nome, cognome, squadra, competizione, edizione, fascia età e lo stato degli usi della liberatoria già previsti in registrazione.
 - Non aprire certificati, testi delle liberatorie, recapiti, CF, tutori, né esportare elenchi.
+
+## 7.2 Capacità Supervisore di lega
+
+- Accedere a `/lega` dopo attivazione, sulla sola edizione assegnata.
+- Vedere scuole e giocatori `PLAYER` di quell’edizione, con stato iscrizione, stato medico sintetico e stato pagamento sintetico.
+- Esportare CSV delle stesse colonne. Non aprire file medici, recapiti, CF, tutori, importi o ricevute. Non modificare nulla.
 
 ## 8. Dati giocatore (minimi)
 

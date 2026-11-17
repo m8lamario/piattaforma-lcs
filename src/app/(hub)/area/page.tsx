@@ -60,6 +60,9 @@ export default async function AreaPage() {
   if (shell.showMedia && !shell.showArea) {
     redirect("/media");
   }
+  if (shell.showLeague) {
+    redirect("/lega");
+  }
   if (shell.showTeam && shell.actor) {
     const teamIds = representativeTeamIds(shell.actor);
     const jar = await cookies();
@@ -206,6 +209,7 @@ export default async function AreaPage() {
           }}
           identityConflict={workspace.identityConflict}
           shirtSizeDue={workspace.shirtSizeOnlyGap}
+          medicalCertificateKind={workspace.registration.medicalCertificateKind}
         />
       </>
     );

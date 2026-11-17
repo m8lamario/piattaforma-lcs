@@ -29,7 +29,8 @@ import {
   type SerializedAdminDocumentView,
   type SerializedReviewQueueItem,
 } from "@/features/documents/domain/adminView";
-import { MEDICAL_EXCESS_REASON } from "@/features/documents/domain/retention";
+import { proposedCertificateExpiry } from "@/features/documents/domain/certificatePolicy";
+import { MEDICAL_EXCESS_REASON, MEDICAL_KIND_MISMATCH_REASON } from "@/features/documents/domain/retention";
 import { createDocumentAccessToken } from "@/features/documents/domain/signedUrl";
 import { parseDateOnly } from "@/features/players/domain/dates";
 import {
@@ -312,10 +313,15 @@ export async function reviewDocumentAction(
     anomaly: String(formData.get("anomaly") ?? ""),
   });
   let reason = String(formData.get("reason") ?? "");
+  if (formData.get("kindMismatch") === "on") {
+    reason = reason.trim()
+      ? `${MEDICAL_KIND_MISMATCH_REASON}. ${reason.trim()}`
+      : MEDICAL_KIND_MISMATCH_REASON;
+  }
   if (formData.get("excessHealth") === "on") {
     reason = reason.trim() ? `${MEDICAL_EXCESS_REASON}. ${reason.trim()}` : MEDICAL_EXCESS_REASON;
   }
-  const expiresAt = parseDateOnly(String(formData.get("expiresAt") ?? ""));
+  const typedExpiry = parseDateOnly(String(formData.get("expiresAt") ?? ""));
   const document = await getDocumentById(documentId);
   if (!document) return fail("DOCUMENT_NOT_FOUND");
 
@@ -334,6 +340,15 @@ export async function reviewDocumentAction(
   if (decision === "APPROVED" && !confirmed) {
     return fail(requiredKind === "COMPETITIVE" ? "DOCUMENT_AGONISTIC_CONFIRM_REQUIRED" : "DOCUMENT_KIND_CONFIRM_REQUIRED");
   }
+
+  const expiresAt =
+    typedExpiry ??
+    proposedCertificateExpiry({
+      requiredKind,
+      recognizedKind: document.inspection?.recognizedKind ?? null,
+      issuedAt: document.inspection?.issuedAt ?? null,
+      expiresAt: null,
+    });
 
   const result = await reviewMedicalDocument({
     documentId,
