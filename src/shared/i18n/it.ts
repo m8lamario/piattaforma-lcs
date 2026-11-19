@@ -326,6 +326,7 @@ export const it = {
   consentReadDone: "Letta",
   consentReadHint: "Apri il testo e scorri fino in fondo prima di confermare.",
   consentReadScroll: "Scorri fino in fondo per sbloccare la chiusura.",
+  consentReadJump: "Vai in fondo",
   consentReadClose: "Ho letto",
   consentReadLocked: "Leggi l’informativa prima di confermare.",
   legalIndexTitle: "Informative",
