@@ -173,6 +173,17 @@ export function PrivacyConsentForm({
         />
       ) : null}
 
+      {!allReady ? (
+        <ul className={styles.blockedList}>
+          {missingDocs.map((document) => (
+            <li key={document.slug}>{document.title}</li>
+          ))}
+          {missingBoxes.map((box) => (
+            <li key={box.code}>{healthLabels[box.code] ?? it[box.labelKey]}</li>
+          ))}
+        </ul>
+      ) : null}
+
       <div className={`${fields.actions} ${fields.sticky}`}>
         <Button type="submit" name="intent" value="continue" disabled={pending || !allReady} aria-busy={pending}>
           {pending ? it.saving : it.saveContinue}
@@ -181,16 +192,6 @@ export function PrivacyConsentForm({
           {it.saveExit}
         </Button>
         <WizardLaterButton />
-        {!allReady ? (
-          <ul className={styles.blockedList}>
-            {missingDocs.map((document) => (
-              <li key={document.slug}>{document.title}</li>
-            ))}
-            {missingBoxes.map((box) => (
-              <li key={box.code}>{healthLabels[box.code] ?? it[box.labelKey]}</li>
-            ))}
-          </ul>
-        ) : null}
       </div>
     </form>
   );
