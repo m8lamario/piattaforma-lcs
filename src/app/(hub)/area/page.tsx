@@ -23,6 +23,7 @@ import { staffOccupiesSlot, teamCoachCompleteness } from "@/features/teams/domai
 import { LiveRefresh } from "@/features/teams/ui/LiveRefresh";
 import { resolveSelectedTeamId } from "@/features/teams/domain/selection";
 import { RepresentativeDashboard } from "@/features/teams/ui/RepresentativeDashboard";
+import { loadGuardianEmailPageView } from "@/features/consents/data/guardianEmail";
 import { toRepresentativeOwnRegistration } from "@/features/teams/ui/representativeOwn";
 import { authorize } from "@/shared/authz/authorize";
 import { representativeTeamIds } from "@/shared/authz/getActor";
@@ -115,17 +116,23 @@ export default async function AreaPage() {
           workspace && workspace.registration.teamId === team.id
             ? toRepresentativeOwnRegistration(workspace)
             : null;
+        const canChooseRole = !activeOwn && isRegistrationWindowOpen(editionWindow);
         const schoolChecklist = projectSchoolChecklist({
           representativeEmailVerified: Boolean(account?.emailVerified),
           coachMissing: !coach.complete,
+          staffPresent: parts.staffUsed > 0,
+          canJoinStaff: canChooseRole,
           paymentMode: team.edition.paymentMode,
           teamFee:
             teamFee.status === "ready" ? { status: "ready", cents: teamFee.cents } : { status: teamFee.status },
           teamPaymentSucceeded: Boolean(teamPayment),
           players: parts.players.map((row) => ({
             withdrawn: row.registrationStatus === "WITHDRAWN",
+            isOwn: row.userId === userId,
             personalDataComplete: row.personalDataComplete,
             guardianState: row.guardianState,
+            guardianEmailUndeliverable: row.guardianEmailUndeliverable,
+            secondGuardianEmailUndeliverable: row.secondGuardianEmailUndeliverable,
             privacyComplete: row.privacyComplete,
             mediaComplete: row.mediaComplete,
             paymentCovered: row.paymentCovered,
@@ -161,7 +168,7 @@ export default async function AreaPage() {
                   ? `${team.coachRegistration?.playerProfile.firstName ?? ""} ${team.coachRegistration?.playerProfile.lastName ?? ""}`.trim()
                   : null
               }
-              canChooseRole={!activeOwn && isRegistrationWindowOpen(editionWindow)}
+              canChooseRole={canChooseRole}
               activeCategory={activeOwn?.category ?? null}
               schoolChecklist={schoolChecklist}
             />
@@ -187,6 +194,17 @@ export default async function AreaPage() {
   scheduleWorkspaceFollowUp(workspace, viewing);
 
   if (workspace) {
+    const guardianEmails = workspace.evidence.isMinor
+      ? await loadGuardianEmailPageView({
+          registrationId: workspace.registration.id,
+          primaryEmail: workspace.guardian?.email,
+          secondaryEmail: workspace.secondGuardian?.email,
+          enrollmentOpen:
+            workspace.guardianAuthorization === "pending" ||
+            (workspace.guardianAuthorization === "none" && Boolean(workspace.guardian?.email)),
+          publicationOpen: workspace.publication.status === "pending_other_parent",
+        })
+      : null;
     return (
       <>
         {!workspace.user.emailVerified ? <EmailVerifyNotice /> : null}
@@ -210,6 +228,8 @@ export default async function AreaPage() {
           identityConflict={workspace.identityConflict}
           shirtSizeDue={workspace.shirtSizeOnlyGap}
           medicalCertificateKind={workspace.registration.medicalCertificateKind}
+          guardianAuthorization={workspace.guardianAuthorization}
+          guardianNotices={guardianEmails?.notices ?? []}
         />
       </>
     );

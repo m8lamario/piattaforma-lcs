@@ -15,7 +15,7 @@ import {
   summarizeRoster,
   summarizeRosterCauses,
 } from "@/features/teams/domain/roster";
-import { STAFF_SLOT_LIMIT, teamCoachCompleteness } from "@/features/teams/domain/staff";
+import { STAFF_SLOT_LIMIT, staffOccupiesSlot, teamCoachCompleteness } from "@/features/teams/domain/staff";
 import { CoachForm } from "@/features/teams/ui/CoachForm";
 import { LiveRefresh } from "@/features/teams/ui/LiveRefresh";
 import { resolveSelectedTeamId } from "@/features/teams/domain/selection";
@@ -91,6 +91,8 @@ export default async function TeamPage({ searchParams }: Props) {
 
   const counts = summarizeRoster(parts.players);
   const windowOpen = isRegistrationWindowOpen(editionWindow);
+  const own = roster.find((row) => row.userId === actor.userId);
+  const canJoinStaff = !(own && staffOccupiesSlot(own.registrationStatus)) && windowOpen;
 
   return (
     <main className={styles.main}>
@@ -159,6 +161,7 @@ export default async function TeamPage({ searchParams }: Props) {
               coachRegistrationId={coach.complete ? team.coachRegistrationId : null}
               incomplete={!coach.complete}
               coachName={coachName}
+              canJoinStaff={canJoinStaff}
             />
           </Panel>
           {teamFee.status !== "not_due" ? (

@@ -896,6 +896,84 @@ export async function latestEnrollmentAuthorization(registrationId: string) {
   });
 }
 
+export async function latestPublicationAuthorization(registrationId: string) {
+  return prisma.guardianAuthorization.findFirst({
+    where: { registrationId, authorizationType: "PUBLICATION" },
+    orderBy: { requestedAt: "desc" },
+  });
+}
+
+export async function resendPublicationAuthorization(input: {
+  registrationId: string;
+  playerUserId: string;
+}) {
+  const authorization = await prisma.guardianAuthorization.findFirst({
+    where: {
+      registrationId: input.registrationId,
+      authorizationType: "PUBLICATION",
+      status: { in: ["PENDING", "OPENED"] },
+    },
+    orderBy: { requestedAt: "desc" },
+    include: { guardian: true },
+  });
+  if (!authorization?.guardian.email) {
+    return { ok: false as const, reason: "not_found" as const };
+  }
+
+  const delivery = await loadUserEmailDelivery(
+    USER_EMAIL_OPS.guardianPublication(authorization.id, authorization.guardian.email),
+  );
+  if (!delivery.decision.allow) {
+    return { ok: false as const, reason: delivery.decision.reason, delivery };
+  }
+
+  const registration = await prisma.registration.findUnique({
+    where: { id: input.registrationId },
+    include: {
+      playerProfile: { select: { firstName: true, lastName: true, userId: true } },
+    },
+  });
+  if (!registration) return { ok: false as const, reason: "not_found" as const };
+
+  const issued = await issueLinkToken({
+    purpose: "PUBLICATION",
+    guardianId: authorization.guardianId,
+    playerProfileId: authorization.playerProfileId,
+    registrationId: input.registrationId,
+    authorizationId: authorization.id,
+  });
+  await prisma.guardianAuthorization.update({
+    where: { id: authorization.id },
+    data: { tokenId: issued.row.id },
+  });
+
+  const dispatched = await dispatchOutboundEmail({
+    idempotencyKey: userEmailResendIdempotencyKey(`guardian-publication:${issued.row.id}`),
+    purpose: "CONSENT_C1",
+    templateKey: "CONSENT_C1",
+    to: authorization.guardian.email,
+    userId: input.playerUserId,
+    recipientKind: "GUARDIAN",
+    variables: {
+      title: it.emailC1Subject,
+      playerName: `${registration.playerProfile.firstName} ${registration.playerProfile.lastName}`.trim(),
+      confirmUrl: guardianAuthorizeUrl(issued.token),
+      scadenza: formatExpiry(issued.row.expiresAt),
+      summary: it.emailPublicationSummary,
+    },
+    sourceEntityType: "GuardianAuthorization",
+    sourceEntityId: authorization.id,
+    actorUserId: input.playerUserId,
+  });
+  if (dispatched.status === "FAILED") {
+    return { ok: false as const, reason: "failed" as const, authorizationId: authorization.id };
+  }
+  const next = await loadUserEmailDelivery(
+    USER_EMAIL_OPS.guardianPublication(authorization.id, authorization.guardian.email),
+  );
+  return { ok: true as const, authorizationId: authorization.id, delivery: next };
+}
+
 export async function resetEnrollmentAuthorization(input: {
   registrationId: string;
   actorUserId: string;

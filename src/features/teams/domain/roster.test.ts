@@ -29,6 +29,8 @@ describe("team roster projection", () => {
       isCoach: false,
       emailVerified: true,
       guardianState: "na",
+      guardianEmailUndeliverable: false,
+      secondGuardianEmailUndeliverable: false,
       personalDataComplete: true,
       privacyComplete: true,
       mediaComplete: true,
@@ -139,6 +141,21 @@ describe("team roster projection", () => {
         }),
       ]),
     ).toEqual({ unverified: 1, guardian: 0, unpaid: 1, medical: 1 });
+    expect(
+      filterRoster(
+        [
+          toRosterRow({
+            registrationId: "g",
+            firstName: "E",
+            lastName: "E",
+            registrationStatus: "APPROVED",
+            guardianState: "authorized",
+            secondGuardianEmailUndeliverable: true,
+          }),
+        ],
+        "guardian",
+      ),
+    ).toHaveLength(1);
   });
 
   it("nella vista compagni non espone stato medico", () => {

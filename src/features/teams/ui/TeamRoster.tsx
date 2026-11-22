@@ -65,8 +65,17 @@ function openFlags(row: RosterRow, staff: boolean): Flag[] {
     } else if (!row.sportEligible) {
       flags.push({ key: "eligibility", tone: "attention", label: it.rosterNotEligible });
     }
+    if (row.guardianEmailUndeliverable) {
+      flags.push({ key: "guardian-email", tone: "danger", label: it.rosterGuardianEmailUndeliverable });
+    }
+    if (row.secondGuardianEmailUndeliverable) {
+      flags.push({ key: "guardian-email-2", tone: "danger", label: it.rosterSecondGuardianEmailUndeliverable });
+    }
     if (row.guardianState === "refused") flags.push({ key: "guardian", tone: "danger", label: it.rosterGuardianRefused });
-    if (row.guardianState === "pending" || row.guardianState === "none") {
+    if (
+      (row.guardianState === "pending" || row.guardianState === "none") &&
+      !row.guardianEmailUndeliverable
+    ) {
       flags.push({ key: "guardian", tone: "attention", label: it.rosterGuardianPending });
     }
     if (!row.emailVerified) flags.push({ key: "email", tone: "attention", label: it.rosterEmailUnverified });
@@ -198,7 +207,13 @@ export function TeamRoster({ teamId, rows, canEditRoster = true, emptyLabel, emp
                     {!staff && !row.emailVerified ? (
                       <StatusChip tone="attention">{it.rosterEmailUnverified}</StatusChip>
                     ) : null}
-                    {!staff && (row.guardianState === "pending" || row.guardianState === "none") ? (
+                    {!staff && row.guardianEmailUndeliverable ? (
+                      <StatusChip tone="danger">{it.rosterGuardianEmailUndeliverable}</StatusChip>
+                    ) : null}
+                    {!staff && row.secondGuardianEmailUndeliverable ? (
+                      <StatusChip tone="danger">{it.rosterSecondGuardianEmailUndeliverable}</StatusChip>
+                    ) : null}
+                    {!staff && (row.guardianState === "pending" || row.guardianState === "none") && !row.guardianEmailUndeliverable ? (
                       <StatusChip tone="attention">{it.rosterGuardianPending}</StatusChip>
                     ) : null}
                     {!staff && row.guardianState === "refused" ? (

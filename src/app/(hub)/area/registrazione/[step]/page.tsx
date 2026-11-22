@@ -6,8 +6,8 @@ import { loadAppShell } from "@/shared/ui/loadAppShell";
 import { authorize } from "@/shared/authz/authorize";
 import { GuardianForm } from "@/features/players/ui/GuardianForm";
 import { GuardianEmailPanel } from "@/features/players/ui/GuardianEmailPanel";
-import { latestEnrollmentAuthorization } from "@/features/consents/data/guardianAuth";
-import { loadUserEmailDelivery, USER_EMAIL_OPS } from "@/features/emails/data/userDelivery";
+import { GuardianEmailAlert } from "@/features/consents/ui/GuardianEmailAlert";
+import { loadGuardianEmailPageView } from "@/features/consents/data/guardianEmail";
 import { PersonalDataForm } from "@/features/players/ui/PersonalDataForm";
 import { loadPlayerWorkspace } from "@/features/registrations/data/workspace";
 import { isPaymentCovered, isTerminalRegistrationStatus } from "@/features/registrations/domain/requirements";
@@ -89,11 +89,17 @@ export default async function WizardStepPage({ params }: Props) {
       : raw === "liberatorie"
         ? await getCurrentLegalVersions([MEDIA_RELEASE_SLUG])
         : [];
-  const enrollmentAuth =
-    raw === "tutore" ? await latestEnrollmentAuthorization(workspace.registration.id) : null;
-  const guardianDelivery =
-    enrollmentAuth && workspace.guardian?.email
-      ? await loadUserEmailDelivery(USER_EMAIL_OPS.guardianAuthorize(enrollmentAuth.id, workspace.guardian.email))
+  const guardianEmails =
+    raw === "tutore" && workspace.evidence.isMinor
+      ? await loadGuardianEmailPageView({
+          registrationId: workspace.registration.id,
+          primaryEmail: workspace.guardian?.email,
+          secondaryEmail: workspace.secondGuardian?.email,
+          enrollmentOpen:
+            workspace.guardianAuthorization === "pending" ||
+            (workspace.guardianAuthorization === "none" && Boolean(workspace.guardian?.email)),
+          publicationOpen: workspace.publication.status === "pending_other_parent",
+        })
       : null;
   const toView = (slug: string) => {
     const version = legalVersions.find((entry) => entry.legalDocument.slug === slug);
@@ -136,13 +142,24 @@ export default async function WizardStepPage({ params }: Props) {
               secondEmail: workspace.secondGuardian?.email ?? "",
             }}
           />
-          {guardianDelivery && workspace.guardian?.email ? (
+          {guardianEmails ? <GuardianEmailAlert notices={guardianEmails.notices} here /> : null}
+          {guardianEmails?.primaryPanel ? (
             <GuardianEmailPanel
-              email={workspace.guardian.email}
-              deliveryState={guardianDelivery.state}
-              remainingResends={guardianDelivery.remainingResends}
-              contactSupport={guardianDelivery.contactSupport}
-              resendAvailableAt={guardianDelivery.resendAvailableAt?.toISOString() ?? null}
+              email={guardianEmails.primaryPanel.email}
+              deliveryState={guardianEmails.primaryPanel.delivery.state}
+              remainingResends={guardianEmails.primaryPanel.delivery.remainingResends}
+              contactSupport={guardianEmails.primaryPanel.delivery.contactSupport}
+              resendAvailableAt={guardianEmails.primaryPanel.delivery.resendAvailableAt?.toISOString() ?? null}
+            />
+          ) : null}
+          {guardianEmails?.secondaryPanel ? (
+            <GuardianEmailPanel
+              kind="publication"
+              email={guardianEmails.secondaryPanel.email}
+              deliveryState={guardianEmails.secondaryPanel.delivery.state}
+              remainingResends={guardianEmails.secondaryPanel.delivery.remainingResends}
+              contactSupport={guardianEmails.secondaryPanel.delivery.contactSupport}
+              resendAvailableAt={guardianEmails.secondaryPanel.delivery.resendAvailableAt?.toISOString() ?? null}
             />
           ) : null}
         </>

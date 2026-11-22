@@ -14,6 +14,11 @@ import { Panel } from "@/shared/ui/Panel";
 import { ProgressMeter } from "@/shared/ui/ProgressMeter";
 import { StatusChip, type StatusTone } from "@/shared/ui/StatusChip";
 import { IdentityConflictPanel } from "@/features/players/ui/IdentityConflictPanel";
+import { GuardianEmailAlert } from "@/features/consents/ui/GuardianEmailAlert";
+import {
+  hasUndeliverableGuardianEmail,
+  type GuardianEmailNotice,
+} from "@/features/consents/domain/guardianEmail";
 import { WindowChip, WindowNotice } from "@/features/registrations/ui/WindowNotice";
 import { isRegistrationWindowOpen, type EditionWindow } from "@/features/registrations/domain/window";
 import { medicalKindLabel, type MedicalCertificateKind } from "@/features/documents/domain/medicalRequirement";
@@ -63,10 +68,21 @@ function eligibilityNotice(reason: SportEligibilityReason | undefined, deadlineL
   return it.medicalDeadlineUnknown;
 }
 
-function heroText(hero: NextHero, medicalStatus?: MedicalEvidence) {
+function heroText(
+  hero: NextHero,
+  medicalStatus?: MedicalEvidence,
+  guardian?: { authorization?: "none" | "pending" | "authorized" | "refused"; notices: GuardianEmailNotice[] },
+) {
   if (hero.code === "DONE") return it.heroDone;
   if (hero.code === "PERSONAL_DATA") return it.heroPersonal;
-  if (hero.code === "GUARDIAN_IF_MINOR") return it.heroGuardian;
+  if (hero.code === "GUARDIAN_IF_MINOR") {
+    const primaryBounce = guardian?.notices.some(
+      (notice) => notice.kind === "primary" && notice.reason === "undeliverable",
+    );
+    if (primaryBounce) return it.heroGuardianUndeliverable;
+    if (guardian?.authorization === "pending") return it.heroGuardianPending;
+    return it.heroGuardian;
+  }
   if (hero.code === "MEDICAL_CERT") {
     if (hero.status === "attention") {
       if (medicalStatus === "rejected" || medicalStatus === "expired") {
@@ -97,6 +113,8 @@ type Props = {
   category?: "PLAYER" | "STAFF";
   shirtSizeDue?: boolean;
   medicalCertificateKind?: MedicalCertificateKind;
+  guardianAuthorization?: "none" | "pending" | "authorized" | "refused";
+  guardianNotices?: GuardianEmailNotice[];
 };
 
 export function RegistrationDashboard({
@@ -115,6 +133,8 @@ export function RegistrationDashboard({
   category = "PLAYER",
   shirtSizeDue = false,
   medicalCertificateKind,
+  guardianAuthorization,
+  guardianNotices = [],
 }: Props) {
   const hero = nextHero(checklist);
   const hrefStep = hero.code === "DONE" ? "riepilogo" : (REQUIREMENT_STEP[hero.code] ?? "dati");
@@ -125,8 +145,11 @@ export function RegistrationDashboard({
   const approved = status === "APPROVED" && (category === "STAFF" || sportEligible);
   const closed = status === "WITHDRAWN" || status === "REMOVED";
   const checklistDoneButNotEligible = hero.code === "DONE" && playBlocked;
+  const guardianMailProblem = hasUndeliverableGuardianEmail(guardianNotices);
   const settled =
-    !checklistDoneButNotEligible && (hero.code === "DONE" || approved || closed || blocked);
+    !guardianMailProblem &&
+    !checklistDoneButNotEligible &&
+    (hero.code === "DONE" || approved || closed || blocked);
   const deadlineLabel = medicalDeadline
     ? medicalDeadline.toLocaleDateString("it-IT", { dateStyle: "long" })
     : null;
@@ -145,10 +168,12 @@ export function RegistrationDashboard({
               ? it.heroShirtSize
               : hero.code === "DONE"
                 ? it.heroPendingNow
-                : heroText(hero, medicalStatus);
-  const continueHref = checklistDoneButNotEligible
-    ? "/area/registrazione/certificato"
-    : `/area/registrazione/${hrefStep}`;
+                : heroText(hero, medicalStatus, { authorization: guardianAuthorization, notices: guardianNotices });
+  const continueHref = guardianMailProblem
+    ? "/area/registrazione/tutore"
+    : checklistDoneButNotEligible
+      ? "/area/registrazione/certificato"
+      : `/area/registrazione/${hrefStep}`;
   const heroKicker = blocked
     ? it.wizardStepAttention
     : approved
@@ -193,7 +218,13 @@ export function RegistrationDashboard({
       <NextStepHero
         kicker={heroKicker}
         icon={approved ? "check" : blocked || playBlocked ? "alert" : hero.code === "DONE" ? "clock" : "zap"}
-        tone={blocked || shirtSizeDue || playBlocked ? "warning" : approved ? "done" : "default"}
+        tone={
+          blocked || shirtSizeDue || playBlocked || guardianMailProblem
+            ? "warning"
+            : approved
+              ? "done"
+              : "default"
+        }
         title={heroCopy}
         actions={
           settled ? (
@@ -220,6 +251,11 @@ export function RegistrationDashboard({
             />
           )
         }
+      />
+
+      <GuardianEmailAlert
+        notices={guardianNotices}
+        href={guardianNotices.length > 0 ? "/area/registrazione/tutore" : undefined}
       />
 
       {category === "PLAYER" && medicalCertificateKind ? (

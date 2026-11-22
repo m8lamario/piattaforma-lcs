@@ -95,6 +95,18 @@ Regole:
 
 All’accesso `/area` è la panoramica operativa, non un’area giocatore vuota. Mostra scuola, competizione, conteggi rosa cliccabili, copia del link `/iscrizione/{token}` e le azioni richieste. Il referente sceglie un solo ruolo aggiuntivo, giocatore **oppure** staff: la scelta si registra subito e non si cambia finché l’iscrizione è attiva. Subito dopo compare il modulo dei dati. Si può interrompere: modulo e passi escono dalla dashboard e ricompaiono solo con “Riprendi iscrizione”. La rosa resta in `/squadra`.
 
+Il riquadro **Prossimo passo** propone la prima azione che il referente può davvero completare, in quest’ordine. La checklist sotto resta completa (l’allenatore resta obbligatorio); cambia solo il titolo, la destinazione e la CTA.
+
+1. Verifica email del referente, se manca.
+2. Allenatore. Senza almeno uno staff tecnico il modulo di designazione è vuoto: se il referente non è ancora iscritto, il passo è iscriversi come staff (oppure condividere il link se l’allenatore è un’altra persona). Se è già giocatore, il passo è condividere il link: non può essere anche staff. Con almeno uno staff in rosa, il passo è indicare l’allenatore.
+3. Quota di squadra, se l’edizione la chiede alla scuola e l’importo è configurato. Importo assente: attesa dell’organizzazione, non un passo cliccabile.
+4. Iscrizione personale del referente, se ha scelto giocatore o staff e gli restano adempimenti. Quei buchi non si contano di nuovo tra i giocatori della rosa.
+5. Buchi della rosa: dati, autorizzazione del genitore, privacy, liberatorie, quote. Se un’email al genitore è rimbalzata, il titolo lo dice (senza mostrare l’indirizzo). I certificati restano fuori dal passo amministrativo.
+
+## 2c. Email del genitore non raggiungibile
+
+Un bounce (`BOUNCED`) sull’email al contatto principale o all’altro genitore è un avviso per **quell’indirizzo**, indipendente dall’altro genitore. Il minore lo vede in dashboard e nel passo tutore, con l’indirizzo in chiaro e il modo per correggerlo. In attesa senza bounce, un avviso più leggero mostra l’indirizzo indicato e invita a verificarlo: non si afferma che sia sbagliato se il servizio di invio non l’ha rifiutato. Il rappresentante non vede l’email: in rosa la chip diventa «Email del genitore non raggiungibile» o «Email dell’altro genitore non raggiungibile». La seconda email resta correggibile una sola volta, come oggi, salvo quando l’invio precedente è rimbalzato.
+
 ## 3. Percorso giocatore (post-M0)
 
 Passi guidati, uno schermo alla volta, salvataggio per passo. L’account si crea dal link di squadra; l’email va verificata con un codice numerico a 6 cifre **prima** di anagrafica, consensi, upload e pagamento. Su `/verifica-email` l’indirizzo è visibile per intero: se è un refuso, si corregge da lì e il codice parte solo verso il nuovo indirizzo. Un reinvio non cambia la casella.
@@ -135,7 +147,7 @@ Fuori dalla finestra `registrationOpensAt`/`registrationClosesAt`: il link di sq
 3. Il sistema invia al contatto un’email di **richiesta di autorizzazione** (non una copia delle email del minore) con token crittografico, hashato, con scadenza, senza PII nel token.
 4. La pagina `/autorizzazione-genitore/[token]` mostra minore, torneo, finalità, documenti della versione corrente, trattamento del certificato, liberatorie distinte. Il genitore dichiara il ruolo (G1) e compie gli atti. Ogni scelta è un atto del `guardianId`, non del `userId` del minore. Il link resta valido fino a `expiresAt`: dopo l’invio mostra le scelte attuali e consente di correggerle (accettazione o rifiuto). Un rifiuto chiede conferma esplicita. Lo storico precedente non si cancella. Un token già consumato (casi esistenti) o scaduto non si riapre da solo: l’admin reimposta la **stessa** riga a `PENDING` e reinvia il link, senza ricreare l’iscrizione.
 5. `GUARDIAN_IF_MINOR` e `PRIVACY` (percorso minore) sono completi solo con autorizzazione `ENROLLMENT` in stato `AUTHORIZED`. Senza, niente `APPROVED` e niente checkout giocatore.
-6. Se il contatto indica un altro genitore, il secondo riceve un link `PUBLICATION` (evoluzione di C1) per foto/video e cognome completo. Per giocare basta l’atto del contatto principale. Se anche l’iscrizione richieda entrambi: **DA VALIDARE LEGALMENTE**.
+6. Se il contatto indica un altro genitore, il secondo riceve un link `PUBLICATION` (evoluzione di C1) per foto/video e cognome completo. Per giocare basta l’atto del contatto principale. Se anche l’iscrizione richieda entrambi: **DA VALIDARE LEGALMENTE**. Un bounce o un indirizzo ancora da verificare su quel secondo contatto non chiude l’autorizzazione di iscrizione del primo; resta un avviso distinto, anche dopo che il primo ha accettato.
 7. G14 resta l’assenso del minore dai 14 anni, distinto dall’autorizzazione del genitore.
 8. Revoca: link dedicato `/revoca-genitore/[token]` senza login del minore. Lo storico precedente resta. Notifica interna con i canali da ritirare. La rimozione da social esterni resta organizzativa (OD-031).
 9. Non si introduce SPID, CIE o upload di documento d’identità. Non si afferma che il click abbia valore legale: OD-002 resta aperto.

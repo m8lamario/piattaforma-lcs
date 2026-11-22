@@ -22,6 +22,8 @@ export type RosterRow = {
   isCoach: boolean;
   emailVerified: boolean;
   guardianState: RosterGuardianState;
+  guardianEmailUndeliverable: boolean;
+  secondGuardianEmailUndeliverable: boolean;
   personalDataComplete: boolean;
   privacyComplete: boolean;
   mediaComplete: boolean;
@@ -85,6 +87,8 @@ export function matchesRosterFilter(
     | "publication"
     | "emailVerified"
     | "guardianState"
+    | "guardianEmailUndeliverable"
+    | "secondGuardianEmailUndeliverable"
     | "paymentCovered"
     | "sportEligible"
     | "category"
@@ -96,7 +100,13 @@ export function matchesRosterFilter(
   if (filter === "publication") return Boolean(row.publication && row.publication.status !== "publishable");
   if (filter === "unverified") return row.emailVerified === false;
   if (filter === "guardian") {
-    return row.guardianState === "none" || row.guardianState === "pending" || row.guardianState === "refused";
+    return (
+      row.guardianState === "none" ||
+      row.guardianState === "pending" ||
+      row.guardianState === "refused" ||
+      row.guardianEmailUndeliverable === true ||
+      row.secondGuardianEmailUndeliverable === true
+    );
   }
   if (filter === "unpaid") return row.paymentCovered === false;
   if (filter === "medical") return row.category !== "STAFF" && row.sportEligible === false;
@@ -116,6 +126,8 @@ export function filterRoster<
     | "publication"
     | "emailVerified"
     | "guardianState"
+    | "guardianEmailUndeliverable"
+    | "secondGuardianEmailUndeliverable"
     | "paymentCovered"
     | "sportEligible"
     | "category"
@@ -163,6 +175,8 @@ export function toRosterRow(input: {
   isCoach?: boolean;
   emailVerified?: boolean;
   guardianState?: RosterGuardianState;
+  guardianEmailUndeliverable?: boolean;
+  secondGuardianEmailUndeliverable?: boolean;
   personalDataComplete?: boolean;
   privacyComplete?: boolean;
   mediaComplete?: boolean;
@@ -201,6 +215,8 @@ export function toRosterRow(input: {
     isCoach: input.isCoach ?? false,
     emailVerified: input.emailVerified ?? true,
     guardianState: input.guardianState ?? "na",
+    guardianEmailUndeliverable: input.guardianEmailUndeliverable ?? false,
+    secondGuardianEmailUndeliverable: input.secondGuardianEmailUndeliverable ?? false,
     personalDataComplete: input.personalDataComplete ?? true,
     privacyComplete: input.privacyComplete ?? true,
     mediaComplete: input.mediaComplete ?? true,

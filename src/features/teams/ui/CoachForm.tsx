@@ -5,6 +5,7 @@ import { designateCoachAction } from "@/features/teams/actions";
 import { staffOccupiesSlot } from "@/features/teams/domain/staff";
 import type { RosterRow } from "@/features/teams/domain/roster";
 import { ActionError } from "@/shared/ui/ActionError";
+import { ButtonLink } from "@/shared/ui/Button";
 import { PendingSubmitButton } from "@/shared/ui/PendingSubmitButton";
 import { it } from "@/shared/i18n/it";
 import fields from "@/shared/ui/form.module.css";
@@ -15,12 +16,40 @@ type Props = {
   coachRegistrationId: string | null;
   incomplete: boolean;
   coachName: string | null;
+  canJoinStaff?: boolean;
 };
 
-export function CoachForm({ teamId, rows, coachRegistrationId, incomplete, coachName }: Props) {
+export function CoachForm({
+  teamId,
+  rows,
+  coachRegistrationId,
+  incomplete,
+  coachName,
+  canJoinStaff = false,
+}: Props) {
   const [state, action, pending] = useActionState(designateCoachAction, undefined);
   const eligible = rows.filter((row) => staffOccupiesSlot(row.registrationStatus));
   const selected = eligible.some((row) => row.registrationId === coachRegistrationId) ? coachRegistrationId : "";
+
+  if (eligible.length === 0) {
+    return (
+      <div className={fields.form}>
+        <p className={`${fields.banner} ${fields.bannerWarn}`} role="status">
+          {canJoinStaff ? it.coachNeedsStaff : it.coachNeedsStaffInvite}
+        </p>
+        <div className={fields.actions}>
+          {canJoinStaff ? (
+            <ButtonLink href="/area#ruolo" icon="chevronRight" iconPosition="right">
+              {it.repNextCtaRole}
+            </ButtonLink>
+          ) : null}
+          <ButtonLink href="/squadra/inviti" variant="secondary" icon="chevronRight" iconPosition="right">
+            {it.repNextCtaInvite}
+          </ButtonLink>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <form action={action} className={fields.form} noValidate aria-busy={pending}>
@@ -51,7 +80,7 @@ export function CoachForm({ teamId, rows, coachRegistrationId, incomplete, coach
           className={fields.input}
           defaultValue={selected ?? ""}
           required
-          disabled={eligible.length === 0 || pending}
+          disabled={pending}
         >
           <option value="">{it.coachPlaceholder}</option>
           {eligible.map((row) => (
