@@ -15,18 +15,32 @@ export type SchoolChecklistItemId =
   | "own"
   | "medical";
 
+export type SchoolNextActionId = SchoolChecklistItemId | "staff" | "inviteStaff";
+
 export type SchoolChecklistItem = {
   id: SchoolChecklistItemId;
   status: SchoolChecklistStatus;
   href: string;
   count: number;
   administrative: boolean;
+  undeliverableCount?: number;
+};
+
+export type SchoolNextAction = {
+  id: SchoolNextActionId;
+  status: SchoolChecklistStatus;
+  href: string;
+  count: number;
+  undeliverableCount: number;
 };
 
 export type SchoolChecklistPlayer = {
   withdrawn?: boolean;
+  isOwn?: boolean;
   personalDataComplete: boolean;
   guardianState: "na" | "none" | "pending" | "authorized" | "refused";
+  guardianEmailUndeliverable?: boolean;
+  secondGuardianEmailUndeliverable?: boolean;
   privacyComplete: boolean;
   mediaComplete: boolean;
   paymentCovered: boolean;
@@ -44,27 +58,69 @@ function item(
   href: string,
   count: number,
   administrative: boolean,
+  undeliverableCount = 0,
 ): SchoolChecklistItem {
-  return { id, status, href, count, administrative };
+  return { id, status, href, count, administrative, undeliverableCount };
+}
+
+function isOpen(item: SchoolChecklistItem) {
+  return item.status === "todo" || item.status === "attention";
+}
+
+export function nextSchoolStep(input: {
+  items: SchoolChecklistItem[];
+  staffPresent: boolean;
+  canJoinStaff: boolean;
+}): SchoolNextAction | null {
+  const admin = input.items.filter((entry) => entry.administrative);
+  for (const entry of admin) {
+    if (!isOpen(entry)) continue;
+    if (entry.id === "coach" && !input.staffPresent) {
+      if (input.canJoinStaff) {
+        return { id: "staff", status: "todo", href: "/area#ruolo", count: 1, undeliverableCount: 0 };
+      }
+      return {
+        id: "inviteStaff",
+        status: "todo",
+        href: "/squadra/inviti",
+        count: 1,
+        undeliverableCount: 0,
+      };
+    }
+    return {
+      id: entry.id,
+      status: entry.status,
+      href: entry.href,
+      count: entry.count,
+      undeliverableCount: entry.undeliverableCount ?? 0,
+    };
+  }
+  return null;
 }
 
 export function projectSchoolChecklist(input: {
   representativeEmailVerified: boolean;
   coachMissing: boolean;
+  staffPresent: boolean;
+  canJoinStaff: boolean;
   paymentMode: PaymentMode;
   teamFee: FeeResolution;
   teamPaymentSucceeded: boolean;
   players: SchoolChecklistPlayer[];
   ownRegistrationDue: boolean;
-}): { items: SchoolChecklistItem[]; administrativeComplete: boolean } {
+}): { items: SchoolChecklistItem[]; administrativeComplete: boolean; next: SchoolNextAction | null } {
   const active = input.players.filter((player) => !player.withdrawn);
-  const personalDue = active.filter((player) => !player.personalDataComplete).length;
-  const guardianDue = active.filter(
+  const roster = active.filter((player) => !player.isOwn);
+  const personalDue = roster.filter((player) => !player.personalDataComplete).length;
+  const guardianDue = roster.filter(
     (player) => player.guardianState === "none" || player.guardianState === "pending" || player.guardianState === "refused",
   ).length;
-  const privacyDue = active.filter((player) => !player.privacyComplete).length;
-  const mediaDue = active.filter((player) => !player.mediaComplete).length;
-  const paymentDue = active.filter((player) => !player.paymentCovered).length;
+  const guardianUndeliverable = roster.filter(
+    (player) => player.guardianEmailUndeliverable || player.secondGuardianEmailUndeliverable,
+  ).length;
+  const privacyDue = roster.filter((player) => !player.privacyComplete).length;
+  const mediaDue = roster.filter((player) => !player.mediaComplete).length;
+  const paymentDue = roster.filter((player) => !player.paymentCovered).length;
   const medicalDue = active.filter((player) => !player.medicalOk).length;
 
   const items: SchoolChecklistItem[] = [
@@ -94,17 +150,24 @@ export function projectSchoolChecklist(input: {
     }
   }
 
+  if (input.ownRegistrationDue) {
+    items.push(item("own", "todo", "/area/registrazione", 1, true));
+  }
+
   items.push(
     item("personal", countStatus(personalDue), rosterFilterHref("inProgress"), personalDue, true),
-    item("guardian", guardianDue > 0 ? "attention" : "complete", rosterFilterHref("guardian"), guardianDue, true),
+    item(
+      "guardian",
+      guardianDue > 0 || guardianUndeliverable > 0 ? "attention" : "complete",
+      rosterFilterHref("guardian"),
+      guardianDue,
+      true,
+      guardianUndeliverable,
+    ),
     item("privacy", countStatus(privacyDue), rosterFilterHref("inProgress"), privacyDue, true),
     item("media", mediaDue > 0 ? "todo" : "complete", rosterFilterHref("publication"), mediaDue, true),
     item("playerPayment", countStatus(paymentDue), rosterFilterHref("unpaid"), paymentDue, true),
   );
-
-  if (input.ownRegistrationDue) {
-    items.push(item("own", "todo", "/area/registrazione", 1, true));
-  }
 
   items.push(
     item("medical", medicalDue > 0 ? "attention" : "complete", rosterFilterHref("medical"), medicalDue, false),
@@ -114,7 +177,15 @@ export function projectSchoolChecklist(input: {
     .filter((entry) => entry.administrative)
     .every((entry) => entry.status === "complete" || entry.status === "waiting_on_org");
 
-  return { items, administrativeComplete };
+  return {
+    items,
+    administrativeComplete,
+    next: nextSchoolStep({
+      items,
+      staffPresent: input.staffPresent,
+      canJoinStaff: input.canJoinStaff,
+    }),
+  };
 }
 
 export function schoolChecklistFilter(id: SchoolChecklistItemId): RosterFilter | null {

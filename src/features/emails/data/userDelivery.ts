@@ -31,7 +31,7 @@ function normalizeAddress(email: string) {
   return email.trim().toLowerCase();
 }
 
-function deliveryKey(op: {
+export function userEmailDeliveryKey(op: {
   purpose: string;
   sourceEntityType?: string | null;
   sourceEntityId?: string | null;
@@ -84,15 +84,19 @@ export async function loadUserEmailDeliveries(ops: UserEmailOperation[]) {
   });
   const grouped = new Map<string, Array<{ status: string; queuedAt: Date; idempotencyKey: string }>>();
   for (const row of rows) {
-    const key = deliveryKey(row);
+    const key = userEmailDeliveryKey(row);
     const list = grouped.get(key) ?? [];
     list.push(row);
     grouped.set(key, list);
   }
   for (const op of ops) {
-    views.set(normalizeAddress(op.toAddress), projectUserEmailDelivery({ rows: grouped.get(deliveryKey(op)) ?? [] }));
+    views.set(userEmailDeliveryKey(op), projectUserEmailDelivery({ rows: grouped.get(userEmailDeliveryKey(op)) ?? [] }));
   }
   return views;
+}
+
+export function deliveryViewFor(views: Map<string, UserEmailDeliveryView>, op: UserEmailOperation) {
+  return views.get(userEmailDeliveryKey(op)) ?? projectUserEmailDelivery({ rows: [] });
 }
 
 export function failUserEmailResend(reason: Exclude<UserEmailResendDecision, { allow: true }>["reason"]): ActionFailure {
@@ -127,10 +131,10 @@ export const USER_EMAIL_OPS = {
     sourceEntityId: authorizationId,
     toAddress: email,
   }),
-  guardianPublication: (registrationId: string, email: string): UserEmailOperation => ({
+  guardianPublication: (authorizationId: string, email: string): UserEmailOperation => ({
     purpose: "CONSENT_C1",
-    sourceEntityType: "Registration",
-    sourceEntityId: registrationId,
+    sourceEntityType: "GuardianAuthorization",
+    sourceEntityId: authorizationId,
     toAddress: email,
   }),
   schoolActivate: (requestId: string, email: string): UserEmailOperation => ({

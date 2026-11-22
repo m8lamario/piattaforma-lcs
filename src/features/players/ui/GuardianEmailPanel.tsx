@@ -16,6 +16,7 @@ type Props = {
   remainingResends: number;
   contactSupport: boolean;
   resendAvailableAt: string | null;
+  kind?: "enrollment" | "publication";
 };
 
 export function GuardianEmailPanel({
@@ -24,6 +25,7 @@ export function GuardianEmailPanel({
   remainingResends,
   contactSupport,
   resendAvailableAt,
+  kind = "enrollment",
 }: Props) {
   const router = useRouter();
   const [state, action, pending] = useActionState(resendGuardianAuthorizationAction, undefined);
@@ -45,9 +47,9 @@ export function GuardianEmailPanel({
 
   return (
     <div className={fields.form}>
-      <h2 className={fields.legend}>{it.guardianResendTitle}</h2>
+      <h2 className={fields.legend}>{kind === "publication" ? it.guardianResendSecondaryTitle : it.guardianResendTitle}</h2>
       <p className={fields.help}>
-        {it.guardianResendHelp} <strong>{email}</strong>
+        {kind === "publication" ? it.guardianResendSecondaryHelp : it.guardianResendHelp} <strong>{email}</strong>
       </p>
       <EmailDeliveryStatus
         state={deliveryState}
@@ -57,6 +59,7 @@ export function GuardianEmailPanel({
       <p className={fields.help}>{it.emailTermsEmailHint}</p>
       {error?.error ? <ActionError error={error.error} code={error.code} /> : null}
       <form action={action}>
+        <input type="hidden" name="kind" value={kind} />
         <Button type="submit" variant="secondary" disabled={pending || blocked} aria-busy={pending}>
           {pending ? it.emailResendingAction : it.emailResendAction}
         </Button>

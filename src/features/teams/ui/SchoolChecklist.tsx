@@ -44,6 +44,7 @@ const PLAYER_ITEMS = new Set<SchoolChecklistItem["id"]>(["personal", "guardian",
 
 function title(item: SchoolChecklistItem) {
   if (item.id === "teamPayment" && item.status === "waiting_on_org") return it.schoolChecklistPaymentWaiting;
+  if (item.id === "guardian" && (item.undeliverableCount ?? 0) > 0) return it.rosterGuardianEmailUndeliverable;
   return SCHOOL_CHECKLIST_COPY[item.id];
 }
 

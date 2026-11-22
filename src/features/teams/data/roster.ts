@@ -1,10 +1,17 @@
 import { prisma } from "@/shared/lib/prisma";
 import { isMinor, needsMediaAgreement } from "@/features/players/domain/age";
 import { g3Value, latestChoices, mediaBoxesRecorded, privacyBoxesComplete, publicationFlags } from "@/features/consents/domain/boxes";
+import { isOpenAuthorizationStatus } from "@/features/consents/domain/guardianAuth";
 import { isPartnerBoxVisible } from "@/features/consents/data/partners";
 import { isMediaComplete, isPrivacyPackComplete, type CurrentConsent } from "@/features/consents/domain/pack";
 import { hasCompletePersonalData, hasMinorGuardianRequirement } from "@/features/players/domain/personal";
 import { isMedicalExpired } from "@/features/documents/domain/retention";
+import {
+  deliveryViewFor,
+  loadUserEmailDeliveries,
+  USER_EMAIL_OPS,
+  type UserEmailOperation,
+} from "@/features/emails/data/userDelivery";
 import { projectSportEligibility } from "@/features/registrations/domain/eligibility";
 import { isPaymentCovered } from "@/features/registrations/domain/requirements";
 import { staffOccupiesSlot } from "@/features/teams/domain/staff";
@@ -60,10 +67,14 @@ export async function listTeamRoster(teamId: string) {
           },
         },
         authorizations: {
-          where: { authorizationType: "ENROLLMENT" },
+          where: { authorizationType: { in: ["ENROLLMENT", "PUBLICATION"] } },
           orderBy: { requestedAt: "desc" },
-          take: 1,
-          select: { status: true },
+          select: {
+            id: true,
+            status: true,
+            authorizationType: true,
+            guardian: { select: { email: true } },
+          },
         },
       },
     }),
@@ -72,8 +83,9 @@ export async function listTeamRoster(teamId: string) {
   ]);
 
   const membershipByUser = new Map(memberships.map((row) => [row.userId, row]));
+  const deliveryOps: UserEmailOperation[] = [];
 
-  return registrations
+  const drafts = registrations
     .map((registration) => {
       const membership = membershipByUser.get(registration.playerProfile.userId);
       const birthDate = registration.playerProfile.birthDate;
@@ -93,12 +105,25 @@ export async function listTeamRoster(teamId: string) {
         isCurrent: record.legalDocumentVersion.isCurrent,
         accepted: record.accepted,
       }));
-      const enrollment = registration.authorizations[0] ?? null;
+      const enrollment =
+        registration.authorizations.find((row) => row.authorizationType === "ENROLLMENT") ?? null;
+      const publication =
+        registration.authorizations.find((row) => row.authorizationType === "PUBLICATION") ?? null;
       const primaryGuardian =
         registration.playerProfile.guardians.find((row) => row.kind !== "SECONDARY") ??
         registration.playerProfile.guardians[0] ??
         null;
       const secondaryGuardian = registration.playerProfile.guardians.find((row) => row.kind === "SECONDARY") ?? null;
+      const enrollmentOp =
+        enrollment?.guardian.email && isOpenAuthorizationStatus(enrollment.status)
+          ? USER_EMAIL_OPS.guardianAuthorize(enrollment.id, enrollment.guardian.email)
+          : null;
+      const publicationOp =
+        publication?.guardian.email && isOpenAuthorizationStatus(publication.status)
+          ? USER_EMAIL_OPS.guardianPublication(publication.id, publication.guardian.email)
+          : null;
+      if (enrollmentOp) deliveryOps.push(enrollmentOp);
+      if (publicationOp) deliveryOps.push(publicationOp);
       const contactComplete = hasMinorGuardianRequirement({
         primary: primaryGuardian,
         secondaryEmail: secondaryGuardian?.email,
@@ -136,7 +161,10 @@ export async function listTeamRoster(teamId: string) {
         hasFile: Boolean(medicalRow && !medicalRow.blobPurgedAt),
         startsAt: team?.edition.startsAt ?? null,
       });
-      return toRosterRow({
+      return {
+        enrollmentOp,
+        publicationOp,
+        row: toRosterRow({
         registrationId: registration.id,
         userId: registration.playerProfile.userId,
         membershipId: membership?.id,
@@ -176,8 +204,21 @@ export async function listTeamRoster(teamId: string) {
           privacyBoxesComplete(isMinorPlayer, partnersPublished, map, registration.category),
         mediaComplete: isMediaComplete(true, mediaBoxesRecorded(isMinorPlayer, map) ? "submitted" : "none"),
         sportEligible: eligibility.eligible,
-      });
-    })
+      }),
+      };
+    });
+
+  const views = await loadUserEmailDeliveries(deliveryOps);
+  return drafts
+    .map(({ row, enrollmentOp, publicationOp }) => ({
+      ...row,
+      guardianEmailUndeliverable: enrollmentOp
+        ? deliveryViewFor(views, enrollmentOp).state === "undeliverable"
+        : false,
+      secondGuardianEmailUndeliverable: publicationOp
+        ? deliveryViewFor(views, publicationOp).state === "undeliverable"
+        : false,
+    }))
     .filter((row) => Boolean(row.membershipId) && row.registrationStatus !== "REMOVED");
 }
 

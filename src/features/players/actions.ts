@@ -9,8 +9,10 @@ import { personalDataSchema, staffPersonalDataSchema, type PersonalDataInput } f
 import { loadPlayerWorkspace, persistRegistrationStatus, saveGuardianProfile, savePersonalProfile } from "@/features/registrations/data/workspace";
 import {
   latestEnrollmentAuthorization,
+  latestPublicationAuthorization,
   requestEnrollmentAuthorization,
   resendEnrollmentAuthorization,
+  resendPublicationAuthorization,
 } from "@/features/consents/data/guardianAuth";
 import {
   failUserEmailResend,
@@ -204,11 +206,16 @@ export async function saveGuardianAction(
     nextSecondary &&
     previousSecondary !== nextSecondary
   ) {
-    const previousDelivery = await loadUserEmailDelivery(
-      USER_EMAIL_OPS.guardianPublication(access.workspace.registration.id, previousSecondary),
-    );
-    consumeSecondaryEmailCorrection =
-      previousDelivery.state === "accepted" || previousDelivery.state === "delivered";
+    const previousPublication = await latestPublicationAuthorization(access.workspace.registration.id);
+    if (previousPublication) {
+      const previousDelivery = await loadUserEmailDelivery(
+        USER_EMAIL_OPS.guardianPublication(previousPublication.id, previousSecondary),
+      );
+      consumeSecondaryEmailCorrection =
+        previousDelivery.state === "accepted" || previousDelivery.state === "delivered";
+    } else {
+      consumeSecondaryEmailCorrection = false;
+    }
   }
   const saved = await saveGuardianProfile(access.session.user!.id, {
     firstName: parsed.data.firstName,
@@ -265,6 +272,7 @@ export async function saveGuardianAction(
 
 export async function resendGuardianAuthorizationAction(
   prev: ActionFailure | { sent: true; delivery: ReturnType<typeof serializeEmailDelivery> } | undefined,
+  formData: FormData,
 ): Promise<ActionFailure | { sent: true; delivery: ReturnType<typeof serializeEmailDelivery> }> {
   void prev;
   const access = await requireWritableRegistration();
@@ -278,10 +286,16 @@ export async function resendGuardianAuthorizationAction(
   if (!(await consumeRateLimit(rateKey, RATE_LIMITS.profileWrite.limit, RATE_LIMITS.profileWrite.windowMs))) {
     return fail("RATE_LIMITED");
   }
-  const result = await resendEnrollmentAuthorization({
-    registrationId: access.workspace.registration.id,
-    playerUserId: access.session.user!.id,
-  });
+  const publication = String(formData?.get("kind") ?? "") === "publication";
+  const result = publication
+    ? await resendPublicationAuthorization({
+        registrationId: access.workspace.registration.id,
+        playerUserId: access.session.user!.id,
+      })
+    : await resendEnrollmentAuthorization({
+        registrationId: access.workspace.registration.id,
+        playerUserId: access.session.user!.id,
+      });
   if (!result.ok) {
     if (result.reason === "not_found") return fail("GUARDIAN_AUTHORIZATION_REQUIRED");
     if (result.reason === "failed") return fail("EMAIL_SEND_FAILED");

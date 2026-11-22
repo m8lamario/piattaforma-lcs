@@ -14,7 +14,7 @@ import {
   type RosterRow,
 } from "@/features/teams/domain/roster";
 import { SchoolChecklist } from "@/features/teams/ui/SchoolChecklist";
-import type { SchoolChecklistItem } from "@/features/teams/domain/schoolChecklist";
+import type { SchoolChecklistItem, SchoolNextAction } from "@/features/teams/domain/schoolChecklist";
 import { RepresentativeRoleForm } from "@/features/teams/ui/RepresentativeRoleForm";
 import { STAFF_SLOT_LIMIT } from "@/features/teams/domain/staff";
 import { ButtonLink } from "@/shared/ui/Button";
@@ -27,20 +27,33 @@ import { playersLabel } from "@/shared/i18n/format";
 import { it } from "@/shared/i18n/it";
 import styles from "./RepresentativeDashboard.module.css";
 
-const NEXT_COPY: Record<SchoolChecklistItem["id"], (count: number) => string> = {
+const NEXT_COPY: Record<SchoolNextAction["id"], (action: SchoolNextAction) => string> = {
   email: () => it.repNextEmail,
+  staff: () => it.repNextStaff,
+  inviteStaff: () => it.repNextInviteStaff,
   coach: () => it.repNextCoach,
   teamPayment: () => it.repNextTeamPayment,
-  personal: (count) => it.repNextPersonal.replace("{players}", playersLabel(count)),
-  guardian: (count) => it.repNextGuardian.replace("{players}", playersLabel(count)),
-  privacy: (count) => it.repNextPrivacy.replace("{players}", playersLabel(count)),
-  media: (count) => it.repNextMedia.replace("{players}", playersLabel(count)),
-  playerPayment: (count) => it.repNextPlayerPayment.replace("{players}", playersLabel(count)),
+  personal: (action) => it.repNextPersonal.replace("{players}", playersLabel(action.count)),
+  guardian: (action) =>
+    (action.undeliverableCount > 0 ? it.repNextGuardianBounce : it.repNextGuardian).replace(
+      "{players}",
+      playersLabel(action.undeliverableCount > 0 ? action.undeliverableCount : action.count),
+    ),
+  privacy: (action) => it.repNextPrivacy.replace("{players}", playersLabel(action.count)),
+  media: (action) => it.repNextMedia.replace("{players}", playersLabel(action.count)),
+  playerPayment: (action) => it.repNextPlayerPayment.replace("{players}", playersLabel(action.count)),
   own: () => it.repNextOwn,
   medical: () => it.schoolChecklistMedical,
 };
 
-const PLAYER_STEPS = new Set<SchoolChecklistItem["id"]>(["personal", "guardian", "privacy", "media", "playerPayment"]);
+const PLAYER_STEPS = new Set<SchoolNextAction["id"]>(["personal", "guardian", "privacy", "media", "playerPayment"]);
+
+function nextCta(id: SchoolNextAction["id"]) {
+  if (id === "staff") return it.repNextCtaRole;
+  if (id === "inviteStaff") return it.repNextCtaInvite;
+  if (PLAYER_STEPS.has(id)) return it.repNextCtaPlayers;
+  return it.repNextCta;
+}
 
 const STAT_TILES: { filter: RosterFilter; label: string; count: (counts: RosterCounts) => number; tone: string }[] = [
   { filter: "ok", label: it.rosterCountsOk, count: (counts) => counts.ok, tone: "ok" },
@@ -80,32 +93,44 @@ type Props = {
   coachName: string | null;
   canChooseRole: boolean;
   activeCategory: "PLAYER" | "STAFF" | null;
-  schoolChecklist: { items: SchoolChecklistItem[]; administrativeComplete: boolean };
+  schoolChecklist: { items: SchoolChecklistItem[]; administrativeComplete: boolean; next: SchoolNextAction | null };
 };
 
-function NextStep({ items, administrativeComplete }: Props["schoolChecklist"]) {
+function NextStep({ items, administrativeComplete, next }: Props["schoolChecklist"]) {
   const admin = items.filter((item) => item.administrative);
   const done = admin.filter((item) => item.status === "complete" || item.status === "waiting_on_org").length;
-  const next = admin.find((item) => item.status === "todo" || item.status === "attention");
 
   return (
     <NextStepHero
       kicker={next ? it.repNextKicker : it.schoolChecklistComplete}
       icon={next ? "zap" : "check"}
-      title={next ? NEXT_COPY[next.id](next.count) : it.repNextDone}
+      title={next ? NEXT_COPY[next.id](next) : it.repNextDone}
       lead={next ? undefined : it.repNextDoneLead}
       actions={
         next ? (
-          <ButtonLink href={next.href} icon="chevronRight" iconPosition="right">
-            {PLAYER_STEPS.has(next.id) ? it.repNextCtaPlayers : it.repNextCta}
-          </ButtonLink>
+          <>
+            <ButtonLink href={next.href} icon="chevronRight" iconPosition="right">
+              {nextCta(next.id)}
+            </ButtonLink>
+            {next.id === "staff" ? (
+              <ButtonLink href="/squadra/inviti" variant="secondary" icon="chevronRight" iconPosition="right">
+                {it.repNextCtaInvite}
+              </ButtonLink>
+            ) : null}
+          </>
         ) : (
           <ButtonLink href="/squadra" variant="secondary" icon="chevronRight" iconPosition="right">
             {it.repNextCtaRoster}
           </ButtonLink>
         )
       }
-      tone={next ? (next.status === "attention" ? "warning" : "default") : "done"}
+      tone={
+        next
+          ? next.status === "attention" || next.undeliverableCount > 0
+            ? "warning"
+            : "default"
+          : "done"
+      }
       aside={
         administrativeComplete && admin.length === 0 ? undefined : (
           <ProgressMeter
@@ -175,11 +200,13 @@ export function RepresentativeDashboard({
           </Panel>
 
           {canChooseRole ? (
-            <Panel icon="user">
+            <Panel id="ruolo" className={styles.anchor} icon="user">
               <RepresentativeRoleForm teamId={teamId} />
             </Panel>
           ) : (
             <Panel
+              id="ruolo"
+              className={styles.anchor}
               title={it.repRoleTitle}
               description={
                 activeCategory && own

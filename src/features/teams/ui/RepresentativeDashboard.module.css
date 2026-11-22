@@ -6,6 +6,10 @@
   align-self: start;
 }
 
+.anchor {
+  scroll-margin-top: var(--space-8);
+}
+
 .headerActions {
   display: flex;
   flex-wrap: wrap;
