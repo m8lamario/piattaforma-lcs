@@ -12,7 +12,6 @@ import { ActionError } from "@/shared/ui/ActionError";
 import { Button } from "@/shared/ui/Button";
 import { FieldStatus } from "@/shared/ui/FieldStatus";
 import { FormErrorSummary, fieldMessages } from "@/shared/ui/FormErrorSummary";
-import { it } from "@/shared/i18n/it";
 import fields from "@/shared/ui/form.module.css";
 
 type EditionOption = { id: string; label: string };
@@ -29,11 +28,32 @@ const FIELD_ORDER = [
   "editionId",
 ] as const;
 
-type Props = {
-  editions: EditionOption[];
+export type SchoolAccessFormCopy = {
+  requester: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  school: string;
+  schoolName: string;
+  city: string;
+  role: string;
+  roleInstitute: string;
+  roleTeacher: string;
+  roleOther: string;
+  institutionalEmail: string;
+  competition: string;
+  competitionPlaceholder: string;
+  submit: string;
+  submitting: string;
 };
 
-export function SchoolAccessForm({ editions }: Props) {
+type Props = {
+  editions: EditionOption[];
+  copy: SchoolAccessFormCopy;
+};
+
+export function SchoolAccessForm({ editions, copy }: Props) {
   const [state, action, pending] = useActionState(submitSchoolAccessAction, undefined);
   const form = useForm<SchoolAccessRequestValues>({
     resolver: zodResolver(schoolAccessRequestSchema),
@@ -91,11 +111,11 @@ export function SchoolAccessForm({ editions }: Props) {
       {state?.error ? <ActionError error={state.error} code={state.code} /> : null}
 
       <fieldset className={fields.group}>
-        <legend className={fields.legend}>{it.schoolAccessRequester}</legend>
+        <legend className={fields.legend}>{copy.requester}</legend>
         <div className={fields.pair}>
           <div className={fields.field}>
             <label className={fields.label} htmlFor="firstName">
-              {it.firstName}
+              {copy.firstName}
             </label>
             <input
               id="firstName"
@@ -113,7 +133,7 @@ export function SchoolAccessForm({ editions }: Props) {
           </div>
           <div className={fields.field}>
             <label className={fields.label} htmlFor="lastName">
-              {it.lastName}
+              {copy.lastName}
             </label>
             <input
               id="lastName"
@@ -132,7 +152,7 @@ export function SchoolAccessForm({ editions }: Props) {
         </div>
         <div className={fields.field}>
           <label className={fields.label} htmlFor="email">
-            {it.email}
+            {copy.email}
           </label>
           <input
             id="email"
@@ -151,7 +171,7 @@ export function SchoolAccessForm({ editions }: Props) {
         </div>
         <div className={fields.field}>
           <label className={fields.label} htmlFor="phone">
-            {it.phone}
+            {copy.phone}
           </label>
           <input
             id="phone"
@@ -171,10 +191,10 @@ export function SchoolAccessForm({ editions }: Props) {
       </fieldset>
 
       <fieldset className={fields.group}>
-        <legend className={fields.legend}>{it.adminSchool}</legend>
+        <legend className={fields.legend}>{copy.school}</legend>
         <div className={fields.field}>
           <label className={fields.label} htmlFor="schoolName">
-            {it.schoolAccessSchoolName}
+            {copy.schoolName}
           </label>
           <input
             id="schoolName"
@@ -191,7 +211,7 @@ export function SchoolAccessForm({ editions }: Props) {
         </div>
         <div className={fields.field}>
           <label className={fields.label} htmlFor="city">
-            {it.schoolAccessCity}
+            {copy.city}
           </label>
           <input
             id="city"
@@ -208,18 +228,18 @@ export function SchoolAccessForm({ editions }: Props) {
           ) : null}
         </div>
         <fieldset className={fields.field}>
-          <legend className={fields.label}>{it.schoolAccessRole}</legend>
+          <legend className={fields.label}>{copy.role}</legend>
           <label className={fields.radio}>
             <input type="radio" value="INSTITUTE_REPRESENTATIVE" {...form.register("requesterRole")} />
-            {it.schoolAccessRoleInstitute}
+            {copy.roleInstitute}
           </label>
           <label className={fields.radio}>
             <input type="radio" value="TEACHER" {...form.register("requesterRole")} />
-            {it.schoolAccessRoleTeacher}
+            {copy.roleTeacher}
           </label>
           <label className={fields.radio}>
             <input type="radio" value="OTHER" {...form.register("requesterRole")} />
-            {it.schoolAccessRoleOther}
+            {copy.roleOther}
           </label>
           {errors.requesterRole?.message ? (
             <FieldStatus id="requesterRole-error" tone="danger">
@@ -229,7 +249,7 @@ export function SchoolAccessForm({ editions }: Props) {
         </fieldset>
         <div className={fields.field}>
           <label className={fields.label} htmlFor="institutionalEmail">
-            {it.schoolAccessInstitutionalEmail}
+            {copy.institutionalEmail}
           </label>
           <input
             id="institutionalEmail"
@@ -247,7 +267,7 @@ export function SchoolAccessForm({ editions }: Props) {
         </div>
         <div className={fields.field}>
           <label className={fields.label} htmlFor="editionId">
-            {it.schoolAccessCompetition}
+            {copy.competition}
           </label>
           <select
             id="editionId"
@@ -256,7 +276,7 @@ export function SchoolAccessForm({ editions }: Props) {
             aria-describedby={errors.editionId ? "editionId-error" : undefined}
             {...form.register("editionId")}
           >
-            <option value="">{it.schoolAccessCompetitionPlaceholder}</option>
+            <option value="">{copy.competitionPlaceholder}</option>
             {editions.map((edition) => (
               <option key={edition.id} value={edition.id}>
                 {edition.label}
@@ -273,7 +293,7 @@ export function SchoolAccessForm({ editions }: Props) {
 
       <div className={fields.actions}>
         <Button type="submit" disabled={pending} aria-busy={pending}>
-          {pending ? it.schoolAccessSubmitting : it.schoolAccessSubmit}
+          {pending ? copy.submitting : copy.submit}
         </Button>
       </div>
     </form>

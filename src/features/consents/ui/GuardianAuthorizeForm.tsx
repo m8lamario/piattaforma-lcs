@@ -12,7 +12,7 @@ import { Icon } from "@/shared/ui/Icon";
 import { StatusChip } from "@/shared/ui/StatusChip";
 import { it } from "@/shared/i18n/it";
 import fields from "@/shared/ui/form.module.css";
-import type { ConsentDocumentView } from "@/features/consents/ui/PrivacyConsentForm";
+import type { ConsentDocumentView } from "@/features/consents/ui/consentDocument";
 import consentStyles from "@/features/consents/ui/ConsentForm.module.css";
 import pageStyles from "@/app/autorizzazione-genitore/[token]/page.module.css";
 

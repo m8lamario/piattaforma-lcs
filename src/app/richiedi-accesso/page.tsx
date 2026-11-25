@@ -1,6 +1,6 @@
 import { listActiveEditionsForAccess } from "@/features/school-access/data/requests";
 import { SchoolLanding } from "@/features/school-access/ui/SchoolLanding";
-import { FieldMark } from "@/shared/ui/FieldMark";
+import { HeroPhotoPreload } from "@/features/auth/ui/HeroPhotoPreload";
 import { PublicShell } from "@/shared/ui/PublicShell";
 
 export default async function SchoolAccessPage() {
@@ -8,7 +8,7 @@ export default async function SchoolAccessPage() {
 
   return (
     <PublicShell>
-      <FieldMark />
+      <HeroPhotoPreload />
       <SchoolLanding
         editions={editions.map((edition) => ({
           id: edition.id,

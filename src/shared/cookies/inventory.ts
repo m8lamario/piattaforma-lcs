@@ -40,11 +40,24 @@ export type FirstPartyCookie = {
   setWhen: string;
 };
 
+const AUTH_SESSION_COOKIE_NAME = "authjs.session-token";
+const AUTH_SESSION_COOKIE_NAME_SECURE = "__Secure-authjs.session-token";
+
+/** Cookie JWT Auth.js, inclusi i pezzi `.0`, `.1` se il token è spezzato. */
+export function isAuthSessionCookieName(name: string) {
+  return (
+    name === AUTH_SESSION_COOKIE_NAME ||
+    name === AUTH_SESSION_COOKIE_NAME_SECURE ||
+    name.startsWith(`${AUTH_SESSION_COOKIE_NAME}.`) ||
+    name.startsWith(`${AUTH_SESSION_COOKIE_NAME_SECURE}.`)
+  );
+}
+
 export const FIRST_PARTY_COOKIES: readonly FirstPartyCookie[] = [
   {
     id: "session",
-    name: "authjs.session-token",
-    productionName: "__Secure-authjs.session-token",
+    name: AUTH_SESSION_COOKIE_NAME,
+    productionName: AUTH_SESSION_COOKIE_NAME_SECURE,
     provider: "Auth.js (prima parte)",
     purpose: "Mantenere l’accesso all’area personale",
     category: "necessary",

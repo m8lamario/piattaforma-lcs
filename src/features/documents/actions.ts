@@ -8,6 +8,7 @@ import {
   getAdminDocumentViews,
   getCurrentMedicalDocument,
   getDocumentById,
+  listDocumentsForFileAccess,
   listPendingMedicalQueue,
   medicalFiltersFromQueue,
   reviewMedicalDocument,
@@ -105,12 +106,10 @@ async function afterReviewSideEffects(input: {
   revalidatePath("/area");
 }
 
-async function signedUrlForDocument(documentId: string, userId: string) {
-  const document = await getDocumentById(documentId);
-  if (!document || document.blobPurgedAt) return null;
+function signedUrlForViewer(documentId: string, userId: string) {
   const expiresAtUnix = Math.floor(Date.now() / 1000) + SIGNED_URL_TTL_SECONDS;
   const token = createDocumentAccessToken({
-    documentId: document.id,
+    documentId,
     userId,
     expiresAtUnix,
   });
@@ -214,7 +213,7 @@ export async function createSignedDocumentUrlAction(documentId: string) {
   const actor = await getActorByUserId(session.user.id);
   if (!actor) return fail("AUTH_ACCOUNT_MISSING");
 
-  const document = await getDocumentById(documentId);
+  const [document] = await listDocumentsForFileAccess([documentId]);
   if (!document || document.blobPurgedAt) return fail("DOCUMENT_NOT_FOUND");
 
   const decision = authorize(actor, "document:read_file", {
@@ -223,9 +222,7 @@ export async function createSignedDocumentUrlAction(documentId: string) {
   });
   if (!decision.allow) return fail("FORBIDDEN_DOCUMENT_FILE");
 
-  const url = await signedUrlForDocument(document.id, session.user.id);
-  if (!url) return fail("DOCUMENT_NOT_FOUND");
-  return { url };
+  return { url: signedUrlForViewer(document.id, session.user.id) };
 }
 
 export async function createSignedDocumentUrlsAction(documentIds: string[]) {
@@ -235,17 +232,16 @@ export async function createSignedDocumentUrlsAction(documentIds: string[]) {
   if (!actor) return fail("AUTH_ACCOUNT_MISSING");
 
   const unique = [...new Set(documentIds)].slice(0, REVIEW_PRELOAD_AHEAD + 1);
+  const rows = await listDocumentsForFileAccess(unique);
   const urls: Record<string, string> = {};
-  for (const documentId of unique) {
-    const document = await getDocumentById(documentId);
-    if (!document || document.blobPurgedAt) continue;
+  for (const document of rows) {
+    if (document.blobPurgedAt) continue;
     const decision = authorize(actor, "document:read_file", {
       ownerUserId: document.playerProfile.userId,
       teamId: document.registration.teamId,
     });
     if (!decision.allow) continue;
-    const url = await signedUrlForDocument(document.id, session.user.id);
-    if (url) urls[documentId] = url;
+    urls[document.id] = signedUrlForViewer(document.id, session.user.id);
   }
   return { urls };
 }

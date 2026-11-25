@@ -34,7 +34,10 @@ export async function listTeamRoster(teamId: string) {
     prisma.registration.findMany({
       where: { teamId },
       orderBy: { createdAt: "asc" },
-      include: {
+      select: {
+        id: true,
+        status: true,
+        category: true,
         playerProfile: {
           select: {
             firstName: true,
@@ -56,9 +59,18 @@ export async function listTeamRoster(teamId: string) {
           take: 1,
           orderBy: { uploadedAt: "desc" },
         },
-        payments: { select: { status: true } },
-        consentChoices: { select: { code: true, accepted: true, value: true, createdAt: true } },
+        payments: {
+          where: { status: "SUCCEEDED" },
+          select: { status: true },
+          take: 1,
+        },
+        consentChoices: {
+          distinct: ["code"],
+          orderBy: [{ code: "asc" }, { createdAt: "desc" }],
+          select: { code: true, accepted: true, value: true, createdAt: true },
+        },
         consentRecords: {
+          where: { legalDocumentVersion: { isCurrent: true } },
           select: {
             accepted: true,
             legalDocumentVersion: {
@@ -78,7 +90,10 @@ export async function listTeamRoster(teamId: string) {
         },
       },
     }),
-    prisma.teamMembership.findMany({ where: { teamId } }),
+    prisma.teamMembership.findMany({
+      where: { teamId },
+      select: { id: true, userId: true, role: true, jerseyNumber: true, rosterRole: true },
+    }),
     isPartnerBoxVisible(),
   ]);
 

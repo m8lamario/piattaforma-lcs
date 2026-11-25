@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { loadGuardianLink } from "@/features/consents/data/guardianAuth";
 import { openGuardianLinkAction } from "@/features/consents/guardianActions";
+import { toConsentDocumentView } from "@/features/consents/ui/consentDocumentView";
 import { GuardianAuthorizeForm } from "@/features/consents/ui/GuardianAuthorizeForm";
 import {
   enrollmentBoxCodes,
@@ -63,13 +64,15 @@ export default async function GuardianAuthorizePage({ params }: Props) {
   const boxes = CONSENT_BOXES.filter((box) => codes.includes(box.code));
   const slugs = purpose === "PUBLICATION" ? [MEDIA_RELEASE_SLUG] : [...privacySlugsFor(true), MEDIA_RELEASE_SLUG];
   const versions = await getCurrentLegalVersions(slugs);
-  const documents = versions.map((version) => ({
-    slug: version.legalDocument.slug,
-    title: version.legalDocument.title,
-    version: version.version,
-    versionId: version.id,
-    body: version.body,
-  }));
+  const documents = versions.map((version) =>
+    toConsentDocumentView({
+      slug: version.legalDocument.slug,
+      title: version.legalDocument.title,
+      version: version.version,
+      versionId: version.id,
+      body: version.body,
+    }),
+  );
   const playerName = `${row.registration.playerProfile.firstName} ${row.registration.playerProfile.lastName}`.trim();
   const tournamentName = `${row.registration.team.edition.competition.name} — ${row.registration.team.edition.name}`;
   const latest = latestGuardianDecisions(row.authorization?.decisions ?? []);

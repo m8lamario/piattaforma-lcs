@@ -387,7 +387,10 @@ export async function activateSchoolAccessAccount(input: { token: string; passwo
 }
 
 async function findOrCreateSchool(tx: Tx, name: string, city: string) {
-  const schools = await tx.school.findMany({ select: { id: true, name: true, city: true } });
+  const schools = await tx.school.findMany({
+    where: { name: { equals: name, mode: "insensitive" } },
+    select: { id: true, name: true, city: true },
+  });
   const existing = schools.find((school) => schoolsMatch(school, { name, city }));
   if (existing) return existing;
   return tx.school.create({ data: { name, city } });

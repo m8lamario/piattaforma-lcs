@@ -11,7 +11,7 @@ import { ConsentBoxList } from "./ConsentBoxList";
 import { LegalReader } from "./LegalReader";
 import { WizardLaterButton } from "@/features/registrations/ui/WizardShell";
 import styles from "./ConsentForm.module.css";
-import type { ConsentDocumentView } from "./PrivacyConsentForm";
+import type { ConsentDocumentView } from "./consentDocument";
 
 type Props = {
   document: ConsentDocumentView;

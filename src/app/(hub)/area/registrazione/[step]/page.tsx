@@ -21,6 +21,7 @@ import { MEDIA_RELEASE_SLUG, privacySlugsFor } from "@/features/consents/domain/
 import { CONSENT_BOXES, mediaFormBoxes, privacyExtraBoxes, withoutHealthConsent } from "@/features/consents/domain/boxes";
 import { maybeSendC1Reminder } from "@/features/consents/data/tokens";
 import { maybeSendGuardianReminder } from "@/features/consents/data/guardianAuth";
+import { toConsentDocumentView } from "@/features/consents/ui/consentDocumentView";
 import { MediaConsentForm } from "@/features/consents/ui/MediaConsentForm";
 import { PrivacyConsentForm } from "@/features/consents/ui/PrivacyConsentForm";
 import { GuardianWaitingView } from "@/features/consents/ui/GuardianWaitingView";
@@ -104,13 +105,13 @@ export default async function WizardStepPage({ params }: Props) {
   const toView = (slug: string) => {
     const version = legalVersions.find((entry) => entry.legalDocument.slug === slug);
     if (!version) return null;
-    return {
+    return toConsentDocumentView({
       slug,
       title: version.legalDocument.title,
       version: version.version,
       versionId: version.id,
       body: version.body,
-    };
+    });
   };
 
   let body;

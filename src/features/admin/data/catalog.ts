@@ -142,12 +142,27 @@ export async function listRegistrationsAdmin(filters: {
 export async function getPlayerAdmin(profileId: string) {
   return prisma.playerProfile.findUnique({
     where: { id: profileId },
-    include: {
+    select: {
+      id: true,
+      firstName: true,
+      lastName: true,
+      fiscalCode: true,
+      phone: true,
+      shirtSize: true,
       user: { select: { id: true, email: true, emailVerified: true, lifecycleStatus: true } },
-      guardians: { orderBy: { createdAt: "asc" }, take: 1 },
+      guardians: {
+        orderBy: { createdAt: "asc" },
+        take: 1,
+        select: { firstName: true, lastName: true, email: true },
+      },
       registrations: {
-        include: {
-          team: { include: { edition: { include: { competition: true } } } },
+        orderBy: { createdAt: "desc" },
+        take: 1,
+        select: {
+          id: true,
+          status: true,
+          category: true,
+          team: { select: { name: true, edition: { select: { competition: { select: { name: true } } } } } },
           documents: {
             where: { status: { not: "REPLACED" }, type: { code: "MEDICAL_CERTIFICATE" } },
             select: { id: true, status: true, originalFilename: true },
@@ -155,13 +170,18 @@ export async function getPlayerAdmin(profileId: string) {
             orderBy: { uploadedAt: "desc" },
           },
           consentRecords: {
-            include: { legalDocumentVersion: { include: { legalDocument: true } } },
             orderBy: { acceptedAt: "desc" },
             take: 20,
+            select: {
+              id: true,
+              accepted: true,
+              acceptedAt: true,
+              legalDocumentVersion: {
+                select: { version: true, legalDocument: { select: { title: true } } },
+              },
+            },
           },
         },
-        orderBy: { createdAt: "desc" },
-        take: 1,
       },
     },
   });

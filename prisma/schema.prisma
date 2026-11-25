@@ -645,6 +645,10 @@ model SchoolRegistrationRequest {
   @@index([email])
   @@index([schoolNameKey, editionId])
   @@index([reviewedByUserId])
+  @@index([editionId])
+  @@index([schoolId])
+  @@index([teamId])
+  @@index([userId])
 }
 
 model Registration {
@@ -676,6 +680,7 @@ model Registration {
   @@index([teamId])
   @@index([teamId, category, status])
   @@index([editionId, status])
+  @@index([editionId, category, status])
 }
 
 model DocumentType {
@@ -721,6 +726,7 @@ model Document {
   @@index([registrationId, status])
   @@index([playerProfileId])
   @@index([typeId])
+  @@index([status, uploadedAt])
 }
 
 model MedicalInspection {
@@ -981,6 +987,7 @@ model Payment {
   @@index([provider, providerPaymentId])
   @@index([bankTransferId])
   @@index([recordedByUserId])
+  @@index([payerUserId])
 }
 
 // Bonifico di squadra confermato dal Super Admin. Non è una sessione Stripe.
@@ -1060,6 +1067,7 @@ model EmailMessage {
 
   @@index([status, queuedAt])
   @@index([purpose, queuedAt])
+  @@index([sourceEntityId, purpose])
   @@index([userId])
   @@index([actorUserId])
   @@index([provider, providerMessageId])

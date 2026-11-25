@@ -279,8 +279,12 @@ Indici: `actorUserId`, `entityType+entityId`, `createdAt`.
 - Team.inviteCode unique
 - ConsentRecord (userId, legalDocumentVersionId)
 - User.lifecycleStatus
-- EmailMessage.idempotencyKey unique; (status, queuedAt); (purpose, queuedAt); (provider, providerMessageId)
+- EmailMessage.idempotencyKey unique; (status, queuedAt); (purpose, queuedAt); (provider, providerMessageId); (sourceEntityId, purpose)
 - EmailEvent (provider, providerEventId) unique
+- Registration (editionId, category, status) — liste `/lega` per categoria
+- Document (status, uploadedAt) — coda certificati
+- SchoolRegistrationRequest FK: editionId, schoolId, teamId, userId
+- Payment.payerUserId — piani di cancellazione
 
 ## 12. Cosa non sta nel DB
 

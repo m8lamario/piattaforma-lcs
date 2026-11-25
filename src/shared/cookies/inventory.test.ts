@@ -15,6 +15,7 @@ import {
   VERCEL_PRIVACY_POLICY_URL,
   VERCEL_SCRIPTS_ORIGIN,
   VERCEL_SPEED_INSIGHTS_PATH,
+  isAuthSessionCookieName,
   optionalCategories,
   optionalTechnologies,
 } from "./inventory";
@@ -58,6 +59,15 @@ describe("inventario cookie", () => {
     expect(FIRST_PARTY_COOKIES.every((item) => item.category === "necessary")).toBe(true);
     expect(FIRST_PARTY_COOKIES.map((item) => item.id)).toContain("consent");
     expect(shouldShowCookieBanner(OPTIONAL_TECHNOLOGIES.length, null)).toBe(true);
+  });
+
+  it("riconosce il cookie di sessione Auth.js anche spezzato", () => {
+    expect(isAuthSessionCookieName("authjs.session-token")).toBe(true);
+    expect(isAuthSessionCookieName("__Secure-authjs.session-token")).toBe(true);
+    expect(isAuthSessionCookieName("authjs.session-token.0")).toBe(true);
+    expect(isAuthSessionCookieName("__Secure-authjs.session-token.1")).toBe(true);
+    expect(isAuthSessionCookieName("authjs.csrf-token")).toBe(false);
+    expect(isAuthSessionCookieName("eph-cookie-consent")).toBe(false);
   });
 
   it("fissa la sessione a 30 giorni e il cookie squadra a 365, con Secure solo su HTTPS", () => {
