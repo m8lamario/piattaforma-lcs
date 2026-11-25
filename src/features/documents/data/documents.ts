@@ -104,6 +104,19 @@ export async function getDocumentById(documentId: string) {
   });
 }
 
+export async function listDocumentsForFileAccess(documentIds: string[]) {
+  if (documentIds.length === 0) return [];
+  return prisma.document.findMany({
+    where: { id: { in: documentIds } },
+    select: {
+      id: true,
+      blobPurgedAt: true,
+      playerProfile: { select: { userId: true } },
+      registration: { select: { teamId: true } },
+    },
+  });
+}
+
 function medicalDocumentWhere(filters: MedicalDocumentFilters = {}) {
   const statuses = filters.status ? [filters.status] : [...QUEUE_DOCUMENT_STATUSES];
   const teamFilter =

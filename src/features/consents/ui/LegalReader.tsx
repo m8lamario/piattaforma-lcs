@@ -5,10 +5,9 @@ import { createPortal } from "react-dom";
 import { Button } from "@/shared/ui/Button";
 import { Icon } from "@/shared/ui/Icon";
 import { it } from "@/shared/i18n/it";
-import { LegalProse } from "./LegalProse";
 import { endMarkerIsVisible, scrollerReachedEnd } from "./legalReaderScroll";
 import styles from "./ConsentForm.module.css";
-import type { ConsentDocumentView } from "./PrivacyConsentForm";
+import type { ConsentDocumentView } from "./consentDocument";
 
 type Props = {
   document: ConsentDocumentView;
@@ -157,7 +156,7 @@ export function LegalReader({ document, read, onRead }: Props) {
         </Button>
       </div>
       <div ref={scrollerRef} className={styles.dialogBody} data-legal-scroller onScroll={markIfEnded}>
-        <LegalProse body={document.body} plain />
+        {document.prose}
         <div ref={endRef} className={styles.dialogEnd} aria-hidden="true" />
       </div>
       <div className={styles.dialogFoot}>

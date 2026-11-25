@@ -19,14 +19,9 @@ import {
   writePrivacyDraft,
 } from "./privacyDraft";
 import styles from "./ConsentForm.module.css";
+import type { ConsentDocumentView } from "./consentDocument";
 
-export type ConsentDocumentView = {
-  slug: string;
-  title: string;
-  version: string;
-  versionId: string;
-  body: string;
-};
+export type { ConsentDocumentView };
 
 type Props = {
   documents: ConsentDocumentView[];

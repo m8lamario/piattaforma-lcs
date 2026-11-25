@@ -1,7 +1,7 @@
 import { it } from "@/shared/i18n/it";
 import type { ConsentBoxDef } from "@/features/consents/domain/boxes";
 import { LegalReader } from "./LegalReader";
-import type { ConsentDocumentView } from "./PrivacyConsentForm";
+import type { ConsentDocumentView } from "./consentDocument";
 import { StatusChip, type StatusTone } from "@/shared/ui/StatusChip";
 import { ButtonLink } from "@/shared/ui/Button";
 import { WizardLaterButton } from "@/features/registrations/ui/WizardShell";

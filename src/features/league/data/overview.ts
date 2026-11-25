@@ -150,42 +150,112 @@ export async function listLeagueWorkspace(editionId: string, filters: LeaguePlay
   };
 }
 
+async function denyLeagueAccess(
+  actorUserId: string,
+  entityType: "School" | "Registration",
+  entityId: string,
+  editionId: string,
+) {
+  await writeAuditLog({
+    actorUserId,
+    actorRole: "LEAGUE_SUPERVISOR",
+    action: "LEAGUE_ACCESS_DENIED",
+    entityType,
+    entityId,
+    metadata: { editionId },
+  });
+}
+
 export async function getLeagueSchool(
   editionId: string,
   schoolId: string,
   actorUserId: string,
   filters: LeaguePlayerFilters = {},
 ) {
-  const workspace = await listLeagueWorkspace(editionId, { ...filters, schoolId });
-  const school = workspace.schools.find((row) => row.schoolId === schoolId);
-  if (!school) {
-    await writeAuditLog({
-      actorUserId,
-      actorRole: "LEAGUE_SUPERVISOR",
-      action: "LEAGUE_ACCESS_DENIED",
-      entityType: "School",
-      entityId: schoolId,
-      metadata: { editionId },
-    });
+  const [edition, registrations, teams] = await Promise.all([
+    getLeagueEdition(editionId),
+    prisma.registration.findMany({
+      where: { ...leaguePlayersWhere(editionId), team: { schoolId } },
+      select: leagueRegistrationSelect,
+      orderBy: [{ playerProfile: { lastName: "asc" } }, { playerProfile: { firstName: "asc" } }],
+    }) as Promise<LeagueRegistrationRow[]>,
+    prisma.team.findMany({
+      where: { editionId, schoolId },
+      select: { name: true, school: { select: { id: true, name: true, city: true } } },
+    }),
+  ]);
+  if (registrations.length === 0 && teams.length === 0) {
+    await denyLeagueAccess(actorUserId, "School", schoolId, editionId);
     return null;
   }
-  return { ...workspace, school, players: workspace.players };
+  const players = toPlayerRecords(registrations);
+  const teamNames = new Set<string>();
+  for (const row of registrations) teamNames.add(row.team.name);
+  for (const team of teams) teamNames.add(team.name);
+  const schoolRow = registrations[0]?.team.school ?? teams[0]?.school;
+  if (!schoolRow) {
+    await denyLeagueAccess(actorUserId, "School", schoolId, editionId);
+    return null;
+  }
+  const school = summarizeLeagueSchool(
+    {
+      schoolId: schoolRow.id,
+      schoolName: schoolRow.name,
+      city: schoolRow.city ?? "",
+      teamNames: [...teamNames],
+    },
+    players,
+  );
+  const filteredPlayers = filterLeaguePlayers(players, { ...filters, schoolId });
+  return {
+    edition,
+    schools: [school],
+    players: filteredPlayers,
+    allPlayers: players,
+    overview: summarizeLeagueOverview([school], players),
+    school,
+  };
 }
 
 export async function getLeaguePlayer(editionId: string, registrationId: string, actorUserId: string) {
-  const workspace = await listLeagueWorkspace(editionId);
-  const player = workspace.allPlayers.find((row) => row.registrationId === registrationId);
-  if (!player) {
-    await writeAuditLog({
-      actorUserId,
-      actorRole: "LEAGUE_SUPERVISOR",
-      action: "LEAGUE_ACCESS_DENIED",
-      entityType: "Registration",
-      entityId: registrationId,
-      metadata: { editionId },
-    });
+  const row = (await prisma.registration.findFirst({
+    where: { id: registrationId, ...leaguePlayersWhere(editionId) },
+    select: leagueRegistrationSelect,
+  })) as LeagueRegistrationRow | null;
+  if (!row) {
+    await denyLeagueAccess(actorUserId, "Registration", registrationId, editionId);
     return null;
   }
-  const school = workspace.schools.find((row) => row.schoolId === player.schoolId) ?? null;
-  return { ...workspace, player, school };
+  const [edition, schoolTeams] = await Promise.all([
+    getLeagueEdition(editionId),
+    prisma.registration.findMany({
+      where: { ...leaguePlayersWhere(editionId), team: { schoolId: row.team.schoolId } },
+      distinct: ["teamId"],
+      orderBy: { teamId: "asc" },
+      select: { teamId: true, team: { select: { name: true } } },
+    }),
+  ]);
+  const teamCountInSchool = new Set(schoolTeams.map((item) => item.team.name)).size;
+  const player = {
+    ...toPlayerRecords([row])[0]!,
+    teamCountInSchool,
+  };
+  const school = summarizeLeagueSchool(
+    {
+      schoolId: row.team.schoolId,
+      schoolName: row.team.school.name,
+      city: row.team.school.city ?? "",
+      teamNames: [...new Set(schoolTeams.map((item) => item.team.name))],
+    },
+    [player],
+  );
+  return {
+    edition,
+    schools: [school],
+    players: [player],
+    allPlayers: [player],
+    overview: summarizeLeagueOverview([school], [player]),
+    player,
+    school,
+  };
 }

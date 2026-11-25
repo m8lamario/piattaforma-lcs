@@ -1,9 +1,5 @@
-"use client";
-
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import Link from "next/link";
-import { useEffect, useState, type CSSProperties } from "react";
-import { HERO_PHOTO_INTERVAL_MS, HERO_PHOTOS } from "@/features/auth/ui/heroPhotos";
+import { HeroPhotoStage } from "@/features/auth/ui/HeroPhotoStage";
 import { SchoolAccessForm } from "@/features/school-access/ui/SchoolAccessForm";
 import { it } from "@/shared/i18n/it";
 import { ButtonLink } from "@/shared/ui/Button";
@@ -16,160 +12,108 @@ type Props = {
   editions: EditionOption[];
 };
 
-function SchoolHeroStage() {
-  const reduceMotion = useReducedMotion();
-  const [index, setIndex] = useState(0);
-  const canRotate = !reduceMotion && HERO_PHOTOS.length > 1;
+const OVERVIEW_CARDS: {
+  icon: IconName;
+  title: string;
+  copy: string;
+}[] = [
+  {
+    icon: "trophy",
+    title: it.schoolLandingOverview1Title,
+    copy: it.schoolLandingOverview1Copy,
+  },
+  {
+    icon: "stopwatch",
+    title: it.schoolLandingOverview2Title,
+    copy: it.schoolLandingOverview2Copy,
+  },
+  {
+    icon: "camera",
+    title: it.schoolLandingOverview3Title,
+    copy: it.schoolLandingOverview3Copy,
+  },
+  {
+    icon: "fileCheck",
+    title: it.schoolLandingOverview4Title,
+    copy: it.schoolLandingOverview4Copy,
+  },
+];
 
-  useEffect(() => {
-    if (!canRotate) return;
-    const id = window.setInterval(() => {
-      setIndex((current) => (current + 1) % HERO_PHOTOS.length);
-    }, HERO_PHOTO_INTERVAL_MS);
-    return () => window.clearInterval(id);
-  }, [canRotate]);
+const STEPS = [
+  {
+    n: it.schoolLandingStep1Num,
+    title: it.schoolLandingStep1Title,
+    copy: it.schoolLandingStep1Copy,
+  },
+  {
+    n: it.schoolLandingStep2Num,
+    title: it.schoolLandingStep2Title,
+    copy: it.schoolLandingStep2Copy,
+  },
+  {
+    n: it.schoolLandingStep3Num,
+    title: it.schoolLandingStep3Title,
+    copy: it.schoolLandingStep3Copy,
+  },
+  {
+    n: it.schoolLandingStep4Num,
+    title: it.schoolLandingStep4Title,
+    copy: it.schoolLandingStep4Copy,
+  },
+] as const;
 
-  const slide = HERO_PHOTOS[index] ?? HERO_PHOTOS[0];
+const BENEFITS = [
+  {
+    tag: "Capitani & Studenti",
+    title: it.schoolLandingBenefitRepsTitle,
+    copy: it.schoolLandingBenefitRepsCopy,
+  },
+  {
+    tag: "Docenti & Istituto",
+    title: it.schoolLandingBenefitSchoolTitle,
+    copy: it.schoolLandingBenefitSchoolCopy,
+  },
+  {
+    tag: "Squadra & Famiglie",
+    title: it.schoolLandingBenefitPlayersTitle,
+    copy: it.schoolLandingBenefitPlayersCopy,
+  },
+] as const;
 
-  return (
-    <div className={styles.stage} data-graphic-slot="" aria-hidden="true">
-      <div className={styles.stageBack} />
-      <div className={styles.stagePhoto}>
-        <AnimatePresence initial={false}>
-          <motion.div
-            key={`${slide.desktop}:${slide.mobile}`}
-            className={styles.stageSlide}
-            initial={reduceMotion ? false : { opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={reduceMotion ? undefined : { opacity: 0 }}
-            transition={{ duration: reduceMotion ? 0 : 0.85, ease: [0.22, 1, 0.36, 1] }}
-          >
-            <picture>
-              <source media="(min-width: 960px)" srcSet={slide.desktop} />
-              <img
-                className={styles.stageImage}
-                src={slide.mobile}
-                alt=""
-                width={1565}
-                height={2783}
-                decoding="async"
-                style={
-                  {
-                    "--photo-pos-desktop": slide.objectPositionDesktop,
-                    "--photo-pos-mobile": slide.objectPositionMobile,
-                  } as CSSProperties
-                }
-              />
-            </picture>
-          </motion.div>
-        </AnimatePresence>
-      </div>
-      <span className={styles.stageRail} />
-    </div>
-  );
-}
+const FAQS = [
+  {
+    q: it.schoolLandingFaq1Q,
+    a: it.schoolLandingFaq1A,
+  },
+  {
+    q: it.schoolLandingFaq2Q,
+    a: it.schoolLandingFaq2A,
+  },
+  {
+    q: it.schoolLandingFaq3Q,
+    a: it.schoolLandingFaq3A,
+  },
+  {
+    q: it.schoolLandingFaq4Q,
+    a: it.schoolLandingFaq4A,
+  },
+] as const;
 
 export function SchoolLanding({ editions }: Props) {
-  const reduceMotion = useReducedMotion();
-
-  const OVERVIEW_CARDS: {
-    icon: IconName;
-    title: string;
-    copy: string;
-  }[] = [
-    {
-      icon: "trophy",
-      title: it.schoolLandingOverview1Title,
-      copy: it.schoolLandingOverview1Copy,
-    },
-    {
-      icon: "stopwatch",
-      title: it.schoolLandingOverview2Title,
-      copy: it.schoolLandingOverview2Copy,
-    },
-    {
-      icon: "camera",
-      title: it.schoolLandingOverview3Title,
-      copy: it.schoolLandingOverview3Copy,
-    },
-    {
-      icon: "fileCheck",
-      title: it.schoolLandingOverview4Title,
-      copy: it.schoolLandingOverview4Copy,
-    },
-  ];
-
-  const STEPS = [
-    {
-      n: it.schoolLandingStep1Num,
-      title: it.schoolLandingStep1Title,
-      copy: it.schoolLandingStep1Copy,
-    },
-    {
-      n: it.schoolLandingStep2Num,
-      title: it.schoolLandingStep2Title,
-      copy: it.schoolLandingStep2Copy,
-    },
-    {
-      n: it.schoolLandingStep3Num,
-      title: it.schoolLandingStep3Title,
-      copy: it.schoolLandingStep3Copy,
-    },
-    {
-      n: it.schoolLandingStep4Num,
-      title: it.schoolLandingStep4Title,
-      copy: it.schoolLandingStep4Copy,
-    },
-  ] as const;
-
-  const BENEFITS = [
-    {
-      tag: "Capitani & Studenti",
-      title: it.schoolLandingBenefitRepsTitle,
-      copy: it.schoolLandingBenefitRepsCopy,
-    },
-    {
-      tag: "Docenti & Istituto",
-      title: it.schoolLandingBenefitSchoolTitle,
-      copy: it.schoolLandingBenefitSchoolCopy,
-    },
-    {
-      tag: "Squadra & Famiglie",
-      title: it.schoolLandingBenefitPlayersTitle,
-      copy: it.schoolLandingBenefitPlayersCopy,
-    },
-  ] as const;
-
-  const FAQS = [
-    {
-      q: it.schoolLandingFaq1Q,
-      a: it.schoolLandingFaq1A,
-    },
-    {
-      q: it.schoolLandingFaq2Q,
-      a: it.schoolLandingFaq2A,
-    },
-    {
-      q: it.schoolLandingFaq3Q,
-      a: it.schoolLandingFaq3A,
-    },
-    {
-      q: it.schoolLandingFaq4Q,
-      a: it.schoolLandingFaq4A,
-    },
-  ] as const;
-
   return (
-    <motion.main
-      className={styles.main}
-      initial={reduceMotion ? false : { opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: reduceMotion ? 0 : 0.28 }}
-    >
+    <main className={styles.main}>
       <div className={styles.stack}>
-        {/* HERO SECTION */}
         <section className={styles.hero} aria-labelledby="hero-title">
-          <SchoolHeroStage />
+          <HeroPhotoStage
+            styles={{
+              stage: styles.stage,
+              stageBack: styles.stageBack,
+              stagePhoto: styles.stagePhoto,
+              stageSlide: styles.stageSlide,
+              stageImage: styles.stageImage,
+              stageRail: styles.stageRail,
+            }}
+          />
           <div className={styles.heroInner}>
             <span className={styles.badge}>{it.schoolLandingBadge}</span>
             <h1 id="hero-title">
@@ -190,7 +134,6 @@ export function SchoolLanding({ editions }: Props) {
           </div>
         </section>
 
-        {/* TOURNAMENT OVERVIEW STRIP */}
         <section className={styles.overview} aria-labelledby="overview-title">
           <div className={styles.sectionInner}>
             <div className={styles.sectionHeader}>
@@ -215,7 +158,6 @@ export function SchoolLanding({ editions }: Props) {
           </div>
         </section>
 
-        {/* HOW IT WORKS (4 STEPS) */}
         <section className={styles.stepsSection} id="come-funziona" aria-labelledby="steps-title">
           <div className={styles.sectionInner}>
             <div className={styles.sectionHeader}>
@@ -240,7 +182,6 @@ export function SchoolLanding({ editions }: Props) {
           </div>
         </section>
 
-        {/* BENEFITS SECTION */}
         <section className={styles.benefitsSection} aria-labelledby="benefits-title">
           <div className={styles.sectionInner}>
             <div className={styles.sectionHeader}>
@@ -261,7 +202,6 @@ export function SchoolLanding({ editions }: Props) {
           </div>
         </section>
 
-        {/* FORM SECTION (CANDIDATURA) */}
         <section className={styles.formSection} id="candidatura" aria-labelledby="form-title">
           <div className={styles.formCard}>
             <div className={styles.formHeader}>
@@ -273,7 +213,28 @@ export function SchoolLanding({ editions }: Props) {
             {editions.length === 0 ? (
               <p className={styles.formLead}>{it.schoolAccessNoEditions}</p>
             ) : (
-              <SchoolAccessForm editions={editions} />
+              <SchoolAccessForm
+                editions={editions}
+                copy={{
+                  requester: it.schoolAccessRequester,
+                  firstName: it.firstName,
+                  lastName: it.lastName,
+                  email: it.email,
+                  phone: it.phone,
+                  school: it.adminSchool,
+                  schoolName: it.schoolAccessSchoolName,
+                  city: it.schoolAccessCity,
+                  role: it.schoolAccessRole,
+                  roleInstitute: it.schoolAccessRoleInstitute,
+                  roleTeacher: it.schoolAccessRoleTeacher,
+                  roleOther: it.schoolAccessRoleOther,
+                  institutionalEmail: it.schoolAccessInstitutionalEmail,
+                  competition: it.schoolAccessCompetition,
+                  competitionPlaceholder: it.schoolAccessCompetitionPlaceholder,
+                  submit: it.schoolAccessSubmit,
+                  submitting: it.schoolAccessSubmitting,
+                }}
+              />
             )}
 
             <p className={styles.formNote}>{it.schoolLandingFormNote}</p>
@@ -293,7 +254,6 @@ export function SchoolLanding({ editions }: Props) {
           </div>
         </section>
 
-        {/* FAQ SECTION */}
         <section className={styles.faqSection} aria-labelledby="faq-title">
           <div className={styles.sectionInner}>
             <div className={styles.sectionHeader}>
@@ -313,6 +273,6 @@ export function SchoolLanding({ editions }: Props) {
           </div>
         </section>
       </div>
-    </motion.main>
+    </main>
   );
 }

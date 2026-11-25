@@ -50,163 +50,146 @@ import { medicalEvidenceFromStatus } from "@/features/documents/domain/inspectio
 import { parseMedicalCertificateKind } from "@/features/documents/domain/medicalRequirement";
 
 export async function loadPlayerWorkspace(userId: string) {
-  const [user, profile, registration] = await Promise.all([
-    prisma.user.findUnique({
-      where: { id: userId },
-      select: { id: true, email: true, emailVerified: true },
-    }),
-    prisma.playerProfile.findUnique({
-      where: { userId },
-      select: {
-        id: true,
-        firstName: true,
-        lastName: true,
-        birthDate: true,
-        fiscalCode: true,
-        phone: true,
-        shirtSize: true,
-        metadata: true,
-      },
-    }),
+  const [row, partnersPublished] = await Promise.all([
     prisma.registration.findFirst({
       where: { playerProfile: { userId } },
       orderBy: { createdAt: "desc" },
-      select: { id: true, status: true, teamId: true, editionId: true, category: true },
-    }),
-  ]);
-
-  if (!user || !profile || !registration) {
-    return null;
-  }
-
-  const registrationId = registration.id;
-  const [
-    team,
-    edition,
-    competition,
-    requirementRows,
-    teamPayment,
-    guardians,
-    documents,
-    documentTypes,
-    reviews,
-    payments,
-    consentRecords,
-    legalVersions,
-    legalDocuments,
-    consentChoices,
-    consentTokens,
-    authorizations,
-    partnersPublished,
-  ] = await Promise.all([
-    prisma.team.findUnique({
-      where: { id: registration.teamId },
-      select: { id: true, name: true, playerFeeCents: true, staffFeeCents: true, teamFeeCents: true },
-    }),
-    prisma.edition.findUnique({
-      where: { id: registration.editionId },
-      select: {
-        name: true,
-        paymentMode: true,
-        currency: true,
-        playerFeeAmount: true,
-        teamFeeAmount: true,
-        staffFeeAmount: true,
-        isActive: true,
-        startsAt: true,
-        registrationOpensAt: true,
-        registrationClosesAt: true,
-        medicalCertificateKind: true,
-      },
-    }),
-    prisma.competition.findFirst({
-      where: { editions: { some: { id: registration.editionId } } },
-      select: { name: true },
-    }),
-    prisma.editionRequirement.findMany({
-      where: { editionId: registration.editionId },
-      select: { code: true, required: true, appliesTo: true },
-    }),
-    prisma.payment.findFirst({
-      where: { teamId: registration.teamId, registrationId: null, status: "SUCCEEDED" },
-      select: { id: true },
-    }),
-    prisma.guardian.findMany({
-      where: { playerProfileId: profile.id },
-      orderBy: { createdAt: "asc" },
-      select: {
-        firstName: true,
-        lastName: true,
-        relationship: true,
-        email: true,
-        phone: true,
-        kind: true,
-        soleResponsibility: true,
-        emailCorrectionUsed: true,
-      },
-    }),
-    prisma.document.findMany({
-      where: { registrationId, status: { not: "REPLACED" } },
-      orderBy: { uploadedAt: "desc" },
       select: {
         id: true,
         status: true,
-        originalFilename: true,
-        uploadedAt: true,
-        expiresAt: true,
-        blobPurgedAt: true,
-        typeId: true,
+        teamId: true,
+        editionId: true,
+        category: true,
+        playerProfile: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            birthDate: true,
+            fiscalCode: true,
+            phone: true,
+            shirtSize: true,
+            metadata: true,
+            user: { select: { id: true, email: true, emailVerified: true } },
+            guardians: {
+              orderBy: { createdAt: "asc" as const },
+              select: {
+                firstName: true,
+                lastName: true,
+                relationship: true,
+                email: true,
+                phone: true,
+                kind: true,
+                soleResponsibility: true,
+                emailCorrectionUsed: true,
+              },
+            },
+          },
+        },
+        team: {
+          select: {
+            id: true,
+            name: true,
+            playerFeeCents: true,
+            staffFeeCents: true,
+            teamFeeCents: true,
+            payments: {
+              where: { registrationId: null, status: "SUCCEEDED" },
+              select: { id: true },
+              take: 1,
+            },
+          },
+        },
+        edition: {
+          select: {
+            name: true,
+            paymentMode: true,
+            currency: true,
+            playerFeeAmount: true,
+            teamFeeAmount: true,
+            staffFeeAmount: true,
+            isActive: true,
+            startsAt: true,
+            registrationOpensAt: true,
+            registrationClosesAt: true,
+            medicalCertificateKind: true,
+            competition: { select: { name: true } },
+            requirements: { select: { code: true, required: true, appliesTo: true } },
+          },
+        },
+        documents: {
+          where: { status: { not: "REPLACED" } },
+          orderBy: { uploadedAt: "desc" as const },
+          select: {
+            id: true,
+            status: true,
+            originalFilename: true,
+            uploadedAt: true,
+            expiresAt: true,
+            blobPurgedAt: true,
+            type: { select: { code: true } },
+            reviews: {
+              orderBy: { createdAt: "desc" as const },
+              take: 1,
+              select: { decision: true, reason: true },
+            },
+          },
+        },
+        payments: {
+          orderBy: { createdAt: "desc" as const },
+          select: { status: true, amount: true },
+        },
+        consentRecords: {
+          orderBy: { acceptedAt: "desc" as const },
+          select: {
+            legalDocumentVersionId: true,
+            accepted: true,
+            legalDocumentVersion: {
+              select: {
+                isCurrent: true,
+                legalDocument: { select: { slug: true } },
+              },
+            },
+          },
+        },
+        consentChoices: {
+          orderBy: { createdAt: "asc" as const },
+          select: { code: true, accepted: true, value: true, createdAt: true },
+        },
+        consentTokens: {
+          where: { purpose: "MARKETING", usedAt: { not: null } },
+          select: { usedAt: true },
+          take: 5,
+        },
+        authorizations: {
+          where: { authorizationType: "ENROLLMENT" },
+          orderBy: { requestedAt: "desc" as const },
+          take: 3,
+          select: { id: true, status: true, guardianId: true, authorizationType: true },
+        },
       },
-    }),
-    prisma.documentType.findMany({
-      where: { documents: { some: { registrationId, status: { not: "REPLACED" } } } },
-      select: { id: true, code: true },
-    }),
-    prisma.documentReview.findMany({
-      where: { document: { registrationId, status: { not: "REPLACED" } } },
-      orderBy: { createdAt: "desc" },
-      select: { documentId: true, decision: true, reason: true },
-    }),
-    prisma.payment.findMany({
-      where: { registrationId },
-      orderBy: { createdAt: "desc" },
-      select: { status: true, amount: true },
-    }),
-    prisma.consentRecord.findMany({
-      where: { registrationId },
-      orderBy: { acceptedAt: "desc" },
-      select: { legalDocumentVersionId: true, accepted: true },
-    }),
-    prisma.legalDocumentVersion.findMany({
-      where: { consents: { some: { registrationId } } },
-      select: { id: true, isCurrent: true, legalDocumentId: true },
-    }),
-    prisma.legalDocument.findMany({
-      where: { versions: { some: { consents: { some: { registrationId } } } } },
-      select: { id: true, slug: true },
-    }),
-    prisma.consentChoice.findMany({
-      where: { registrationId },
-      orderBy: { createdAt: "asc" },
-      select: { code: true, accepted: true, value: true, createdAt: true },
-    }),
-    prisma.consentToken.findMany({
-      where: { registrationId, purpose: "MARKETING", usedAt: { not: null } },
-      select: { usedAt: true },
-      take: 5,
-    }),
-    prisma.guardianAuthorization.findMany({
-      where: { registrationId, authorizationType: "ENROLLMENT" },
-      orderBy: { requestedAt: "desc" },
-      take: 3,
-      select: { id: true, status: true, guardianId: true, authorizationType: true },
     }),
     isPartnerBoxVisible(),
   ]);
 
-  if (!team || !edition || !competition) {
+  if (!row?.playerProfile.user || !row.team || !row.edition?.competition) {
     return null;
   }
+
+  const user = row.playerProfile.user;
+  const profile = row.playerProfile;
+  const registration = row;
+  const team = row.team;
+  const edition = row.edition;
+  const competition = row.edition.competition;
+  const requirementRows = row.edition.requirements;
+  const teamPayment = row.team.payments[0] ?? null;
+  const guardians = row.playerProfile.guardians;
+  const documents = row.documents;
+  const payments = row.payments;
+  const consentChoices = row.consentChoices;
+  const consentTokens = row.consentTokens;
+  const authorizations = row.authorizations;
 
   const requirements: EditionRequirement[] =
     requirementRows.length > 0
@@ -217,26 +200,16 @@ export async function loadPlayerWorkspace(userId: string) {
         }))
       : DEFAULT_EDITION_REQUIREMENTS;
 
-  const typeById = new Map(documentTypes.map((type) => [type.id, type.code]));
-  const latestReviewByDocument = new Map<string, { decision: string; reason: string | null }>();
-  for (const review of reviews) {
-    if (!latestReviewByDocument.has(review.documentId)) {
-      latestReviewByDocument.set(review.documentId, review);
-    }
-  }
-  const medicalRow = documents.find((document) => typeById.get(document.typeId) === "MEDICAL_CERTIFICATE");
-  const medicalReview = medicalRow ? latestReviewByDocument.get(medicalRow.id) : undefined;
-  const versionById = new Map(legalVersions.map((version) => [version.id, version]));
-  const legalById = new Map(legalDocuments.map((document) => [document.id, document.slug]));
-  const consents: CurrentConsent[] = consentRecords.flatMap((record) => {
-    const version = versionById.get(record.legalDocumentVersionId);
-    const slug = version ? legalById.get(version.legalDocumentId) : undefined;
-    if (!version || !slug) return [];
+  const medicalRow = documents.find((document) => document.type.code === "MEDICAL_CERTIFICATE");
+  const medicalReview = medicalRow?.reviews[0];
+  const consents: CurrentConsent[] = row.consentRecords.flatMap((record) => {
+    const slug = record.legalDocumentVersion.legalDocument.slug;
+    if (!slug) return [];
     return [
       {
         slug,
         versionId: record.legalDocumentVersionId,
-        isCurrent: version.isCurrent,
+        isCurrent: record.legalDocumentVersion.isCurrent,
         accepted: record.accepted,
       },
     ];

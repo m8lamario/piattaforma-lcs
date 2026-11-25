@@ -7,6 +7,7 @@ import {
   CONSENT_COOKIE_NAME,
   RETIRED_COOKIE_NAMES,
   VERCEL_SCRIPTS_ORIGIN,
+  isAuthSessionCookieName,
   optionalTechnologies,
 } from "@/shared/cookies/inventory";
 
@@ -48,10 +49,11 @@ export async function proxy(request: NextRequest) {
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set("x-nonce", nonce);
 
-  const session = await auth();
   const { pathname } = request.nextUrl;
   requestHeaders.set("x-pathname", pathname);
   const needsAuth = protectedPrefixes.some((prefix) => pathname.startsWith(prefix));
+  const hasSessionCookie = request.cookies.getAll().some((cookie) => isAuthSessionCookieName(cookie.name));
+  const session = needsAuth || hasSessionCookie ? await auth() : null;
 
   if (pathname === "/api/documents/file") {
     const fileResponse = NextResponse.next({
