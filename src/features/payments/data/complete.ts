@@ -68,17 +68,12 @@ export async function completeStubPayment(paymentId: string) {
     body: "Il pagamento della quota risulta coperto. Nessun dato della carta è stato salvato su questa piattaforma.",
   };
 
-  if (payment.registration?.playerProfileId) {
-    const profile = await prisma.playerProfile.findUnique({
-      where: { id: payment.registration.playerProfileId },
-      select: { userId: true },
-    });
-    if (profile) {
-      await Promise.all([
-        persistByUser(profile.userId),
-        createNotification({ userId: profile.userId, ...paymentNotice }),
-      ]);
-    }
+  const playerUserId = payment.registration?.playerProfile.userId;
+  if (playerUserId) {
+    await Promise.all([
+      persistByUser(playerUserId),
+      createNotification({ userId: playerUserId, ...paymentNotice }),
+    ]);
   } else if (payment.teamId) {
     const members = await prisma.registration.findMany({
       where: { teamId: payment.teamId },
