@@ -16,7 +16,9 @@ type Props = {
 
 export function MediaPartnerActivationForm({ token, partnerName }: Props) {
   const [state, action, pending] = useActionState(activateMediaPartnerAction, undefined);
-  const passwords = usePasswordConfirmation();
+  const passwords = usePasswordConfirmation({
+    copy: { tooShort: it.passwordTooShort, mismatch: it.passwordMismatch, match: it.passwordMatch },
+  });
 
   return (
     <form

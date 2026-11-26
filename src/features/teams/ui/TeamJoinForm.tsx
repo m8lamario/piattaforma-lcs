@@ -13,7 +13,9 @@ import fields from "@/shared/ui/form.module.css";
 
 export function TeamJoinForm({ token, teamName }: { token: string; teamName: string }) {
   const [state, action, pending] = useActionState(joinTeamAction, undefined);
-  const passwords = usePasswordConfirmation();
+  const passwords = usePasswordConfirmation({
+    copy: { tooShort: it.passwordTooShort, mismatch: it.passwordMismatch, match: it.passwordMatch },
+  });
 
   return (
     <form

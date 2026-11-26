@@ -39,6 +39,32 @@ export function AppShell({
         {it.skipToContent}
       </a>
       <AppNav
+        copy={{
+          navOverview: it.navOverview,
+          navLeagueSchools: it.navLeagueSchools,
+          navLeaguePlayers: it.navLeaguePlayers,
+          navMedia: it.navMedia,
+          navMediaShort: it.navMediaShort,
+          navArea: it.navArea,
+          navAreaShort: it.navAreaShort,
+          navRoster: it.navRoster,
+          navInvites: it.navInvites,
+          navPlayerTeam: it.navPlayerTeam,
+          navAdmin: it.navAdmin,
+          navAdminShort: it.navAdminShort,
+          navCommunications: it.navCommunications,
+          navCommunicationsShort: it.navCommunicationsShort,
+          navSchool: it.navSchool,
+          navConsents: it.navConsents,
+          navAccount: it.navAccount,
+          unreadBadge: it.unreadBadge,
+          navSignedInAs: it.navSignedInAs,
+          logout: it.logout,
+          navMenu: it.navMenu,
+          navPrimary: it.navPrimary,
+          navTabs: it.navTabs,
+          navClose: it.navClose,
+        }}
         brandHref={homeForShellFlags({
           showMedia: Boolean(showMedia),
           showArea,

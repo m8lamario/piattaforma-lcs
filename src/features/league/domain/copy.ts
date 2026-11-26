@@ -1,17 +1,6 @@
+import { registrationStatusLabel } from "@/features/registrations/domain/statusCopy";
 import { it } from "@/shared/i18n/it";
 import type { LeagueMedicalStatus, LeaguePaymentStatus, LeagueSchoolStatus } from "./status";
-
-const STATUS_COPY: Record<string, string> = {
-  INVITED: it.statusINVITED,
-  ACCOUNT_CREATED: it.statusACCOUNT_CREATED,
-  IN_PROGRESS: it.statusIN_PROGRESS,
-  PENDING_REVIEW: it.statusPENDING_REVIEW,
-  CHANGES_REQUESTED: it.statusCHANGES_REQUESTED,
-  PAYMENT_PENDING: it.statusPAYMENT_PENDING,
-  APPROVED: it.statusAPPROVED,
-  WITHDRAWN: it.statusWITHDRAWN,
-  REMOVED: it.statusREMOVED,
-};
 
 const MEDICAL_COPY: Record<LeagueMedicalStatus, string> = {
   none: it.leagueMedicalNone,
@@ -35,7 +24,7 @@ const SCHOOL_COPY: Record<LeagueSchoolStatus, string> = {
 };
 
 export function leagueRegistrationLabel(status: string) {
-  return STATUS_COPY[status] ?? status;
+  return registrationStatusLabel(status);
 }
 
 export function leagueMedicalLabel(status: LeagueMedicalStatus) {

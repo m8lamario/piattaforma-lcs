@@ -1,13 +1,19 @@
 "use client";
 
 import { useId, useState, type FormEvent } from "react";
-import { it } from "@/shared/i18n/it";
 
 const MIN_LENGTH = 8;
 
 type Issue = "tooShort" | "mismatch" | null;
 
+export type PasswordConfirmationCopy = {
+  tooShort: string;
+  mismatch: string;
+  match: string;
+};
+
 type Options = {
+  copy: PasswordConfirmationCopy;
   passwordName?: string;
   confirmName?: string;
 };
@@ -26,9 +32,10 @@ function issueFor(password: string, confirm: string, requireConfirm: boolean): I
   return null;
 }
 
-export function usePasswordConfirmation(options: Options = {}) {
+export function usePasswordConfirmation(options: Options) {
   const passwordName = options.passwordName ?? "password";
   const confirmName = options.confirmName ?? "confirmPassword";
+  const { copy } = options;
   const passwordErrorId = useId();
   const confirmErrorId = useId();
   const [issue, setIssue] = useState<Issue>(null);
@@ -81,10 +88,10 @@ export function usePasswordConfirmation(options: Options = {}) {
     confirmInvalid: issue === "mismatch",
     passwordErrorId: issue === "tooShort" ? passwordErrorId : undefined,
     confirmErrorId: issue === "mismatch" ? confirmErrorId : undefined,
-    passwordMessage: issue === "tooShort" ? it.passwordTooShort : null,
-    confirmMessage: issue === "mismatch" ? it.passwordMismatch : null,
+    passwordMessage: issue === "tooShort" ? copy.tooShort : null,
+    confirmMessage: issue === "mismatch" ? copy.mismatch : null,
     confirmOk,
-    matchMessage: it.passwordMatch,
+    matchMessage: copy.match,
     confirmStatusId: issue === "mismatch" || confirmOk ? confirmErrorId : undefined,
   };
 }

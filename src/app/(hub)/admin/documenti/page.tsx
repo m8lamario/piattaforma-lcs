@@ -11,7 +11,8 @@ import { filterOptions } from "@/features/admin/data/catalog";
 import { AdminFrame } from "@/features/admin/ui/AdminFrame";
 import { requireStaffOrReviewer } from "@/shared/authz/requireStaff";
 import { PageHeader } from "@/shared/ui/PageHeader";
-import { StatusChip, type StatusTone } from "@/shared/ui/StatusChip";
+import { documentStatusLabel, documentStatusTone } from "@/features/documents/domain/statusCopy";
+import { StatusChip } from "@/shared/ui/StatusChip";
 import { Button, ButtonLink } from "@/shared/ui/Button";
 import { it } from "@/shared/i18n/it";
 import styles from "@/features/admin/ui/admin.module.css";
@@ -19,22 +20,6 @@ import fields from "@/shared/ui/form.module.css";
 
 function playerName(document: { playerProfile: { firstName: string; lastName: string } }) {
   return `${document.playerProfile.firstName} ${document.playerProfile.lastName}`.trim();
-}
-
-function statusLabel(status: string) {
-  if (status === "APPROVED") return it.statusDocumentAPPROVED;
-  if (status === "REJECTED") return it.statusDocumentREJECTED;
-  if (status === "EXPIRED") return it.statusDocumentEXPIRED;
-  if (status === "PREVALIDATED") return it.statusDocumentPREVALIDATED;
-  if (status === "PROCESSING") return it.statusDocumentPROCESSING;
-  if (status === "UPLOADED") return it.statusDocumentUPLOADED;
-  return it.statusDocumentPENDING_REVIEW;
-}
-
-function statusTone(status: string): StatusTone {
-  if (status === "APPROVED" || status === "PREVALIDATED") return "complete";
-  if (status === "REJECTED") return "danger";
-  return "attention";
 }
 
 function anomalyLabel(code: string) {
@@ -183,7 +168,7 @@ export default async function AdminDocumentsPage({ searchParams }: Props) {
                     {medicalKindLabel(document.registration.team.edition.medicalCertificateKind)}
                   </span>
                 </span>
-                <StatusChip tone={statusTone(document.status)}>{statusLabel(document.status)}</StatusChip>
+                <StatusChip tone={documentStatusTone(document.status)}>{documentStatusLabel(document.status)}</StatusChip>
               </Link>
             </li>
           ))}
@@ -203,7 +188,7 @@ export default async function AdminDocumentsPage({ searchParams }: Props) {
                       {medicalKindLabel(document.registration.team.edition.medicalCertificateKind)}
                     </span>
                   </span>
-                  <StatusChip tone={statusTone(document.status)}>{statusLabel(document.status)}</StatusChip>
+                  <StatusChip tone={documentStatusTone(document.status)}>{documentStatusLabel(document.status)}</StatusChip>
                 </Link>
               </li>
             ))}

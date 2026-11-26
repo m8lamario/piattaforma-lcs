@@ -6,23 +6,21 @@ import { it } from "@/shared/i18n/it";
 import { logger } from "@/shared/lib/logger";
 import { prisma } from "@/shared/lib/prisma";
 
-function metadataString(metadata: unknown, key: string): string | null {
-  if (!metadata || typeof metadata !== "object" || Array.isArray(metadata)) return null;
-  const value = (metadata as Record<string, unknown>)[key];
-  return typeof value === "string" ? value : null;
-}
-
 export async function hasNotification(input: {
   userId: string;
   type: string;
   key: string;
   value: string;
 }) {
-  const rows = await prisma.notification.findMany({
-    where: { userId: input.userId, type: input.type },
-    select: { metadata: true },
+  const row = await prisma.notification.findFirst({
+    where: {
+      userId: input.userId,
+      type: input.type,
+      metadata: { path: [input.key], equals: input.value },
+    },
+    select: { id: true },
   });
-  return rows.some((row) => metadataString(row.metadata, input.key) === input.value);
+  return Boolean(row);
 }
 
 async function dispatchNotificationEmails(input: {
@@ -125,15 +123,18 @@ export async function notifyRegistrationApproved(userId: string, registrationId:
 }
 
 export async function hasConsentReceipt(userId: string, fingerprint: string, registrationId: string) {
-  const rows = await prisma.notification.findMany({
-    where: { userId, type: "REGISTRATION_RECEIVED" },
-    select: { metadata: true },
+  const row = await prisma.notification.findFirst({
+    where: {
+      userId,
+      type: "REGISTRATION_RECEIVED",
+      AND: [
+        { metadata: { path: ["fingerprint"], equals: fingerprint } },
+        { metadata: { path: ["registrationId"], equals: registrationId } },
+      ],
+    },
+    select: { id: true },
   });
-  return rows.some(
-    (row) =>
-      metadataString(row.metadata, "fingerprint") === fingerprint &&
-      metadataString(row.metadata, "registrationId") === registrationId,
-  );
+  return Boolean(row);
 }
 
 export async function listNotifications(userId: string) {

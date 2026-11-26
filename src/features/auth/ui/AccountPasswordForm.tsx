@@ -11,7 +11,10 @@ import fields from "@/shared/ui/form.module.css";
 
 export function AccountPasswordForm() {
   const [state, action, pending] = useActionState(changePasswordAction, undefined);
-  const passwords = usePasswordConfirmation({ passwordName: "newPassword" });
+  const passwords = usePasswordConfirmation({
+    passwordName: "newPassword",
+    copy: { tooShort: it.passwordTooShort, mismatch: it.passwordMismatch, match: it.passwordMatch },
+  });
 
   return (
     <form

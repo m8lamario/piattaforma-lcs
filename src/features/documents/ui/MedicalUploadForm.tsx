@@ -88,6 +88,17 @@ export function MedicalUploadForm({
         existingSlot={
           document && allowFileOpen ? <OpenDocumentButton documentId={document.id} /> : null
         }
+        copy={{
+          invalidType: it.fileDropInvalidType,
+          tooLarge: it.fileDropTooLarge,
+          existing: it.fileExisting,
+          selected: it.fileSelected,
+          uploading: it.fileUploading,
+          drop: it.fileDropDrop,
+          hint: it.fileDropHint,
+          browse: it.fileDropBrowse,
+          loading: it.loadingUpload,
+        }}
       />
 
       <div className={`${fields.actions} ${fields.sticky}`}>

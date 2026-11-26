@@ -19,7 +19,9 @@ type Props = {
 
 export function RedeemForm({ token, email, teamName, firstName, lastName }: Props) {
   const [state, action, pending] = useActionState(redeemInviteAction, undefined);
-  const passwords = usePasswordConfirmation();
+  const passwords = usePasswordConfirmation({
+    copy: { tooShort: it.passwordTooShort, mismatch: it.passwordMismatch, match: it.passwordMatch },
+  });
 
   return (
     <form

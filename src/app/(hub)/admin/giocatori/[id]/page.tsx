@@ -2,6 +2,8 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getPlayerAdmin } from "@/features/admin/data/catalog";
 import { loadPlayerWorkspace } from "@/features/registrations/data/workspace";
+import { registrationStatusLabel } from "@/features/registrations/domain/statusCopy";
+import { prisma } from "@/shared/lib/prisma";
 import { AdminFrame } from "@/features/admin/ui/AdminFrame";
 import { AccountLifecycleForm } from "@/features/admin/ui/AccountLifecycleForm";
 import { OpenDocumentButton } from "@/features/documents/ui/OpenDocumentButton";
@@ -17,26 +19,18 @@ import { medicalKindLabel, parseMedicalCertificateKind } from "@/features/docume
 import { it } from "@/shared/i18n/it";
 import styles from "@/features/admin/ui/admin.module.css";
 
-const STATUS_COPY: Record<string, string> = {
-  INVITED: it.statusINVITED,
-  ACCOUNT_CREATED: it.statusACCOUNT_CREATED,
-  IN_PROGRESS: it.statusIN_PROGRESS,
-  PENDING_REVIEW: it.statusPENDING_REVIEW,
-  CHANGES_REQUESTED: it.statusCHANGES_REQUESTED,
-  PAYMENT_PENDING: it.statusPAYMENT_PENDING,
-  APPROVED: it.statusAPPROVED,
-  WITHDRAWN: it.statusWITHDRAWN,
-  REMOVED: it.statusREMOVED,
-};
-
 type Props = { params: Promise<{ id: string }> };
 
 export default async function AdminPlayerPage({ params }: Props) {
   const [{ actor }, { id }] = await Promise.all([requireStaff("/admin/giocatori"), params]);
-  const profile = await getPlayerAdmin(id);
+  const [profile, workspace] = await Promise.all([
+    getPlayerAdmin(id),
+    prisma.playerProfile
+      .findUnique({ where: { id }, select: { userId: true } })
+      .then((row) => (row ? loadPlayerWorkspace(row.userId) : null)),
+  ]);
   if (!profile) notFound();
   const registration = profile.registrations[0];
-  const workspace = await loadPlayerWorkspace(profile.user.id);
   const document = registration?.documents[0];
 
   return (
@@ -47,7 +41,7 @@ export default async function AdminPlayerPage({ params }: Props) {
         aside={
           registration ? (
             <StatusChip tone={registration.status === "APPROVED" ? "complete" : "attention"}>
-              {STATUS_COPY[registration.status] ?? registration.status}
+              {registrationStatusLabel(registration.status)}
             </StatusChip>
           ) : null
         }

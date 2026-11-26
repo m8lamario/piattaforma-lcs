@@ -25,20 +25,19 @@ type LeagueRegistrationRow = {
     name: string;
     schoolId: string;
     school: { id: string; name: string; city: string | null };
-    edition: {
-      id: string;
-      name: string;
-      paymentMode: "PLAYER" | "TEAM" | "BOTH";
-      competition: { name: string };
-    };
-    payments: { id: string }[];
   };
   playerProfile: { firstName: string; lastName: string };
   documents: { status: string; expiresAt: Date | null }[];
   payments: { status: string }[];
 };
 
-function toPlayerRecords(rows: LeagueRegistrationRow[]): LeaguePlayerRecord[] {
+type PaymentMode = "PLAYER" | "TEAM" | "BOTH";
+
+function toPlayerRecords(
+  rows: LeagueRegistrationRow[],
+  paymentMode: PaymentMode,
+  teamPaid: Set<string>,
+): LeaguePlayerRecord[] {
   const teamsBySchool = new Map<string, Set<string>>();
   for (const row of rows) {
     const names = teamsBySchool.get(row.team.schoolId) ?? new Set<string>();
@@ -59,13 +58,26 @@ function toPlayerRecords(rows: LeagueRegistrationRow[]): LeaguePlayerRecord[] {
       registrationStatus: row.status as LeagueRegistrationStatus,
       medicalStatus: leagueMedicalStatus(medical?.status, medical?.expiresAt),
       paymentStatus: leaguePaymentStatus({
-        paymentMode: row.team.edition.paymentMode,
+        paymentMode,
         playerSucceeded: row.payments.some((payment) => payment.status === "SUCCEEDED"),
-        teamSucceeded: row.team.payments.length > 0,
+        teamSucceeded: teamPaid.has(row.team.id),
       }),
       completedAt: leagueCompletionDate(row.status, row.reviewedAt),
     };
   });
+}
+
+async function loadSucceededTeamPayments(editionId: string, schoolId?: string) {
+  const rows = await prisma.payment.findMany({
+    where: {
+      editionId,
+      registrationId: null,
+      status: "SUCCEEDED",
+      ...(schoolId ? { team: { schoolId } } : {}),
+    },
+    select: { teamId: true },
+  });
+  return new Set(rows.map((row) => row.teamId).filter((id): id is string => Boolean(id)));
 }
 
 async function loadEditionRegistrations(editionId: string) {
@@ -90,11 +102,17 @@ export async function getLeagueEdition(editionId: string) {
 }
 
 export async function listLeagueWorkspace(editionId: string, filters: LeaguePlayerFilters = {}) {
-  const [edition, registrations] = await Promise.all([
+  const [edition, registrations, emptySchools, teamPaid] = await Promise.all([
     getLeagueEdition(editionId),
     loadEditionRegistrations(editionId),
+    prisma.team.findMany({
+      where: { editionId },
+      select: { name: true, school: { select: { id: true, name: true, city: true } } },
+    }),
+    loadSucceededTeamPayments(editionId),
   ]);
-  const players = toPlayerRecords(registrations);
+  const paymentMode = edition?.paymentMode ?? "PLAYER";
+  const players = toPlayerRecords(registrations, paymentMode, teamPaid);
   const schoolMap = new Map<string, { schoolId: string; schoolName: string; city: string; teamNames: Set<string>; players: LeaguePlayerRecord[] }>();
   for (const row of registrations) {
     const current = schoolMap.get(row.team.schoolId) ?? {
@@ -110,10 +128,6 @@ export async function listLeagueWorkspace(editionId: string, filters: LeaguePlay
   for (const player of players) {
     schoolMap.get(player.schoolId)?.players.push(player);
   }
-  const emptySchools = await prisma.team.findMany({
-    where: { editionId },
-    select: { name: true, school: { select: { id: true, name: true, city: true } } },
-  });
   for (const team of emptySchools) {
     if (schoolMap.has(team.school.id)) {
       schoolMap.get(team.school.id)?.teamNames.add(team.name);
@@ -172,7 +186,7 @@ export async function getLeagueSchool(
   actorUserId: string,
   filters: LeaguePlayerFilters = {},
 ) {
-  const [edition, registrations, teams] = await Promise.all([
+  const [edition, registrations, teams, teamPaid] = await Promise.all([
     getLeagueEdition(editionId),
     prisma.registration.findMany({
       where: { ...leaguePlayersWhere(editionId), team: { schoolId } },
@@ -183,12 +197,13 @@ export async function getLeagueSchool(
       where: { editionId, schoolId },
       select: { name: true, school: { select: { id: true, name: true, city: true } } },
     }),
+    loadSucceededTeamPayments(editionId, schoolId),
   ]);
   if (registrations.length === 0 && teams.length === 0) {
     await denyLeagueAccess(actorUserId, "School", schoolId, editionId);
     return null;
   }
-  const players = toPlayerRecords(registrations);
+  const players = toPlayerRecords(registrations, edition?.paymentMode ?? "PLAYER", teamPaid);
   const teamNames = new Set<string>();
   for (const row of registrations) teamNames.add(row.team.name);
   for (const team of teams) teamNames.add(team.name);
@@ -226,7 +241,7 @@ export async function getLeaguePlayer(editionId: string, registrationId: string,
     await denyLeagueAccess(actorUserId, "Registration", registrationId, editionId);
     return null;
   }
-  const [edition, schoolTeams] = await Promise.all([
+  const [edition, schoolTeams, teamPaid] = await Promise.all([
     getLeagueEdition(editionId),
     prisma.registration.findMany({
       where: { ...leaguePlayersWhere(editionId), team: { schoolId: row.team.schoolId } },
@@ -234,10 +249,11 @@ export async function getLeaguePlayer(editionId: string, registrationId: string,
       orderBy: { teamId: "asc" },
       select: { teamId: true, team: { select: { name: true } } },
     }),
+    loadSucceededTeamPayments(editionId, row.team.schoolId),
   ]);
   const teamCountInSchool = new Set(schoolTeams.map((item) => item.team.name)).size;
   const player = {
-    ...toPlayerRecords([row])[0]!,
+    ...toPlayerRecords([row], edition?.paymentMode ?? "PLAYER", teamPaid)[0]!,
     teamCountInSchool,
   };
   const school = summarizeLeagueSchool(

@@ -1,11 +1,22 @@
 "use client";
 
 import { useId, useRef, useState, type ChangeEvent, type DragEvent, type ReactNode } from "react";
-import { it } from "@/shared/i18n/it";
 import { acceptsFile } from "./fileAccept";
 import { Icon } from "./Icon";
 import { IndeterminateProgress } from "./Skeleton";
 import styles from "./FileDropzone.module.css";
+
+export type FileDropzoneCopy = {
+  invalidType: string;
+  tooLarge: string;
+  existing: string;
+  selected: string;
+  uploading: string;
+  drop: string;
+  hint: string;
+  browse: string;
+  loading: string;
+};
 
 type Props = {
   id?: string;
@@ -20,6 +31,7 @@ type Props = {
   error?: string | null;
   existingName?: string | null;
   existingSlot?: ReactNode;
+  copy: FileDropzoneCopy;
 };
 
 export function FileDropzone({
@@ -35,6 +47,7 @@ export function FileDropzone({
   error = null,
   existingName = null,
   existingSlot,
+  copy,
 }: Props) {
   const generatedId = useId();
   const inputId = id ?? generatedId;
@@ -59,12 +72,12 @@ export function FileDropzone({
     if (!file) return;
     if (!acceptsFile(file, accept)) {
       assignFile(null);
-      setLocalError(it.fileDropInvalidType);
+      setLocalError(copy.invalidType);
       return;
     }
     if (maxBytes !== undefined && file.size > maxBytes) {
       assignFile(null);
-      setLocalError(it.fileDropTooLarge);
+      setLocalError(copy.tooLarge);
       return;
     }
     setLocalError(null);
@@ -116,7 +129,7 @@ export function FileDropzone({
             <Icon name="documents" size={18} />
           </span>
           <div className={styles.uploadedCopy}>
-            <p className={styles.kicker}>{it.fileExisting}</p>
+            <p className={styles.kicker}>{copy.existing}</p>
             <p className={styles.filename}>{existingName}</p>
           </div>
           {existingSlot ? <div className={styles.uploadedAction}>{existingSlot}</div> : null}
@@ -149,15 +162,15 @@ export function FileDropzone({
           <Icon name={uploading ? "upload" : selectedName ? "check" : shownError ? "alert" : "upload"} size={22} />
         </span>
         <span className={styles.copy}>
-          <span className={styles.title}>{selectedName ? it.fileSelected : label}</span>
+          <span className={styles.title}>{selectedName ? copy.selected : label}</span>
           <span id={statusId} className={styles.status} role="status">
-            {uploading ? it.fileUploading : selectedName ? selectedName : dragging ? it.fileDropDrop : it.fileDropHint}
+            {uploading ? copy.uploading : selectedName ? selectedName : dragging ? copy.drop : copy.hint}
           </span>
         </span>
-        <span className={styles.browse}>{it.fileDropBrowse}</span>
+        <span className={styles.browse}>{copy.browse}</span>
       </label>
 
-      {uploading ? <IndeterminateProgress label={it.loadingUpload} /> : null}
+      {uploading ? <IndeterminateProgress label={copy.loading} /> : null}
 
       {help ? (
         <p id={helpId} className={styles.help}>
@@ -165,7 +178,7 @@ export function FileDropzone({
         </p>
       ) : (
         <span id={helpId} className="srOnly">
-          {it.fileDropHint}
+          {copy.hint}
         </span>
       )}
       {shownError ? (

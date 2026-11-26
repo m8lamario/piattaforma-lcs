@@ -10,12 +10,6 @@ export const leagueRegistrationSelect = {
       name: true,
       schoolId: true,
       school: { select: { id: true, name: true, city: true } },
-      edition: { select: { id: true, name: true, paymentMode: true, competition: { select: { name: true } } } },
-      payments: {
-        where: { registrationId: null, status: "SUCCEEDED" },
-        select: { id: true },
-        take: 1,
-      },
     },
   },
   playerProfile: {

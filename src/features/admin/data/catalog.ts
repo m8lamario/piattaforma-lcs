@@ -59,7 +59,10 @@ export async function listCompetitionsWithEditions() {
   return prisma.competition.findMany({
     orderBy: { name: "asc" },
     include: {
-      editions: { orderBy: [{ year: "desc" }, { name: "asc" }] },
+      editions: {
+        orderBy: [{ year: "desc" }, { name: "asc" }],
+        select: { id: true, name: true, year: true, medicalCertificateKind: true },
+      },
     },
   });
 }
@@ -82,11 +85,11 @@ export async function listSchools() {
 export async function listTeamsAdmin() {
   return prisma.team.findMany({
     orderBy: { name: "asc" },
-    include: {
-      school: true,
-      edition: { include: { competition: true } },
-      representative: { select: { email: true, name: true } },
-      _count: { select: { registrations: true } },
+    select: {
+      id: true,
+      name: true,
+      school: { select: { name: true } },
+      edition: { select: { name: true, competition: { select: { name: true } } } },
     },
   });
 }
@@ -354,12 +357,16 @@ export async function deleteEditionAdmin(id: string) {
   return { ok: true as const };
 }
 
+export async function listEditionOptions() {
+  return prisma.edition.findMany({
+    orderBy: [{ year: "desc" }, { name: "asc" }],
+    select: { id: true, name: true, year: true, competition: { select: { name: true } } },
+  });
+}
+
 export async function filterOptions() {
   const [editions, teams, schools] = await Promise.all([
-    prisma.edition.findMany({
-      orderBy: [{ year: "desc" }, { name: "asc" }],
-      select: { id: true, name: true, year: true, competition: { select: { name: true } } },
-    }),
+    listEditionOptions(),
     prisma.team.findMany({
       orderBy: { name: "asc" },
       select: {

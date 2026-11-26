@@ -11,7 +11,9 @@ import fields from "@/shared/ui/form.module.css";
 
 export function StaffRedeemForm({ token, needsPassword }: { token: string; needsPassword: boolean }) {
   const [state, action, pending] = useActionState(redeemStaffInviteAction, undefined);
-  const passwords = usePasswordConfirmation();
+  const passwords = usePasswordConfirmation({
+    copy: { tooShort: it.passwordTooShort, mismatch: it.passwordMismatch, match: it.passwordMatch },
+  });
 
   return (
     <form

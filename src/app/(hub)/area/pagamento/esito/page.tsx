@@ -20,16 +20,21 @@ export default async function PaymentResultPage({ searchParams }: Props) {
   if (!paymentId) redirect("/area");
   const identity = await requirePageUser(`/area/pagamento/esito?paymentId=${paymentId}`);
 
+  let completed:
+    | Awaited<ReturnType<typeof completeStubPayment>>
+    | undefined;
   if (shouldCompletePaymentOnReturn() && !identity.view) {
-    const result = await completeStubPayment(paymentId);
-    if (!result.ok && result.reason !== "readonly") {
-      if (result.reason === "auth") redirect(`/accedi?next=/area/pagamento/esito?paymentId=${paymentId}`);
+    completed = await completeStubPayment(paymentId);
+    if (!completed.ok && completed.reason !== "readonly") {
+      if (completed.reason === "auth") redirect(`/accedi?next=/area/pagamento/esito?paymentId=${paymentId}`);
       redirect("/area");
     }
   }
 
   const [payment, shell] = await Promise.all([
-    getPaymentById(paymentId),
+    completed && completed.ok && completed.payment
+      ? Promise.resolve(completed.payment)
+      : getPaymentById(paymentId),
     loadAppShell(identity.subjectUserId),
   ]);
   if (!payment || !shell.actor) redirect("/area");
@@ -50,7 +55,8 @@ export default async function PaymentResultPage({ searchParams }: Props) {
   let nextHref = teamPayment ? "/squadra" : "/area";
   let nextLabel = teamPayment ? it.navTeam : it.backToArea;
   if (payment.status === "SUCCEEDED" && !teamPayment) {
-    const workspace = await loadPlayerWorkspace(identity.subjectUserId);
+    const workspace =
+      completed && completed.ok ? completed.workspace : await loadPlayerWorkspace(identity.subjectUserId);
     const remaining = workspace ? nextHero(workspace.checklist).code !== "DONE" : false;
     nextHref = remaining ? "/area/registrazione" : "/area";
     nextLabel = remaining ? it.ctaContinue : it.backToArea;

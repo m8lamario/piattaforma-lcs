@@ -148,11 +148,28 @@ function medicalDocumentWhere(filters: MedicalDocumentFilters = {}) {
   };
 }
 
+const medicalDocumentListSelect = {
+  id: true,
+  status: true,
+  playerProfile: { select: { firstName: true, lastName: true } },
+  registration: {
+    select: {
+      team: {
+        select: {
+          name: true,
+          school: { select: { name: true } },
+          edition: { select: { medicalCertificateKind: true } },
+        },
+      },
+    },
+  },
+} as const;
+
 export async function listPendingMedicalDocuments(filters: MedicalDocumentFilters = {}) {
   return prisma.document.findMany({
     where: medicalDocumentWhere(filters),
     orderBy: [{ uploadedAt: "asc" }, { id: "asc" }],
-    select: adminDocumentSelect,
+    select: medicalDocumentListSelect,
   });
 }
 
@@ -172,7 +189,7 @@ export async function listRecentReviewedMedicalDocuments() {
     },
     orderBy: { updatedAt: "desc" },
     take: 20,
-    select: adminDocumentSelect,
+    select: medicalDocumentListSelect,
   });
 }
 

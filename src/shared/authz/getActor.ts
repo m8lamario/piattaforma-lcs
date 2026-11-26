@@ -3,23 +3,41 @@ import { prisma } from "@/shared/lib/prisma";
 import type { Actor, ActorMediaPartner, ActorRole } from "./types";
 import type { Role } from "./types";
 
-export const getActorByUserId = cache(async (userId: string): Promise<Actor | null> => {
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    include: {
-      roles: true,
-      teamMemberships: true,
-      leagueSupervisor: true,
-      mediaPartnerAccount: {
-        include: {
-          organization: {
-            include: {
-              competitions: { select: { competitionId: true } },
-            },
-          },
+const userAccessSelect = {
+  id: true,
+  lifecycleStatus: true,
+  roles: { select: { role: true, teamId: true, competitionId: true } },
+  teamMemberships: { select: { teamId: true } },
+  leagueSupervisor: { select: { editionId: true, status: true, activatedAt: true } },
+  mediaPartnerAccount: {
+    select: {
+      id: true,
+      mediaPartnerId: true,
+      status: true,
+      organization: {
+        select: {
+          name: true,
+          status: true,
+          competitions: { select: { competitionId: true } },
         },
       },
     },
+  },
+  playerProfile: {
+    select: {
+      registrations: {
+        orderBy: { createdAt: "desc" as const },
+        take: 1,
+        select: { id: true },
+      },
+    },
+  },
+} as const;
+
+export const loadUserAccess = cache(async (userId: string) => {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: userAccessSelect,
   });
   if (!user || user.lifecycleStatus !== "ACTIVE") return null;
 
@@ -29,13 +47,21 @@ export const getActorByUserId = cache(async (userId: string): Promise<Actor | nu
     competitionId: role.competitionId,
   }));
 
-  return {
+  const actor: Actor = {
     userId: user.id,
     roles,
     membershipTeamIds: user.teamMemberships.map((membership) => membership.teamId),
     mediaPartner: toMediaPartner(user.mediaPartnerAccount),
     leagueEditionId: toLeagueEditionId(user.leagueSupervisor),
   };
+  return {
+    actor,
+    hasPlayerRegistration: Boolean(user.playerProfile?.registrations[0]),
+  };
+});
+
+export const getActorByUserId = cache(async (userId: string): Promise<Actor | null> => {
+  return (await loadUserAccess(userId))?.actor ?? null;
 });
 
 function toLeagueEditionId(

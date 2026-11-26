@@ -272,6 +272,24 @@
   gap: var(--space-5);
   width: 100%;
   min-width: 0;
+  animation: wizardEnter 0.24s ease;
+}
+
+@keyframes wizardEnter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stageBody {
+    animation: none;
+  }
 }
 
 @media (max-width: 640px) {

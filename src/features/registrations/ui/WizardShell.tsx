@@ -2,7 +2,6 @@
 
 import { createContext, useContext, useEffect, useRef, type ReactNode } from "react";
 import Link from "next/link";
-import { motion, useReducedMotion } from "framer-motion";
 import type { ChecklistItem } from "@/features/registrations/domain/requirements";
 import {
   completedStepCount,
@@ -92,7 +91,6 @@ function StepMark({ index, status, active }: { index: number; status: ChecklistI
 export function WizardShell({ step, steps, checklist, medicalKind = "COMPETITIVE", children }: Props) {
   const lead = step === "certificato" ? medicalStepLead(medicalKind) : WIZARD_STEP_LEADS[step];
   const tip = step === "certificato" ? medicalStepTip(medicalKind) : WIZARD_STEP_TIPS[step];
-  const reduceMotion = useReducedMotion();
   const headingRef = useRef<HTMLHeadingElement>(null);
   const activeStepRef = useRef<HTMLLIElement>(null);
   const position = steps.indexOf(step);
@@ -117,8 +115,13 @@ export function WizardShell({ step, steps, checklist, medicalKind = "COMPETITIVE
   }, [step]);
 
   useEffect(() => {
-    activeStepRef.current?.scrollIntoView({ inline: "center", block: "nearest", behavior: reduceMotion ? "auto" : "smooth" });
-  }, [step, reduceMotion]);
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    activeStepRef.current?.scrollIntoView({
+      inline: "center",
+      block: "nearest",
+      behavior: reduce ? "auto" : "smooth",
+    });
+  }, [step]);
 
   return (
     <WizardContext.Provider value={{ step, steps, checklist, laterHref }}>
@@ -196,15 +199,9 @@ export function WizardShell({ step, steps, checklist, medicalKind = "COMPETITIVE
             <p>{tip}</p>
           </Disclosure>
 
-          <motion.div
-            key={step}
-            className={styles.stageBody}
-            initial={reduceMotion ? false : { opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: reduceMotion ? 0 : 0.24 }}
-          >
+          <div key={step} className={styles.stageBody}>
             {children}
-          </motion.div>
+          </div>
         </section>
       </div>
     </WizardContext.Provider>

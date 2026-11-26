@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { filterOptions, listTeamsAdmin } from "@/features/admin/data/catalog";
+import { listEditionOptions, listTeamsAdmin } from "@/features/admin/data/catalog";
 import { AdminFrame } from "@/features/admin/ui/AdminFrame";
 import { requireStaff } from "@/shared/authz/requireStaff";
 import { TeamCreateForm } from "@/features/admin/ui/TeamCreateForm";
@@ -8,10 +8,10 @@ import { it } from "@/shared/i18n/it";
 import styles from "@/features/admin/ui/admin.module.css";
 
 export default async function AdminTeamsPage() {
-  const [{ actor }, teams, options] = await Promise.all([
+  const [{ actor }, teams, editions] = await Promise.all([
     requireStaff("/admin/squadre"),
     listTeamsAdmin(),
-    filterOptions(),
+    listEditionOptions(),
   ]);
   return (
     <AdminFrame path="/admin/squadre" actor={actor}>
@@ -39,7 +39,7 @@ export default async function AdminTeamsPage() {
           <div className={styles.sideCard}>
             <h2 className={styles.sectionTitle}>{it.adminCreateTeam}</h2>
             <TeamCreateForm
-              editions={options.editions.map((edition) => ({
+              editions={editions.map((edition) => ({
                 id: edition.id,
                 label: `${edition.competition.name} · ${edition.name}`,
               }))}

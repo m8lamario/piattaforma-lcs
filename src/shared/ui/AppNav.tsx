@@ -4,11 +4,37 @@ import { useEffect, useRef, useState, type ComponentProps } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { logoutAction } from "@/features/auth/actions";
-import { it } from "@/shared/i18n/it";
 import { Avatar } from "./Avatar";
 import { BrandMark } from "./BrandMark";
 import { Icon, type IconName } from "./Icon";
 import styles from "./AppShell.module.css";
+
+export type AppNavCopy = {
+  navOverview: string;
+  navLeagueSchools: string;
+  navLeaguePlayers: string;
+  navMedia: string;
+  navMediaShort: string;
+  navArea: string;
+  navAreaShort: string;
+  navRoster: string;
+  navInvites: string;
+  navPlayerTeam: string;
+  navAdmin: string;
+  navAdminShort: string;
+  navCommunications: string;
+  navCommunicationsShort: string;
+  navSchool: string;
+  navConsents: string;
+  navAccount: string;
+  unreadBadge: string;
+  navSignedInAs: string;
+  logout: string;
+  navMenu: string;
+  navPrimary: string;
+  navTabs: string;
+  navClose: string;
+};
 
 type NavItem = {
   href: string;
@@ -20,6 +46,7 @@ type NavItem = {
 };
 
 type Props = {
+  copy: AppNavCopy;
   brandHref: string;
   email?: string | null;
   showTeam?: boolean;
@@ -67,6 +94,7 @@ function isItemActive(item: NavItem, pathname: string) {
 }
 
 function buildItems({
+  copy,
   showTeam,
   showAdmin,
   showPlayerTeam,
@@ -80,70 +108,80 @@ function buildItems({
 }: Omit<Props, "brandHref" | "email">): NavItem[] {
   if (showLeague) {
     return [
-      { href: "/lega", label: it.navOverview, short: it.navOverview, icon: "area" },
-      { href: "/lega/scuole", label: it.navLeagueSchools, short: it.navLeagueSchools, icon: "org" },
-      { href: "/lega/giocatori", label: it.navLeaguePlayers, short: it.navLeaguePlayers, icon: "users" },
+      { href: "/lega", label: copy.navOverview, short: copy.navOverview, icon: "area" },
+      { href: "/lega/scuole", label: copy.navLeagueSchools, short: copy.navLeagueSchools, icon: "org" },
+      { href: "/lega/giocatori", label: copy.navLeaguePlayers, short: copy.navLeaguePlayers, icon: "users" },
     ];
   }
   return [
     ...(showMedia && !mediaUnderAdmin
-      ? [{ href: "/media", label: it.navMedia, short: it.navMediaShort, icon: "camera" as const }]
+      ? [{ href: "/media", label: copy.navMedia, short: copy.navMediaShort, icon: "camera" as const }]
       : []),
     ...(showArea
       ? [
           {
             href: "/area",
-            label: showTeam ? it.navOverview : it.navArea,
-            short: showTeam ? it.navOverview : it.navAreaShort,
+            label: showTeam ? copy.navOverview : copy.navArea,
+            short: showTeam ? copy.navOverview : copy.navAreaShort,
             icon: "area" as const,
           },
         ]
       : []),
     ...(showTeam
       ? [
-          { href: "/squadra", label: it.navRoster, short: it.navRoster, icon: "team" as const },
-          { href: "/squadra/inviti", label: it.navInvites, short: it.navInvites, icon: "invite" as const },
+          { href: "/squadra", label: copy.navRoster, short: copy.navRoster, icon: "team" as const },
+          { href: "/squadra/inviti", label: copy.navInvites, short: copy.navInvites, icon: "invite" as const },
         ]
       : []),
     ...(showPlayerTeam
-      ? [{ href: "/area/squadra", label: it.navPlayerTeam, short: it.navPlayerTeam, icon: "users" as const }]
+      ? [{ href: "/area/squadra", label: copy.navPlayerTeam, short: copy.navPlayerTeam, icon: "users" as const }]
       : []),
     ...(showAdmin
       ? [
           {
             href: "/admin",
-            label: it.navAdmin,
-            short: it.navAdminShort,
+            label: copy.navAdmin,
+            short: copy.navAdminShort,
             icon: "org" as const,
-            ...(mediaUnderAdmin ? { children: [{ href: "/media", label: it.navMedia }] } : {}),
+            ...(mediaUnderAdmin ? { children: [{ href: "/media", label: copy.navMedia }] } : {}),
           },
         ]
       : []),
     {
       href: "/area/comunicazioni",
-      label: it.navCommunications,
-      short: it.navCommunicationsShort,
+      label: copy.navCommunications,
+      short: copy.navCommunicationsShort,
       icon: "inbox",
       badge: unreadCount,
     },
-    ...(showSchool ? [{ href: "/squadra/scuola", label: it.navSchool, short: it.navSchool, icon: "org" as const }] : []),
+    ...(showSchool ? [{ href: "/squadra/scuola", label: copy.navSchool, short: copy.navSchool, icon: "org" as const }] : []),
     ...(showConsents
-      ? [{ href: "/area/consensi", label: it.navConsents, short: it.navConsents, icon: "privacy" as const }]
+      ? [{ href: "/area/consensi", label: copy.navConsents, short: copy.navConsents, icon: "privacy" as const }]
       : []),
-    { href: "/area/account", label: it.navAccount, short: it.navAccount, icon: "user" },
+    { href: "/area/account", label: copy.navAccount, short: copy.navAccount, icon: "user" },
   ];
 }
 
-function Badge({ count }: { count?: number }) {
+function Badge({ count, unreadLabel }: { count?: number; unreadLabel: string }) {
   if (!count) return null;
   return (
-    <span className={styles.badge} aria-label={`${it.unreadBadge}: ${count}`}>
+    <span className={styles.badge} aria-label={`${unreadLabel}: ${count}`}>
       {count > 99 ? "99+" : count}
     </span>
   );
 }
 
-function NavList({ items, pathname, onNavigate }: { items: NavItem[]; pathname: string; onNavigate?: () => void }) {
+function NavList({
+  items,
+  pathname,
+  unreadLabel,
+  onNavigate,
+}: {
+  items: NavItem[];
+  pathname: string;
+  unreadLabel: string;
+  onNavigate?: () => void;
+}) {
   return (
     <ul className={styles.navList}>
       {items.map((item) => {
@@ -159,7 +197,7 @@ function NavList({ items, pathname, onNavigate }: { items: NavItem[]; pathname: 
             >
               <Icon name={item.icon} size={20} />
               <span className={styles.navLabel}>{item.label}</span>
-              <Badge count={item.badge} />
+              <Badge count={item.badge} unreadLabel={unreadLabel} />
             </NavLink>
             {item.children?.length ? (
               <ul className={styles.navChildren}>
@@ -184,14 +222,22 @@ function NavList({ items, pathname, onNavigate }: { items: NavItem[]; pathname: 
   );
 }
 
-function SessionBlock({ email }: { email?: string | null }) {
+function SessionBlock({
+  email,
+  signedInAs,
+  logout,
+}: {
+  email?: string | null;
+  signedInAs: string;
+  logout: string;
+}) {
   return (
     <div className={styles.session}>
       {email ? (
         <div className={styles.identity}>
           <Avatar name={email} size="sm" />
           <span className={styles.identityCopy}>
-            <span className={styles.identityLabel}>{it.navSignedInAs}</span>
+            <span className={styles.identityLabel}>{signedInAs}</span>
             <span className={styles.email}>{email}</span>
           </span>
         </div>
@@ -199,14 +245,14 @@ function SessionBlock({ email }: { email?: string | null }) {
       <form action={logoutAction} data-view-allow="logout">
         <button type="submit" className={styles.logout}>
           <Icon name="logout" size={18} />
-          {it.logout}
+          {logout}
         </button>
       </form>
     </div>
   );
 }
 
-export function AppNav({ brandHref, email, ...flags }: Props) {
+export function AppNav({ copy, brandHref, email, ...flags }: Props) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [openForPath, setOpenForPath] = useState(pathname);
@@ -235,7 +281,7 @@ export function AppNav({ brandHref, email, ...flags }: Props) {
     };
   }, [open]);
 
-  const items = buildItems(flags);
+  const items = buildItems({ copy, ...flags });
   const focusMode = FOCUS_PREFIXES.some((prefix) => pathname.startsWith(prefix));
   const tabs = items.slice(0, TAB_LIMIT);
   const menuBadge = items.slice(TAB_LIMIT).reduce((sum, item) => sum + (item.badge ?? 0), 0);
@@ -253,19 +299,19 @@ export function AppNav({ brandHref, email, ...flags }: Props) {
           onClick={() => setOpen((value) => !value)}
         >
           <Icon name="menu" size={20} />
-          <span className={styles.menuLabel}>{it.navMenu}</span>
+          <span className={styles.menuLabel}>{copy.navMenu}</span>
           {menuBadge ? <span className={styles.dot} aria-hidden="true" /> : null}
         </button>
-        <nav className={styles.sidebarNav} aria-label={it.navPrimary}>
-          <NavList items={items} pathname={pathname} />
+        <nav className={styles.sidebarNav} aria-label={copy.navPrimary}>
+          <NavList items={items} pathname={pathname} unreadLabel={copy.unreadBadge} />
         </nav>
         <div className={styles.sidebarFoot}>
-          <SessionBlock email={email} />
+          <SessionBlock email={email} signedInAs={copy.navSignedInAs} logout={copy.logout} />
         </div>
       </header>
 
       {focusMode ? null : (
-        <nav className={styles.tabbar} aria-label={it.navTabs}>
+        <nav className={styles.tabbar} aria-label={copy.navTabs}>
           {tabs.map((item) => {
             const active = isItemActive(item, pathname);
             return (
@@ -280,7 +326,7 @@ export function AppNav({ brandHref, email, ...flags }: Props) {
                   {item.badge ? <span className={styles.tabBadge} aria-hidden="true">{item.badge > 9 ? "9+" : item.badge}</span> : null}
                 </span>
                 <span className={styles.tabLabel}>{item.short}</span>
-                {item.badge ? <span className="srOnly">{`${it.unreadBadge}: ${item.badge}`}</span> : null}
+                {item.badge ? <span className="srOnly">{`${copy.unreadBadge}: ${item.badge}`}</span> : null}
               </NavLink>
             );
           })}
@@ -291,7 +337,7 @@ export function AppNav({ brandHref, email, ...flags }: Props) {
         <button
           type="button"
           className={styles.backdrop}
-          aria-label={it.navClose}
+          aria-label={copy.navClose}
           tabIndex={-1}
           onClick={() => setOpen(false)}
         />
@@ -301,19 +347,24 @@ export function AppNav({ brandHref, email, ...flags }: Props) {
           className={styles.sheet}
           role="dialog"
           aria-modal="true"
-          aria-label={it.navMenu}
+          aria-label={copy.navMenu}
         >
           <div className={styles.sheetHead}>
-            <span className={styles.sheetTitle}>{it.navMenu}</span>
+            <span className={styles.sheetTitle}>{copy.navMenu}</span>
             <button type="button" className={styles.sheetClose} onClick={() => setOpen(false)}>
               <Icon name="close" size={20} />
-              <span className="srOnly">{it.navClose}</span>
+              <span className="srOnly">{copy.navClose}</span>
             </button>
           </div>
-          <nav aria-label={it.navPrimary}>
-            <NavList items={items} pathname={pathname} onNavigate={() => setOpen(false)} />
+          <nav aria-label={copy.navPrimary}>
+            <NavList
+              items={items}
+              pathname={pathname}
+              unreadLabel={copy.unreadBadge}
+              onNavigate={() => setOpen(false)}
+            />
           </nav>
-          <SessionBlock email={email} />
+          <SessionBlock email={email} signedInAs={copy.navSignedInAs} logout={copy.logout} />
         </div>
       </div>
     </>

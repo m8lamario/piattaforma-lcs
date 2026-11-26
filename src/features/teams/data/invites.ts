@@ -650,6 +650,11 @@ export async function getTeamForActor(teamId: string) {
           playerProfile: { select: { firstName: true, lastName: true } },
         },
       },
+      payments: {
+        where: { registrationId: null, status: { in: ["SUCCEEDED", "PENDING"] } },
+        orderBy: { createdAt: "desc" },
+        select: { id: true, status: true, amount: true },
+      },
     },
   });
 }

@@ -3,7 +3,6 @@ import { redirect } from "next/navigation";
 import { getTeamForActor } from "@/features/teams/data/invites";
 import { requireRepresentativeTeamId } from "@/features/teams/actions";
 import { authorize } from "@/shared/authz/authorize";
-import { prisma } from "@/shared/lib/prisma";
 import { TEAM_COOKIE } from "@/shared/config/app";
 import { formatEuro, resolveTeamFee } from "@/features/payments/domain/fees";
 import { TeamPaymentForm } from "@/features/payments/ui/TeamPaymentForm";
@@ -44,9 +43,8 @@ export default async function TeamPage({ searchParams }: Props) {
   const query = await searchParams;
   const filter = parseRosterFilter(query.stato);
 
-  const [team, teamPayment, roster, teams] = await Promise.all([
+  const [team, roster, teams] = await Promise.all([
     getTeamForActor(teamId),
-    prisma.payment.findFirst({ where: { teamId, registrationId: null, status: "SUCCEEDED" }, select: { id: true } }),
     listTeamRoster(teamId),
     listTeamsByIds(teamIds),
   ]);
@@ -160,7 +158,7 @@ export default async function TeamPage({ searchParams }: Props) {
             <Panel className={styles.sideCard}>
               <TeamPaymentForm
                 teamId={team.id}
-                covered={Boolean(teamPayment)}
+                covered={team.payments.some((payment) => payment.status === "SUCCEEDED")}
                 amountLabel={teamFee.status === "ready" ? formatEuro(teamFee.cents) : null}
                 missing={teamFee.status === "missing"}
                 currency={team.edition.currency}
