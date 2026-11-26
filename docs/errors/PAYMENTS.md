@@ -1,6 +1,6 @@
 # PAYMENTS
 
-Doppio click / tab chiuso a metà: si **riusa** il Payment `PENDING` (nuovo checkout sullo stesso id), non se ne crea un secondo. SUCCEEDED copre (OD-007). Webhook duplicato: idempotente o `PAYMENT_WEBHOOK_DUPLICATE`.
+Doppio click / tab chiuso a metà: si **riusa** il Payment `PENDING` (nuovo checkout sullo stesso id), non se ne crea un secondo. Se la quota è cambiata, il `PENDING` segue l’importo attuale dopo aver scaduto la sessione Stripe precedente. SUCCEEDED copre (OD-007). Webhook duplicato: idempotente o `PAYMENT_WEBHOOK_DUPLICATE`.
 
 | Codice | Categoria | Significato | Causa | Cosa vede l'utente | Recovery | Dove viene generato |
 |---|---|---|---|---|---|---|

@@ -2,7 +2,9 @@ import { auth } from "@/auth";
 import { applyProviderResult, getPaymentById } from "@/features/payments/data/payments";
 import {
   loadPlayerWorkspace,
+  loadPlayerWorkspacesForTeam,
   persistRegistrationStatus,
+  type PlayerWorkspace,
 } from "@/features/registrations/data/workspace";
 import { authorize } from "@/shared/authz/authorize";
 import { getActorByUserId } from "@/shared/authz/getActor";
@@ -12,11 +14,23 @@ import { prisma } from "@/shared/lib/prisma";
 import { userAgentAndIp } from "@/shared/lib/request-guard";
 import { loadActiveAdminView } from "@/shared/lib/readOnlyGuard";
 
-async function persistByUser(userId: string) {
-  const workspace = await loadPlayerWorkspace(userId);
-  if (workspace) {
-    await persistRegistrationStatus(workspace.registration.id, workspace.projectedStatus);
-  }
+type LoadedPayment = NonNullable<Awaited<ReturnType<typeof getPaymentById>>>;
+
+const paymentNotice = {
+  type: "PAYMENT_SUCCEEDED",
+  title: "Pagamento ricevuto",
+  body: "Il pagamento della quota risulta coperto. Nessun dato della carta è stato salvato su questa piattaforma.",
+};
+
+function persistWorkspace(workspace: PlayerWorkspace) {
+  return persistRegistrationStatus(workspace.registration.id, workspace.projectedStatus, {
+    status: workspace.registration.status,
+    userId: workspace.user.id,
+  });
+}
+
+function nextFor(payment: LoadedPayment) {
+  return payment.teamId && !payment.registrationId ? "/squadra" : "/area";
 }
 
 export async function completeStubPayment(paymentId: string) {
@@ -55,42 +69,39 @@ export async function completeStubPayment(paymentId: string) {
   if (!result.ok && result.reason === "conflict") {
     return {
       ok: true as const,
-      next: payment.teamId && !payment.registrationId ? "/squadra" : "/area",
+      next: nextFor(payment),
+      payment,
+      workspace: null as PlayerWorkspace | null,
     };
   }
   if (!result.ok) {
     return { ok: false as const, reason: "conflict" as const };
   }
 
-  const paymentNotice = {
-    type: "PAYMENT_SUCCEEDED",
-    title: "Pagamento ricevuto",
-    body: "Il pagamento della quota risulta coperto. Nessun dato della carta è stato salvato su questa piattaforma.",
-  };
+  const succeeded = { ...payment, status: "SUCCEEDED" as const };
+  let workspace: PlayerWorkspace | null = null;
 
-  if (payment.registration?.playerProfileId) {
-    const profile = await prisma.playerProfile.findUnique({
-      where: { id: payment.registration.playerProfileId },
-      select: { userId: true },
-    });
-    if (profile) {
-      await Promise.all([
-        persistByUser(profile.userId),
-        createNotification({ userId: profile.userId, ...paymentNotice }),
-      ]);
-    }
+  const playerUserId = payment.registration?.playerProfile.userId;
+  if (playerUserId) {
+    workspace = await loadPlayerWorkspace(playerUserId);
+    await Promise.all([
+      workspace ? persistWorkspace(workspace) : Promise.resolve(),
+      createNotification({ userId: playerUserId, ...paymentNotice }),
+    ]);
   } else if (payment.teamId) {
-    const members = await prisma.registration.findMany({
-      where: { teamId: payment.teamId },
-      select: { playerProfile: { select: { userId: true } } },
-    });
-    const userIds = [...new Set(members.map((row) => row.playerProfile.userId))];
-    await Promise.all(
-      userIds.map(async (userId) => {
-        await persistByUser(userId);
-        await createNotification({ userId, ...paymentNotice });
+    const [workspaces, members] = await Promise.all([
+      loadPlayerWorkspacesForTeam(payment.teamId),
+      prisma.registration.findMany({
+        where: { teamId: payment.teamId },
+        select: { playerProfile: { select: { userId: true } } },
       }),
-    );
+    ]);
+    const userIds = [...new Set(members.map((row) => row.playerProfile.userId))];
+    await Promise.all([
+      ...workspaces.map((row) => persistWorkspace(row)),
+      ...userIds.map((userId) => createNotification({ userId, ...paymentNotice })),
+    ]);
+    workspace = workspaces.find((row) => row.user.id === session.user.id) ?? null;
   }
   const trace = await userAgentAndIp();
   await writeAuditLog({
@@ -103,6 +114,8 @@ export async function completeStubPayment(paymentId: string) {
 
   return {
     ok: true as const,
-    next: payment.teamId && !payment.registrationId ? "/squadra" : "/area",
+    next: nextFor(payment),
+    payment: succeeded,
+    workspace,
   };
 }

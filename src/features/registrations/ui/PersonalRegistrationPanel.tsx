@@ -3,33 +3,10 @@ import type { PublicationFlags } from "@/features/consents/domain/boxes";
 import { PublicationChips } from "@/features/consents/ui/PublicationChips";
 import { ChecklistLinks } from "@/features/registrations/ui/ChecklistLinks";
 import { ProgressMeter } from "@/shared/ui/ProgressMeter";
+import { registrationStatusLabel, registrationStatusTone } from "@/features/registrations/domain/statusCopy";
 import { StatusChip, type StatusTone } from "@/shared/ui/StatusChip";
 import { it } from "@/shared/i18n/it";
 import styles from "./PersonalRegistrationPanel.module.css";
-
-const STATUS_COPY: Record<RegistrationStatus, string> = {
-  INVITED: it.statusINVITED,
-  ACCOUNT_CREATED: it.statusACCOUNT_CREATED,
-  IN_PROGRESS: it.statusIN_PROGRESS,
-  PENDING_REVIEW: it.statusPENDING_REVIEW,
-  CHANGES_REQUESTED: it.statusCHANGES_REQUESTED,
-  PAYMENT_PENDING: it.statusPAYMENT_PENDING,
-  APPROVED: it.statusAPPROVED,
-  WITHDRAWN: it.statusWITHDRAWN,
-  REMOVED: it.statusREMOVED,
-};
-
-const STATUS_TONE: Record<RegistrationStatus, StatusTone> = {
-  INVITED: "todo",
-  ACCOUNT_CREATED: "todo",
-  IN_PROGRESS: "attention",
-  PENDING_REVIEW: "attention",
-  CHANGES_REQUESTED: "attention",
-  PAYMENT_PENDING: "attention",
-  APPROVED: "complete",
-  WITHDRAWN: "neutral",
-  REMOVED: "neutral",
-};
 
 const MEDICAL: Record<MedicalEvidence, string> = {
   none: it.rosterMedicalNone,
@@ -74,7 +51,7 @@ export function PersonalRegistrationPanel({
   return (
     <div className={styles.panel}>
       <div className={styles.chips}>
-        <StatusChip tone={STATUS_TONE[status]}>{STATUS_COPY[status]}</StatusChip>
+        <StatusChip tone={registrationStatusTone(status)}>{registrationStatusLabel(status)}</StatusChip>
         <StatusChip tone="neutral">{category === "STAFF" ? it.categoryStaff : it.categoryPlayer}</StatusChip>
         {category === "STAFF" ? null : (
           <>

@@ -4,6 +4,7 @@ import {
   editionTeamsToCsv,
   isPlayerAccountStarted,
   isPlayerRegistrationCompleted,
+  summarizeEditionTeamGroups,
   summarizeEditionTeamPlayers,
   toEditionTeamRows,
 } from "./edition-teams";
@@ -28,6 +29,13 @@ describe("conteggi giocatori edizione", () => {
         { category: "STAFF", status: "APPROVED" },
       ]),
     ).toEqual({ accountsStarted: 4, registrationsCompleted: 1 });
+    expect(
+      summarizeEditionTeamGroups([
+        { category: "PLAYER", status: "ACCOUNT_CREATED", count: 3 },
+        { category: "PLAYER", status: "APPROVED", count: 2 },
+        { category: "STAFF", status: "APPROVED", count: 4 },
+      ]),
+    ).toEqual({ accountsStarted: 5, registrationsCompleted: 2 });
   });
 });
 

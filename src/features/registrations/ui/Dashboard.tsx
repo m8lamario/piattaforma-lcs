@@ -12,6 +12,7 @@ import { NextStepHero } from "@/shared/ui/NextStepHero";
 import { PageHeader } from "@/shared/ui/PageHeader";
 import { Panel } from "@/shared/ui/Panel";
 import { ProgressMeter } from "@/shared/ui/ProgressMeter";
+import { registrationStatusLabel, registrationStatusTone } from "@/features/registrations/domain/statusCopy";
 import { StatusChip, type StatusTone } from "@/shared/ui/StatusChip";
 import { IdentityConflictPanel } from "@/features/players/ui/IdentityConflictPanel";
 import { GuardianEmailAlert } from "@/features/consents/ui/GuardianEmailAlert";
@@ -26,30 +27,6 @@ import { ChecklistLinks } from "./ChecklistLinks";
 import { REQUIREMENT_STEP } from "./wizardCopy";
 import fields from "@/shared/ui/form.module.css";
 import styles from "./Dashboard.module.css";
-
-const STATUS_COPY: Record<RegistrationStatus, string> = {
-  INVITED: it.statusINVITED,
-  ACCOUNT_CREATED: it.statusACCOUNT_CREATED,
-  IN_PROGRESS: it.statusIN_PROGRESS,
-  PENDING_REVIEW: it.statusPENDING_REVIEW,
-  CHANGES_REQUESTED: it.statusCHANGES_REQUESTED,
-  PAYMENT_PENDING: it.statusPAYMENT_PENDING,
-  APPROVED: it.statusAPPROVED,
-  WITHDRAWN: it.statusWITHDRAWN,
-  REMOVED: it.statusREMOVED,
-};
-
-const STATUS_TONE: Record<RegistrationStatus, StatusTone> = {
-  INVITED: "todo",
-  ACCOUNT_CREATED: "todo",
-  IN_PROGRESS: "attention",
-  PENDING_REVIEW: "attention",
-  CHANGES_REQUESTED: "attention",
-  PAYMENT_PENDING: "attention",
-  APPROVED: "complete",
-  WITHDRAWN: "neutral",
-  REMOVED: "neutral",
-};
 
 const SEGMENT_TONE: Record<ChecklistItem["status"], StatusTone> = {
   complete: "complete",
@@ -179,7 +156,7 @@ export function RegistrationDashboard({
     : approved
       ? it.statusAPPROVED
       : closed
-        ? STATUS_COPY[status]
+        ? registrationStatusLabel(status)
         : hero.code === "DONE"
           ? it.statusPENDING_REVIEW
           : it.repNextKicker;
@@ -195,7 +172,7 @@ export function RegistrationDashboard({
         description={`${category === "STAFF" ? it.categoryStaff : it.categoryPlayer} · ${it.teamTitle}: ${teamName}`}
         aside={
           <div className={styles.chips}>
-            <StatusChip tone={STATUS_TONE[status]}>{STATUS_COPY[status]}</StatusChip>
+            <StatusChip tone={registrationStatusTone(status)}>{registrationStatusLabel(status)}</StatusChip>
             {category === "PLAYER" ? (
               <StatusChip tone={sportEligible ? "complete" : "attention"}>
                 {sportEligible ? it.medicalEligibilityYes : it.medicalEligibilityNo}

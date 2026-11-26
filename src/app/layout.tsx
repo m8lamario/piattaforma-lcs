@@ -12,7 +12,7 @@ import { it } from "@/shared/i18n/it";
 import { DEFAULT_THEME, THEME_BOOTSTRAP_SCRIPT } from "@/shared/ui/theme";
 
 const machton = localFont({
-  src: "./fonts/Machton.ttf",
+  src: "./fonts/Machton.woff2",
   variable: "--font-machton",
   weight: "400",
   style: "normal",

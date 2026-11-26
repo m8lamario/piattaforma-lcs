@@ -1,7 +1,7 @@
 import { Prisma } from "@generated/client";
 import type { Prisma as PrismaTypes } from "@generated/client";
 import { billingFill, type BillingSnapshot } from "@/features/payments/domain/billing";
-import { centsToDecimalString } from "@/features/payments/domain/fees";
+import { centsToDecimalString, decimalToCents } from "@/features/payments/domain/fees";
 import { webhookApplyDecision } from "@/features/payments/domain/integrity";
 import { paymentProviderName } from "@/shared/config/drivers";
 import { paymentScopeViolation } from "@/shared/domain/hierarchy";
@@ -89,7 +89,26 @@ export async function claimCheckoutPayment(input: {
       orderBy: { createdAt: "desc" },
     });
     if (pending) {
-      return { ok: true as const, reused: true, payment: pending };
+      if (decimalToCents(pending.amount) === input.amountCents) {
+        return { ok: true as const, reused: true, payment: pending };
+      }
+      await tx.payment.updateMany({
+        where: { ...where, status: "PENDING" },
+        data: { amount: new Prisma.Decimal(centsToDecimalString(input.amountCents)) },
+      });
+      const latest = await tx.payment.findFirst({
+        where: { ...where, status: "PENDING" },
+        orderBy: { createdAt: "desc" },
+      });
+      if (latest) {
+        return { ok: true as const, reused: true, payment: latest };
+      }
+      const covered = await tx.payment.findFirst({
+        where: { ...where, status: "SUCCEEDED" },
+      });
+      if (covered) {
+        return { ok: false as const, reason: "covered" as const, payment: covered };
+      }
     }
     const payment = await tx.payment.create({
       data: {
@@ -110,7 +129,20 @@ export async function claimCheckoutPayment(input: {
 export async function getPaymentById(id: string) {
   return prisma.payment.findUnique({
     where: { id },
-    include: { registration: true, team: true },
+    select: {
+      id: true,
+      payerUserId: true,
+      registrationId: true,
+      teamId: true,
+      status: true,
+      providerPaymentId: true,
+      registration: {
+        select: {
+          teamId: true,
+          playerProfile: { select: { userId: true } },
+        },
+      },
+    },
   });
 }
 

@@ -1,5 +1,4 @@
 import { Prisma } from "@generated/client";
-import { decimalToCents } from "@/features/payments/domain/fees";
 import { isMinor, needsMediaAgreement } from "@/features/players/domain/age";
 import { notifyRegistrationApproved } from "@/features/notifications/data/notifications";
 import {
@@ -49,129 +48,159 @@ import { logger } from "@/shared/lib/logger";
 import { medicalEvidenceFromStatus } from "@/features/documents/domain/inspection";
 import { parseMedicalCertificateKind } from "@/features/documents/domain/medicalRequirement";
 
+const playerWorkspaceSelect = {
+  id: true,
+  status: true,
+  teamId: true,
+  editionId: true,
+  category: true,
+  createdAt: true,
+  playerProfile: {
+    select: {
+      id: true,
+      firstName: true,
+      lastName: true,
+      birthDate: true,
+      fiscalCode: true,
+      phone: true,
+      shirtSize: true,
+      metadata: true,
+      user: { select: { id: true, email: true, emailVerified: true } },
+      guardians: {
+        orderBy: { createdAt: "asc" as const },
+        select: {
+          firstName: true,
+          lastName: true,
+          relationship: true,
+          email: true,
+          phone: true,
+          kind: true,
+          soleResponsibility: true,
+          emailCorrectionUsed: true,
+        },
+      },
+    },
+  },
+  team: {
+    select: {
+      id: true,
+      name: true,
+      playerFeeCents: true,
+      staffFeeCents: true,
+      teamFeeCents: true,
+      payments: {
+        where: { registrationId: null, status: "SUCCEEDED" },
+        select: { id: true },
+        take: 1,
+      },
+    },
+  },
+  edition: {
+    select: {
+      name: true,
+      paymentMode: true,
+      currency: true,
+      playerFeeAmount: true,
+      teamFeeAmount: true,
+      staffFeeAmount: true,
+      isActive: true,
+      startsAt: true,
+      registrationOpensAt: true,
+      registrationClosesAt: true,
+      medicalCertificateKind: true,
+      competition: { select: { name: true } },
+      requirements: { select: { code: true, required: true, appliesTo: true } },
+    },
+  },
+  documents: {
+    where: { status: { not: "REPLACED" } },
+    orderBy: { uploadedAt: "desc" as const },
+    select: {
+      id: true,
+      status: true,
+      originalFilename: true,
+      uploadedAt: true,
+      expiresAt: true,
+      blobPurgedAt: true,
+      type: { select: { code: true } },
+      reviews: {
+        orderBy: { createdAt: "desc" as const },
+        take: 1,
+        select: { decision: true, reason: true },
+      },
+    },
+  },
+  payments: {
+    orderBy: { createdAt: "desc" as const },
+    select: { status: true, amount: true },
+  },
+  consentRecords: {
+    orderBy: { acceptedAt: "desc" as const },
+    select: {
+      legalDocumentVersionId: true,
+      accepted: true,
+      legalDocumentVersion: {
+        select: {
+          isCurrent: true,
+          legalDocument: { select: { slug: true } },
+        },
+      },
+    },
+  },
+  consentChoices: {
+    orderBy: { createdAt: "asc" as const },
+    select: { code: true, accepted: true, value: true, createdAt: true },
+  },
+  consentTokens: {
+    where: { purpose: "MARKETING", usedAt: { not: null } },
+    select: { usedAt: true },
+    take: 5,
+  },
+  authorizations: {
+    where: { authorizationType: "ENROLLMENT" },
+    orderBy: { requestedAt: "desc" as const },
+    take: 3,
+    select: { id: true, status: true, guardianId: true, authorizationType: true },
+  },
+} satisfies Prisma.RegistrationSelect;
+
+type PlayerWorkspaceRow = Prisma.RegistrationGetPayload<{ select: typeof playerWorkspaceSelect }>;
+
 export async function loadPlayerWorkspace(userId: string) {
   const [row, partnersPublished] = await Promise.all([
     prisma.registration.findFirst({
       where: { playerProfile: { userId } },
       orderBy: { createdAt: "desc" },
-      select: {
-        id: true,
-        status: true,
-        teamId: true,
-        editionId: true,
-        category: true,
-        playerProfile: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            birthDate: true,
-            fiscalCode: true,
-            phone: true,
-            shirtSize: true,
-            metadata: true,
-            user: { select: { id: true, email: true, emailVerified: true } },
-            guardians: {
-              orderBy: { createdAt: "asc" as const },
-              select: {
-                firstName: true,
-                lastName: true,
-                relationship: true,
-                email: true,
-                phone: true,
-                kind: true,
-                soleResponsibility: true,
-                emailCorrectionUsed: true,
-              },
-            },
-          },
-        },
-        team: {
-          select: {
-            id: true,
-            name: true,
-            playerFeeCents: true,
-            staffFeeCents: true,
-            teamFeeCents: true,
-            payments: {
-              where: { registrationId: null, status: "SUCCEEDED" },
-              select: { id: true },
-              take: 1,
-            },
-          },
-        },
-        edition: {
-          select: {
-            name: true,
-            paymentMode: true,
-            currency: true,
-            playerFeeAmount: true,
-            teamFeeAmount: true,
-            staffFeeAmount: true,
-            isActive: true,
-            startsAt: true,
-            registrationOpensAt: true,
-            registrationClosesAt: true,
-            medicalCertificateKind: true,
-            competition: { select: { name: true } },
-            requirements: { select: { code: true, required: true, appliesTo: true } },
-          },
-        },
-        documents: {
-          where: { status: { not: "REPLACED" } },
-          orderBy: { uploadedAt: "desc" as const },
-          select: {
-            id: true,
-            status: true,
-            originalFilename: true,
-            uploadedAt: true,
-            expiresAt: true,
-            blobPurgedAt: true,
-            type: { select: { code: true } },
-            reviews: {
-              orderBy: { createdAt: "desc" as const },
-              take: 1,
-              select: { decision: true, reason: true },
-            },
-          },
-        },
-        payments: {
-          orderBy: { createdAt: "desc" as const },
-          select: { status: true, amount: true },
-        },
-        consentRecords: {
-          orderBy: { acceptedAt: "desc" as const },
-          select: {
-            legalDocumentVersionId: true,
-            accepted: true,
-            legalDocumentVersion: {
-              select: {
-                isCurrent: true,
-                legalDocument: { select: { slug: true } },
-              },
-            },
-          },
-        },
-        consentChoices: {
-          orderBy: { createdAt: "asc" as const },
-          select: { code: true, accepted: true, value: true, createdAt: true },
-        },
-        consentTokens: {
-          where: { purpose: "MARKETING", usedAt: { not: null } },
-          select: { usedAt: true },
-          take: 5,
-        },
-        authorizations: {
-          where: { authorizationType: "ENROLLMENT" },
-          orderBy: { requestedAt: "desc" as const },
-          take: 3,
-          select: { id: true, status: true, guardianId: true, authorizationType: true },
-        },
-      },
+      select: playerWorkspaceSelect,
     }),
     isPartnerBoxVisible(),
   ]);
+  return toPlayerWorkspace(row, partnersPublished);
+}
 
+/** Latest registration per user, same projector as `loadPlayerWorkspace`. */
+export async function loadPlayerWorkspacesForTeam(teamId: string) {
+  const [rows, partnersPublished] = await Promise.all([
+    prisma.registration.findMany({
+      where: { playerProfile: { registrations: { some: { teamId } } } },
+      orderBy: { createdAt: "desc" },
+      select: playerWorkspaceSelect,
+    }),
+    isPartnerBoxVisible(),
+  ]);
+  const latest = new Map<string, PlayerWorkspaceRow>();
+  for (const row of rows) {
+    const userId = row.playerProfile.user?.id;
+    if (!userId || latest.has(userId)) continue;
+    latest.set(userId, row);
+  }
+  return [...latest.values()].flatMap((row) => {
+    const workspace = toPlayerWorkspace(row, partnersPublished);
+    return workspace ? [workspace] : [];
+  });
+}
+
+function toPlayerWorkspace(row: PlayerWorkspaceRow | null, partnersPublished: boolean) {
   if (!row?.playerProfile.user || !row.team || !row.edition?.competition) {
     return null;
   }
@@ -343,7 +372,6 @@ export async function loadPlayerWorkspace(userId: string) {
       playerFeeCents: team.playerFeeCents,
       staffFeeCents: team.staffFeeCents,
       teamFeeCents: team.teamFeeCents,
-      pendingPaymentCents: decimalToCents(payments.find((payment) => payment.status === "PENDING")?.amount),
       isActive: edition.isActive,
       startsAt: edition.startsAt,
       registrationOpensAt: edition.registrationOpensAt,
@@ -379,14 +407,19 @@ export type PlayerWorkspace = NonNullable<Awaited<ReturnType<typeof loadPlayerWo
 export async function persistRegistrationStatus(
   registrationId: string,
   status: RegistrationStatus,
+  known?: { status: string; userId: string },
 ) {
-  const current = await prisma.registration.findUnique({
-    where: { id: registrationId },
-    select: {
-      status: true,
-      playerProfile: { select: { userId: true } },
-    },
-  });
+  const current =
+    known ??
+    (await prisma.registration.findUnique({
+      where: { id: registrationId },
+      select: {
+        status: true,
+        playerProfile: { select: { userId: true } },
+      },
+    }).then((row) =>
+      row ? { status: row.status, userId: row.playerProfile.userId } : null,
+    ));
   if (current && isTerminalRegistrationStatus(current.status)) return;
   await prisma.registration.update({
     where: { id: registrationId },
@@ -394,7 +427,7 @@ export async function persistRegistrationStatus(
   });
   if (current && current.status !== "APPROVED" && status === "APPROVED") {
     try {
-      await notifyRegistrationApproved(current.playerProfile.userId, registrationId);
+      await notifyRegistrationApproved(current.userId, registrationId);
     } catch {
       logger.error("notification.dispatch_failed", { type: "REGISTRATION_APPROVED" });
     }

@@ -7,6 +7,9 @@ export const stubPaymentAdapter: PaymentAdapter = {
       redirectUrl: input.successUrl,
     };
   },
+  async expireCheckout() {
+    return { status: "expired" as const };
+  },
   async parseWebhook() {
     return {
       provider: "stub",

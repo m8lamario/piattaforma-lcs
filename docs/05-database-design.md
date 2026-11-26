@@ -218,7 +218,7 @@ Mai un flag denormalizzato `privacyAccepted` sul User come unica prova.
 - providerPaymentId, providerSessionId
 - paidAt, failureCode, receiptUrl nullable
 - indirizzo di **fatturazione** (`billingName`, `billingEmail`, `billingLine1`, `billingLine2`, `billingPostalCode`, `billingCity`, `billingState`, `billingCountry`): solo ciò che Stripe conferma nel webhook di un pagamento riuscito. Non è la residenza. La residenza non è nel modulo di iscrizione e non si copia dalla fatturazione.
-- `amount` è lo snapshot addebitato. Un cambio di quota non ricalcola i pagamenti già creati: un `PENDING` si riusa con il suo importo, un `SUCCEEDED` resta quello pagato.
+- `amount` è lo snapshot addebitato. Un `PENDING` segue la quota corrente al prossimo avvio del checkout; un `SUCCEEDED` e un bonifico restano l’importo incassato.
 - `User.stripeCustomerId` opzionale, per non chiedere di nuovo nome ed email già presenti in anagrafica
 - raw webhook **non** si salva intero se contiene PII; si salva event id + tipo
 

@@ -1,14 +1,12 @@
-"use client";
-
 import Link from "next/link";
-import { useActionState } from "react";
 import { PublicationChips } from "@/features/consents/ui/PublicationChips";
 import { shirtSizeLabel } from "@/features/players/domain/shirtSize";
+import { registrationStatusLabel } from "@/features/registrations/domain/statusCopy";
 import { it } from "@/shared/i18n/it";
 import type { RosterRow } from "@/features/teams/domain/roster";
-import { nudgeRegistrationAction, updateRosterRowAction } from "@/features/teams/actions";
+import { updateRosterRowAction } from "@/features/teams/actions";
+import { NudgeForm } from "@/features/teams/ui/NudgeForm";
 import { RemovePlayerForm } from "@/features/teams/ui/RemovePlayerForm";
-import { ActionError } from "@/shared/ui/ActionError";
 import { Avatar } from "@/shared/ui/Avatar";
 import { Icon } from "@/shared/ui/Icon";
 import { PendingSubmitButton } from "@/shared/ui/PendingSubmitButton";
@@ -30,18 +28,6 @@ const MEDICAL_TONE: Record<RosterRow["medicalStatus"], StatusTone> = {
   approved: "complete",
   rejected: "danger",
   expired: "danger",
-};
-
-const REG_COPY: Record<string, string> = {
-  INVITED: it.statusINVITED,
-  ACCOUNT_CREATED: it.statusACCOUNT_CREATED,
-  IN_PROGRESS: it.statusIN_PROGRESS,
-  PENDING_REVIEW: it.statusPENDING_REVIEW,
-  CHANGES_REQUESTED: it.statusCHANGES_REQUESTED,
-  PAYMENT_PENDING: it.statusPAYMENT_PENDING,
-  APPROVED: it.statusAPPROVED,
-  WITHDRAWN: it.statusWITHDRAWN,
-  REMOVED: it.statusREMOVED,
 };
 
 type Flag = { key: string; tone: StatusTone; label: string };
@@ -85,24 +71,6 @@ function openFlags(row: RosterRow, staff: boolean): Flag[] {
   return flags.sort((a, b) => (TONE_RANK[a.tone] ?? 3) - (TONE_RANK[b.tone] ?? 3));
 }
 
-function NudgeForm({ teamId, userId }: { teamId: string; userId: string }) {
-  const [state, action, pending] = useActionState(nudgeRegistrationAction, undefined);
-  return (
-    <form action={action} className={styles.inlineForm}>
-      <input type="hidden" name="teamId" value={teamId} />
-      <input type="hidden" name="userId" value={userId} />
-      <PendingSubmitButton idle={it.nudge} pendingLabel={it.nudging} variant="secondary" icon="bell" disabled={pending} />
-      {state && "ok" in state && state.ok ? (
-        <span className={styles.sent} role="status">
-          <Icon name="check" size={16} />
-          {it.rosterNudgeSent}
-        </span>
-      ) : null}
-      {state && "error" in state ? <ActionError error={state.error} code={state.code} /> : null}
-    </form>
-  );
-}
-
 type Props = {
   teamId: string;
   rows: RosterRow[];
@@ -137,7 +105,7 @@ export function TeamRoster({ teamId, rows, canEditRoster = true, emptyLabel, emp
         const hidden = flags.length - visibleFlags.length;
         const isClosed = closed(row);
         const meta = [
-          REG_COPY[row.registrationStatus] ?? row.registrationStatus,
+          registrationStatusLabel(row.registrationStatus),
           row.jerseyNumber ? `#${row.jerseyNumber}` : null,
           row.rosterRole,
         ]
@@ -180,7 +148,7 @@ export function TeamRoster({ teamId, rows, canEditRoster = true, emptyLabel, emp
                 <section className={styles.block}>
                   <h3>{it.rosterDetailState}</h3>
                   <div className={styles.chips}>
-                    <StatusChip tone="neutral">{REG_COPY[row.registrationStatus] ?? row.registrationStatus}</StatusChip>
+                    <StatusChip tone="neutral">{registrationStatusLabel(row.registrationStatus)}</StatusChip>
                     {!staff ? (
                       <StatusChip tone={row.sportEligible ? "complete" : "attention"}>
                         {row.sportEligible ? it.rosterEligible : it.rosterNotEligible}
@@ -267,7 +235,11 @@ export function TeamRoster({ teamId, rows, canEditRoster = true, emptyLabel, emp
                   <section className={styles.block}>
                     <h3>{it.rosterDetailReminder}</h3>
                     <p className={styles.help}>{it.rosterDetailReminderHelp}</p>
-                    <NudgeForm teamId={teamId} userId={row.userId} />
+                    <NudgeForm
+                      teamId={teamId}
+                      userId={row.userId}
+                      copy={{ nudge: it.nudge, nudging: it.nudging, sent: it.rosterNudgeSent }}
+                    />
                   </section>
                 ) : null}
 

@@ -14,6 +14,10 @@ describe("adapter stub", () => {
     expect(result.redirectUrl).toBe("https://example.test/ok");
   });
 
+  it("lo stub non tiene una sessione da scadere", async () => {
+    await expect(paymentAdapter.expireCheckout("stub_reg_1")).resolves.toEqual({ status: "expired" });
+  });
+
   it("restituisce una signed URL non pubblica di produzione", async () => {
     const stored = await storageAdapter.putPrivate({
       key: "documents/doc_1",

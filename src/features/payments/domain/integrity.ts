@@ -32,6 +32,16 @@ export function feeCheckoutBlocker(input: {
   return null;
 }
 
+export function shouldExpireOpenCheckout(input: {
+  pendingCents: number | null;
+  liveCents: number;
+  provider: string | null | undefined;
+  sessionId: string | null | undefined;
+}) {
+  if (input.pendingCents == null || input.pendingCents === input.liveCents) return false;
+  return input.provider === "stripe" && Boolean(input.sessionId);
+}
+
 export type PaymentStatus = "PENDING" | "SUCCEEDED" | "FAILED" | "REFUNDED";
 
 export type WebhookApplyDecision = "apply" | "idempotent" | "duplicate" | "conflict" | "not_found";

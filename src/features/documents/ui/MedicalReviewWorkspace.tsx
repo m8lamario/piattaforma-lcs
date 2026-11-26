@@ -31,7 +31,8 @@ import { ReviewForm } from "@/features/documents/ui/ReviewForm";
 import { useReviewFileCache } from "@/features/documents/ui/useReviewFileCache";
 import { Icon } from "@/shared/ui/Icon";
 import { Button } from "@/shared/ui/Button";
-import { StatusChip, type StatusTone } from "@/shared/ui/StatusChip";
+import { documentStatusLabel, documentStatusTone } from "@/features/documents/domain/statusCopy";
+import { StatusChip } from "@/shared/ui/StatusChip";
 import { it } from "@/shared/i18n/it";
 import styles from "@/app/(hub)/admin/documenti/[id]/page.module.css";
 
@@ -43,22 +44,6 @@ type Props = {
   canOpen: boolean;
 };
 
-function statusLabel(status: string) {
-  if (status === "APPROVED") return it.statusDocumentAPPROVED;
-  if (status === "REJECTED") return it.statusDocumentREJECTED;
-  if (status === "EXPIRED") return it.statusDocumentEXPIRED;
-  if (status === "PREVALIDATED") return it.statusDocumentPREVALIDATED;
-  if (status === "PROCESSING") return it.statusDocumentPROCESSING;
-  if (status === "UPLOADED") return it.statusDocumentUPLOADED;
-  return it.statusDocumentPENDING_REVIEW;
-}
-
-function statusTone(status: string): StatusTone {
-  if (status === "APPROVED") return "complete";
-  if (status === "REJECTED") return "danger";
-  if (status === "PREVALIDATED") return "complete";
-  return "attention";
-}
 
 function anomalyLabel(code: string) {
   if (code === "UNREADABLE") return it.anomalyUNREADABLE;
@@ -328,7 +313,7 @@ export function MedicalReviewWorkspace({
               <h1>
                 {document.playerProfile.firstName} {document.playerProfile.lastName}
               </h1>
-              <StatusChip tone={statusTone(document.status)}>{statusLabel(document.status)}</StatusChip>
+              <StatusChip tone={documentStatusTone(document.status)}>{documentStatusLabel(document.status)}</StatusChip>
             </div>
             <p className={styles.meta}>
               {it.birthDate}:{" "}

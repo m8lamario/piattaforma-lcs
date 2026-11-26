@@ -5,13 +5,8 @@ import { auth } from "@/auth";
 import { paymentAdapter } from "@/shared/adapters";
 import { claimCheckoutPayment, rememberStripeCustomer } from "@/features/payments/data/payments";
 import { checkoutCustomerPrefill } from "@/features/payments/domain/billing";
-import {
-  applyPendingSnapshot,
-  decimalToCents,
-  resolveParticipantFee,
-  resolveTeamFee,
-} from "@/features/payments/domain/fees";
-import { feeCheckoutBlocker } from "@/features/payments/domain/integrity";
+import { decimalToCents, resolveParticipantFee, resolveTeamFee } from "@/features/payments/domain/fees";
+import { feeCheckoutBlocker, shouldExpireOpenCheckout } from "@/features/payments/domain/integrity";
 import { loadPlayerWorkspace } from "@/features/registrations/data/workspace";
 import { isPaymentCovered } from "@/features/registrations/domain/requirements";
 import { isRegistrationWindowOpen } from "@/features/registrations/domain/window";
@@ -25,6 +20,39 @@ import { getTeamForActor } from "@/features/teams/data/invites";
 import { prisma } from "@/shared/lib/prisma";
 import { userAgentAndIp } from "@/shared/lib/request-guard";
 import { appOrigin } from "@/shared/config/app";
+
+async function expireStaleCheckoutSessions(input: {
+  registrationId?: string;
+  teamId?: string;
+  liveCents: number;
+}) {
+  const where = input.registrationId
+    ? { registrationId: input.registrationId, status: "PENDING" as const }
+    : { teamId: input.teamId, registrationId: null, status: "PENDING" as const };
+  const pendings = await prisma.payment.findMany({
+    where,
+    orderBy: { createdAt: "desc" },
+    select: { id: true, amount: true, provider: true, providerSessionId: true },
+  });
+  for (const pending of pendings) {
+    const sessionId = pending.providerSessionId;
+    if (
+      !sessionId ||
+      !shouldExpireOpenCheckout({
+        pendingCents: decimalToCents(pending.amount),
+        liveCents: input.liveCents,
+        provider: pending.provider,
+        sessionId,
+      })
+    ) {
+      continue;
+    }
+    const expired = await paymentAdapter.expireCheckout(sessionId);
+    if (expired.status === "completed") {
+      redirect(`/area/pagamento/esito?paymentId=${pending.id}`);
+    }
+  }
+}
 
 export async function startPlayerCheckoutAction(): Promise<ActionFailure | void> {
   const denied = await viewWriteDenial();
@@ -79,22 +107,14 @@ export async function startPlayerCheckoutAction(): Promise<ActionFailure | void>
   if (!registration || registration.team.editionId !== registration.editionId) {
     return fail("PAYMENT_SCOPE_MISMATCH");
   }
-  const pending = await prisma.payment.findFirst({
-    where: { registrationId: registration.id, status: "PENDING" },
-    orderBy: { createdAt: "desc" },
-    select: { amount: true },
+  const presented = resolveParticipantFee({
+    category: registration.category,
+    paymentMode: registration.team.edition.paymentMode,
+    teamPlayerFeeCents: registration.team.playerFeeCents,
+    teamStaffFeeCents: registration.team.staffFeeCents,
+    editionPlayerFee: registration.team.edition.playerFeeAmount,
+    editionStaffFee: registration.team.edition.staffFeeAmount,
   });
-  const presented = applyPendingSnapshot(
-    decimalToCents(pending?.amount),
-    resolveParticipantFee({
-      category: registration.category,
-      paymentMode: registration.team.edition.paymentMode,
-      teamPlayerFeeCents: registration.team.playerFeeCents,
-      teamStaffFeeCents: registration.team.staffFeeCents,
-      editionPlayerFee: registration.team.edition.playerFeeAmount,
-      editionStaffFee: registration.team.edition.staffFeeAmount,
-    }),
-  );
   const blocked = feeCheckoutBlocker({
     covered: isPaymentCovered(workspace.evidence.payment),
     fee: presented,
@@ -103,6 +123,10 @@ export async function startPlayerCheckoutAction(): Promise<ActionFailure | void>
   if (blocked) return fail(blocked);
   if (presented.status !== "ready") return fail("PAYMENT_FEE_MISSING");
 
+  await expireStaleCheckoutSessions({
+    registrationId: registration.id,
+    liveCents: presented.cents,
+  });
   const claimed = await claimCheckoutPayment({
     editionId: registration.editionId,
     registrationId: registration.id,
@@ -185,23 +209,15 @@ export async function startTeamCheckoutAction(teamId: string): Promise<ActionFai
     return fail("REGISTRATION_WINDOW_CLOSED");
   }
 
-  const pending = await prisma.payment.findFirst({
-    where: { teamId: team.id, registrationId: null, status: "PENDING" },
-    orderBy: { createdAt: "desc" },
-    select: { amount: true },
-  });
   const already = await prisma.payment.findFirst({
     where: { teamId: team.id, registrationId: null, status: "SUCCEEDED" },
     select: { id: true },
   });
-  const presented = applyPendingSnapshot(
-    decimalToCents(pending?.amount),
-    resolveTeamFee({
-      paymentMode: team.edition.paymentMode,
-      teamFeeCents: team.teamFeeCents,
-      editionTeamFee: team.edition.teamFeeAmount,
-    }),
-  );
+  const presented = resolveTeamFee({
+    paymentMode: team.edition.paymentMode,
+    teamFeeCents: team.teamFeeCents,
+    editionTeamFee: team.edition.teamFeeAmount,
+  });
   const blocked = feeCheckoutBlocker({
     covered: Boolean(already),
     fee: presented,
@@ -210,6 +226,10 @@ export async function startTeamCheckoutAction(teamId: string): Promise<ActionFai
   if (blocked) return fail(blocked);
   if (presented.status !== "ready") return fail("PAYMENT_FEE_MISSING");
 
+  await expireStaleCheckoutSessions({
+    teamId: team.id,
+    liveCents: presented.cents,
+  });
   const claimed = await claimCheckoutPayment({
     editionId: team.editionId,
     teamId: team.id,

@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
 import {
-  applyPendingSnapshot,
   centsToDecimalString,
   decimalToCents,
   parseEuroToCents,
@@ -86,17 +85,17 @@ describe("quote squadra", () => {
     );
   });
 
-  it("conserva lo snapshot di un pagamento già avviato", () => {
-    const resolved = resolveParticipantFee({
-      category: "PLAYER",
-      paymentMode: "PLAYER",
-      teamPlayerFeeCents: 8000,
-      teamStaffFeeCents: null,
-      editionPlayerFee: edition.player,
-      editionStaffFee: edition.staff,
-    });
-    expect(applyPendingSnapshot(4000, resolved)).toEqual({ status: "ready", cents: 4000 });
-    expect(applyPendingSnapshot(null, resolved)).toEqual({ status: "ready", cents: 8000 });
+  it("usa la quota attuale anche se un pagamento precedente era a un altro importo", () => {
+    expect(
+      resolveParticipantFee({
+        category: "PLAYER",
+        paymentMode: "PLAYER",
+        teamPlayerFeeCents: 8000,
+        teamStaffFeeCents: null,
+        editionPlayerFee: edition.player,
+        editionStaffFee: edition.staff,
+      }),
+    ).toEqual({ status: "ready", cents: 8000 });
   });
 
   it("accetta solo euro positivi con al massimo due decimali", () => {

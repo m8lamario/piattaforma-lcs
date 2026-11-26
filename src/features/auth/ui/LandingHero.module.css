@@ -129,6 +129,23 @@
 .stageSlide {
   position: absolute;
   inset: 0;
+  opacity: 0;
+  transition: opacity 0.85s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.stageSlide[data-active],
+.stageSlide[data-lcp] {
+  opacity: 1;
+}
+
+.stageSlide[data-lcp] {
+  transition: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stageSlide {
+    transition: none;
+  }
 }
 
 .stage picture,

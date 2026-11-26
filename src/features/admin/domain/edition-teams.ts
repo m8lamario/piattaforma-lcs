@@ -52,21 +52,51 @@ export function isPlayerRegistrationCompleted(row: EditionTeamRegistration) {
   return row.category === "PLAYER" && row.status === "APPROVED";
 }
 
-export function summarizeEditionTeamPlayers(rows: EditionTeamRegistration[]) {
+export function summarizeEditionTeamGroups(
+  groups: Array<{ category: string; status: string; count: number }>,
+) {
   let accountsStarted = 0;
   let registrationsCompleted = 0;
-  for (const row of rows) {
-    if (isPlayerAccountStarted(row)) accountsStarted += 1;
-    if (isPlayerRegistrationCompleted(row)) registrationsCompleted += 1;
+  for (const group of groups) {
+    const row = { category: group.category, status: group.status };
+    if (isPlayerAccountStarted(row)) accountsStarted += group.count;
+    if (isPlayerRegistrationCompleted(row)) registrationsCompleted += group.count;
   }
   return { accountsStarted, registrationsCompleted };
+}
+
+export function summarizeEditionTeamPlayers(rows: EditionTeamRegistration[]) {
+  const groups = new Map<string, { category: string; status: string; count: number }>();
+  for (const row of rows) {
+    const key = `${row.category}|${row.status}`;
+    const current = groups.get(key) ?? { category: row.category, status: row.status, count: 0 };
+    current.count += 1;
+    groups.set(key, current);
+  }
+  return summarizeEditionTeamGroups([...groups.values()]);
 }
 
 function compareIt(a: string, b: string) {
   return a.localeCompare(b, "it", { sensitivity: "base" });
 }
 
-export function toEditionTeamRows(teams: EditionTeamSource[]): EditionTeamRow[] {
+export type EditionTeamCountGroup = {
+  teamId: string;
+  category: string;
+  status: string;
+  count: number;
+};
+
+export function toEditionTeamRowsFromCounts(
+  teams: Omit<EditionTeamSource, "registrations">[],
+  groups: EditionTeamCountGroup[],
+): EditionTeamRow[] {
+  const byTeam = new Map<string, Array<{ category: string; status: string; count: number }>>();
+  for (const group of groups) {
+    const list = byTeam.get(group.teamId) ?? [];
+    list.push(group);
+    byTeam.set(group.teamId, list);
+  }
   return teams
     .map((team) => ({
       id: team.id,
@@ -75,9 +105,30 @@ export function toEditionTeamRows(teams: EditionTeamSource[]): EditionTeamRow[] 
       teamName: team.name.trim(),
       representativeName: team.representative?.name?.trim() || team.contactName?.trim() || "",
       representativeEmail: team.representative?.email?.trim() || team.contactEmail?.trim() || "",
-      ...summarizeEditionTeamPlayers(team.registrations),
+      ...summarizeEditionTeamGroups(byTeam.get(team.id) ?? []),
     }))
     .sort((a, b) => compareIt(a.schoolName, b.schoolName) || compareIt(a.teamName, b.teamName));
+}
+
+export function toEditionTeamRows(teams: EditionTeamSource[]): EditionTeamRow[] {
+  return toEditionTeamRowsFromCounts(
+    teams,
+    teams.flatMap((team) => {
+      const grouped = new Map<string, EditionTeamCountGroup>();
+      for (const row of team.registrations) {
+        const key = `${row.category}|${row.status}`;
+        const current = grouped.get(key) ?? {
+          teamId: team.id,
+          category: row.category,
+          status: row.status,
+          count: 0,
+        };
+        current.count += 1;
+        grouped.set(key, current);
+      }
+      return [...grouped.values()];
+    }),
+  );
 }
 
 function csvCell(value: string) {

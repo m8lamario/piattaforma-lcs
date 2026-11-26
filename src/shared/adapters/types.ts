@@ -83,10 +83,15 @@ export type PaymentWebhookEvent = {
   } | null;
 };
 
+export type CheckoutExpireResult = {
+  status: "expired" | "already_expired" | "completed";
+};
+
 export interface PaymentAdapter {
   createCheckout(
     input: PaymentCheckoutInput,
   ): Promise<{ providerRef: string; redirectUrl: string; stripeCustomerId?: string | null }>;
+  expireCheckout(providerRef: string): Promise<CheckoutExpireResult>;
   parseWebhook(input: {
     headers: Headers;
     rawBody: string;

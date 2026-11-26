@@ -1,7 +1,7 @@
 import { cache } from "react";
 import { authorize } from "@/shared/authz/authorize";
 import {
-  getActorByUserId,
+  loadUserAccess,
   isStaff,
   isMedicalReviewer,
   isSuperAdmin,
@@ -9,30 +9,19 @@ import {
   representativeTeamIds,
 } from "@/shared/authz/getActor";
 import { countUnreadNotifications } from "@/features/notifications/data/notifications";
-import { prisma } from "@/shared/lib/prisma";
 import { shellNavFlags } from "./shellNav";
 
 export const loadAppShell = cache(async (userId: string) => {
-  const [actor, unreadCount, profile] = await Promise.all([
-    getActorByUserId(userId),
+  const [access, unreadCount] = await Promise.all([
+    loadUserAccess(userId),
     countUnreadNotifications(userId),
-    prisma.playerProfile.findUnique({
-      where: { userId },
-      select: {
-        registrations: {
-          orderBy: { createdAt: "desc" },
-          take: 1,
-          select: { id: true },
-        },
-      },
-    }),
   ]);
-  const registration = profile?.registrations[0];
+  const actor = access?.actor ?? null;
   const flags = shellNavFlags({
     isRepresentative: actor ? representativeTeamIds(actor).length > 0 : false,
     isStaffOrReviewer: actor ? isStaff(actor) || isMedicalReviewer(actor) : false,
     hasMembership: Boolean(actor && actor.membershipTeamIds.length > 0),
-    hasPlayerRegistration: Boolean(registration),
+    hasPlayerRegistration: Boolean(access?.hasPlayerRegistration),
     canVerifyMedia: actor ? authorize(actor, "media:verify").allow : false,
     isSuperAdmin: actor ? isSuperAdmin(actor) : false,
     isLeagueSupervisor: actor ? isLeagueSupervisorRole(actor) : false,

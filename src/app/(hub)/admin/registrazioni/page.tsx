@@ -11,19 +11,11 @@ import { Button } from "@/shared/ui/Button";
 import { it } from "@/shared/i18n/it";
 import styles from "@/features/admin/ui/admin.module.css";
 import fields from "@/shared/ui/form.module.css";
-import type { RegistrationStatus } from "@generated/client";
-
-const STATUS_COPY: Record<string, string> = {
-  INVITED: it.statusINVITED,
-  ACCOUNT_CREATED: it.statusACCOUNT_CREATED,
-  IN_PROGRESS: it.statusIN_PROGRESS,
-  PENDING_REVIEW: it.statusPENDING_REVIEW,
-  CHANGES_REQUESTED: it.statusCHANGES_REQUESTED,
-  PAYMENT_PENDING: it.statusPAYMENT_PENDING,
-  APPROVED: it.statusAPPROVED,
-  WITHDRAWN: it.statusWITHDRAWN,
-  REMOVED: it.statusREMOVED,
-};
+import {
+  isRegistrationStatus,
+  registrationStatusEntries,
+  registrationStatusLabel,
+} from "@/features/registrations/domain/statusCopy";
 
 type Props = {
   searchParams: Promise<{ editionId?: string; teamId?: string; status?: string; q?: string }>;
@@ -31,7 +23,7 @@ type Props = {
 
 export default async function AdminRegistrationsPage({ searchParams }: Props) {
   const query = await searchParams;
-  const status = query.status && query.status in STATUS_COPY ? (query.status as RegistrationStatus) : undefined;
+  const status = query.status && isRegistrationStatus(query.status) ? query.status : undefined;
   const [{ actor }, rows, options] = await Promise.all([
     requireStaff("/admin/registrazioni"),
     listRegistrationsAdmin({
@@ -80,7 +72,7 @@ export default async function AdminRegistrationsPage({ searchParams }: Props) {
             </label>
             <select id="status" name="status" className={fields.input} defaultValue={query.status ?? ""}>
               <option value="">{it.filterAll}</option>
-              {Object.entries(STATUS_COPY).map(([value, label]) => (
+              {registrationStatusEntries().map(([value, label]) => (
                 <option key={value} value={value}>
                   {label}
                 </option>
@@ -115,7 +107,7 @@ export default async function AdminRegistrationsPage({ searchParams }: Props) {
                   </span>
                 </span>
                 <StatusChip tone={row.status === "APPROVED" ? "complete" : row.status === "WITHDRAWN" ? "neutral" : "attention"}>
-                  {STATUS_COPY[row.status] ?? row.status}
+                  {registrationStatusLabel(row.status)}
                 </StatusChip>
               </Link>
             </li>

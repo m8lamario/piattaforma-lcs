@@ -11,7 +11,9 @@ import fields from "@/shared/ui/form.module.css";
 
 export function SupervisorActivationForm({ token, editionTitle }: { token: string; editionTitle: string }) {
   const [state, action, pending] = useActionState(activateLeagueSupervisorAction, undefined);
-  const passwords = usePasswordConfirmation();
+  const passwords = usePasswordConfirmation({
+    copy: { tooShort: it.passwordTooShort, mismatch: it.passwordMismatch, match: it.passwordMatch },
+  });
 
   return (
     <form

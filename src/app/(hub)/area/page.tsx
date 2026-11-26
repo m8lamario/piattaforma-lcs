@@ -13,7 +13,7 @@ import {
 } from "@/features/registrations/data/workspace";
 import { RegistrationDashboard } from "@/features/registrations/ui/Dashboard";
 import { isRegistrationWindowOpen } from "@/features/registrations/domain/window";
-import { applyPendingSnapshot, decimalToCents, resolveTeamFee } from "@/features/payments/domain/fees";
+import { resolveTeamFee } from "@/features/payments/domain/fees";
 import { getTeamForActor } from "@/features/teams/data/invites";
 import { listTeamRoster, listTeamsByIds } from "@/features/teams/data/roster";
 import { splitRoster, summarizeRoster } from "@/features/teams/domain/roster";
@@ -28,7 +28,6 @@ import { toRepresentativeOwnRegistration } from "@/features/teams/ui/representat
 import { authorize } from "@/shared/authz/authorize";
 import { representativeTeamIds } from "@/shared/authz/getActor";
 import { appOrigin, TEAM_COOKIE } from "@/shared/config/app";
-import { prisma } from "@/shared/lib/prisma";
 import { ButtonLink } from "@/shared/ui/Button";
 import { loadAppShell } from "@/shared/ui/loadAppShell";
 import { EmptyState } from "@/shared/ui/EmptyState";
@@ -69,19 +68,12 @@ export default async function AreaPage() {
     const jar = await cookies();
     const teamId = resolveSelectedTeamId(teamIds, jar.get(TEAM_COOKIE)?.value);
     if (teamId) {
-      const [workspace, team, teamPayment, pendingTeamPayment, roster, teams, unread, account] = await Promise.all([
+      const [workspace, team, roster, teams, unread] = await Promise.all([
         workspacePromise,
         getTeamForActor(teamId),
-        prisma.payment.findFirst({ where: { teamId, registrationId: null, status: "SUCCEEDED" }, select: { id: true } }),
-        prisma.payment.findFirst({
-          where: { teamId, registrationId: null, status: "PENDING" },
-          orderBy: { createdAt: "desc" },
-          select: { amount: true },
-        }),
         listTeamRoster(teamId),
         listTeamsByIds(teamIds),
         listUnreadNotifications(userId),
-        prisma.user.findUnique({ where: { id: userId }, select: { emailVerified: true } }),
       ]);
       scheduleWorkspaceFollowUp(workspace, viewing);
       if (
@@ -96,14 +88,11 @@ export default async function AreaPage() {
           registrationOpensAt: team.edition.registrationOpensAt,
           registrationClosesAt: team.edition.registrationClosesAt,
         };
-        const teamFee = applyPendingSnapshot(
-          decimalToCents(pendingTeamPayment?.amount),
-          resolveTeamFee({
-            paymentMode: team.edition.paymentMode,
-            teamFeeCents: team.teamFeeCents,
-            editionTeamFee: team.edition.teamFeeAmount,
-          }),
-        );
+        const teamFee = resolveTeamFee({
+          paymentMode: team.edition.paymentMode,
+          teamFeeCents: team.teamFeeCents,
+          editionTeamFee: team.edition.teamFeeAmount,
+        });
         const parts = splitRoster(roster);
         const coach = teamCoachCompleteness({
           teamId: team.id,
@@ -118,14 +107,14 @@ export default async function AreaPage() {
             : null;
         const canChooseRole = !activeOwn && isRegistrationWindowOpen(editionWindow);
         const schoolChecklist = projectSchoolChecklist({
-          representativeEmailVerified: Boolean(account?.emailVerified),
+          representativeEmailVerified: Boolean(workspace?.user.emailVerified),
           coachMissing: !coach.complete,
           staffPresent: parts.staffUsed > 0,
           canJoinStaff: canChooseRole,
           paymentMode: team.edition.paymentMode,
           teamFee:
             teamFee.status === "ready" ? { status: "ready", cents: teamFee.cents } : { status: teamFee.status },
-          teamPaymentSucceeded: Boolean(teamPayment),
+          teamPaymentSucceeded: team.payments.some((payment) => payment.status === "SUCCEEDED"),
           players: parts.players.map((row) => ({
             withdrawn: row.registrationStatus === "WITHDRAWN",
             isOwn: row.userId === userId,

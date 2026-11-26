@@ -407,7 +407,8 @@ export const it = {
   paymentHelp: "Il pagamento avviene su una pagina esterna. Non inseriamo dati della carta su questo sito.",
   paymentPlaceholderFee: "Importo di sviluppo (placeholder). L’importo ufficiale è una decisione dell’organizzazione (OD-008).",
   paymentFeeMissing: "Per questa squadra non c’è una quota valida. Il pagamento resta chiuso finché l’organizzazione non imposta l’importo.",
-  paymentFeeConfirm: "Questo è l’importo che verrà addebitato. Se un pagamento è già stato avviato, resta quello registrato allora.",
+  paymentFeeConfirm:
+    "Questo è l’importo che verrà addebitato. Se la quota è cambiata, un pagamento non ancora riuscito usa quella nuova.",
   paymentAmount: "Importo",
   paymentPay: "Paga ora",
   paymentCovered: "Il pagamento risulta già coperto. Non viene richiesto un secondo addebito.",

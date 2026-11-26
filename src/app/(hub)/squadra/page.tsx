@@ -3,9 +3,8 @@ import { redirect } from "next/navigation";
 import { getTeamForActor } from "@/features/teams/data/invites";
 import { requireRepresentativeTeamId } from "@/features/teams/actions";
 import { authorize } from "@/shared/authz/authorize";
-import { prisma } from "@/shared/lib/prisma";
 import { TEAM_COOKIE } from "@/shared/config/app";
-import { applyPendingSnapshot, decimalToCents, formatEuro, resolveTeamFee } from "@/features/payments/domain/fees";
+import { formatEuro, resolveTeamFee } from "@/features/payments/domain/fees";
 import { TeamPaymentForm } from "@/features/payments/ui/TeamPaymentForm";
 import { listTeamRoster, listTeamsByIds } from "@/features/teams/data/roster";
 import {
@@ -44,14 +43,8 @@ export default async function TeamPage({ searchParams }: Props) {
   const query = await searchParams;
   const filter = parseRosterFilter(query.stato);
 
-  const [team, teamPayment, pendingTeamPayment, roster, teams] = await Promise.all([
+  const [team, roster, teams] = await Promise.all([
     getTeamForActor(teamId),
-    prisma.payment.findFirst({ where: { teamId, registrationId: null, status: "SUCCEEDED" }, select: { id: true } }),
-    prisma.payment.findFirst({
-      where: { teamId, registrationId: null, status: "PENDING" },
-      orderBy: { createdAt: "desc" },
-      select: { amount: true },
-    }),
     listTeamRoster(teamId),
     listTeamsByIds(teamIds),
   ]);
@@ -65,14 +58,11 @@ export default async function TeamPage({ searchParams }: Props) {
     redirect("/area");
   }
 
-  const teamFee = applyPendingSnapshot(
-    decimalToCents(pendingTeamPayment?.amount),
-    resolveTeamFee({
-      paymentMode: team.edition.paymentMode,
-      teamFeeCents: team.teamFeeCents,
-      editionTeamFee: team.edition.teamFeeAmount,
-    }),
-  );
+  const teamFee = resolveTeamFee({
+    paymentMode: team.edition.paymentMode,
+    teamFeeCents: team.teamFeeCents,
+    editionTeamFee: team.edition.teamFeeAmount,
+  });
   const editionWindow = {
     isActive: team.edition.isActive,
     registrationOpensAt: team.edition.registrationOpensAt,
@@ -168,7 +158,7 @@ export default async function TeamPage({ searchParams }: Props) {
             <Panel className={styles.sideCard}>
               <TeamPaymentForm
                 teamId={team.id}
-                covered={Boolean(teamPayment)}
+                covered={team.payments.some((payment) => payment.status === "SUCCEEDED")}
                 amountLabel={teamFee.status === "ready" ? formatEuro(teamFee.cents) : null}
                 missing={teamFee.status === "missing"}
                 currency={team.edition.currency}

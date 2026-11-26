@@ -78,14 +78,6 @@ export function resolveTeamFee(input: {
   return pickOverride(input.teamFeeCents, input.editionTeamFee);
 }
 
-/** Un pagamento PENDING conserva l'importo già registrato. */
-export function applyPendingSnapshot(pendingCents: number | null, resolved: FeeResolution): FeeResolution {
-  if (pendingCents != null && Number.isInteger(pendingCents) && pendingCents > 0 && pendingCents <= MAX_FEE_CENTS) {
-    return { status: "ready", cents: pendingCents };
-  }
-  return resolved;
-}
-
 export function feeUsesDefault(cents: number | null) {
   return cents == null;
 }
