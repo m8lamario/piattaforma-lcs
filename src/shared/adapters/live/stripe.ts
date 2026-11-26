@@ -1,6 +1,6 @@
 import Stripe from "stripe";
 import { billingFromStripeDetails } from "@/features/payments/domain/billing";
-import type { PaymentAdapter, PaymentWebhookEvent } from "../types";
+import type { CheckoutExpireResult, PaymentAdapter, PaymentWebhookEvent } from "../types";
 
 export class InvalidWebhookSignatureError extends Error {
   constructor() {
@@ -75,6 +75,22 @@ export function createStripePaymentAdapter(config?: {
       }
       return { providerRef: session.id, redirectUrl: session.url, stripeCustomerId: customerId };
     },
+    async expireCheckout(providerRef) {
+      try {
+        await stripe.checkout.sessions.expire(providerRef);
+        return { status: "expired" };
+      } catch (error) {
+        const retrieved = await readCheckoutSessionStatus(stripe, providerRef);
+        if (retrieved) {
+          const outcome = checkoutExpireOutcome(retrieved);
+          if (outcome !== "expired") return { status: outcome };
+        }
+        if (stripeErrorCode(error) === "resource_missing") {
+          return { status: "already_expired" };
+        }
+        throw error;
+      }
+    },
     async parseWebhook(input) {
       const signature = input.headers.get("stripe-signature");
       if (!signature) {
@@ -89,6 +105,25 @@ export function createStripePaymentAdapter(config?: {
       return mapStripeEvent(event);
     },
   };
+}
+
+export function checkoutExpireOutcome(status: string | null | undefined): CheckoutExpireResult["status"] {
+  if (status === "complete") return "completed";
+  if (status === "expired") return "already_expired";
+  return "expired";
+}
+
+function stripeErrorCode(error: unknown) {
+  return error instanceof Stripe.errors.StripeError ? error.code : undefined;
+}
+
+async function readCheckoutSessionStatus(stripe: Stripe, providerRef: string) {
+  try {
+    const session = await stripe.checkout.sessions.retrieve(providerRef);
+    return session.status;
+  } catch {
+    return null;
+  }
 }
 
 function mapCheckoutSession(event: Stripe.Event, session: Stripe.Checkout.Session): PaymentWebhookEvent {

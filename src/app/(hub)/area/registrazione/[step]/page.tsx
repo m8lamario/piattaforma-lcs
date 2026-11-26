@@ -28,7 +28,7 @@ import { GuardianWaitingView } from "@/features/consents/ui/GuardianWaitingView"
 import { EmailVerifyNotice } from "@/features/auth/ui/EmailVerifyNotice";
 import { MedicalUploadForm } from "@/features/documents/ui/MedicalUploadForm";
 import { PlayerPaymentForm } from "@/features/payments/ui/PlayerPaymentForm";
-import { applyPendingSnapshot, formatEuro, resolveParticipantFee } from "@/features/payments/domain/fees";
+import { formatEuro, resolveParticipantFee } from "@/features/payments/domain/fees";
 import { PlaceholderStep } from "@/features/registrations/ui/PlaceholderStep";
 import { SummaryStep } from "@/features/registrations/ui/SummaryStep";
 import { WizardShell } from "@/features/registrations/ui/WizardShell";
@@ -281,17 +281,14 @@ export default async function WizardStepPage({ params }: Props) {
       break;
     }
     case "pagamento": {
-      const presented = applyPendingSnapshot(
-        workspace.registration.pendingPaymentCents,
-        resolveParticipantFee({
-          category: workspace.registration.category,
-          paymentMode: workspace.registration.paymentMode,
-          teamPlayerFeeCents: workspace.registration.playerFeeCents,
-          teamStaffFeeCents: workspace.registration.staffFeeCents,
-          editionPlayerFee: workspace.registration.playerFeeAmount,
-          editionStaffFee: workspace.registration.staffFeeAmount,
-        }),
-      );
+      const presented = resolveParticipantFee({
+        category: workspace.registration.category,
+        paymentMode: workspace.registration.paymentMode,
+        teamPlayerFeeCents: workspace.registration.playerFeeCents,
+        teamStaffFeeCents: workspace.registration.staffFeeCents,
+        editionPlayerFee: workspace.registration.playerFeeAmount,
+        editionStaffFee: workspace.registration.staffFeeAmount,
+      });
       body = (
         <PlayerPaymentForm
           covered={isPaymentCovered(workspace.evidence.payment)}

@@ -99,7 +99,7 @@ Ogni voce: problema, opzioni, decisione necessaria, conseguenze, impatto sullo s
 - **Problema:** Importo giocatore/squadra per edizione sconosciuto.
 - **Opzioni:** campi Edition già in schema.
 - **Decisione necessaria:** organizzazione per ogni edizione.
-- **Impatto:** la quota effettiva è quella della squadra, se c’è, altrimenti quella dell’edizione. Gli importi di squadra stanno in centesimi. Un pagamento già creato conserva il suo `amount`. Se non c’è una quota positiva, il checkout non parte (`PAYMENT_FEE_MISSING`): non si usa più un placeholder da 40 EUR.
+- **Impatto:** la quota effettiva è quella della squadra, se c’è, altrimenti quella dell’edizione. Gli importi di squadra stanno in centesimi. Un pagamento `PENDING` segue la quota corrente al prossimo avvio. Un `SUCCEEDED` e un bonifico restano l’importo incassato. Se non c’è una quota positiva, il checkout non parte (`PAYMENT_FEE_MISSING`): non si usa più un placeholder da 40 EUR.
 
 ## OD-048 Registro pagamenti e residenza
 

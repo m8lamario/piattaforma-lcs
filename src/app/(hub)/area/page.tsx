@@ -13,7 +13,7 @@ import {
 } from "@/features/registrations/data/workspace";
 import { RegistrationDashboard } from "@/features/registrations/ui/Dashboard";
 import { isRegistrationWindowOpen } from "@/features/registrations/domain/window";
-import { applyPendingSnapshot, decimalToCents, resolveTeamFee } from "@/features/payments/domain/fees";
+import { resolveTeamFee } from "@/features/payments/domain/fees";
 import { getTeamForActor } from "@/features/teams/data/invites";
 import { listTeamRoster, listTeamsByIds } from "@/features/teams/data/roster";
 import { splitRoster, summarizeRoster } from "@/features/teams/domain/roster";
@@ -69,15 +69,10 @@ export default async function AreaPage() {
     const jar = await cookies();
     const teamId = resolveSelectedTeamId(teamIds, jar.get(TEAM_COOKIE)?.value);
     if (teamId) {
-      const [workspace, team, teamPayment, pendingTeamPayment, roster, teams, unread, account] = await Promise.all([
+      const [workspace, team, teamPayment, roster, teams, unread, account] = await Promise.all([
         workspacePromise,
         getTeamForActor(teamId),
         prisma.payment.findFirst({ where: { teamId, registrationId: null, status: "SUCCEEDED" }, select: { id: true } }),
-        prisma.payment.findFirst({
-          where: { teamId, registrationId: null, status: "PENDING" },
-          orderBy: { createdAt: "desc" },
-          select: { amount: true },
-        }),
         listTeamRoster(teamId),
         listTeamsByIds(teamIds),
         listUnreadNotifications(userId),
@@ -96,14 +91,11 @@ export default async function AreaPage() {
           registrationOpensAt: team.edition.registrationOpensAt,
           registrationClosesAt: team.edition.registrationClosesAt,
         };
-        const teamFee = applyPendingSnapshot(
-          decimalToCents(pendingTeamPayment?.amount),
-          resolveTeamFee({
-            paymentMode: team.edition.paymentMode,
-            teamFeeCents: team.teamFeeCents,
-            editionTeamFee: team.edition.teamFeeAmount,
-          }),
-        );
+        const teamFee = resolveTeamFee({
+          paymentMode: team.edition.paymentMode,
+          teamFeeCents: team.teamFeeCents,
+          editionTeamFee: team.edition.teamFeeAmount,
+        });
         const parts = splitRoster(roster);
         const coach = teamCoachCompleteness({
           teamId: team.id,

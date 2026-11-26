@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { playerCheckoutBlocker, teamCheckoutBlocker, webhookApplyDecision } from "./integrity";
+import {
+  playerCheckoutBlocker,
+  shouldExpireOpenCheckout,
+  teamCheckoutBlocker,
+  webhookApplyDecision,
+} from "./integrity";
 
 describe("checkout blockers", () => {
   it("rifiuta un secondo pagamento già coperto", () => {
@@ -14,6 +19,49 @@ describe("checkout blockers", () => {
 
   it("consente il primo checkout", () => {
     expect(playerCheckoutBlocker({ covered: false, amount: 40 })).toBeNull();
+  });
+
+  it("scade il checkout Stripe solo se l’importo PENDING è diverso", () => {
+    expect(
+      shouldExpireOpenCheckout({
+        pendingCents: 4000,
+        liveCents: 8000,
+        provider: "stripe",
+        sessionId: "cs_1",
+      }),
+    ).toBe(true);
+    expect(
+      shouldExpireOpenCheckout({
+        pendingCents: 4000,
+        liveCents: 4000,
+        provider: "stripe",
+        sessionId: "cs_1",
+      }),
+    ).toBe(false);
+    expect(
+      shouldExpireOpenCheckout({
+        pendingCents: 4000,
+        liveCents: 8000,
+        provider: "stub",
+        sessionId: "cs_1",
+      }),
+    ).toBe(false);
+    expect(
+      shouldExpireOpenCheckout({
+        pendingCents: 4000,
+        liveCents: 8000,
+        provider: "stripe",
+        sessionId: null,
+      }),
+    ).toBe(false);
+    expect(
+      shouldExpireOpenCheckout({
+        pendingCents: null,
+        liveCents: 8000,
+        provider: "stripe",
+        sessionId: "cs_1",
+      }),
+    ).toBe(false);
   });
 });
 

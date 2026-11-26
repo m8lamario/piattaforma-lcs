@@ -1,8 +1,19 @@
 import { describe, expect, it } from "vitest";
 import Stripe from "stripe";
-import { InvalidWebhookSignatureError, createStripePaymentAdapter, mapStripeEvent } from "./stripe";
+import {
+  InvalidWebhookSignatureError,
+  checkoutExpireOutcome,
+  createStripePaymentAdapter,
+  mapStripeEvent,
+} from "./stripe";
 
 describe("stripe webhook", () => {
+  it("distingue una sessione già completata da una già scaduta", () => {
+    expect(checkoutExpireOutcome("complete")).toBe("completed");
+    expect(checkoutExpireOutcome("expired")).toBe("already_expired");
+    expect(checkoutExpireOutcome("open")).toBe("expired");
+  });
+
   it("rifiuta una firma assente o invalida", async () => {
     const adapter = createStripePaymentAdapter({
       secretKey: "sk_test_placeholder",
