@@ -60,7 +60,8 @@ Ogni voce: problema, opzioni, decisione necessaria, conseguenze, impatto sullo s
 - **Problema:** Validità, tipo visita, sport, scadenza, cosa rifiutare. Ogni edizione sceglie `COMPETITIVE` o `NON_COMPETITIVE`.
 - **Opzioni:** sola presenza file; scadenza obbligatoria; controlli manuali admin; pre-validazione locale.
 - **Decisione necessaria:** organizzazione sanitaria/regolamenti. La durata di 12 mesi sul non agonistico è una regola di prodotto configurabile (`NON_COMPETITIVE_VALIDITY_MONTHS`), non una norma certificata.
-- **Impatto:** `Edition.medicalCertificateKind` default `COMPETITIVE`. Workaround: metadata + review umana, expiry obbligatoria in approvazione. Pre-validazione locale (text layer PDF) **non** equivale a validità medico-legale. OCR/AI esterni **non** collegati (art. 9 GDPR).
+- **Impatto:** `Edition.medicalCertificateKind` default `COMPETITIVE`. Workaround: metadata + review umana, expiry obbligatoria in approvazione. Pre-validazione locale (text layer PDF) **non** equivale a validità medico-legale.
+- **Server MCP (tecnico):** esiste `/mcp` Streamable HTTP, spento di default (`MCP_REVIEW_ENABLED=true` e `MCP_REVIEW_TOKEN`). L’agente può solo approvare o segnalare; non rifiuta. In approvazione registra `data_rilascio` (data della visita). Sul non agonistico la scadenza è `visita + NON_COMPETITIVE_VALIDITY_MONTHS` (default 12), calcolata dal server. Sull’agonistico `data_scadenza` è obbligatoria e deve essere quella scritta sul certificato. **L’endpoint in produzione resta illecito rispetto alle informative** (`content/legal/document-processing.md`, `terms.md`) e all’art. 9 finché l’organizzazione non aggiorna i testi e la base giuridica. I placeholder in `content/legal/` non si riscrivono da questo lavoro.
 - **Testo certificato non agonistico:** DA VALIDARE LEGALMENTE (riferimenti D.M. 24/4/2013 e D.M. 8/8/2014).
 
 ## OD-006 Provider pagamenti

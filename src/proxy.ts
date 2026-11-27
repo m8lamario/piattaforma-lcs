@@ -63,6 +63,15 @@ export async function proxy(request: NextRequest) {
     return fileResponse;
   }
 
+  if (pathname === "/api/mcp/file" || pathname === "/mcp") {
+    const mcpResponse = NextResponse.next({
+      request: { headers: requestHeaders },
+    });
+    mcpResponse.headers.set("Content-Security-Policy", "default-src 'none'; frame-ancestors 'none'");
+    mcpResponse.headers.set("Cache-Control", "no-store");
+    return mcpResponse;
+  }
+
   if (needsAuth && !session?.user) {
     const url = request.nextUrl.clone();
     url.pathname = "/accedi";

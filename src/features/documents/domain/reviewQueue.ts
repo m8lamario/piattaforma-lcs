@@ -97,8 +97,10 @@ export function parseReviewQueueFilters(input: {
   requiredKind?: string;
   status?: string;
   anomaly?: string;
+  aiReview?: string;
 }): ReviewQueueFilters {
   const trim = (value?: string) => value?.trim() || undefined;
+  const aiReview = trim(input.aiReview);
   return {
     teamId: trim(input.teamId),
     q: trim(input.q)?.slice(0, 80),
@@ -107,6 +109,7 @@ export function parseReviewQueueFilters(input: {
     requiredKind: trim(input.requiredKind),
     status: trim(input.status),
     anomaly: trim(input.anomaly),
+    aiReview: aiReview === "flagged" ? "flagged" : undefined,
   };
 }
 
@@ -118,6 +121,7 @@ export type ReviewQueueFilters = {
   requiredKind?: string;
   status?: string;
   anomaly?: string;
+  aiReview?: "flagged";
 };
 
 export function reviewQueueQuery(filters: ReviewQueueFilters) {
@@ -129,6 +133,7 @@ export function reviewQueueQuery(filters: ReviewQueueFilters) {
   if (filters.requiredKind) params.set("requiredKind", filters.requiredKind);
   if (filters.status) params.set("status", filters.status);
   if (filters.anomaly) params.set("anomaly", filters.anomaly);
+  if (filters.aiReview) params.set("aiReview", filters.aiReview);
   const text = params.toString();
   return text ? `?${text}` : "";
 }
@@ -146,6 +151,7 @@ export function reviewDoneHref(filters: ReviewQueueFilters) {
   if (filters.requiredKind) params.set("requiredKind", filters.requiredKind);
   if (filters.status) params.set("status", filters.status);
   if (filters.anomaly) params.set("anomaly", filters.anomaly);
+  if (filters.aiReview) params.set("aiReview", filters.aiReview);
   params.set("done", "1");
   return `/admin/documenti?${params.toString()}`;
 }

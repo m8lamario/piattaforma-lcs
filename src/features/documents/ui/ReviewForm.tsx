@@ -48,6 +48,7 @@ function FilterFields({ filters }: { filters?: ReviewQueueFilters }) {
       {filters.requiredKind ? <input type="hidden" name="requiredKind" value={filters.requiredKind} /> : null}
       {filters.status ? <input type="hidden" name="queueStatus" value={filters.status} /> : null}
       {filters.anomaly ? <input type="hidden" name="anomaly" value={filters.anomaly} /> : null}
+      {filters.aiReview ? <input type="hidden" name="aiReview" value={filters.aiReview} /> : null}
     </>
   );
 }

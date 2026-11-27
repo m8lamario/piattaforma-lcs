@@ -14,6 +14,9 @@ import {
   reviewMedicalDocument,
   storeMedicalCertificate,
 } from "@/features/documents/data/documents";
+import { revokeAiCertificateApproval } from "@/features/documents/data/aiReview";
+import { notifyCertificateUploaded } from "@/features/mcp/webhook";
+import { canRevokeAiApproval } from "@/features/documents/domain/aiReview";
 import {
   nextPendingAfter,
   parseReviewQueueFilters,
@@ -194,6 +197,9 @@ export async function uploadMedicalCertificateAction(
       metadata: { mimeType: stored.document.mimeType, sizeBytes: stored.document.sizeBytes },
       ...trace,
     });
+    const uploadedAt = stored.document.uploadedAt;
+    const certificateId = stored.document.id;
+    after(() => notifyCertificateUploaded({ certificateId, uploadedAt }));
   }
 
   const updated = await persistWorkspaceStatus(session.user.id);
@@ -307,6 +313,7 @@ export async function reviewDocumentAction(
     requiredKind: String(formData.get("requiredKind") ?? ""),
     status: String(formData.get("queueStatus") ?? ""),
     anomaly: String(formData.get("anomaly") ?? ""),
+    aiReview: String(formData.get("aiReview") ?? ""),
   });
   let reason = String(formData.get("reason") ?? "");
   if (formData.get("kindMismatch") === "on") {
@@ -380,4 +387,69 @@ export async function reviewDocumentAction(
 
   await afterReviewSideEffects(sideEffects);
   redirect(nextId ? reviewDocumentHref(nextId, filters) : reviewDoneHref(filters));
+}
+
+export type RevokeAiApprovalSuccess = {
+  ok: true;
+  document: SerializedAdminDocumentView;
+  queue: SerializedReviewQueueItem[];
+};
+
+export async function revokeAiApprovalAction(
+  _prev: ActionFailure | RevokeAiApprovalSuccess | undefined,
+  formData: FormData,
+): Promise<ActionFailure | RevokeAiApprovalSuccess> {
+  const denied = await viewWriteDenial();
+  if (denied) return denied;
+  const session = await auth();
+  if (!session?.user?.id) redirect("/accedi?next=/admin/documenti");
+  const actor = await getActorByUserId(session.user.id);
+  if (!actor) redirect("/accedi");
+
+  const documentId = String(formData.get("documentId") ?? "");
+  const document = await getDocumentById(documentId);
+  if (!document) return fail("DOCUMENT_NOT_FOUND");
+
+  const allowed = authorize(actor, "document:review", {
+    ownerUserId: document.playerProfile.userId,
+    teamId: document.registration.teamId,
+  });
+  if (!allowed.allow) redirect("/area");
+  if (!canRevokeAiApproval(document)) return fail("DOCUMENT_AI_APPROVAL_NOT_REVOCABLE");
+
+  const trace = await userAgentAndIp();
+  const result = await revokeAiCertificateApproval({
+    documentId,
+    actorUserId: session.user.id,
+    trace,
+  });
+  if (!result.ok) return fail("DOCUMENT_AI_APPROVAL_NOT_REVOCABLE");
+
+  const [refreshed, queue] = await Promise.all([
+    getAdminDocumentViews([documentId]),
+    listPendingMedicalQueue(
+      medicalFiltersFromQueue(
+        parseReviewQueueFilters({
+          teamId: String(formData.get("teamId") ?? ""),
+          q: String(formData.get("queueQ") ?? ""),
+          editionId: String(formData.get("editionId") ?? ""),
+          schoolId: String(formData.get("schoolId") ?? ""),
+          requiredKind: String(formData.get("requiredKind") ?? ""),
+          status: String(formData.get("queueStatus") ?? ""),
+          anomaly: String(formData.get("anomaly") ?? ""),
+          aiReview: String(formData.get("aiReview") ?? ""),
+        }),
+      ),
+    ),
+  ]);
+  const view = refreshed[0];
+  if (!view) return fail("DOCUMENT_NOT_FOUND");
+  revalidatePath("/admin/documenti");
+  revalidatePath(`/admin/documenti/${documentId}`);
+  revalidatePath("/area");
+  return {
+    ok: true,
+    document: serializeAdminDocumentView(view),
+    queue: queue.map(serializeReviewQueueItem),
+  };
 }

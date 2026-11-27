@@ -114,6 +114,13 @@ enum ReviewDecision {
   REJECTED
 }
 
+enum AiReviewState {
+  NONE
+  FLAGGED
+  APPROVED
+  RETURNED
+}
+
 enum RequirementCode {
   PERSONAL_DATA
   GUARDIAN_IF_MINOR
@@ -220,6 +227,7 @@ model User {
   invitedStaff           StaffInvite[]       @relation("StaffInviteAuthor")
   acceptedStaffInvites   StaffInvite[]       @relation("StaffInviteAcceptedBy")
   documentReviews        DocumentReview[]
+  revokedDocumentReviews DocumentReview[] @relation("DocumentReviewRevokedBy")
   notifications          Notification[]
   consentRecords         ConsentRecord[]
   consentChoices         ConsentChoice[]
@@ -708,6 +716,8 @@ model Document {
   originalFilename String
   status               DocumentStatus         @default(UPLOADED)
   requiredKindAtUpload MedicalCertificateKind @default(COMPETITIVE)
+  aiReviewState        AiReviewState          @default(NONE)
+  aiFlagReason         String?
   uploadedAt           DateTime               @default(now())
   expiresAt            DateTime?
   replacedById         String?                @unique
@@ -727,6 +737,7 @@ model Document {
   @@index([playerProfileId])
   @@index([typeId])
   @@index([status, uploadedAt])
+  @@index([aiReviewState, status, uploadedAt])
 }
 
 model MedicalInspection {
@@ -752,18 +763,25 @@ model MedicalInspection {
 model DocumentReview {
   id                     String                  @id @default(cuid())
   documentId             String
-  reviewerId             String
+  reviewerId             String?
+  actorKind              ActorKind               @default(USER)
   decision               ReviewDecision
   reason                 String?
+  note                   String?
+  issuedAt               DateTime?               @db.Date
   requiredKindAtDecision MedicalCertificateKind?
+  revokedAt              DateTime?
+  revokedById            String?
   createdAt              DateTime                @default(now())
   updatedAt              DateTime                @updatedAt
 
-  document Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
-  reviewer User     @relation(fields: [reviewerId], references: [id], onDelete: Restrict)
+  document  Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  reviewer  User?    @relation(fields: [reviewerId], references: [id], onDelete: Restrict)
+  revokedBy User?    @relation("DocumentReviewRevokedBy", fields: [revokedById], references: [id], onDelete: Restrict)
 
   @@index([documentId])
   @@index([reviewerId])
+  @@index([revokedById])
 }
 
 model LegalDocument {

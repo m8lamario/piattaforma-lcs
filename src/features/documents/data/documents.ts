@@ -45,6 +45,7 @@ export function medicalFiltersFromQueue(filters: ReviewQueueFilters): MedicalDoc
     requiredKind,
     status,
     anomaly,
+    aiReviewState: filters.aiReview === "flagged" ? "FLAGGED" : undefined,
   };
 }
 
@@ -56,6 +57,7 @@ export type MedicalDocumentFilters = {
   requiredKind?: MedicalCertificateKind;
   status?: DocumentStatus;
   anomaly?: InspectionAnomaly;
+  aiReviewState?: "FLAGGED";
 };
 
 export async function ensureMedicalDocumentType() {
@@ -131,6 +133,7 @@ function medicalDocumentWhere(filters: MedicalDocumentFilters = {}) {
   return {
     type: { code: "MEDICAL_CERTIFICATE" },
     status: { in: statuses },
+    aiReviewState: filters.aiReviewState,
     inspection: filters.anomaly ? { anomalies: { has: filters.anomaly } } : undefined,
     playerProfile: filters.q
       ? {
@@ -151,6 +154,7 @@ function medicalDocumentWhere(filters: MedicalDocumentFilters = {}) {
 const medicalDocumentListSelect = {
   id: true,
   status: true,
+  aiReviewState: true,
   playerProfile: { select: { firstName: true, lastName: true } },
   registration: {
     select: {

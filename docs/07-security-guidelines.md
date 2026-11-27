@@ -10,8 +10,8 @@ Proteggere identità, dati anagrafici, dati di minori, documenti sanitari, conse
 - Cookie `eph-team`: httpOnly, SameSite=Lax, Secure su HTTPS, cancellato al logout. Non autorizza da solo: ogni action ricalcola il permesso.
 - Password: hash (Argon2id o bcrypt, scelta in foundation: Argon2 se disponibile, altrimenti bcrypt).
 - Verifica email prima di upload documenti e consensi vincolanti.
-- Rate limit su `/accedi`, redeem invito, reset password, upload, richiesta accesso scuola, attivazione account, ricerca e verifica media partner, attivazione supervisore di lega.
-- `AUTH_SECRET` e DB URL solo in env. Nessun secret in client bundle.
+- Rate limit su `/accedi`, redeem invito, reset password, upload, richiesta accesso scuola, attivazione account, ricerca e verifica media partner, attivazione supervisore di lega, `/mcp`.
+- `AUTH_SECRET` e DB URL solo in env. Nessun secret in client bundle. `MCP_REVIEW_TOKEN` e `MEDICAL_REVIEW_WEBHOOK_SECRET` solo in env.
 
 ## 3. Autorizzazione
 
@@ -36,8 +36,9 @@ Vedi [06-roles-and-permissions.md](06-roles-and-permissions.md). Sempre server-s
 ## 6. Documenti medici
 
 - Mai URL pubbliche o path statici `/uploads`.
-- Signed URL TTL breve (default 60 secondi).
-- Ogni `DOCUMENT_VIEW` e `DOCUMENT_DOWNLOAD` in AuditLog.
+- Signed URL TTL breve (default 60 secondi), incluso `/api/mcp/file`.
+- Ogni `DOCUMENT_VIEW` e `DOCUMENT_DOWNLOAD` in AuditLog. Accessi MCP: `DOCUMENT_AI_LIST`, `DOCUMENT_AI_VIEW`, `DOCUMENT_AI_APPROVE`, `DOCUMENT_AI_FLAG`, `DOCUMENT_AI_APPROVAL_REVOKED`. Metadata senza file, token o header `Authorization`.
+- `/mcp` Streamable HTTPS, Bearer statico, fail closed se `MCP_REVIEW_ENABLED` non è `true` o manca `MCP_REVIEW_TOKEN`. 401 senza token valido.
 - Export CSV organizzazione (`PAYMENT_EXPORT`, `EDITION_TEAMS_EXPORT`) solo con `admin:manage`, audit append-only, senza PII medica.
 - Export CSV del supervisore (`LEAGUE_EXPORT`) solo con `league:read` sulla propria edizione, stesse colonne della dashboard, senza certificati né dati sanitari. `editionId` dal record, non dal client.
 - Il rappresentante non ottiene la key.

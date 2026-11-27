@@ -11,6 +11,7 @@ export const MARKETING_OPTIN_DAYS = Number(process.env.MARKETING_OPTIN_DAYS ?? 3
 export const SIGNED_URL_TTL_SECONDS = Number(
   process.env.SIGNED_URL_TTL_SECONDS ?? 60,
 );
+export const MCP_FILE_TTL_SECONDS = Number(process.env.MCP_FILE_TTL_SECONDS ?? SIGNED_URL_TTL_SECONDS);
 export const MAX_UPLOAD_BYTES = Number(process.env.MAX_UPLOAD_BYTES ?? 10_485_760);
 
 /**

@@ -21,6 +21,7 @@ type Props = {
     requiredKind?: string;
     status?: string;
     anomaly?: string;
+    aiReview?: string;
   }>;
 };
 
