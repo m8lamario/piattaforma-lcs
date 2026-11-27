@@ -28,7 +28,13 @@ describe("filtri coda revisione", () => {
       requiredKind: "NON_COMPETITIVE",
       status: "PREVALIDATED",
       anomaly: "KIND_MISMATCH",
+      aiReview: undefined,
     });
+  });
+
+  it("accetta il filtro dei certificati segnalati dall’AI", () => {
+    expect(parseReviewQueueFilters({ aiReview: "flagged" }).aiReview).toBe("flagged");
+    expect(parseReviewQueueFilters({ aiReview: "other" }).aiReview).toBeUndefined();
   });
 });
 

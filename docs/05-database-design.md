@@ -168,10 +168,12 @@ Vincolo di database, non solo applicativo: `Registration (teamId, editionId)` �
 - originalFilename (sanitizzato)
 - status UPLOADED|PROCESSING|PENDING_REVIEW|PREVALIDATED|APPROVED|REJECTED|EXPIRED|REPLACED
 - `requiredKindAtUpload` fotografia del requisito dell’edizione al caricamento
+- `aiReviewState` `NONE` | `FLAGGED` | `APPROVED` | `RETURNED` (esito dell’agente MCP, distinto da `Document.status`)
+- `aiFlagReason` motivo della segnalazione, visibile solo in admin
 - uploadedAt, expiresAt, replacedById, blobPurgedAt
 - **nessun byte del file**
 
-`PROCESSING` e `PREVALIDATED` sono evidenza di pre-validazione, non di idoneità. L’idoneità sportiva resta `APPROVED` con scadenza. `PREVALIDATED` è in coda di revisione umana insieme a `PENDING_REVIEW`.
+`PROCESSING` e `PREVALIDATED` sono evidenza di pre-validazione, non di idoneità. L’idoneità sportiva resta `APPROVED` con scadenza. `PREVALIDATED` è in coda di revisione umana insieme a `PENDING_REVIEW`. L’agente MCP agisce solo su `aiReviewState = NONE` in quella coda. `FLAGGED` resta in coda umana. `RETURNED` è un’approvazione AI annullata: torna `PENDING_REVIEW` e l’AI non lo rilista.
 
 **MedicalInspection** (1:1 Document)
 
@@ -180,7 +182,8 @@ Vincolo di database, non solo applicativo: `Registration (teamId, editionId)` �
 
 **DocumentReview**
 
-- documentId, reviewerUserId, decision APPROVED|REJECTED, reason, `requiredKindAtDecision` nullable (le review precedenti restano `null`), createdAt
+- documentId, reviewerId nullable (assente sulle decisioni `SYSTEM`), `actorKind` USER|SYSTEM, decision APPROVED|REJECTED, reason, note, issuedAt, `requiredKindAtDecision` nullable (le review precedenti restano `null`), revokedAt, revokedById, createdAt
+- Lo storico AI non si cancella: un annullamento marca `revokedAt`
 
 ## 8. Consensi
 
@@ -257,7 +260,7 @@ Indici: `EmailMessage` status+queuedAt, purpose+queuedAt, userId, actorUserId, p
 
 - actorUserId nullable (sistema)
 - actorKind USER|GUARDIAN_LINK|SYSTEM, actorRole, guardianId, authorizationId, legalDocumentVersionId
-- action (enum string: DOCUMENT_VIEW, DOCUMENT_INSPECT, CONSENT_ACCEPT, GUARDIAN_AUTHORIZE, …). `DOCUMENT_INSPECT` non contiene testo OCR.
+- action (enum string: DOCUMENT_VIEW, DOCUMENT_INSPECT, DOCUMENT_AI_LIST, DOCUMENT_AI_VIEW, DOCUMENT_AI_APPROVE, DOCUMENT_AI_FLAG, DOCUMENT_AI_APPROVAL_REVOKED, CONSENT_ACCEPT, GUARDIAN_AUTHORIZE, …). `DOCUMENT_INSPECT` non contiene testo OCR. I log AI non contengono file, token o header Authorization.
 - entityType, entityId
 - metadata Json redatto
 - ip, userAgent
@@ -266,7 +269,7 @@ Indici: `EmailMessage` status+queuedAt, purpose+queuedAt, userId, actorUserId, p
 
 Indici: `actorUserId`, `entityType+entityId`, `createdAt`.
 
-**RateLimitHit** — `key`, `createdAt`. Sliding window per login, inviti, upload, reset password, CSV. Non è un store in-process.
+**RateLimitHit** — `key`, `createdAt`. Sliding window per login, inviti, upload, reset password, CSV, MCP. Non è un store in-process. La chiave MCP è l’hash del Bearer, non il token.
 
 ## 11. Indici previsti
 
@@ -283,6 +286,7 @@ Indici: `actorUserId`, `entityType+entityId`, `createdAt`.
 - EmailEvent (provider, providerEventId) unique
 - Registration (editionId, category, status) — liste `/lega` per categoria
 - Document (status, uploadedAt) — coda certificati
+- Document (aiReviewState, status, uploadedAt) — coda AI e filtro admin «da verificare manualmente»
 - SchoolRegistrationRequest FK: editionId, schoolId, teamId, userId
 - Payment.payerUserId — piani di cancellazione
 

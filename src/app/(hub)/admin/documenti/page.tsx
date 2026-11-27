@@ -36,6 +36,7 @@ type Props = {
     requiredKind?: string;
     status?: string;
     anomaly?: string;
+    aiReview?: string;
     done?: string;
   }>;
 };
@@ -129,6 +130,15 @@ export default async function AdminDocumentsPage({ searchParams }: Props) {
             </select>
           </div>
           <div className={fields.field}>
+            <label className={fields.label} htmlFor="aiReview">
+              {it.adminFilterAiReview}
+            </label>
+            <select id="aiReview" name="aiReview" className={fields.input} defaultValue={query.aiReview ?? ""}>
+              <option value="">{it.filterAll}</option>
+              <option value="flagged">{it.adminAiFlagChip}</option>
+            </select>
+          </div>
+          <div className={fields.field}>
             <label className={fields.label} htmlFor="anomaly">
               {it.adminFilterAnomaly}
             </label>
@@ -168,7 +178,12 @@ export default async function AdminDocumentsPage({ searchParams }: Props) {
                     {medicalKindLabel(document.registration.team.edition.medicalCertificateKind)}
                   </span>
                 </span>
-                <StatusChip tone={documentStatusTone(document.status)}>{documentStatusLabel(document.status)}</StatusChip>
+                <span className={styles.chips}>
+                  <StatusChip tone={documentStatusTone(document.status)}>{documentStatusLabel(document.status)}</StatusChip>
+                  {document.aiReviewState === "FLAGGED" ? (
+                    <StatusChip tone="attention">{it.adminAiFlagChip}</StatusChip>
+                  ) : null}
+                </span>
               </Link>
             </li>
           ))}

@@ -219,6 +219,12 @@ export const ERROR_CATALOG: Record<ErrorCode, ErrorDefinition> = {
     "correct_input",
     { retrySafe: true },
   ),
+  DOCUMENT_AI_APPROVAL_NOT_REVOCABLE: def(
+    "DOCUMENTS",
+    "Annullamento approvazione AI su documento non APPROVED con aiReviewState APPROVED.",
+    409,
+    "none",
+  ),
 
   CONSENT_REQUIRED_UNCHECKED: def("CONSENTS", "Checkbox required non tutte confermate.", 400, "correct_input", {
     retrySafe: true,

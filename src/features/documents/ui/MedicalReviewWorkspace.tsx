@@ -8,6 +8,7 @@ import {
   type SerializedReviewQueueItem,
 } from "@/features/documents/domain/adminView";
 import { proposedCertificateExpiry } from "@/features/documents/domain/certificatePolicy";
+import { canRevokeAiApproval } from "@/features/documents/domain/aiReview";
 import { isReviewableDocumentStatus, medicalKindLabel } from "@/features/documents/domain/medicalRequirement";
 import type { ReviewQueueFilters } from "@/features/documents/domain/reviewQueue";
 import { parseReviewQueueItem } from "@/features/documents/domain/adminView";
@@ -15,6 +16,7 @@ import {
   loadReviewDocumentsAction,
   refreshReviewQueueAction,
   type ReviewDocumentQueueSuccess,
+  type RevokeAiApprovalSuccess,
 } from "@/features/documents/actions";
 import {
   applyReviewResult,
@@ -28,6 +30,7 @@ import { elapsedMs, recordReviewTiming } from "@/features/documents/domain/revie
 import { CertificateViewer } from "@/features/documents/ui/CertificateViewer";
 import { OpenDocumentButton } from "@/features/documents/ui/OpenDocumentButton";
 import { ReviewForm } from "@/features/documents/ui/ReviewForm";
+import { RevokeAiApprovalForm } from "@/features/documents/ui/RevokeAiApprovalForm";
 import { useReviewFileCache } from "@/features/documents/ui/useReviewFileCache";
 import { Icon } from "@/shared/ui/Icon";
 import { Button } from "@/shared/ui/Button";
@@ -188,6 +191,11 @@ export function MedicalReviewWorkspace({
     [get],
   );
 
+  const handleRevokeSuccess = useCallback((result: RevokeAiApprovalSuccess) => {
+    setViews((current) => ({ ...current, [result.document.id]: result.document }));
+    setQueue(result.queue);
+  }, []);
+
   const handleReviewSuccess = useCallback(
     (result: ReviewDocumentQueueSuccess) => {
       const transitionStart = reviewStartedAt.current ?? performance.now();
@@ -313,7 +321,18 @@ export function MedicalReviewWorkspace({
               <h1>
                 {document.playerProfile.firstName} {document.playerProfile.lastName}
               </h1>
-              <StatusChip tone={documentStatusTone(document.status)}>{documentStatusLabel(document.status)}</StatusChip>
+              <span className={styles.chips}>
+                <StatusChip tone={documentStatusTone(document.status)}>{documentStatusLabel(document.status)}</StatusChip>
+                {document.aiReviewState === "FLAGGED" ? (
+                  <StatusChip tone="attention">{it.adminAiFlagChip}</StatusChip>
+                ) : null}
+                {document.aiReviewState === "APPROVED" && document.status === "APPROVED" ? (
+                  <StatusChip tone="complete">{it.adminAiApprovedChip}</StatusChip>
+                ) : null}
+                {document.aiReviewState === "RETURNED" ? (
+                  <StatusChip tone="attention">{it.adminAiReturnedChip}</StatusChip>
+                ) : null}
+              </span>
             </div>
             <p className={styles.meta}>
               {it.birthDate}:{" "}
@@ -387,6 +406,21 @@ export function MedicalReviewWorkspace({
                 {it.medicalRejectReason}: {rejectReason}
               </p>
             ) : null}
+            {document.aiReviewState === "FLAGGED" && document.aiFlagReason ? (
+              <p className={styles.mismatch}>
+                {it.adminAiFlagReason}: {document.aiFlagReason}
+              </p>
+            ) : null}
+            {document.reviews
+              .filter((review) => review.actorKind === "SYSTEM" && review.decision === "APPROVED")
+              .slice(0, 1)
+              .map((review) => (
+                <p key={`${review.createdAt}-ai-note`} className={styles.meta}>
+                  {it.adminAiApprovedNote}: {review.note ?? "—"}
+                  {review.issuedAt ? ` · ${it.adminAiIssuedAt}: ${dateInputValue(review.issuedAt)}` : null}
+                  {review.revokedAt ? ` · ${it.adminAiRevoked}` : null}
+                </p>
+              ))}
 
             {pending && canReview ? (
               <ReviewForm
@@ -405,6 +439,13 @@ export function MedicalReviewWorkspace({
             ) : (
               <div className={styles.closed}>
                 {!pending ? <p>{it.adminDocumentClosed}</p> : null}
+                {canReview && canRevokeAiApproval(document) ? (
+                  <RevokeAiApprovalForm
+                    documentId={document.id}
+                    filters={filters}
+                    onSuccess={handleRevokeSuccess}
+                  />
+                ) : null}
                 {fileAvailable ? <OpenDocumentButton documentId={document.id} /> : null}
               </div>
             )}

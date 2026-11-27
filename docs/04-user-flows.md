@@ -159,7 +159,7 @@ Fuori dalla finestra `registrationOpensAt`/`registrationClosesAt`: il link di sq
 3. Metadata persistiti; blob privato.
 4. Stato `UPLOADED` → `PROCESSING` → `PREVALIDATED` o `PENDING_REVIEW`. L’idoneità resta solo dopo `APPROVED`.
 5. Solo `MEDICAL_REVIEWER` e Super Admin aprono il file via signed URL (TTL breve), audit `DOCUMENT_VIEW`. Org Admin e rappresentante vedono lo stato. L’ispezione automatica scrive `DOCUMENT_INSPECT` senza testo del file.
-6. Approve oppure reject + motivo obbligatorio (incluso «contenuto sanitario eccedente il certificato richiesto») da `PENDING_REVIEW` o `PREVALIDATED` → giocatore vede CTA “carica di nuovo”. La pre-validazione locale (text layer PDF) segnala anomalie e **non** approva né rifiuta.
+6. Approve oppure reject + motivo obbligatorio (incluso «contenuto sanitario eccedente il certificato richiesto») da `PENDING_REVIEW` o `PREVALIDATED` → giocatore vede CTA “carica di nuovo”. La pre-validazione locale (text layer PDF) segnala anomalie e **non** approva né rifiuta. Un agente MCP, se abilitato, può approvare i casi chiari (con date) o segnalare «da verificare manualmente»; **non rifiuta**. Sul non agonistico la data sul foglio è quella della visita e vale un anno da quel giorno; sull’agonistico la scadenza è quella scritta. Il rifiuto e l’annullamento di un’approvazione AI restano umani. Un certificato segnalato o rimesso in coda non torna all’AI.
 7. Replace: il documento precedente passa a `REPLACED`. Il blob sostituito o rifiutato si cancella dallo storage; la riga di esito resta (`blobPurgedAt`).
 8. A 90 giorni da `Edition.endsAt` (e in anticipo sul ritiro) il job di retention cancella il file approvato e conserva l’esito di verifica. `EXPIRED` quando `expiresAt` è passato.
 
@@ -167,7 +167,7 @@ La base giuridica della **copia** del certificato resta OD-035: **DA VALIDARE LE
 
 Il rappresentante vede solo lo stato, mai l’URL.
 
-Sul passo upload compare un **avviso operativo**: la piattaforma conserva una copia per la revisione. L’informativa resta in `document-processing`; la casella salute M3 (adulto) o G4 (genitore del minore) è distinta dalla presa visione. La decisione sul file è **umana** (accetta/rifiuta). Una pre-validazione locale e sostituibile può segnalare anomalie; non è una verifica medico-legale e non usa un OCR a pagamento.
+Sul passo upload compare un **avviso operativo**: la piattaforma conserva una copia per la revisione. L’informativa resta in `document-processing`; la casella salute M3 (adulto) o G4 (genitore del minore) è distinta dalla presa visione. La decisione di **rifiuto** sul file è **umana**. Se il server MCP è acceso, un agente può approvare o segnalare, mai rifiutare. Una pre-validazione locale e sostituibile può segnalare anomalie; non è una verifica medico-legale. L’uso in produzione di un agente esterno resta subordinato all’aggiornamento delle informative (OD-005).
 
 ## 6. Review organizzazione
 

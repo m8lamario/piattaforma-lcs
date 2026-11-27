@@ -30,13 +30,16 @@ src/
     (player)/
     (team)/
     (admin)/
+    mcp/                        # Streamable HTTP MCP (Bearer, fail closed)
     api/auth/[...nextauth]/
+    api/mcp/file/
     api/webhooks/
   features/
     auth/
     players/
     registrations/
     documents/
+    mcp/
     consents/
     payments/
     teams/
@@ -76,6 +79,7 @@ Le route in `app/` chiamano domain + data. Nessuna query Prisma dentro un compon
 | players | profilo, guardian, identità fiscale | storage file |
 | registrations | stato, checklist, requisiti edizione | pagamenti provider |
 | documents | metadata, review, policy upload | servire file pubblici |
+| mcp | tool AI su coda certificati, Bearer | rifiuto, ruolo utente, OCR interno |
 | consents | versioni e acceptance | testi legali inventati |
 | payments | intent, stato, webhook | carte |
 | teams | squadra, inviti, roster view | certificati |

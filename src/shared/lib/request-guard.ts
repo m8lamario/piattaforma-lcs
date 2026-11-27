@@ -26,6 +26,7 @@ export const RATE_LIMITS = {
   leagueActivate: { limit: 10, windowMs: 60 * 60 * 1000 },
   leagueResend: { limit: 10, windowMs: 60 * 60 * 1000 },
   emailRetry: { limit: 20, windowMs: 60 * 60 * 1000 },
+  mcp: { limit: 60, windowMs: 60 * 1000 },
 } as const;
 
 export async function clientKey(prefix: string) {

@@ -121,6 +121,7 @@ Nessun bypass `if (role === SUPER_ADMIN) return true` sparso nelle pagine: il su
 - `staff:invite` e `admin:manage` per Org/Super Admin; `platform:admin`, `user:delete`, `user:anonymize`, `email:compose`, `media:manage`, `fee:manage`, `payment:record_transfer` solo Super Admin. `fee:manage` crea e modifica le quote di edizione e di squadra. `payment:record_transfer` registra un bonifico di squadra.
 - `media:verify` per account Media Partner attivo sulla competition della risorsa; Super Admin per supporto. Org Admin, revisore, rappresentante e giocatore: no.
 - `document:read_file` e `document:review` per il titolare (proprio file), `MEDICAL_REVIEWER` e Super Admin. Org Admin e rappresentante: solo `document:read_status`.
+- L’agente MCP non è un ruolo `UserRole`. Autenticazione Bearer di sistema (`actorKind SYSTEM`, `actorRole MCP_REVIEW`). Può elencare e leggere i file ancora in coda AI, approvare (con data visita e, se agonistico, scadenza scritta) o segnalare. Non rifiuta. L’annullamento di un’approvazione AI richiede `document:review`.
 - `email:read` e `email:send` allo staff (Org Admin / Super Admin). Rep, giocatore, organizer e revisore certificati no.
 - `team:remove_player` scoped a `teamId`: il rappresentante non tocca altre squadre né account altrui.
 - `audit:delete` è sempre deny, Super Admin compreso: i log non si cancellano da prodotto.

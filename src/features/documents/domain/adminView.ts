@@ -1,10 +1,13 @@
 import type { ReviewQueueItem } from "@/features/documents/domain/reviewQueue";
 import { certificateKindSatisfies } from "./certificatePolicy";
 import type { MedicalCertificateKind } from "./medicalRequirement";
+import type { AiReviewState } from "./aiReview";
 
 export const adminDocumentSelect = {
   id: true,
   status: true,
+  aiReviewState: true,
+  aiFlagReason: true,
   blobPurgedAt: true,
   originalFilename: true,
   mimeType: true,
@@ -48,14 +51,25 @@ export const adminDocumentSelect = {
   },
   reviews: {
     orderBy: { createdAt: "desc" as const },
-    take: 1,
-    select: { decision: true, reason: true, createdAt: true, requiredKindAtDecision: true },
+    take: 3,
+    select: {
+      decision: true,
+      reason: true,
+      note: true,
+      issuedAt: true,
+      actorKind: true,
+      revokedAt: true,
+      createdAt: true,
+      requiredKindAtDecision: true,
+    },
   },
 };
 
 export type AdminDocumentViewRecord = {
   id: string;
   status: string;
+  aiReviewState: AiReviewState;
+  aiFlagReason: string | null;
   blobPurgedAt: Date | null;
   originalFilename: string;
   mimeType: string;
@@ -97,6 +111,10 @@ export type AdminDocumentViewRecord = {
   reviews: Array<{
     decision: string;
     reason: string | null;
+    note: string | null;
+    issuedAt: Date | null;
+    actorKind: string;
+    revokedAt: Date | null;
     createdAt: Date;
     requiredKindAtDecision: MedicalCertificateKind | null;
   }>;
@@ -105,6 +123,8 @@ export type AdminDocumentViewRecord = {
 export type SerializedAdminDocumentView = {
   id: string;
   status: string;
+  aiReviewState: AiReviewState;
+  aiFlagReason: string | null;
   blobPurgedAt: string | null;
   originalFilename: string;
   mimeType: string;
@@ -146,6 +166,10 @@ export type SerializedAdminDocumentView = {
   reviews: Array<{
     decision: string;
     reason: string | null;
+    note: string | null;
+    issuedAt: string | null;
+    actorKind: string;
+    revokedAt: string | null;
     createdAt: string;
     requiredKindAtDecision: MedicalCertificateKind | null;
   }>;
@@ -157,6 +181,8 @@ export function serializeAdminDocumentView(document: AdminDocumentViewRecord): S
   return {
     id: document.id,
     status: document.status,
+    aiReviewState: document.aiReviewState,
+    aiFlagReason: document.aiFlagReason,
     blobPurgedAt: document.blobPurgedAt?.toISOString() ?? null,
     originalFilename: document.originalFilename,
     mimeType: document.mimeType,
@@ -187,6 +213,10 @@ export function serializeAdminDocumentView(document: AdminDocumentViewRecord): S
     reviews: document.reviews.map((review) => ({
       decision: review.decision,
       reason: review.reason,
+      note: review.note,
+      issuedAt: review.issuedAt?.toISOString() ?? null,
+      actorKind: review.actorKind,
+      revokedAt: review.revokedAt?.toISOString() ?? null,
       createdAt: review.createdAt.toISOString(),
       requiredKindAtDecision: review.requiredKindAtDecision,
     })),
