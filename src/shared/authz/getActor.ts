@@ -5,6 +5,7 @@ import type { Role } from "./types";
 
 const userAccessSelect = {
   id: true,
+  emailVerified: true,
   lifecycleStatus: true,
   roles: { select: { role: true, teamId: true, competitionId: true } },
   teamMemberships: { select: { teamId: true } },
@@ -57,6 +58,7 @@ export const loadUserAccess = cache(async (userId: string) => {
   return {
     actor,
     hasPlayerRegistration: Boolean(user.playerProfile?.registrations[0]),
+    emailVerified: Boolean(user.emailVerified),
   };
 });
 

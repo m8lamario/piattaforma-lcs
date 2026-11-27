@@ -1,5 +1,9 @@
 import { rosterFilterHref, type RosterFilter } from "./roster";
 import type { FeeResolution, PaymentMode } from "@/features/payments/domain/fees";
+import {
+  isAdministrativeBlocking,
+  type ChecklistItem,
+} from "@/features/registrations/domain/requirements";
 
 export type SchoolChecklistStatus = "complete" | "todo" | "attention" | "waiting_on_org";
 
@@ -67,6 +71,14 @@ function isOpen(item: SchoolChecklistItem) {
   return item.status === "todo" || item.status === "attention";
 }
 
+export function isOwnRegistrationDue(input: {
+  hasActiveOwnRegistration: boolean;
+  checklist?: ChecklistItem[] | null;
+}): boolean {
+  if (!input.hasActiveOwnRegistration || !input.checklist) return false;
+  return input.checklist.some(isAdministrativeBlocking);
+}
+
 export function nextSchoolStep(input: {
   items: SchoolChecklistItem[];
   staffPresent: boolean;
@@ -75,6 +87,7 @@ export function nextSchoolStep(input: {
   const admin = input.items.filter((entry) => entry.administrative);
   for (const entry of admin) {
     if (!isOpen(entry)) continue;
+    if (entry.id === "own" && input.canJoinStaff) continue;
     if (entry.id === "coach" && !input.staffPresent) {
       if (input.canJoinStaff) {
         return { id: "staff", status: "todo", href: "/area#ruolo", count: 1, undeliverableCount: 0 };
@@ -150,8 +163,8 @@ export function projectSchoolChecklist(input: {
     }
   }
 
-  if (input.ownRegistrationDue) {
-    items.push(item("own", "todo", "/area/registrazione", 1, true));
+  if (input.ownRegistrationDue && !input.canJoinStaff) {
+    items.push(item("own", "todo", "/area#ruolo", 1, true));
   }
 
   items.push(

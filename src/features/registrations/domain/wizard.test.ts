@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_EDITION_REQUIREMENTS, projectChecklist, type RegistrationEvidence } from "./requirements";
+import {
+  DEFAULT_EDITION_REQUIREMENTS,
+  projectChecklist,
+  projectRegistrationStatus,
+  type RegistrationEvidence,
+} from "./requirements";
 import { gateWizardStep, nextHero, nextIncompleteAfter, nextIncompleteStep, nextStepAfter, visibleWizardSteps } from "./wizard";
 
 function evidence(overrides: Partial<RegistrationEvidence> = {}): RegistrationEvidence {
@@ -110,5 +115,132 @@ describe("wizard", () => {
     });
     expect(gateWizardStep("privacy", pending)).toBe("privacy");
     expect(nextIncompleteStep(pending)).toBe("privacy");
+  });
+});
+
+describe("matrice prossimo passo giocatore", () => {
+  it.each([
+    {
+      name: "adulto senza dati",
+      data: {},
+      hero: { code: "PERSONAL_DATA" as const, status: "todo" as const },
+    },
+    {
+      name: "adulto con i dati",
+      data: { hasPersonalData: true },
+      hero: { code: "MEDICAL_CERT" as const, status: "todo" as const },
+    },
+    {
+      name: "certificato scaduto con tutore già completo",
+      data: {
+        hasPersonalData: true,
+        isMinor: true,
+        hasGuardian: true,
+        hasGuardianContact: true,
+        guardianAuthorization: "authorized" as const,
+        medicalStatus: "expired" as const,
+        privacyAccepted: true,
+        mediaDecision: "submitted" as const,
+        payment: { mode: "PLAYER" as const, playerSucceeded: true, teamSucceeded: false },
+      },
+      hero: { code: "MEDICAL_CERT" as const, status: "attention" as const },
+    },
+    {
+      name: "certificato rifiutato con tutore già completo",
+      data: {
+        hasPersonalData: true,
+        isMinor: true,
+        hasGuardian: true,
+        hasGuardianContact: true,
+        guardianAuthorization: "authorized" as const,
+        medicalStatus: "rejected" as const,
+      },
+      hero: { code: "MEDICAL_CERT" as const, status: "attention" as const },
+    },
+    {
+      name: "certificato in revisione con tutore già completo",
+      data: {
+        hasPersonalData: true,
+        isMinor: true,
+        hasGuardian: true,
+        hasGuardianContact: true,
+        guardianAuthorization: "authorized" as const,
+        medicalStatus: "pending" as const,
+      },
+      hero: { code: "MEDICAL_CERT" as const, status: "attention" as const },
+    },
+    {
+      name: "minore con tutore in attesa, certificato ancora da fare",
+      data: {
+        hasPersonalData: true,
+        isMinor: true,
+        hasGuardianContact: true,
+        guardianAuthorization: "pending" as const,
+        medicalStatus: "none" as const,
+      },
+      hero: { code: "GUARDIAN_IF_MINOR" as const, status: "attention" as const },
+    },
+    {
+      name: "minore con tutore rifiutato, certificato ancora da fare",
+      data: {
+        hasPersonalData: true,
+        isMinor: true,
+        hasGuardianContact: true,
+        guardianAuthorization: "refused" as const,
+        medicalStatus: "none" as const,
+      },
+      hero: { code: "GUARDIAN_IF_MINOR" as const, status: "attention" as const },
+    },
+    {
+      name: "staff dopo i dati: niente certificato, si va alla privacy",
+      data: { category: "STAFF" as const, hasPersonalData: true },
+      hero: { code: "PRIVACY" as const, status: "todo" as const },
+    },
+    {
+      name: "liberatorie e pagamento aperti, certificato solo caricato",
+      data: {
+        hasPersonalData: true,
+        medicalStatus: "pending" as const,
+        privacyAccepted: true,
+        mediaDecision: "none" as const,
+        payment: { mode: "PLAYER" as const, playerSucceeded: false, teamSucceeded: false },
+      },
+      hero: { code: "MEDICAL_CERT" as const, status: "attention" as const },
+    },
+    {
+      name: "iscrizione approvata con certificato ancora da caricare",
+      data: {
+        hasPersonalData: true,
+        medicalStatus: "none" as const,
+        privacyAccepted: true,
+        mediaDecision: "submitted" as const,
+        payment: { mode: "PLAYER" as const, playerSucceeded: true, teamSucceeded: false },
+      },
+      hero: { code: "MEDICAL_CERT" as const, status: "todo" as const },
+      registrationStatus: "APPROVED" as const,
+    },
+    {
+      name: "attesa dell’altro genitore: l’eroe resta il certificato",
+      data: {
+        hasPersonalData: true,
+        isMinor: true,
+        hasGuardian: true,
+        hasGuardianContact: true,
+        guardianAuthorization: "authorized" as const,
+        medicalStatus: "none" as const,
+        privacyAccepted: true,
+        mediaDecision: "submitted" as const,
+        payment: { mode: "PLAYER" as const, playerSucceeded: true, teamSucceeded: false },
+      },
+      hero: { code: "MEDICAL_CERT" as const, status: "todo" as const },
+    },
+  ])("$name", ({ data, hero, registrationStatus }) => {
+    const ev = evidence(data);
+    const checklist = projectChecklist(DEFAULT_EDITION_REQUIREMENTS, ev);
+    expect(nextHero(checklist)).toMatchObject(hero);
+    expect(nextHero(checklist).code).not.toBe("DONE");
+    if (registrationStatus) {
+      expect(projectRegistrationStatus(ev, checklist)).toBe(registrationStatus);
+    }
   });
 });

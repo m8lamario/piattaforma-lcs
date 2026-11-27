@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { joinRepresentativeAsParticipantAction } from "@/features/teams/actions";
 import { ActionError } from "@/shared/ui/ActionError";
 import { Button } from "@/shared/ui/Button";
@@ -11,6 +12,7 @@ import { writeRepresentativeFlow } from "./representativeFlow";
 type RoleChoice = "NONE" | "PLAYER" | "STAFF";
 
 export function RepresentativeRoleForm({ teamId }: { teamId: string }) {
+  const router = useRouter();
   const [choice, setChoice] = useState<RoleChoice>("NONE");
   const [state, action, pending] = useActionState(joinRepresentativeAsParticipantAction, undefined);
   const formRef = useRef<HTMLFormElement>(null);
@@ -24,6 +26,12 @@ export function RepresentativeRoleForm({ teamId }: { teamId: string }) {
     writeRepresentativeFlow(teamId, "open");
     formRef.current?.requestSubmit();
   }, [choice, pending, teamId]);
+
+  useEffect(() => {
+    if (!(state && "done" in state && state.done)) return;
+    writeRepresentativeFlow(teamId, "open");
+    router.refresh();
+  }, [state, teamId, router]);
 
   return (
     <form ref={formRef} action={action} className={fields.form} noValidate aria-busy={pending}>

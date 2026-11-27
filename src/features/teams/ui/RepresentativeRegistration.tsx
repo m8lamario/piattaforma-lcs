@@ -1,6 +1,6 @@
 "use client";
 
-import { useSyncExternalStore } from "react";
+import { useEffect, useSyncExternalStore } from "react";
 import { PersonalDataForm } from "@/features/players/ui/PersonalDataForm";
 import { PersonalRegistrationPanel } from "@/features/registrations/ui/PersonalRegistrationPanel";
 import { Button } from "@/shared/ui/Button";
@@ -9,6 +9,7 @@ import styles from "./RepresentativeDashboard.module.css";
 import type { RepresentativeOwnRegistration } from "./representativeOwn";
 import {
   readRepresentativeFlowOpen,
+  resumeRepresentativeFlowFromLocation,
   subscribeRepresentativeFlow,
   writeRepresentativeFlow,
 } from "./representativeFlow";
@@ -32,6 +33,13 @@ export function RepresentativeRegistration({ teamId, category, own }: Props) {
     () => false,
   );
   const open = settled ? false : storedOpen;
+
+  useEffect(() => {
+    resumeRepresentativeFlowFromLocation(teamId);
+    const onHash = () => resumeRepresentativeFlowFromLocation(teamId);
+    window.addEventListener("hashchange", onHash);
+    return () => window.removeEventListener("hashchange", onHash);
+  }, [teamId]);
   const personalOpen = own.checklist.some(
     (item) => item.code === "PERSONAL_DATA" && (item.status === "todo" || item.status === "attention"),
   );

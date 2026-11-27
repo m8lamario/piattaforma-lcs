@@ -17,8 +17,7 @@ import { resolveTeamFee } from "@/features/payments/domain/fees";
 import { getTeamForActor } from "@/features/teams/data/invites";
 import { listTeamRoster, listTeamsByIds } from "@/features/teams/data/roster";
 import { splitRoster, summarizeRoster } from "@/features/teams/domain/roster";
-import { projectSchoolChecklist } from "@/features/teams/domain/schoolChecklist";
-import { isAdministrativeBlocking } from "@/features/registrations/domain/requirements";
+import { isOwnRegistrationDue, projectSchoolChecklist } from "@/features/teams/domain/schoolChecklist";
 import { staffOccupiesSlot, teamCoachCompleteness } from "@/features/teams/domain/staff";
 import { LiveRefresh } from "@/features/teams/ui/LiveRefresh";
 import { resolveSelectedTeamId } from "@/features/teams/domain/selection";
@@ -107,7 +106,7 @@ export default async function AreaPage() {
             : null;
         const canChooseRole = !activeOwn && isRegistrationWindowOpen(editionWindow);
         const schoolChecklist = projectSchoolChecklist({
-          representativeEmailVerified: Boolean(workspace?.user.emailVerified),
+          representativeEmailVerified: shell.emailVerified,
           coachMissing: !coach.complete,
           staffPresent: parts.staffUsed > 0,
           canJoinStaff: canChooseRole,
@@ -127,14 +126,15 @@ export default async function AreaPage() {
             paymentCovered: row.paymentCovered,
             medicalOk: row.sportEligible,
           })),
-          ownRegistrationDue: Boolean(
-            ownRegistration?.checklist.some((item) => isAdministrativeBlocking(item)),
-          ),
+          ownRegistrationDue: isOwnRegistrationDue({
+            hasActiveOwnRegistration: Boolean(activeOwn),
+            checklist: ownRegistration?.checklist,
+          }),
         });
         return (
           <>
             <LiveRefresh />
-            {workspace && !workspace.user.emailVerified ? <EmailVerifyNotice /> : null}
+            {!shell.emailVerified ? <EmailVerifyNotice /> : null}
             <RepresentativeDashboard
               schoolName={team.school.name}
               schoolCity={team.school.city}
