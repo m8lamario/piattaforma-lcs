@@ -13,6 +13,7 @@ export type TaskItem = {
   index?: number;
   tone: StatusTone;
   status?: ReactNode;
+  action?: ReactNode;
 };
 
 const LEAD_TONE: Partial<Record<StatusTone, string>> = {
@@ -53,7 +54,7 @@ function RowBody({ item }: { item: TaskItem }) {
           <StatusChip tone={item.tone}>{item.status}</StatusChip>
         </span>
       ) : null}
-      {item.href ? <Icon name="chevronRight" size={18} className={styles.chevron} /> : null}
+      {item.href && !item.action ? <Icon name="chevronRight" size={18} className={styles.chevron} /> : null}
     </>
   );
 }
@@ -72,22 +73,30 @@ export function TaskList({ items, ordered = false, empty, className }: Props) {
   const List = ordered ? "ol" : "ul";
   return (
     <List className={[styles.list, className].filter(Boolean).join(" ")}>
-      {items.map((item) => (
-        <li key={item.id}>
-          {item.href ? (
-            <Link
-              href={item.href}
-              className={`${styles.row} ${styles.link} ${item.tone === "attention" || item.tone === "danger" ? styles.flag : ""}`}
-            >
-              <RowBody item={item} />
-            </Link>
-          ) : (
-            <div className={styles.row}>
-              <RowBody item={item} />
-            </div>
-          )}
-        </li>
-      ))}
+      {items.map((item) => {
+        const flagged = item.tone === "attention" || item.tone === "danger";
+        const row = item.href ? (
+          <Link href={item.href} className={`${styles.row} ${styles.link} ${flagged ? styles.flag : ""}`}>
+            <RowBody item={item} />
+          </Link>
+        ) : (
+          <div className={`${styles.row} ${flagged ? styles.flag : ""}`}>
+            <RowBody item={item} />
+          </div>
+        );
+        return (
+          <li key={item.id}>
+            {item.action ? (
+              <div className={styles.withAction}>
+                {row}
+                <div className={styles.action}>{item.action}</div>
+              </div>
+            ) : (
+              row
+            )}
+          </li>
+        );
+      })}
     </List>
   );
 }

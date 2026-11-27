@@ -10,7 +10,7 @@ ai sensi degli artt. 13 e 9 del Regolamento UE 2016/679 (GDPR). Integra l’[inf
 
 ESL **European Students League S.r.l.**, sede legale in **Corso Vinzaglio 24, 10121 Torino**, P.IVA/C.F. **IT12974200011 / 12974200011**.
 
-Contatti privacy: **privacy@legacalciostudenti.it** — PEC **europeanstudentsleague@legalmail.it**. DPO: **non nominato**.
+Contatti privacy: **privacy@legacalciostudenti.it** — PEC **europeanstudentsleaguesrl@legalmail.it**. DPO: **non nominato**.
 
 ---
 

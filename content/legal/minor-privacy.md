@@ -28,7 +28,7 @@ Per iscriverti al torneo usiamo il tuo nome, la tua data di nascita, la tua scuo
 
 ## 1. Titolare del trattamento
 
-ESL **European Students League S.r.l.**, sede legale in **Corso Vinzaglio 24, 10121 Torino**, P.IVA/C.F. **IT12974200011 / 12974200011**, organizzatrice dei tornei della Lega Calcio Studenti («ESL»). Contatti privacy: **privacy@legacalciostudenti.it** — PEC **europeanstudentsleague@legalmail.it**. Responsabile della protezione dei dati: **non nominato**.
+ESL **European Students League S.r.l.**, sede legale in **Corso Vinzaglio 24, 10121 Torino**, P.IVA/C.F. **IT12974200011 / 12974200011**, organizzatrice dei tornei della Lega Calcio Studenti («ESL»). Contatti privacy: **privacy@legacalciostudenti.it** — PEC **europeanstudentsleaguesrl@legalmail.it**. Responsabile della protezione dei dati: **non nominato**.
 
 ---
 
