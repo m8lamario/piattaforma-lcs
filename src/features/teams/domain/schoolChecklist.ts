@@ -1,5 +1,9 @@
 import { rosterFilterHref, type RosterFilter } from "./roster";
 import type { FeeResolution, PaymentMode } from "@/features/payments/domain/fees";
+import {
+  isAdministrativeBlocking,
+  type ChecklistItem,
+} from "@/features/registrations/domain/requirements";
 
 export type SchoolChecklistStatus = "complete" | "todo" | "attention" | "waiting_on_org";
 
@@ -65,6 +69,14 @@ function item(
 
 function isOpen(item: SchoolChecklistItem) {
   return item.status === "todo" || item.status === "attention";
+}
+
+export function isOwnRegistrationDue(input: {
+  hasActiveOwnRegistration: boolean;
+  checklist?: ChecklistItem[] | null;
+}): boolean {
+  if (!input.hasActiveOwnRegistration || !input.checklist) return false;
+  return input.checklist.some(isAdministrativeBlocking);
 }
 
 export function nextSchoolStep(input: {

@@ -17,8 +17,7 @@ import { resolveTeamFee } from "@/features/payments/domain/fees";
 import { getTeamForActor } from "@/features/teams/data/invites";
 import { listTeamRoster, listTeamsByIds } from "@/features/teams/data/roster";
 import { splitRoster, summarizeRoster } from "@/features/teams/domain/roster";
-import { projectSchoolChecklist } from "@/features/teams/domain/schoolChecklist";
-import { isAdministrativeBlocking } from "@/features/registrations/domain/requirements";
+import { isOwnRegistrationDue, projectSchoolChecklist } from "@/features/teams/domain/schoolChecklist";
 import { staffOccupiesSlot, teamCoachCompleteness } from "@/features/teams/domain/staff";
 import { LiveRefresh } from "@/features/teams/ui/LiveRefresh";
 import { resolveSelectedTeamId } from "@/features/teams/domain/selection";
@@ -127,9 +126,10 @@ export default async function AreaPage() {
             paymentCovered: row.paymentCovered,
             medicalOk: row.sportEligible,
           })),
-          ownRegistrationDue: Boolean(
-            activeOwn && ownRegistration?.checklist.some((item) => isAdministrativeBlocking(item)),
-          ),
+          ownRegistrationDue: isOwnRegistrationDue({
+            hasActiveOwnRegistration: Boolean(activeOwn),
+            checklist: ownRegistration?.checklist,
+          }),
         });
         return (
           <>
