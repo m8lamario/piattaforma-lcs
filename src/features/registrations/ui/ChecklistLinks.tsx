@@ -21,9 +21,10 @@ const STATUS_COPY: Record<ChecklistItem["status"], string> = {
 
 type Props = {
   checklist: ChecklistItem[];
+  publicationPending?: boolean;
 };
 
-export function ChecklistLinks({ checklist }: Props) {
+export function ChecklistLinks({ checklist, publicationPending = false }: Props) {
   const visible = checklist.filter((item) => item.status !== "not_applicable");
 
   return (
@@ -31,10 +32,15 @@ export function ChecklistLinks({ checklist }: Props) {
       ordered
       items={visible.map((item, index) => {
         const implemented = WIZARD_STEPS.find((step) => step.code === item.code)?.implemented ?? true;
+        const waitingMedia = publicationPending && item.code === "MEDIA_RELEASE";
         return {
           id: item.code,
           title: requirementLabel(item.code),
-          meta: implemented ? requirementLead(item.code) : it.checklistUpcoming,
+          meta: waitingMedia
+            ? it.publicationPending
+            : implemented
+              ? requirementLead(item.code)
+              : it.checklistUpcoming,
           href: requirementHref(item.code),
           index: index + 1,
           tone: ITEM_TONE[item.status],

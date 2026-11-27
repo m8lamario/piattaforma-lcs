@@ -1,7 +1,7 @@
 import type { UserEmailDeliveryState } from "@/features/emails/domain/delivery";
 
 export type GuardianEmailNoticeKind = "primary" | "secondary";
-export type GuardianEmailNoticeReason = "undeliverable" | "check_address";
+export type GuardianEmailNoticeReason = "undeliverable" | "check_address" | "awaiting_confirmation";
 
 export type GuardianEmailNotice = {
   kind: GuardianEmailNoticeKind;
@@ -21,6 +21,12 @@ function noticeFor(kind: GuardianEmailNoticeKind, contact: GuardianEmailContact 
   if (!contact || !contact.open || !email) return null;
   if (contact.delivery === "undeliverable") {
     return { kind, email, tone: "danger", reason: "undeliverable" };
+  }
+  if (kind === "secondary") {
+    if (contact.delivery) {
+      return { kind, email, tone: "warning", reason: "awaiting_confirmation" };
+    }
+    return { kind, email, tone: "warning", reason: "check_address" };
   }
   if (contact.delivery === "delivered") return null;
   return { kind, email, tone: "warning", reason: "check_address" };

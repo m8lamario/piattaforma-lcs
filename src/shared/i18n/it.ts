@@ -161,6 +161,10 @@ export const it = {
   heroPayment: "Manca il pagamento della quota.",
   heroPaymentSoon: "Il pagamento della quota arriverà nella prossima fase.",
   heroDone: "Hai completato i passi disponibili adesso.",
+  heroOtherParentPending: "Manca la conferma dell’altro genitore per foto, video e cognome.",
+  heroOtherParentPendingLead: "L’iscrizione può andare avanti. Se il messaggio non arriva, correggi l’indirizzo nel passo tutore.",
+  otherParentPendingBanner:
+    "Manca la conferma dell’altro genitore per foto, video e cognome. L’iscrizione può andare avanti.",
   ctaContinue: "Continua",
   placeholderMedical:
     "Qui caricherai il certificato medico agonistico (PDF, JPEG o PNG). Il file non sarà pubblico e il rappresentante vedrà solo lo stato.",
@@ -1338,6 +1342,13 @@ export const it = {
   boxC1: "Confermo le scelte privacy per questo minore.",
   g3Legend: "Altro genitore",
   g3Other: "Anche l’altro genitore esercita la responsabilità genitoriale: indico la sua email per la conferma delle scelte.",
+  g3OtherShort: "Ci sono due genitori: l’altro riceve un link solo per foto, video e cognome.",
+  g3SoleShort: "Decide solo questa persona.",
+  g3SoleLegalTitle: "Quando vale questa scelta",
+  g3Required: "Indica se c’è un altro genitore.",
+  g3RolePrimary: "Questa persona autorizza l’iscrizione.",
+  g3RoleSecondary: "L’altro genitore conferma foto, video e cognome. Indicare i suoi dati non è la conferma.",
+  g3SecondContactHint: "Contatto indicato: {name} · {email}",
   g3Sole:
     "Il contatto indicato è l’unico esercente la responsabilità genitoriale (es. tutore; altro genitore deceduto, decaduto o sospeso dalla responsabilità genitoriale ai sensi dell’art. 330 c.c.; figlio/a riconosciuto/a solo da lui/lei). L’affidamento esclusivo non basta: le decisioni di maggiore interesse restano di entrambi i genitori (art. 337-quater c.c.). Una dichiarazione non veritiera espone a responsabilità verso l’altro genitore e verso ESL.",
   g3SecondEmail: "Email dell’altro genitore",
@@ -1443,6 +1454,10 @@ export const it = {
   guardianEmailCheckPrimaryHere: "Abbiamo scritto a {email}. Se l’indirizzo è sbagliato, correggilo qui sotto.",
   guardianEmailCheckSecondaryHere:
     "Hai indicato {email} per l’altro genitore. Se l’indirizzo è sbagliato, correggilo nel modulo.",
+  guardianEmailAwaitingSecondary:
+    "Abbiamo scritto a {email}. Manca ancora il clic dell’altro genitore per foto, video e cognome.",
+  guardianEmailAwaitingSecondaryHere:
+    "Abbiamo scritto a {email}. Manca ancora il clic. Se l’indirizzo è sbagliato, correggilo nel modulo.",
   guardianEmailFixCta: "Correggi l’indirizzo",
   schoolAccessResendTitle: "Attiva il tuo account",
   schoolAccessResendPending: "La richiesta è in esame. Quando viene approvata, l’email di attivazione arriva a questo indirizzo.",
@@ -1456,6 +1471,8 @@ export const it = {
   schoolChecklistPaymentWaiting: "La quota di squadra non è ancora stata configurata dall’organizzazione",
   schoolChecklistPersonal: "Dati personali dei giocatori",
   schoolChecklistGuardian: "Autorizzazione del genitore",
+  repOtherParentPending: "Manca la conferma dell’altro genitore per foto e video di {players}.",
+  repOtherParentPendingCta: "Vedi chi è in attesa",
   schoolChecklistPrivacy: "Informative privacy dei giocatori",
   schoolChecklistMedia: "Liberatorie dei giocatori",
   schoolChecklistPlayerPayment: "Quote dei giocatori",
@@ -1586,6 +1603,9 @@ export const it = {
   guardianRevokeDone: "Revoca registrata. L’organizzazione riceve l’elenco dei canali da ritirare.",
   guardianWaitingTitle: "In attesa del genitore",
   guardianWaitingBody: "Abbiamo inviato un link al contatto indicato. Da qui vedi lo stato, senza spuntare le caselle al posto suo.",
+  guardianWaitingOtherParentBody:
+    "Il primo genitore ha già scelto. Foto, video e cognome si attivano dopo il clic dell’altro genitore.",
+  guardianBoxPendingOtherParent: "Scelto, in attesa dell’altro genitore",
   guardianBoxWaiting: "In attesa del genitore",
   guardianBoxAuthorized: "Autorizzato dal genitore",
   guardianBoxRefused: "Rifiutato dal genitore",

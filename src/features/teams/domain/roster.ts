@@ -224,6 +224,17 @@ export function toRosterRow(input: {
   };
 }
 
+export function rosterPendingOtherParent(
+  row: Pick<RosterRow, "publication" | "registrationStatus">,
+) {
+  if (row.registrationStatus === "WITHDRAWN" || row.registrationStatus === "REMOVED") return false;
+  return row.publication?.status === "pending_other_parent";
+}
+
+export function countRosterPendingOtherParent(rows: Pick<RosterRow, "publication" | "registrationStatus">[]) {
+  return rows.filter(rosterPendingOtherParent).length;
+}
+
 export function toStaffRosterView(row: RosterRow) {
   return {
     registrationId: row.registrationId,

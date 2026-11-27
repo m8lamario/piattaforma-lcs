@@ -4,6 +4,7 @@ import { getCurrentLegalVersions, recordConsent } from "@/features/consents/data
 import { privacySlugsFor, MEDIA_RELEASE_SLUG } from "@/features/consents/domain/pack";
 import {
   changedGuardianDecisions,
+  enrollmentNeedsG3,
   enrollmentRequiredCodes,
   enrollmentBoxCodes,
   inspectGuardianLink,
@@ -358,7 +359,24 @@ export async function loadGuardianLink(token: string, purpose: GuardianLinkPurpo
         include: {
           team: { include: { edition: { include: { competition: true } } } },
           playerProfile: {
-            include: { user: { select: { id: true, email: true } } },
+            include: {
+              user: { select: { id: true, email: true } },
+              guardians: {
+                select: {
+                  kind: true,
+                  firstName: true,
+                  lastName: true,
+                  email: true,
+                  soleResponsibility: true,
+                },
+              },
+            },
+          },
+          consentChoices: {
+            where: { code: "G3" },
+            orderBy: { createdAt: "desc" as const },
+            take: 5,
+            select: { value: true, createdAt: true },
           },
         },
       },
@@ -427,6 +445,9 @@ export async function submitGuardianAuthorization(input: {
   const submitted = input.boxes.filter((box) => allowedCodes.has(box.code));
 
   if (!input.refuse && expectedType === "ENROLLMENT") {
+    if (enrollmentNeedsG3(input.g3)) {
+      return { ok: false as const, reason: "g3" as const };
+    }
     const accepted = new Map(submitted.map((box) => [box.code, box.accepted]));
     if (enrollmentRequiredCodes(category).some((code) => !accepted.get(code))) {
       return { ok: false as const, reason: "required" as const };

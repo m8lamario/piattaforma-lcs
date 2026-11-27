@@ -1,5 +1,16 @@
 import { describe, expect, it } from "vitest";
-import { filterRoster, parseRosterFilter, rosterBucket, summarizeRoster, summarizeRosterCauses, toRosterRow, toStaffRosterView, toTeammateRow } from "./roster";
+import {
+  countRosterPendingOtherParent,
+  filterRoster,
+  parseRosterFilter,
+  rosterBucket,
+  rosterPendingOtherParent,
+  summarizeRoster,
+  summarizeRosterCauses,
+  toRosterRow,
+  toStaffRosterView,
+  toTeammateRow,
+} from "./roster";
 
 describe("team roster projection", () => {
   it("espone solo nome, stato iscrizione e stato certificato", () => {
@@ -156,6 +167,43 @@ describe("team roster projection", () => {
         "guardian",
       ),
     ).toHaveLength(1);
+  });
+
+  it("segnala l’attesa dell’altro genitore senza ritirati", () => {
+    const pending = toRosterRow({
+      registrationId: "p",
+      firstName: "P",
+      lastName: "P",
+      registrationStatus: "APPROVED",
+      guardianState: "authorized",
+      publication: {
+        status: "pending_other_parent",
+        channels: false,
+        promotion: false,
+        sponsor: false,
+        press: false,
+        interviews: false,
+        fullSurname: false,
+      },
+    });
+    const withdrawn = toRosterRow({
+      registrationId: "w",
+      firstName: "W",
+      lastName: "W",
+      registrationStatus: "WITHDRAWN",
+      publication: {
+        status: "pending_other_parent",
+        channels: false,
+        promotion: false,
+        sponsor: false,
+        press: false,
+        interviews: false,
+        fullSurname: false,
+      },
+    });
+    expect(rosterPendingOtherParent(pending)).toBe(true);
+    expect(rosterPendingOtherParent(withdrawn)).toBe(false);
+    expect(countRosterPendingOtherParent([pending, withdrawn])).toBe(1);
   });
 
   it("nella vista compagni non espone stato medico", () => {

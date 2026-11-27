@@ -8,8 +8,9 @@ import {
   isSubmittedAuthorizationStatus,
   latestGuardianDecisions,
   publicationBoxCodes,
+  suggestedEnrollmentG3,
 } from "@/features/consents/domain/guardianAuth";
-import { CONSENT_BOXES } from "@/features/consents/domain/boxes";
+import { CONSENT_BOXES, g3Value, latestChoices } from "@/features/consents/domain/boxes";
 import { getCurrentLegalVersions } from "@/features/consents/data/legal";
 import { isPartnerBoxVisible } from "@/features/consents/data/partners";
 import { MEDIA_RELEASE_SLUG, privacySlugsFor } from "@/features/consents/domain/pack";
@@ -84,8 +85,26 @@ export default async function GuardianAuthorizePage({ params }: Props) {
   const submittedStatus = isSubmittedAuthorizationStatus(row.authorization?.status ?? "")
     ? (row.authorization?.status as "AUTHORIZED" | "REFUSED")
     : null;
-  const g3Raw = latest.get("G3")?.value;
-  const currentG3 = g3Raw === "OTHER_PARENT" || g3Raw === "SOLE" ? g3Raw : "";
+  const guardians = row.registration.playerProfile.guardians;
+  const secondaryGuardian = guardians.find((guardian) => guardian.kind === "SECONDARY") ?? null;
+  const primaryGuardian =
+    guardians.find((guardian) => guardian.kind !== "SECONDARY") ?? guardians[0] ?? null;
+  const contactG3 = g3Value(
+    latestChoices(
+      row.registration.consentChoices.map((choice) => ({
+        code: "G3",
+        accepted: true,
+        value: choice.value,
+        createdAt: choice.createdAt.getTime(),
+      })),
+    ),
+  );
+  const currentG3 = suggestedEnrollmentG3({
+    submitted: latest.get("G3")?.value,
+    contact: contactG3,
+    hasSecondary: Boolean(secondaryGuardian),
+    soleResponsibility: primaryGuardian?.soleResponsibility,
+  });
 
   return (
     <PublicShell>
@@ -102,6 +121,15 @@ export default async function GuardianAuthorizePage({ params }: Props) {
             currentG3={currentG3}
             submittedStatus={submittedStatus}
             medicalKind={parseMedicalCertificateKind(row.registration.team.edition.medicalCertificateKind)}
+            secondGuardian={
+              secondaryGuardian
+                ? {
+                    firstName: secondaryGuardian.firstName,
+                    lastName: secondaryGuardian.lastName,
+                    email: secondaryGuardian.email,
+                  }
+                : null
+            }
           />
         </div>
       </main>

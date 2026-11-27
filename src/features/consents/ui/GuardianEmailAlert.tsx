@@ -10,6 +10,12 @@ function copyFor(notice: GuardianEmailNotice, here: boolean) {
       notice.email,
     );
   }
+  if (notice.reason === "awaiting_confirmation") {
+    return (here ? it.guardianEmailAwaitingSecondaryHere : it.guardianEmailAwaitingSecondary).replace(
+      "{email}",
+      notice.email,
+    );
+  }
   if (here) {
     return (notice.kind === "secondary" ? it.guardianEmailCheckSecondaryHere : it.guardianEmailCheckPrimaryHere).replace(
       "{email}",
@@ -30,6 +36,9 @@ type Props = {
 
 export function GuardianEmailAlert({ notices, href, here = false }: Props) {
   if (notices.length === 0) return null;
+  const canFix = notices.some(
+    (notice) => notice.reason === "undeliverable" || notice.reason === "check_address",
+  );
   return (
     <div className={fields.bannerStack} role="status">
       {notices.map((notice) => (
@@ -40,7 +49,7 @@ export function GuardianEmailAlert({ notices, href, here = false }: Props) {
           {copyFor(notice, here)}
         </p>
       ))}
-      {href ? (
+      {href && canFix ? (
         <ButtonLink href={href} variant="secondary" icon="chevronRight" iconPosition="right">
           {it.guardianEmailFixCta}
         </ButtonLink>

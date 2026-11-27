@@ -82,6 +82,9 @@ export default async function WizardStepPage({ params }: Props) {
     });
   }
 
+  const pendingOtherParent =
+    workspace.publication.status === "pending_other_parent" &&
+    workspace.guardianAuthorization === "authorized";
   const steps = visibleWizardSteps(workspace.checklist);
   const privacySlugs = privacySlugsFor(workspace.evidence.isMinor);
   const legalVersions =
@@ -223,6 +226,7 @@ export default async function WizardStepPage({ params }: Props) {
               boxes={waitBoxes}
               currentBoxes={currentBoxes}
               medicalKind={parseMedicalCertificateKind(workspace.registration.medicalCertificateKind)}
+              pendingOtherParent={pendingOtherParent}
             />
           ) : (
             <PlaceholderStep title={it.stepPrivacy} body={it.placeholderPrivacy} />
@@ -258,6 +262,7 @@ export default async function WizardStepPage({ params }: Props) {
               boxes={mediaUses}
               currentBoxes={currentUses}
               medicalKind={parseMedicalCertificateKind(workspace.registration.medicalCertificateKind)}
+              pendingOtherParent={pendingOtherParent}
             />
             {g14.length > 0 ? (
               <MediaConsentForm document={media} uses={g14} currentUses={currentUses} submitted={Boolean(currentUses.G14)} />

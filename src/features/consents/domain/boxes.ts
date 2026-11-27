@@ -195,11 +195,16 @@ export function isBoxActive(
 ) {
   if (!latestAccepted(input.map, code)) return false;
   if (code === "M4" || code === "G6") return Boolean(input.marketingOptIn);
-  const gated = new Set<ConsentBoxCode>(["G5", "G9", "G10", "G11", "G12", "G13"]);
-  if (gated.has(code)) {
+  if (isGatedMinorMediaCode(code)) {
     return mediaActivation(input);
   }
   return true;
+}
+
+export const MINOR_MEDIA_GATE_CODES: ConsentBoxCode[] = ["G5", "G9", "G10", "G11", "G12", "G13"];
+
+export function isGatedMinorMediaCode(code: string): code is ConsentBoxCode {
+  return MINOR_MEDIA_GATE_CODES.includes(code as ConsentBoxCode);
 }
 
 export type PublicationStatus = "publishable" | "not_publishable" | "pending_other_parent";

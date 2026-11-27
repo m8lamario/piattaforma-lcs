@@ -2,8 +2,10 @@ import { describe, expect, it } from "vitest";
 import {
   changedGuardianDecisions,
   enrollmentBoxCodes,
+  enrollmentNeedsG3,
   enrollmentRequiredCodes,
   guardianAuthorizationChecklistStatus,
+  suggestedEnrollmentG3,
   inspectGuardianLink,
   latestGuardianDecisions,
   publicationBoxCodes,
@@ -62,6 +64,28 @@ describe("caselle del link genitore", () => {
     expect(enrollmentBoxCodes(false, "STAFF")).not.toContain("G4");
     expect(enrollmentRequiredCodes("STAFF")).not.toContain("G4");
     expect(enrollmentRequiredCodes("PLAYER")).toContain("G4");
+    expect(enrollmentNeedsG3(null)).toBe(true);
+    expect(enrollmentNeedsG3("OTHER_PARENT")).toBe(false);
+    expect(enrollmentNeedsG3("SOLE")).toBe(false);
+  });
+
+  it("ripropone la scelta G3 del ragazzo sul link del primo genitore", () => {
+    expect(
+      suggestedEnrollmentG3({
+        contact: "OTHER_PARENT",
+        hasSecondary: true,
+      }),
+    ).toBe("OTHER_PARENT");
+    expect(
+      suggestedEnrollmentG3({
+        submitted: "SOLE",
+        contact: "OTHER_PARENT",
+        hasSecondary: true,
+      }),
+    ).toBe("SOLE");
+    expect(suggestedEnrollmentG3({ hasSecondary: true })).toBe("OTHER_PARENT");
+    expect(suggestedEnrollmentG3({ soleResponsibility: true })).toBe("SOLE");
+    expect(suggestedEnrollmentG3({})).toBe("");
   });
 
   it("limita il secondo genitore a C1, cognome e usi", () => {
