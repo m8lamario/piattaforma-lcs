@@ -1,3 +1,4 @@
+import type { PublicationFlags } from "@/features/consents/domain/boxes";
 import type {
   ChecklistItem,
   MedicalEvidence,
@@ -92,6 +93,7 @@ type Props = {
   medicalCertificateKind?: MedicalCertificateKind;
   guardianAuthorization?: "none" | "pending" | "authorized" | "refused";
   guardianNotices?: GuardianEmailNotice[];
+  publication?: PublicationFlags | null;
 };
 
 export function RegistrationDashboard({
@@ -112,6 +114,7 @@ export function RegistrationDashboard({
   medicalCertificateKind,
   guardianAuthorization,
   guardianNotices = [],
+  publication = null,
 }: Props) {
   const hero = nextHero(checklist);
   const hrefStep = hero.code === "DONE" ? "riepilogo" : (REQUIREMENT_STEP[hero.code] ?? "dati");
@@ -123,8 +126,18 @@ export function RegistrationDashboard({
   const closed = status === "WITHDRAWN" || status === "REMOVED";
   const checklistDoneButNotEligible = hero.code === "DONE" && playBlocked;
   const guardianMailProblem = hasUndeliverableGuardianEmail(guardianNotices);
+  const publicationPending =
+    publication?.status === "pending_other_parent" && guardianAuthorization === "authorized";
+  const awaitingOtherParent =
+    publicationPending &&
+    !blocked &&
+    !closed &&
+    !shirtSizeDue &&
+    !checklistDoneButNotEligible &&
+    (hero.code === "DONE" || approved);
   const settled =
     !guardianMailProblem &&
+    !awaitingOtherParent &&
     !checklistDoneButNotEligible &&
     (hero.code === "DONE" || approved || closed || blocked);
   const deadlineLabel = medicalDeadline
@@ -139,27 +152,32 @@ export function RegistrationDashboard({
         ? it.heroRemoved
         : checklistDoneButNotEligible
           ? (notice ?? it.heroMedical)
-          : status === "APPROVED" && sportEligible
-            ? it.heroApproved
-            : shirtSizeDue
-              ? it.heroShirtSize
-              : hero.code === "DONE"
-                ? it.heroPendingNow
-                : heroText(hero, medicalStatus, { authorization: guardianAuthorization, notices: guardianNotices });
-  const continueHref = guardianMailProblem
-    ? "/area/registrazione/tutore"
-    : checklistDoneButNotEligible
-      ? "/area/registrazione/certificato"
-      : `/area/registrazione/${hrefStep}`;
+          : shirtSizeDue
+            ? it.heroShirtSize
+            : awaitingOtherParent
+              ? it.heroOtherParentPending
+              : status === "APPROVED" && sportEligible
+                ? it.heroApproved
+                : hero.code === "DONE"
+                  ? it.heroPendingNow
+                  : heroText(hero, medicalStatus, { authorization: guardianAuthorization, notices: guardianNotices });
+  const continueHref =
+    guardianMailProblem || awaitingOtherParent
+      ? "/area/registrazione/tutore"
+      : checklistDoneButNotEligible
+        ? "/area/registrazione/certificato"
+        : `/area/registrazione/${hrefStep}`;
   const heroKicker = blocked
     ? it.wizardStepAttention
-    : approved
-      ? it.statusAPPROVED
-      : closed
-        ? registrationStatusLabel(status)
-        : hero.code === "DONE"
-          ? it.statusPENDING_REVIEW
-          : it.repNextKicker;
+    : awaitingOtherParent
+      ? it.publicationPending
+      : approved
+        ? it.statusAPPROVED
+        : closed
+          ? registrationStatusLabel(status)
+          : hero.code === "DONE"
+            ? it.statusPENDING_REVIEW
+            : it.repNextKicker;
   const progressLabel = it.checklistProgress
     .replace("{done}", String(doneCount))
     .replace("{total}", String(visible.length));
@@ -191,18 +209,32 @@ export function RegistrationDashboard({
           {notice}
         </p>
       ) : null}
+      {publicationPending && !awaitingOtherParent && !closed ? (
+        <p className={`${fields.banner} ${fields.bannerWarn}`} role="status">
+          {it.otherParentPendingBanner}
+        </p>
+      ) : null}
 
       <NextStepHero
         kicker={heroKicker}
-        icon={approved ? "check" : blocked || playBlocked ? "alert" : hero.code === "DONE" ? "clock" : "zap"}
+        icon={
+          approved && !awaitingOtherParent
+            ? "check"
+            : blocked || playBlocked || awaitingOtherParent
+              ? "alert"
+              : hero.code === "DONE"
+                ? "clock"
+                : "zap"
+        }
         tone={
-          blocked || shirtSizeDue || playBlocked || guardianMailProblem
+          blocked || shirtSizeDue || playBlocked || guardianMailProblem || awaitingOtherParent
             ? "warning"
             : approved
               ? "done"
               : "default"
         }
         title={heroCopy}
+        lead={awaitingOtherParent ? it.heroOtherParentPendingLead : undefined}
         actions={
           settled ? (
             hero.code === "DONE" && !blocked && !closed ? (
@@ -242,7 +274,7 @@ export function RegistrationDashboard({
       ) : null}
 
       <Panel title={it.checklistTitle} description={progressLabel} icon="fileCheck" flush>
-        <ChecklistLinks checklist={checklist} />
+        <ChecklistLinks checklist={checklist} publicationPending={publicationPending} />
         <p className={styles.note}>
           <Icon name="info" size={16} />
           <span>{it.guardianEmailNote}</span>

@@ -11,6 +11,7 @@ import { ActionError } from "@/shared/ui/ActionError";
 import { FieldStatus } from "@/shared/ui/FieldStatus";
 import { FormErrorSummary, fieldMessages } from "@/shared/ui/FormErrorSummary";
 import { WizardLaterButton } from "@/features/registrations/ui/WizardShell";
+import { Disclosure } from "@/shared/ui/Disclosure";
 import { it } from "@/shared/i18n/it";
 import fields from "@/shared/ui/form.module.css";
 
@@ -254,7 +255,7 @@ export function GuardianForm({ defaults }: Props) {
               setG3Choice("OTHER_PARENT");
             }}
           />
-          {it.g3Other}
+          {it.g3OtherShort}
         </label>
         <label className={fields.radio} htmlFor="g3-sole">
           <input
@@ -268,8 +269,11 @@ export function GuardianForm({ defaults }: Props) {
               setG3Choice("SOLE");
             }}
           />
-          {it.g3Sole}
+          {it.g3SoleShort}
         </label>
+        <Disclosure summary={it.g3SoleLegalTitle} variant="inline">
+          <p>{it.g3Sole}</p>
+        </Disclosure>
         {errors.g3?.message ? (
           <FieldStatus id="g3-error" tone="danger">
             {errors.g3.message}
@@ -334,6 +338,9 @@ export function GuardianForm({ defaults }: Props) {
           </>
         ) : null}
       </fieldset>
+
+      <p className={fields.help}>{it.g3RolePrimary}</p>
+      <p className={fields.help}>{it.g3RoleSecondary}</p>
 
       <div className={`${fields.actions} ${fields.sticky}`}>
         <Button type="button" disabled={pending} aria-busy={pending} onClick={() => submit("continue")}>

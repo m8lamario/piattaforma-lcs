@@ -4,6 +4,7 @@ import {
   latestChoices,
   type ChoiceSnapshot,
   type ConsentBoxCode,
+  type G3Value,
 } from "@/features/consents/domain/boxes";
 
 export const GUARDIAN_LINK_PURPOSES = ["AUTHORIZE", "REVOKE", "PUBLICATION"] as const;
@@ -15,6 +16,24 @@ export function enrollmentRequiredCodes(category: "PLAYER" | "STAFF" = "PLAYER")
   if (category === "STAFF") return ["G1", "T1", "G2"];
   return ENROLLMENT_REQUIRED_CODES;
 }
+
+export function enrollmentNeedsG3(g3: G3Value | null | undefined) {
+  return g3 !== "OTHER_PARENT" && g3 !== "SOLE";
+}
+
+export function suggestedEnrollmentG3(input: {
+  submitted?: string | null;
+  contact?: string | null;
+  hasSecondary?: boolean;
+  soleResponsibility?: boolean;
+}): G3Value | "" {
+  if (input.submitted === "OTHER_PARENT" || input.submitted === "SOLE") return input.submitted;
+  if (input.contact === "OTHER_PARENT" || input.contact === "SOLE") return input.contact;
+  if (input.hasSecondary) return "OTHER_PARENT";
+  if (input.soleResponsibility) return "SOLE";
+  return "";
+}
+
 export const PUBLICATION_CONFIRM_CODE: ConsentBoxCode = "C1";
 
 export function normalizePersonName(value: string) {

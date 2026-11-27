@@ -267,6 +267,20 @@ describe.skipIf(!hasDatabase)("autorizzazione genitore sul database", () => {
     });
   });
 
+  it("rifiuta l’accettazione senza scelta G3", async () => {
+    const { submitGuardianAuthorization } = await import("./guardianAuth");
+    await withFixture(async (ctx) => {
+      const result = await submitGuardianAuthorization({
+        token: ctx.token,
+        purpose: "AUTHORIZE",
+        refuse: false,
+        boxes: enrollmentBoxes(),
+        versionIds: {},
+      });
+      expect(result).toEqual({ ok: false, reason: "g3" });
+    });
+  });
+
   it("rifiuta l’invio se il token è scaduto", async () => {
     const { submitGuardianAuthorization } = await import("./guardianAuth");
     await withFixture(

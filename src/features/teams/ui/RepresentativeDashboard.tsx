@@ -6,6 +6,7 @@ import { RepresentativeRegistration } from "@/features/teams/ui/RepresentativeRe
 import type { RepresentativeOwnRegistration } from "@/features/teams/ui/representativeOwn";
 import type { EditionWindow } from "@/features/registrations/domain/window";
 import {
+  countRosterPendingOtherParent,
   rosterFilterHref,
   summarizeRosterCauses,
   type RosterCauseCounts,
@@ -25,6 +26,7 @@ import { Panel } from "@/shared/ui/Panel";
 import { ProgressMeter } from "@/shared/ui/ProgressMeter";
 import { playersLabel } from "@/shared/i18n/format";
 import { it } from "@/shared/i18n/it";
+import fields from "@/shared/ui/form.module.css";
 import styles from "./RepresentativeDashboard.module.css";
 
 const NEXT_COPY: Record<SchoolNextAction["id"], (action: SchoolNextAction) => string> = {
@@ -172,6 +174,7 @@ export function RepresentativeDashboard({
   const location = schoolCity ? `${schoolName} · ${schoolCity}` : schoolName;
   const causes = summarizeRosterCauses(roster);
   const activeCauses = CAUSES.filter((cause) => causes[cause.filter] > 0);
+  const otherParentPending = countRosterPendingOtherParent(roster);
   return (
     <div className={styles.canvas}>
       <PageHeader
@@ -188,6 +191,12 @@ export function RepresentativeDashboard({
       {windowOpen ? null : <WindowNotice edition={editionWindow} />}
 
       <NextStep {...schoolChecklist} />
+      {otherParentPending > 0 ? (
+        <p className={`${fields.banner} ${fields.bannerWarn}`} role="status">
+          {it.repOtherParentPending.replace("{players}", playersLabel(otherParentPending))}{" "}
+          <Link href={rosterFilterHref("publication")}>{it.repOtherParentPendingCta}</Link>
+        </p>
+      ) : null}
 
       <div className={styles.grid}>
         <div className={styles.main}>

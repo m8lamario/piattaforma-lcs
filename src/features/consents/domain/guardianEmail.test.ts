@@ -35,11 +35,30 @@ describe("avviso email genitore", () => {
     expect(hasUndeliverableGuardianEmail(notices)).toBe(false);
   });
 
-  it("non avvisa se il messaggio risulta consegnato e si aspetta solo il clic", () => {
+  it("non avvisa se il messaggio al primo genitore risulta consegnato e si aspetta solo il clic", () => {
     expect(
       projectGuardianEmailNotices({
         primary: { email: "mamma@test.it", open: true, delivery: "delivered" },
       }),
     ).toEqual([]);
+  });
+
+  it("dopo la consegna all’altro genitore resta l’attesa del clic", () => {
+    const notices = projectGuardianEmailNotices({
+      primary: { email: "mamma@test.it", open: false, delivery: "delivered" },
+      secondary: { email: "papa@test.it", open: true, delivery: "delivered" },
+    });
+    expect(notices).toEqual([
+      { kind: "secondary", email: "papa@test.it", tone: "warning", reason: "awaiting_confirmation" },
+    ]);
+    expect(hasUndeliverableGuardianEmail(notices)).toBe(false);
+  });
+
+  it("con invio accettato all’altro genitore chiede il clic, non solo il controllo dell’indirizzo", () => {
+    expect(
+      projectGuardianEmailNotices({
+        secondary: { email: "papa@test.it", open: true, delivery: "accepted" },
+      }),
+    ).toEqual([{ kind: "secondary", email: "papa@test.it", tone: "warning", reason: "awaiting_confirmation" }]);
   });
 });

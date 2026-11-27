@@ -8,6 +8,7 @@ import type { ConsentBoxDef } from "@/features/consents/domain/boxes";
 import { healthConsentLabels, type MedicalCertificateKind } from "@/features/documents/domain/medicalRequirement";
 import { Button } from "@/shared/ui/Button";
 import { ActionError } from "@/shared/ui/ActionError";
+import { Disclosure } from "@/shared/ui/Disclosure";
 import { Icon } from "@/shared/ui/Icon";
 import { StatusChip } from "@/shared/ui/StatusChip";
 import { it } from "@/shared/i18n/it";
@@ -29,6 +30,7 @@ type Props = {
   currentG3?: "OTHER_PARENT" | "SOLE" | "";
   submittedStatus?: "AUTHORIZED" | "REFUSED" | null;
   medicalKind?: MedicalCertificateKind;
+  secondGuardian?: { firstName: string; lastName: string; email: string } | null;
 };
 
 export function GuardianAuthorizeForm({
@@ -42,6 +44,7 @@ export function GuardianAuthorizeForm({
   currentG3 = "",
   submittedStatus = null,
   medicalKind = "COMPETITIVE",
+  secondGuardian = null,
 }: Props) {
   const healthLabels = healthConsentLabels(medicalKind);
   const [mode, setMode] = useState<"form" | "summary">(
@@ -195,9 +198,10 @@ export function GuardianAuthorizeForm({
                   name="g3"
                   value="OTHER_PARENT"
                   checked={g3 === "OTHER_PARENT"}
+                  required={!confirmingRefuse}
                   onChange={() => setG3("OTHER_PARENT")}
                 />
-                {it.g3Other}
+                {it.g3OtherShort}
               </label>
               <label className={fields.radio} htmlFor="g3-sole">
                 <input
@@ -208,8 +212,23 @@ export function GuardianAuthorizeForm({
                   checked={g3 === "SOLE"}
                   onChange={() => setG3("SOLE")}
                 />
-                {it.g3Sole}
+                {it.g3SoleShort}
               </label>
+              <Disclosure summary={it.g3SoleLegalTitle} variant="inline">
+                <p>{it.g3Sole}</p>
+              </Disclosure>
+              {g3 === "OTHER_PARENT" && secondGuardian?.email ? (
+                <p className={fields.help}>
+                  {it.g3SecondContactHint
+                    .replace(
+                      "{name}",
+                      `${secondGuardian.firstName} ${secondGuardian.lastName}`.trim() || secondGuardian.email,
+                    )
+                    .replace("{email}", secondGuardian.email)}
+                </p>
+              ) : null}
+              <p className={fields.help}>{it.g3RolePrimary}</p>
+              <p className={fields.help}>{it.g3RoleSecondary}</p>
             </fieldset>
           ) : null}
 

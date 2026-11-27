@@ -67,6 +67,9 @@ function openFlags(row: RosterRow, staff: boolean): Flag[] {
     if (!row.emailVerified) flags.push({ key: "email", tone: "attention", label: it.rosterEmailUnverified });
     if (!row.paymentCovered) flags.push({ key: "payment", tone: "todo", label: it.rosterPaymentDue });
     if (!row.shirtSize) flags.push({ key: "shirt", tone: "attention", label: it.rosterShirtSizeMissing });
+    if (row.publication?.status === "pending_other_parent") {
+      flags.push({ key: "other-parent", tone: "attention", label: it.publicationPending });
+    }
   }
   return flags.sort((a, b) => (TONE_RANK[a.tone] ?? 3) - (TONE_RANK[b.tone] ?? 3));
 }

@@ -62,6 +62,7 @@ export async function submitGuardianAuthorizationAction(
   });
   if (!result.ok) {
     if (result.reason === "used") return fail("CONSENT_TOKEN_USED");
+    if (result.reason === "g3") return failValidation(it.g3Required);
     if (result.reason === "required") return fail("CONSENT_BOX_REQUIRED");
     if (result.reason === "stale") return fail("CONSENT_VERSION_STALE");
     if (result.reason === "confirm") return failValidation(it.guardianLinkRefuseConfirmTitle);

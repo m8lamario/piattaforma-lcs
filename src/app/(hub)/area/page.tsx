@@ -219,6 +219,7 @@ export default async function AreaPage() {
           medicalCertificateKind={workspace.registration.medicalCertificateKind}
           guardianAuthorization={workspace.guardianAuthorization}
           guardianNotices={guardianEmails?.notices ?? []}
+          publication={workspace.publication}
         />
       </>
     );
