@@ -161,11 +161,24 @@ describe("checklist scuola", () => {
     });
     expect(result.items.find((item) => item.id === "personal")?.count).toBe(1);
     expect(result.items.find((item) => item.id === "guardian")?.count).toBe(0);
-    expect(result.next?.id).toBe("own");
+    expect(result.next).toMatchObject({ id: "own", href: "/area#ruolo" });
     const ownIndex = result.items.findIndex((item) => item.id === "own");
     const personalIndex = result.items.findIndex((item) => item.id === "personal");
     expect(ownIndex).toBeGreaterThan(-1);
     expect(ownIndex).toBeLessThan(personalIndex);
+  });
+
+  it("non chiede l’iscrizione personale finché il referente può ancora scegliere il ruolo", () => {
+    const result = projectSchoolChecklist({
+      ...ready,
+      coachMissing: false,
+      staffPresent: true,
+      canJoinStaff: true,
+      players: [player({ personalDataComplete: false })],
+      ownRegistrationDue: true,
+    });
+    expect(result.items.find((item) => item.id === "own")).toBeUndefined();
+    expect(result.next?.id).toBe("personal");
   });
 
   it("sul tutore distingue i rimbalzi dalle attese", () => {

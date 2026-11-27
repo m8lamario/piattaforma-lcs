@@ -33,3 +33,8 @@ export function writeRepresentativeFlow(teamId: string, state: "open" | "paused"
     return;
   }
 }
+
+export function resumeRepresentativeFlowFromLocation(teamId: string) {
+  if (typeof window === "undefined") return;
+  if (window.location.hash === "#ruolo") writeRepresentativeFlow(teamId, "open");
+}

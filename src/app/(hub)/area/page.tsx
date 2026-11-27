@@ -107,7 +107,7 @@ export default async function AreaPage() {
             : null;
         const canChooseRole = !activeOwn && isRegistrationWindowOpen(editionWindow);
         const schoolChecklist = projectSchoolChecklist({
-          representativeEmailVerified: Boolean(workspace?.user.emailVerified),
+          representativeEmailVerified: shell.emailVerified,
           coachMissing: !coach.complete,
           staffPresent: parts.staffUsed > 0,
           canJoinStaff: canChooseRole,
@@ -128,13 +128,13 @@ export default async function AreaPage() {
             medicalOk: row.sportEligible,
           })),
           ownRegistrationDue: Boolean(
-            ownRegistration?.checklist.some((item) => isAdministrativeBlocking(item)),
+            activeOwn && ownRegistration?.checklist.some((item) => isAdministrativeBlocking(item)),
           ),
         });
         return (
           <>
             <LiveRefresh />
-            {workspace && !workspace.user.emailVerified ? <EmailVerifyNotice /> : null}
+            {!shell.emailVerified ? <EmailVerifyNotice /> : null}
             <RepresentativeDashboard
               schoolName={team.school.name}
               schoolCity={team.school.city}

@@ -31,5 +31,6 @@ export const loadAppShell = cache(async (userId: string) => {
     actor,
     ...flags,
     unreadCount,
+    emailVerified: Boolean(access?.emailVerified),
   };
 });

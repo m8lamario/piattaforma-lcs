@@ -75,6 +75,7 @@ export function nextSchoolStep(input: {
   const admin = input.items.filter((entry) => entry.administrative);
   for (const entry of admin) {
     if (!isOpen(entry)) continue;
+    if (entry.id === "own" && input.canJoinStaff) continue;
     if (entry.id === "coach" && !input.staffPresent) {
       if (input.canJoinStaff) {
         return { id: "staff", status: "todo", href: "/area#ruolo", count: 1, undeliverableCount: 0 };
@@ -150,8 +151,8 @@ export function projectSchoolChecklist(input: {
     }
   }
 
-  if (input.ownRegistrationDue) {
-    items.push(item("own", "todo", "/area/registrazione", 1, true));
+  if (input.ownRegistrationDue && !input.canJoinStaff) {
+    items.push(item("own", "todo", "/area#ruolo", 1, true));
   }
 
   items.push(

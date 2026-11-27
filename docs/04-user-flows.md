@@ -100,7 +100,7 @@ Il riquadro **Prossimo passo** propone la prima azione che il referente può dav
 1. Verifica email del referente, se manca.
 2. Allenatore. Senza almeno uno staff tecnico il modulo di designazione è vuoto: se il referente non è ancora iscritto, il passo è iscriversi come staff (oppure condividere il link se l’allenatore è un’altra persona). Se è già giocatore, il passo è condividere il link: non può essere anche staff. Con almeno uno staff in rosa, il passo è indicare l’allenatore.
 3. Quota di squadra, se l’edizione la chiede alla scuola e l’importo è configurato. Importo assente: attesa dell’organizzazione, non un passo cliccabile.
-4. Iscrizione personale del referente, se ha scelto giocatore o staff e gli restano adempimenti. Quei buchi non si contano di nuovo tra i giocatori della rosa.
+4. Iscrizione personale del referente, **solo se ha già scelto** giocatore o staff e gli restano adempimenti. Finché può ancora scegliere «solo referente», il passo non compare e non si apre `/area/registrazione` (senza iscrizione personale quella pagina torna in dashboard). Dopo la scelta il modulo resta in dashboard (`#ruolo`); i buchi del referente non si contano di nuovo tra i giocatori della rosa.
 5. Buchi della rosa: dati, autorizzazione del genitore, privacy, liberatorie, quote. Se un’email al genitore è rimbalzata, il titolo lo dice (senza mostrare l’indirizzo). I certificati restano fuori dal passo amministrativo.
 
 ## 2c. Email del genitore non raggiungibile
