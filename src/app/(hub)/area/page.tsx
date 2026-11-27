@@ -183,16 +183,35 @@ export default async function AreaPage() {
   scheduleWorkspaceFollowUp(workspace, viewing);
 
   if (workspace) {
+    const enrollmentOpen =
+      workspace.guardianAuthorization === "pending" ||
+      (workspace.guardianAuthorization === "none" && Boolean(workspace.guardian?.email));
+    const publicationOpen = workspace.publication.status === "pending_other_parent";
     const guardianEmails = workspace.evidence.isMinor
       ? await loadGuardianEmailPageView({
           registrationId: workspace.registration.id,
           primaryEmail: workspace.guardian?.email,
           secondaryEmail: workspace.secondGuardian?.email,
-          enrollmentOpen:
-            workspace.guardianAuthorization === "pending" ||
-            (workspace.guardianAuthorization === "none" && Boolean(workspace.guardian?.email)),
-          publicationOpen: workspace.publication.status === "pending_other_parent",
+          enrollmentOpen,
+          publicationOpen,
         })
+      : null;
+    const guardianResend = guardianEmails
+      ? publicationOpen && guardianEmails.secondaryPanel
+        ? {
+            kind: "publication" as const,
+            remainingResends: guardianEmails.secondaryPanel.delivery.remainingResends,
+            resendAvailableAt: guardianEmails.secondaryPanel.delivery.resendAvailableAt?.toISOString() ?? null,
+            deliveryState: guardianEmails.secondaryPanel.delivery.state,
+          }
+        : enrollmentOpen && guardianEmails.primaryPanel
+          ? {
+              kind: "enrollment" as const,
+              remainingResends: guardianEmails.primaryPanel.delivery.remainingResends,
+              resendAvailableAt: guardianEmails.primaryPanel.delivery.resendAvailableAt?.toISOString() ?? null,
+              deliveryState: guardianEmails.primaryPanel.delivery.state,
+            }
+          : null
       : null;
     return (
       <>
@@ -220,6 +239,7 @@ export default async function AreaPage() {
           guardianAuthorization={workspace.guardianAuthorization}
           guardianNotices={guardianEmails?.notices ?? []}
           publication={workspace.publication}
+          guardianResend={guardianResend}
         />
       </>
     );

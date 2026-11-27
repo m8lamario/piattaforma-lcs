@@ -147,4 +147,4 @@ Foro competente: Torino.
 
 - Segreteria / contratti: support@legacalciostudenti.it
 - Privacy: privacy@legacalciostudenti.it
-- PEC: europeanstudentsleague@legalmail.it
+- PEC: europeanstudentsleaguesrl@legalmail.it

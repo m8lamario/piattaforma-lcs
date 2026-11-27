@@ -310,6 +310,7 @@ export async function resendGuardianAuthorizationAction(
     }
     return fail("SYSTEM_UNEXPECTED");
   }
+  revalidatePath("/area");
   revalidatePath("/area/registrazione/tutore");
   return { sent: true, delivery: serializeEmailDelivery(result.delivery) };
 }

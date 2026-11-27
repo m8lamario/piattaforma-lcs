@@ -162,9 +162,6 @@ export const it = {
   heroPaymentSoon: "Il pagamento della quota arriverà nella prossima fase.",
   heroDone: "Hai completato i passi disponibili adesso.",
   heroOtherParentPending: "Manca la conferma dell’altro genitore per foto, video e cognome.",
-  heroOtherParentPendingLead: "L’iscrizione può andare avanti. Se il messaggio non arriva, correggi l’indirizzo nel passo tutore.",
-  otherParentPendingBanner:
-    "Manca la conferma dell’altro genitore per foto, video e cognome. L’iscrizione può andare avanti.",
   ctaContinue: "Continua",
   placeholderMedical:
     "Qui caricherai il certificato medico agonistico (PDF, JPEG o PNG). Il file non sarà pubblico e il rappresentante vedrà solo lo stato.",
